@@ -2,6 +2,14 @@
 
 <html lang="en">
 <head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-2R14ZESQ0R"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-2R14ZESQ0R');
+</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Quiet Premium — Tier 1 Diagnostic</title>
@@ -35,7 +43,6 @@
     overflow-x: hidden;
   }
 
-  /* Grain overlay */
   body::before {
     content: '';
     position: fixed;
@@ -46,7 +53,6 @@
     opacity: 0.4;
   }
 
-  /* ── NAVIGATION ── */
   nav {
     position: fixed;
     top: 0; left: 0; right: 0;
@@ -55,7 +61,6 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    mix-blend-mode: normal;
   }
 
   .nav-logo {
@@ -80,7 +85,6 @@
   }
   .nav-cta:hover { color: var(--gold); }
 
-  /* ── HERO ── */
   .hero {
     min-height: 100vh;
     display: flex;
@@ -141,7 +145,6 @@
     animation: fadeUp 1s ease forwards 1.2s;
   }
 
-  /* ── RULE ── */
   .section-rule {
     width: 100%;
     height: 1px;
@@ -150,7 +153,6 @@
     width: calc(100% - 96px);
   }
 
-  /* ── SECTIONS ── */
   section {
     padding: 100px 48px;
   }
@@ -175,10 +177,7 @@
     opacity: 0.4;
   }
 
-  /* ── REFRAME ── */
-  .reframe {
-    background: var(--black);
-  }
+  .reframe { background: var(--black); }
 
   .reframe-grid {
     display: grid;
@@ -209,11 +208,8 @@
     color: var(--white);
   }
 
-  .reframe-cell.after .reframe-cell-text {
-    color: var(--gold-light);
-  }
+  .reframe-cell.after .reframe-cell-text { color: var(--gold-light); }
 
-  /* ── BRIEFING ── */
   .briefing {
     background: #0e0c09;
     border-top: 1px solid var(--rule);
@@ -260,9 +256,7 @@
     padding: 4px 10px;
   }
 
-  .briefing-doc-body {
-    padding: 40px;
-  }
+  .briefing-doc-body { padding: 40px; }
 
   .briefing-client-line {
     font-family: 'DM Mono', monospace;
@@ -301,9 +295,7 @@
     margin-bottom: 20px;
   }
 
-  .briefing-col ul {
-    list-style: none;
-  }
+  .briefing-col ul { list-style: none; }
 
   .briefing-col ul li {
     font-size: 13px;
@@ -328,9 +320,7 @@
     color: var(--white);
   }
 
-  .briefing-outcome p {
-    margin-bottom: 4px;
-  }
+  .briefing-outcome p { margin-bottom: 4px; }
 
   .briefing-note {
     margin-top: 40px;
@@ -343,17 +333,13 @@
     line-height: 1.8;
   }
 
-  /* ── HOW IT WORKS ── */
-  .how {
-    background: var(--black);
-  }
+  .how { background: var(--black); }
 
   .how-steps {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 2px;
     background: var(--rule);
-    margin-top: 0;
   }
 
   .how-step {
@@ -384,15 +370,12 @@
     line-height: 1.9;
   }
 
-  /* ── PRICING ── */
   .pricing {
     background: #0e0c09;
     border-top: 1px solid var(--rule);
   }
 
-  .pricing-block {
-    max-width: 600px;
-  }
+  .pricing-block { max-width: 600px; }
 
   .pricing-amount {
     font-family: 'Cormorant Garamond', serif;
@@ -420,9 +403,7 @@
     margin-bottom: 48px;
   }
 
-  .pricing-includes {
-    margin-bottom: 56px;
-  }
+  .pricing-includes { margin-bottom: 56px; }
 
   .pricing-includes-label {
     font-family: 'DM Mono', monospace;
@@ -433,9 +414,7 @@
     margin-bottom: 24px;
   }
 
-  .pricing-includes ul {
-    list-style: none;
-  }
+  .pricing-includes ul { list-style: none; }
 
   .pricing-includes ul li {
     font-size: 14px;
@@ -462,7 +441,6 @@
     line-height: 1.7;
   }
 
-  /* ── CTA BUTTON ── */
   .cta-button {
     display: inline-block;
     background: var(--gold);
@@ -492,7 +470,6 @@
     color: var(--gray);
   }
 
-  /* ── QUALIFIER ── */
   .qualifier {
     background: var(--black);
     border-top: 1px solid var(--rule);
@@ -525,10 +502,7 @@
     line-height: 1.9;
   }
 
-  .qualifier-list {
-    list-style: none;
-    margin-top: 8px;
-  }
+  .qualifier-list { list-style: none; margin-top: 8px; }
 
   .qualifier-list li {
     font-size: 14px;
@@ -549,7 +523,6 @@
     font-size: 11px;
   }
 
-  /* ── CLOSING ── */
   .closing {
     background: #0a0906;
     border-top: 1px solid var(--rule);
@@ -576,7 +549,6 @@
     margin-bottom: 64px;
   }
 
-  /* ── FOOTER ── */
   footer {
     padding: 32px 48px;
     border-top: 1px solid var(--rule);
@@ -600,7 +572,6 @@
     color: #3a3630;
   }
 
-  /* ── ANIMATIONS ── */
   @keyframes fadeUp {
     from { opacity: 0; transform: translateY(24px); }
     to { opacity: 1; transform: translateY(0); }
@@ -616,7 +587,6 @@
     transform: translateY(0);
   }
 
-  /* ── MOBILE ── */
   @media (max-width: 768px) {
     nav { padding: 24px 24px; }
     .hero { padding: 0 24px 64px; }
@@ -641,8 +611,6 @@
   <a href="https://docs.google.com/forms/d/e/1FAIpQLScnotl_OtX_cI2mu6VdTn-JOyvJkVUjrOywuEDujE_TsxAglg/viewform" class="nav-cta">Request Diagnostic →</a>
 </nav>
 
-<!-- HERO -->
-
 <section class="hero">
   <div class="hero-eyebrow">Tier 1 Diagnostic</div>
   <h1 class="hero-headline">
@@ -656,8 +624,6 @@
 </section>
 
 <div class="section-rule"></div>
-
-<!-- REFRAME -->
 
 <section class="reframe">
   <div class="section-label">The gap</div>
@@ -674,8 +640,6 @@
 </section>
 
 <div class="section-rule"></div>
-
-<!-- BRIEFING -->
 
 <section class="briefing">
   <div class="section-label">Sample output</div>
@@ -745,8 +709,6 @@
 
 <div class="section-rule"></div>
 
-<!-- HOW IT WORKS -->
-
 <section class="how">
   <div class="section-label">How it works</div>
   <div class="how-steps">
@@ -769,8 +731,6 @@
 </section>
 
 <div class="section-rule"></div>
-
-<!-- PRICING -->
 
 <section class="pricing">
   <div class="section-label">The diagnostic</div>
@@ -803,8 +763,6 @@
 
 <div class="section-rule"></div>
 
-<!-- QUALIFIER -->
-
 <section class="qualifier">
   <div class="section-label">Who this is for</div>
   <div class="qualifier-grid">
@@ -826,8 +784,6 @@
   </div>
 </section>
 
-<!-- CLOSING -->
-
 <section class="closing">
   <p class="closing-quote">"Same spend. Better routing."</p>
   <p class="closing-quote-sub">The savings show up everywhere else.</p>
@@ -840,7 +796,6 @@
 </footer>
 
 <script>
-  // Scroll reveal
   const reveals = document.querySelectorAll('.reveal');
   const observer = new IntersectionObserver((entries) => {
     entries.forEach((entry, i) => {
