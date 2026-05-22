@@ -1,0 +1,781 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tier 1 Diagnostic Intake — Quiet Premium</title>
+  <meta name="description" content="Private diagnostic intake. Identifies where your current setup is breaking and why the system isn't consistently recognizing or prioritizing you." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=DM+Mono:wght@300;400;500&family=Inter:wght@300;400;500&display=swap" rel="stylesheet" />
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --black:   #0A0A0A;
+      --gold:    #B08D57;
+      --gold-lt: #C9A96E;
+      --gold-dk: #8B6D3F;
+      --white:   #F5F2EC;
+      --grey:    #9A9590;
+      --grey-dk: #3A3530;
+      --serif:   'Cormorant Garamond', Georgia, serif;
+      --mono:    'DM Mono', monospace;
+      --sans:    'Inter', sans-serif;
+    }
+
+    html {
+      scroll-behavior: smooth;
+      background-color: #0A0A0A;
+    }
+
+    body {
+      background-color: #0A0A0A;
+      background: #0A0A0A;
+      color: #F5F2EC;
+      font-family: var(--sans);
+      font-weight: 300;
+      font-size: 16px;
+      line-height: 1.7;
+      -webkit-font-smoothing: antialiased;
+      min-height: 100vh;
+    }
+
+    /* ── NAV ─────────────────────────────────── */
+    nav {
+      padding: 28px 48px;
+      display: flex; align-items: center; justify-content: space-between;
+      border-bottom: 1px solid var(--grey-dk);
+    }
+    .nav-logo { text-decoration: none; display: flex; align-items: center; gap: 10px; }
+    .nav-logo-badge {
+      width: 32px; height: 32px; border-radius: 50%;
+      border: 1px solid var(--gold);
+      display: flex; align-items: center; justify-content: center;
+      flex-direction: column; gap: 2px;
+    }
+    .nav-logo-badge span { font-family: var(--mono); font-size: 6px; letter-spacing: 0.15em; color: var(--gold); line-height: 1; }
+    .nav-logo-badge .dl { width: 16px; height: 1px; background: var(--gold-dk); }
+    .nav-back { font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em; color: var(--grey); text-decoration: none; text-transform: uppercase; }
+    .nav-back:hover { color: var(--gold); }
+
+    /* ── LAYOUT ──────────────────────────────── */
+    .wrap { max-width: 720px; margin: 0 auto; padding: 80px 40px 120px; }
+
+    /* ── INTRO ───────────────────────────────── */
+    .intro { margin-bottom: 64px; padding-bottom: 48px; border-bottom: 1px solid var(--grey-dk); }
+    .intro-eyebrow { font-family: var(--mono); font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold); margin-bottom: 20px; }
+    .intro-headline { font-family: var(--serif); font-size: clamp(32px, 4vw, 46px); font-weight: 300; line-height: 1.1; margin-bottom: 20px; }
+    .intro-headline em { font-style: italic; color: var(--gold); }
+    .intro-body { font-size: 14px; color: var(--grey); line-height: 1.85; max-width: 560px; }
+    .intro-body p + p { margin-top: 12px; }
+
+    /* ── SECTION HEADER ──────────────────────── */
+    .section-header { margin: 56px 0 32px; padding-top: 48px; border-top: 1px solid var(--grey-dk); }
+    .section-header:first-of-type { margin-top: 0; padding-top: 0; border-top: none; }
+    .section-num { font-family: var(--mono); font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--gold-dk); margin-bottom: 8px; }
+    .section-title { font-family: var(--serif); font-size: 28px; font-weight: 300; margin-bottom: 6px; }
+    .section-sub { font-size: 13px; color: var(--grey); line-height: 1.7; }
+
+    /* ── FIELD ───────────────────────────────── */
+    .field { margin-bottom: 36px; }
+    .field-label {
+      display: block; font-size: 14px; font-weight: 400; color: var(--white);
+      margin-bottom: 6px; line-height: 1.5;
+    }
+    .field-label .req { color: var(--gold); margin-left: 2px; }
+    .field-hint { font-size: 12px; color: var(--grey); margin-bottom: 10px; line-height: 1.6; }
+
+    /* Text / number inputs */
+    input[type="text"],
+    input[type="email"],
+    input[type="number"],
+    textarea {
+      width: 100%;
+      background: #111111;
+      border: 1px solid var(--grey-dk);
+      color: var(--white);
+      font-family: var(--sans);
+      font-size: 14px;
+      font-weight: 300;
+      padding: 14px 18px;
+      outline: none;
+      transition: border-color 0.2s ease;
+      -webkit-appearance: none;
+      border-radius: 0;
+    }
+    input[type="text"]:focus,
+    input[type="email"]:focus,
+    input[type="number"]:focus,
+    textarea:focus { border-color: var(--gold); }
+    textarea { resize: vertical; min-height: 100px; }
+    input::placeholder, textarea::placeholder { color: var(--grey-dk); }
+
+    /* Radio & checkbox options */
+    .options { display: flex; flex-direction: column; gap: 10px; }
+    .options.inline { flex-direction: row; flex-wrap: wrap; gap: 10px; }
+
+    .opt {
+      display: flex; align-items: flex-start; gap: 14px;
+      padding: 14px 18px; border: 1px solid var(--grey-dk);
+      cursor: pointer; transition: all 0.2s ease; user-select: none;
+    }
+    .opt:hover { border-color: var(--gold-dk); background: rgba(176,141,87,0.03); }
+    .opt.selected { border-color: var(--gold); background: rgba(176,141,87,0.07); }
+
+    .opt-indicator {
+      width: 18px; height: 18px; flex-shrink: 0; margin-top: 1px;
+      border: 1px solid var(--grey-dk); display: flex;
+      align-items: center; justify-content: center;
+      transition: all 0.2s ease;
+    }
+    .opt-indicator.circle { border-radius: 50%; }
+    .opt.selected .opt-indicator { border-color: var(--gold); background: var(--gold); }
+    .opt.selected .opt-indicator.circle::after {
+      content: ''; width: 6px; height: 6px;
+      background: var(--black); border-radius: 50%; display: block;
+    }
+    .opt.selected .opt-indicator.square::after {
+      content: '';
+      width: 9px; height: 5px;
+      border-left: 1.5px solid var(--black);
+      border-bottom: 1.5px solid var(--black);
+      transform: rotate(-45deg) translateY(-1px);
+      display: block;
+    }
+    .opt-text { font-size: 13px; color: var(--white); line-height: 1.5; }
+
+    /* Hidden real inputs */
+    .real-input { display: none; }
+
+    /* ── SUBMIT ──────────────────────────────── */
+    .submit-section { margin-top: 64px; padding-top: 48px; border-top: 1px solid var(--grey-dk); }
+    .submit-note { font-size: 13px; color: var(--grey); line-height: 1.8; margin-bottom: 32px; max-width: 520px; }
+    .btn-submit {
+      background: var(--gold); color: var(--black);
+      font-family: var(--mono); font-size: 11px; letter-spacing: 0.14em;
+      text-transform: uppercase; border: none; cursor: pointer;
+      padding: 16px 40px; transition: background 0.3s ease;
+      display: inline-block;
+    }
+    .btn-submit:hover { background: var(--gold-lt); }
+
+    /* ── CONFIRMATION ────────────────────────── */
+    #confirmation { display: none; text-align: center; padding: 80px 0; }
+    #confirmation.active { display: block; animation: fadeUp 0.5s ease; }
+    .confirm-icon {
+      width: 56px; height: 56px; border: 1px solid var(--gold);
+      border-radius: 50%; margin: 0 auto 32px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .confirm-icon svg { width: 22px; height: 22px; stroke: var(--gold); fill: none; stroke-width: 1.5; }
+    .confirm-headline { font-family: var(--serif); font-size: clamp(28px, 4vw, 40px); font-weight: 300; margin-bottom: 16px; }
+    .confirm-headline em { font-style: italic; color: var(--gold); }
+    .confirm-body { font-size: 14px; color: var(--grey); line-height: 1.85; max-width: 440px; margin: 0 auto 40px; }
+    .confirm-back { font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--grey); text-decoration: none; }
+    .confirm-back:hover { color: var(--gold); }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 600px) {
+      nav { padding: 20px 24px; }
+      .wrap { padding: 56px 24px 80px; }
+      .options.inline { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <a href="index.html" class="nav-logo">
+      <div class="nav-logo-badge">
+        <span>QUIET</span>
+        <div class="dl"></div>
+        <span>PREM</span>
+      </div>
+    </a>
+    <a href="index.html" class="nav-back">← quietpremium.com</a>
+  </nav>
+
+  <div class="wrap">
+
+    <!-- INTRO -->
+    <div class="intro">
+      <p class="intro-eyebrow">Tier 1 · Private Diagnostic Intake</p>
+      <h1 class="intro-headline">This is where the<br><em>analysis begins.</em></h1>
+      <div class="intro-body">
+        <p>This is a private diagnostic. It identifies where your current setup is breaking — and why the system isn't consistently recognizing or prioritizing you.</p>
+        <p>This is not about optimizing points or finding better options. Most people who complete this realize they've already been spending enough — they're just not structured correctly.</p>
+        <p>Takes approximately 15 minutes. All responses are private and used solely to build your briefing.</p>
+      </div>
+    </div>
+
+    <!-- FORM -->
+    <form id="diagnostic-form" action="https://formspree.io/f/mnjrvbpn" method="POST">
+
+      <!-- ── BASELINE SNAPSHOT ───────────────── -->
+      <div class="section-header">
+        <div class="section-num">Section 01</div>
+        <div class="section-title">Baseline Snapshot</div>
+      </div>
+
+      <!-- Q1 Email -->
+      <div class="field">
+        <label class="field-label" for="email">Email address <span class="req">*</span></label>
+        <input type="email" id="email" name="email" required placeholder="you@example.com" />
+      </div>
+
+      <!-- Q2 Total spend -->
+      <div class="field">
+        <label class="field-label" for="total_spend">Total annual household personal card spend — last 12 months <span class="req">*</span></label>
+        <div class="field-hint">Enter a rough annual total.</div>
+        <input type="text" id="total_spend" name="total_spend" required placeholder="e.g. 180000" />
+      </div>
+
+      <!-- Q3 Credit score -->
+      <div class="field">
+        <label class="field-label">Current credit score range <span class="req">*</span></label>
+        <div class="options" data-name="credit_score" data-type="radio">
+          <div class="opt" data-value="800+"><div class="opt-indicator circle"></div><div class="opt-text">800+</div></div>
+          <div class="opt" data-value="760-799"><div class="opt-indicator circle"></div><div class="opt-text">760–799</div></div>
+          <div class="opt" data-value="720-759"><div class="opt-indicator circle"></div><div class="opt-text">720–759</div></div>
+          <div class="opt" data-value="680-719"><div class="opt-indicator circle"></div><div class="opt-text">680–719</div></div>
+          <div class="opt" data-value="Below 680"><div class="opt-indicator circle"></div><div class="opt-text">Below 680</div></div>
+        </div>
+        <input class="real-input" type="text" name="credit_score" required />
+      </div>
+
+      <!-- ── LIFESTYLE ───────────────────────── -->
+      <div class="section-header">
+        <div class="section-num">Section 02</div>
+        <div class="section-title">Lifestyle</div>
+      </div>
+
+      <!-- Q4 Largest single purchase -->
+      <div class="field">
+        <label class="field-label" for="largest_purchase">What was your largest single discretionary purchase in the past 12 months? <span class="req">*</span></label>
+        <div class="field-hint">Dollar amount only. Do not include primary residence or business purchases.</div>
+        <input type="text" id="largest_purchase" name="largest_purchase" required placeholder="e.g. 25000" />
+      </div>
+
+      <!-- Q5 Luxury retail spend -->
+      <div class="field">
+        <label class="field-label" for="luxury_retail_spend">In the past 12 months, approximately how much have you spent on luxury retail? <span class="req">*</span></label>
+        <div class="field-hint">Apparel, watches, leather goods, jewelry. Include only charges made to personal cards.</div>
+        <input type="text" id="luxury_retail_spend" name="luxury_retail_spend" required placeholder="e.g. 12000" />
+      </div>
+
+      <!-- Q6 How luxury retail is made -->
+      <div class="field">
+        <label class="field-label">How are your luxury retail purchases typically made? <span class="req">*</span></label>
+        <div class="options" data-name="luxury_retail_method" data-type="radio">
+          <div class="opt" data-value="I have not meaningfully engaged in luxury retail"><div class="opt-indicator circle"></div><div class="opt-text">I have not meaningfully engaged in luxury retail</div></div>
+          <div class="opt" data-value="Online (brand website or third-party)"><div class="opt-indicator circle"></div><div class="opt-text">Online — brand website or third-party</div></div>
+          <div class="opt" data-value="In boutique without a dedicated advisor"><div class="opt-indicator circle"></div><div class="opt-text">In boutique without a dedicated advisor</div></div>
+          <div class="opt" data-value="Through a dedicated client advisor"><div class="opt-indicator circle"></div><div class="opt-text">Through a dedicated client advisor</div></div>
+          <div class="opt" data-value="Mixed"><div class="opt-indicator circle"></div><div class="opt-text">Mixed</div></div>
+        </div>
+        <input class="real-input" type="text" name="luxury_retail_method" required />
+      </div>
+
+      <!-- ── TRAVEL ──────────────────────────── -->
+      <div class="section-header">
+        <div class="section-num">Section 03</div>
+        <div class="section-title">Travel</div>
+      </div>
+
+      <!-- Q7 Points redemption -->
+      <div class="field">
+        <label class="field-label">What do you primarily use your credit card points for? <span class="req">*</span></label>
+        <div class="field-hint">Select all that apply.</div>
+        <div class="options" data-name="points_use" data-type="checkbox">
+          <div class="opt" data-value="Main cabin (economy)"><div class="opt-indicator square"></div><div class="opt-text">Main cabin (economy)</div></div>
+          <div class="opt" data-value="Extra legroom economy"><div class="opt-indicator square"></div><div class="opt-text">Extra legroom economy (e.g. Delta Comfort+, United Economy Plus)</div></div>
+          <div class="opt" data-value="Premium economy (international)"><div class="opt-indicator square"></div><div class="opt-text">Premium economy (international)</div></div>
+          <div class="opt" data-value="First Class (domestic)"><div class="opt-indicator square"></div><div class="opt-text">First Class (domestic)</div></div>
+          <div class="opt" data-value="Business/first (international)"><div class="opt-indicator square"></div><div class="opt-text">Business/first (international)</div></div>
+          <div class="opt" data-value="Hotel stays"><div class="opt-indicator square"></div><div class="opt-text">Hotel stays</div></div>
+          <div class="opt" data-value="Statement credits/cash back"><div class="opt-indicator square"></div><div class="opt-text">Statement credits / cash back</div></div>
+          <div class="opt" data-value="I have not redeemed points"><div class="opt-indicator square"></div><div class="opt-text">I have not redeemed points</div></div>
+        </div>
+        <input class="real-input" type="text" name="points_use" required />
+      </div>
+
+      <!-- Q8 First/business frequency -->
+      <div class="field">
+        <label class="field-label">How often are you in first or business class when you travel? <span class="req">*</span></label>
+        <div class="options" data-name="premium_cabin_frequency" data-type="radio">
+          <div class="opt" data-value="Always"><div class="opt-indicator circle"></div><div class="opt-text">Always</div></div>
+          <div class="opt" data-value="Often"><div class="opt-indicator circle"></div><div class="opt-text">Often</div></div>
+          <div class="opt" data-value="Occasionally"><div class="opt-indicator circle"></div><div class="opt-text">Occasionally</div></div>
+          <div class="opt" data-value="Rarely"><div class="opt-indicator circle"></div><div class="opt-text">Rarely</div></div>
+          <div class="opt" data-value="Never"><div class="opt-indicator circle"></div><div class="opt-text">Never</div></div>
+        </div>
+        <input class="real-input" type="text" name="premium_cabin_frequency" required />
+      </div>
+
+      <!-- Q9 Dining spend -->
+      <div class="field">
+        <label class="field-label" for="dining_spend">Household dining spend charged to personal cards <span class="req">*</span></label>
+        <div class="field-hint">Restaurants, bars, food delivery.</div>
+        <input type="text" id="dining_spend" name="dining_spend" required placeholder="e.g. 20000" />
+      </div>
+
+      <!-- Q10 Grocery spend -->
+      <div class="field">
+        <label class="field-label" for="grocery_spend">Household grocery spend charged to personal cards <span class="req">*</span></label>
+        <input type="text" id="grocery_spend" name="grocery_spend" required placeholder="e.g. 18000" />
+      </div>
+
+      <!-- Q11 General spend -->
+      <div class="field">
+        <label class="field-label" for="general_spend">Household general spend charged to personal cards — last 12 months <span class="req">*</span></label>
+        <div class="field-hint">Spend that does NOT earn a major category bonus (typically 1x). Retail, online shopping, insurance, utilities, miscellaneous.</div>
+        <input type="text" id="general_spend" name="general_spend" required placeholder="e.g. 60000" />
+      </div>
+
+      <!-- Q12 General spend categories -->
+      <div class="field">
+        <label class="field-label" for="general_spend_categories">What makes up most of your general spend? <span class="req">*</span></label>
+        <div class="field-hint">List up to three dominant categories. No need for exact amounts.</div>
+        <textarea id="general_spend_categories" name="general_spend_categories" required placeholder="e.g. Online retail, Insurance, Luxury retail"></textarea>
+      </div>
+
+      <!-- Q13 Home airport -->
+      <div class="field">
+        <label class="field-label" for="home_airport">Primary home airport <span class="req">*</span></label>
+        <div class="field-hint">The airport you typically begin personal travel from.</div>
+        <input type="text" id="home_airport" name="home_airport" required placeholder="e.g. ATL, JFK, ORD" />
+      </div>
+
+      <!-- Q14 Frequent destinations -->
+      <div class="field">
+        <label class="field-label" for="frequent_destinations">Which airports do you fly to most frequently for personal travel? <span class="req">*</span></label>
+        <div class="field-hint">List up to five destinations.</div>
+        <textarea id="frequent_destinations" name="frequent_destinations" required placeholder="e.g. ATL, JFK, LAX, LAS, MIA"></textarea>
+      </div>
+
+      <!-- Q15 Primary airline & status -->
+      <div class="field">
+        <label class="field-label" for="primary_airline">Current primary airline and elite tier <span class="req">*</span></label>
+        <div class="field-hint">Include airline name and current status level.</div>
+        <input type="text" id="primary_airline" name="primary_airline" required placeholder="e.g. Delta — Platinum Medallion" />
+      </div>
+
+      <!-- Q16 When qualified -->
+      <div class="field">
+        <label class="field-label">In which quarter did you qualify for this elite tier last calendar year? <span class="req">*</span></label>
+        <div class="options" data-name="qualification_quarter" data-type="radio">
+          <div class="opt" data-value="January–March"><div class="opt-indicator circle"></div><div class="opt-text">January–March</div></div>
+          <div class="opt" data-value="April–June"><div class="opt-indicator circle"></div><div class="opt-text">April–June</div></div>
+          <div class="opt" data-value="July–September"><div class="opt-indicator circle"></div><div class="opt-text">July–September</div></div>
+          <div class="opt" data-value="October–December"><div class="opt-indicator circle"></div><div class="opt-text">October–December</div></div>
+          <div class="opt" data-value="Did not qualify"><div class="opt-indicator circle"></div><div class="opt-text">Did not qualify</div></div>
+        </div>
+        <input class="real-input" type="text" name="qualification_quarter" required />
+      </div>
+
+      <!-- Q17 Status on Jan 1 -->
+      <div class="field">
+        <label class="field-label" for="status_jan1">What elite tier did you hold on January 1 of this year? <span class="req">*</span></label>
+        <input type="text" id="status_jan1" name="status_jan1" required placeholder="e.g. Delta Gold Medallion, or None" />
+      </div>
+
+      <!-- Q18 Consecutive years -->
+      <div class="field">
+        <label class="field-label">How many consecutive calendar years have you held this tier or higher? <span class="req">*</span></label>
+        <div class="options" data-name="consecutive_years" data-type="radio">
+          <div class="opt" data-value="1"><div class="opt-indicator circle"></div><div class="opt-text">1</div></div>
+          <div class="opt" data-value="2-3"><div class="opt-indicator circle"></div><div class="opt-text">2–3</div></div>
+          <div class="opt" data-value="4-6"><div class="opt-indicator circle"></div><div class="opt-text">4–6</div></div>
+          <div class="opt" data-value="7+"><div class="opt-indicator circle"></div><div class="opt-text">7 or more</div></div>
+        </div>
+        <input class="real-input" type="text" name="consecutive_years" required />
+      </div>
+
+      <!-- Q19 Companion certificate -->
+      <div class="field">
+        <label class="field-label">Do you currently receive an annual airline companion certificate? <span class="req">*</span></label>
+        <div class="options" data-name="companion_certificate" data-type="radio">
+          <div class="opt" data-value="Yes — I used it this year"><div class="opt-indicator circle"></div><div class="opt-text">Yes — I used it this year</div></div>
+          <div class="opt" data-value="Yes — I did not use it"><div class="opt-indicator circle"></div><div class="opt-text">Yes — I did not use it</div></div>
+          <div class="opt" data-value="No"><div class="opt-indicator circle"></div><div class="opt-text">No</div></div>
+          <div class="opt" data-value="Unsure"><div class="opt-indicator circle"></div><div class="opt-text">Unsure</div></div>
+        </div>
+        <input class="real-input" type="text" name="companion_certificate" required />
+      </div>
+
+      <!-- Q20 Flights taken -->
+      <div class="field">
+        <label class="field-label">How many flights have you personally taken in the past 12 months? <span class="req">*</span></label>
+        <div class="options" data-name="flights_taken" data-type="radio">
+          <div class="opt" data-value="1-5"><div class="opt-indicator circle"></div><div class="opt-text">1–5</div></div>
+          <div class="opt" data-value="6-10"><div class="opt-indicator circle"></div><div class="opt-text">6–10</div></div>
+          <div class="opt" data-value="11-20"><div class="opt-indicator circle"></div><div class="opt-text">11–20</div></div>
+          <div class="opt" data-value="21-40"><div class="opt-indicator circle"></div><div class="opt-text">21–40</div></div>
+          <div class="opt" data-value="40+"><div class="opt-indicator circle"></div><div class="opt-text">40+</div></div>
+        </div>
+        <input class="real-input" type="text" name="flights_taken" required />
+      </div>
+
+      <!-- Q21 Trip composition -->
+      <div class="field">
+        <label class="field-label">How do your trips typically break down? <span class="req">*</span></label>
+        <div class="field-hint">Select all that apply.</div>
+        <div class="options" data-name="trip_composition" data-type="checkbox">
+          <div class="opt" data-value="Solo"><div class="opt-indicator square"></div><div class="opt-text">Solo</div></div>
+          <div class="opt" data-value="With one other person"><div class="opt-indicator square"></div><div class="opt-text">With one other person</div></div>
+          <div class="opt" data-value="With 3-4"><div class="opt-indicator square"></div><div class="opt-text">With 3–4</div></div>
+          <div class="opt" data-value="With 5+"><div class="opt-indicator square"></div><div class="opt-text">With 5+</div></div>
+        </div>
+        <input class="real-input" type="text" name="trip_composition" required />
+      </div>
+
+      <!-- Q22 Who books flights -->
+      <div class="field">
+        <label class="field-label">Who typically controls how your flights are booked? <span class="req">*</span></label>
+        <div class="options" data-name="flight_booking_control" data-type="radio">
+          <div class="opt" data-value="I do"><div class="opt-indicator circle"></div><div class="opt-text">I do</div></div>
+          <div class="opt" data-value="Shared"><div class="opt-indicator circle"></div><div class="opt-text">Shared</div></div>
+          <div class="opt" data-value="Someone else"><div class="opt-indicator circle"></div><div class="opt-text">Someone else</div></div>
+        </div>
+        <input class="real-input" type="text" name="flight_booking_control" required />
+      </div>
+
+      <!-- Q23 How group flights paid -->
+      <div class="field">
+        <label class="field-label">When traveling with others, how are flights typically paid for? <span class="req">*</span></label>
+        <div class="options" data-name="group_flight_payment" data-type="radio">
+          <div class="opt" data-value="I pay for all travelers"><div class="opt-indicator circle"></div><div class="opt-text">I pay for all travelers</div></div>
+          <div class="opt" data-value="Mixed (split or reimbursed)"><div class="opt-indicator circle"></div><div class="opt-text">Mixed — split or reimbursed</div></div>
+          <div class="opt" data-value="Each person pays for themselves"><div class="opt-indicator circle"></div><div class="opt-text">Each person pays for themselves</div></div>
+          <div class="opt" data-value="Not applicable — I mostly travel solo"><div class="opt-indicator circle"></div><div class="opt-text">Not applicable — I mostly travel solo</div></div>
+        </div>
+        <input class="real-input" type="text" name="group_flight_payment" required />
+      </div>
+
+      <!-- Q24 Airline concentration -->
+      <div class="field">
+        <label class="field-label">What percentage of your household flights are with your primary airline? <span class="req">*</span></label>
+        <div class="options" data-name="airline_concentration" data-type="radio">
+          <div class="opt" data-value="0-24%"><div class="opt-indicator circle"></div><div class="opt-text">0–24%</div></div>
+          <div class="opt" data-value="25-49%"><div class="opt-indicator circle"></div><div class="opt-text">25–49%</div></div>
+          <div class="opt" data-value="50-74%"><div class="opt-indicator circle"></div><div class="opt-text">50–74%</div></div>
+          <div class="opt" data-value="75-100%"><div class="opt-indicator circle"></div><div class="opt-text">75–100%</div></div>
+        </div>
+        <input class="real-input" type="text" name="airline_concentration" required />
+      </div>
+
+      <!-- Q25 Airline direct spend -->
+      <div class="field">
+        <label class="field-label">Approximately how much did your household spend directly with your primary airline in the past 12 months? <span class="req">*</span></label>
+        <div class="field-hint">Tickets, seat upgrades, fees — paid directly to the airline, not through portals or points.</div>
+        <div class="options" data-name="airline_direct_spend" data-type="radio">
+          <div class="opt" data-value="Less than $5,000"><div class="opt-indicator circle"></div><div class="opt-text">Less than $5,000</div></div>
+          <div class="opt" data-value="$5,000-$9,999"><div class="opt-indicator circle"></div><div class="opt-text">$5,000–$9,999</div></div>
+          <div class="opt" data-value="$10,000-$19,999"><div class="opt-indicator circle"></div><div class="opt-text">$10,000–$19,999</div></div>
+          <div class="opt" data-value="$20,000 or more"><div class="opt-indicator circle"></div><div class="opt-text">$20,000 or more</div></div>
+          <div class="opt" data-value="I don't track this, likely under $10,000"><div class="opt-indicator circle"></div><div class="opt-text">I don't track this, but it's likely under $10,000</div></div>
+          <div class="opt" data-value="I don't track this, likely over $10,000"><div class="opt-indicator circle"></div><div class="opt-text">I don't track this, but it's likely over $10,000</div></div>
+        </div>
+        <input class="real-input" type="text" name="airline_direct_spend" required />
+      </div>
+
+      <!-- Q26 Hotel concentration -->
+      <div class="field">
+        <label class="field-label">What percentage of your hotel stays are with your primary brand? <span class="req">*</span></label>
+        <div class="options" data-name="hotel_concentration" data-type="radio">
+          <div class="opt" data-value="0-24%"><div class="opt-indicator circle"></div><div class="opt-text">0–24%</div></div>
+          <div class="opt" data-value="25-49%"><div class="opt-indicator circle"></div><div class="opt-text">25–49%</div></div>
+          <div class="opt" data-value="50-74%"><div class="opt-indicator circle"></div><div class="opt-text">50–74%</div></div>
+          <div class="opt" data-value="75-100%"><div class="opt-indicator circle"></div><div class="opt-text">75–100%</div></div>
+        </div>
+        <input class="real-input" type="text" name="hotel_concentration" required />
+      </div>
+
+      <!-- Q27 Hotel brand & status -->
+      <div class="field">
+        <label class="field-label" for="primary_hotel">Primary hotel brand and current status <span class="req">*</span></label>
+        <div class="field-hint">Include hotel brand and current status level.</div>
+        <input type="text" id="primary_hotel" name="primary_hotel" required placeholder="e.g. Hyatt — Globalist, Marriott — Platinum Elite, or None" />
+      </div>
+
+      <!-- Q28 Hotel nights -->
+      <div class="field">
+        <label class="field-label">Approximately how many total nights did your household stay in hotels last year? <span class="req">*</span></label>
+        <div class="options" data-name="hotel_nights" data-type="radio">
+          <div class="opt" data-value="1-5"><div class="opt-indicator circle"></div><div class="opt-text">1–5</div></div>
+          <div class="opt" data-value="6-10"><div class="opt-indicator circle"></div><div class="opt-text">6–10</div></div>
+          <div class="opt" data-value="11-20"><div class="opt-indicator circle"></div><div class="opt-text">11–20</div></div>
+          <div class="opt" data-value="21-39"><div class="opt-indicator circle"></div><div class="opt-text">21–39</div></div>
+          <div class="opt" data-value="40+"><div class="opt-indicator circle"></div><div class="opt-text">40+</div></div>
+        </div>
+        <input class="real-input" type="text" name="hotel_nights" required />
+      </div>
+
+      <!-- Q29 How bookings made -->
+      <div class="field">
+        <label class="field-label">How do you typically book flights and hotels for personal travel? <span class="req">*</span></label>
+        <div class="options" data-name="booking_method" data-type="radio">
+          <div class="opt" data-value="Direct (airline or hotel website)"><div class="opt-indicator circle"></div><div class="opt-text">Direct — airline or hotel website</div></div>
+          <div class="opt" data-value="Corporate portal (Concur, Amex GBT, etc.)"><div class="opt-indicator circle"></div><div class="opt-text">Corporate portal (Concur, Amex GBT, etc.)</div></div>
+          <div class="opt" data-value="Online travel agency (Expedia, Booking, etc.)"><div class="opt-indicator circle"></div><div class="opt-text">Online travel agency (Expedia, Booking, etc.)</div></div>
+          <div class="opt" data-value="Mixed"><div class="opt-indicator circle"></div><div class="opt-text">Mixed</div></div>
+        </div>
+        <input class="real-input" type="text" name="booking_method" required />
+      </div>
+
+      <!-- Q30 Cabin typically booked -->
+      <div class="field">
+        <label class="field-label">Cabin typically booked for personal travel <span class="req">*</span></label>
+        <div class="options" data-name="cabin_booked" data-type="radio">
+          <div class="opt" data-value="Economy"><div class="opt-indicator circle"></div><div class="opt-text">Economy</div></div>
+          <div class="opt" data-value="Extra legroom economy"><div class="opt-indicator circle"></div><div class="opt-text">Extra legroom economy (e.g. Delta Comfort+)</div></div>
+          <div class="opt" data-value="Premium Economy (international)"><div class="opt-indicator circle"></div><div class="opt-text">Premium Economy (international)</div></div>
+          <div class="opt" data-value="Business"><div class="opt-indicator circle"></div><div class="opt-text">Business</div></div>
+          <div class="opt" data-value="First"><div class="opt-indicator circle"></div><div class="opt-text">First</div></div>
+          <div class="opt" data-value="Mixed depending on route"><div class="opt-indicator circle"></div><div class="opt-text">Mixed depending on route</div></div>
+        </div>
+        <input class="real-input" type="text" name="cabin_booked" required />
+      </div>
+
+      <!-- Q31 Upgrade spend -->
+      <div class="field">
+        <label class="field-label">Approximately how much did your household spend on seat upgrades or premium cabin buy-ups in the past 12 months? <span class="req">*</span></label>
+        <div class="options" data-name="upgrade_spend" data-type="radio">
+          <div class="opt" data-value="Under $1,000"><div class="opt-indicator circle"></div><div class="opt-text">Under $1,000</div></div>
+          <div class="opt" data-value="$1,000-$3,000"><div class="opt-indicator circle"></div><div class="opt-text">$1,000–$3,000</div></div>
+          <div class="opt" data-value="$3,000-$7,000"><div class="opt-indicator circle"></div><div class="opt-text">$3,000–$7,000</div></div>
+          <div class="opt" data-value="Over $7,000"><div class="opt-indicator circle"></div><div class="opt-text">Over $7,000</div></div>
+        </div>
+        <input class="real-input" type="text" name="upgrade_spend" required />
+      </div>
+
+      <!-- Q32 Points redeemed -->
+      <div class="field">
+        <label class="field-label">Approximately how many airline miles or transferable points did you redeem in the past 12 months? <span class="req">*</span></label>
+        <div class="options" data-name="points_redeemed" data-type="radio">
+          <div class="opt" data-value="Under 25,000"><div class="opt-indicator circle"></div><div class="opt-text">Under 25,000</div></div>
+          <div class="opt" data-value="25,000-75,000"><div class="opt-indicator circle"></div><div class="opt-text">25,000–75,000</div></div>
+          <div class="opt" data-value="75,000-150,000"><div class="opt-indicator circle"></div><div class="opt-text">75,000–150,000</div></div>
+          <div class="opt" data-value="Over 150,000"><div class="opt-indicator circle"></div><div class="opt-text">Over 150,000</div></div>
+          <div class="opt" data-value="None"><div class="opt-indicator circle"></div><div class="opt-text">None</div></div>
+          <div class="opt" data-value="Unsure"><div class="opt-indicator circle"></div><div class="opt-text">Unsure</div></div>
+        </div>
+        <input class="real-input" type="text" name="points_redeemed" required />
+      </div>
+
+      <!-- Q33 Monitor balances -->
+      <div class="field">
+        <label class="field-label">Do you actively monitor your points balances and status progress throughout the year? <span class="req">*</span></label>
+        <div class="options" data-name="monitors_balances" data-type="radio">
+          <div class="opt" data-value="Yes — regularly"><div class="opt-indicator circle"></div><div class="opt-text">Yes — regularly</div></div>
+          <div class="opt" data-value="Occasionally"><div class="opt-indicator circle"></div><div class="opt-text">Occasionally</div></div>
+          <div class="opt" data-value="Rarely"><div class="opt-indicator circle"></div><div class="opt-text">Rarely</div></div>
+          <div class="opt" data-value="Not at all"><div class="opt-indicator circle"></div><div class="opt-text">Not at all</div></div>
+        </div>
+        <input class="real-input" type="text" name="monitors_balances" required />
+      </div>
+
+      <!-- Q34 Desired outcomes -->
+      <div class="field">
+        <label class="field-label">Which outcomes would most improve your experience? <span class="req">*</span></label>
+        <div class="field-hint">Choose up to two outcomes that would meaningfully improve your travel and lifestyle experience.</div>
+        <div class="options" data-name="desired_outcomes" data-type="checkbox" data-max="2">
+          <div class="opt" data-value="Earlier airline upgrades"><div class="opt-indicator square"></div><div class="opt-text">Earlier airline upgrades</div></div>
+          <div class="opt" data-value="Suite-level hotel upgrades"><div class="opt-indicator square"></div><div class="opt-text">Suite-level hotel upgrades</div></div>
+          <div class="opt" data-value="Airport experience (priority lanes, lounges)"><div class="opt-indicator square"></div><div class="opt-text">Airport experience — priority lanes, lounges</div></div>
+          <div class="opt" data-value="Reduce need to purchase premium seats"><div class="opt-indicator square"></div><div class="opt-text">Reduce need to purchase premium seats</div></div>
+          <div class="opt" data-value="Better use of points and miles"><div class="opt-indicator square"></div><div class="opt-text">Better use of points and miles</div></div>
+          <div class="opt" data-value="Retail access or sourcing"><div class="opt-indicator square"></div><div class="opt-text">Retail access or sourcing</div></div>
+          <div class="opt" data-value="Operational reliability during travel disruptions"><div class="opt-indicator square"></div><div class="opt-text">Operational reliability during travel disruptions</div></div>
+          <div class="opt" data-value="More consistent recognition from airlines/hotels"><div class="opt-indicator square"></div><div class="opt-text">More consistent recognition from airlines and hotels</div></div>
+        </div>
+        <input class="real-input" type="text" name="desired_outcomes" required />
+      </div>
+
+      <!-- ── CARD INFRASTRUCTURE ─────────────── -->
+      <div class="section-header">
+        <div class="section-num">Section 04</div>
+        <div class="section-title">Card Infrastructure</div>
+      </div>
+
+      <!-- Q35 Primary cards -->
+      <div class="field">
+        <label class="field-label" for="primary_cards">Primary cards currently used — full names required <span class="req">*</span></label>
+        <div class="field-hint">List the exact full card names you use most frequently.</div>
+        <textarea id="primary_cards" name="primary_cards" required placeholder="e.g. American Express Platinum Card, Delta SkyMiles Reserve American Express Card, Chase Sapphire Reserve, Capital One Venture X Rewards Credit Card"></textarea>
+      </div>
+
+      <!-- Q36 Airfare card -->
+      <div class="field">
+        <label class="field-label" for="card_airfare">Airfare — which card do you primarily use? <span class="req">*</span></label>
+        <input type="text" id="card_airfare" name="card_airfare" required placeholder="e.g. Delta SkyMiles Reserve Amex" />
+      </div>
+
+      <!-- Q37 Hotels card -->
+      <div class="field">
+        <label class="field-label" for="card_hotels">Hotels — which card do you primarily use? <span class="req">*</span></label>
+        <input type="text" id="card_hotels" name="card_hotels" required placeholder="e.g. Amex Platinum" />
+      </div>
+
+      <!-- Q38 Dining card -->
+      <div class="field">
+        <label class="field-label" for="card_dining">Dining — which card do you primarily use? <span class="req">*</span></label>
+        <input type="text" id="card_dining" name="card_dining" required placeholder="e.g. Amex Gold" />
+      </div>
+
+      <!-- Q39 Groceries card -->
+      <div class="field">
+        <label class="field-label" for="card_groceries">Groceries — which card do you primarily use? <span class="req">*</span></label>
+        <input type="text" id="card_groceries" name="card_groceries" required placeholder="e.g. Amex Gold" />
+      </div>
+
+      <!-- Q40 General spend card -->
+      <div class="field">
+        <label class="field-label" for="card_general">General / non-bonused spend — which card do you primarily use? <span class="req">*</span></label>
+        <input type="text" id="card_general" name="card_general" required placeholder="e.g. Capital One Venture X" />
+      </div>
+
+      <!-- ── EXPERIENCE OUTCOMES ─────────────── -->
+      <div class="section-header">
+        <div class="section-num">Section 05</div>
+        <div class="section-title">Experience Outcomes</div>
+        <div class="section-sub">These questions measure how your current setup translates into real-world treatment during travel.</div>
+      </div>
+
+      <!-- Q41 Upgrades without asking -->
+      <div class="field">
+        <label class="field-label">Do you consistently receive upgrades without checking or asking? <span class="req">*</span></label>
+        <div class="options" data-name="upgrades_without_asking" data-type="radio">
+          <div class="opt" data-value="Yes"><div class="opt-indicator circle"></div><div class="opt-text">Yes</div></div>
+          <div class="opt" data-value="No"><div class="opt-indicator circle"></div><div class="opt-text">No</div></div>
+        </div>
+        <input class="real-input" type="text" name="upgrades_without_asking" required />
+      </div>
+
+      <!-- Q42 Travel disruption -->
+      <div class="field">
+        <label class="field-label">In the past 12 months, have you experienced a missed connection or travel disruption? <span class="req">*</span></label>
+        <div class="options" data-name="travel_disruption" data-type="radio">
+          <div class="opt" data-value="Yes"><div class="opt-indicator circle"></div><div class="opt-text">Yes</div></div>
+          <div class="opt" data-value="No"><div class="opt-indicator circle"></div><div class="opt-text">No</div></div>
+        </div>
+        <input class="real-input" type="text" name="travel_disruption" required />
+      </div>
+
+      <!-- Q43 Issues resolved without escalation -->
+      <div class="field">
+        <label class="field-label">When issues occur, are they resolved without escalation or repeated follow-up? <span class="req">*</span></label>
+        <div class="options" data-name="issues_resolved" data-type="radio">
+          <div class="opt" data-value="Yes"><div class="opt-indicator circle"></div><div class="opt-text">Yes</div></div>
+          <div class="opt" data-value="No"><div class="opt-indicator circle"></div><div class="opt-text">No</div></div>
+        </div>
+        <input class="real-input" type="text" name="issues_resolved" required />
+      </div>
+
+      <!-- SUBMIT -->
+      <div class="submit-section">
+        <p class="submit-note">Once submitted, I'll map where your current setup is breaking and where the system is not selecting you yet. You'll receive a direct breakdown of what's causing the inconsistency and what would need to change to fix it. Not everyone qualifies for further work.</p>
+        <button type="submit" class="btn-submit">Submit Diagnostic Intake</button>
+      </div>
+
+    </form>
+
+    <!-- CONFIRMATION -->
+    <div id="confirmation">
+      <div class="confirm-icon">
+        <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      <h2 class="confirm-headline">Intake <em>received.</em></h2>
+      <p class="confirm-body">Everything you submitted goes directly into the briefing. I'll review your responses in full and be in touch within 48 hours with what I'm seeing — where the setup is breaking, what it's costing you, and what would need to change. This is a private process. Your information stays here.</p>
+      <a href="index.html" class="confirm-back">← Back to quietpremium.com</a>
+    </div>
+
+  </div><!-- /wrap -->
+
+  <script>
+    // ── CUSTOM SELECT INTERACTIONS ─────────────────────────────────
+    document.querySelectorAll('.options[data-name]').forEach(group => {
+      const type = group.dataset.type;
+      const name = group.dataset.name;
+      const max  = group.dataset.max ? parseInt(group.dataset.max) : null;
+      const realInput = document.querySelector(`input[name="${name}"]`);
+
+      group.querySelectorAll('.opt').forEach(opt => {
+        opt.addEventListener('click', () => {
+          const val = opt.dataset.value;
+
+          if (type === 'radio') {
+            group.querySelectorAll('.opt').forEach(o => o.classList.remove('selected'));
+            opt.classList.add('selected');
+            if (realInput) realInput.value = val;
+
+          } else if (type === 'checkbox') {
+            const selected = group.querySelectorAll('.opt.selected');
+            if (opt.classList.contains('selected')) {
+              opt.classList.remove('selected');
+            } else {
+              if (max && selected.length >= max) return;
+              opt.classList.add('selected');
+            }
+            const vals = Array.from(group.querySelectorAll('.opt.selected')).map(o => o.dataset.value);
+            if (realInput) realInput.value = vals.join('; ');
+          }
+        });
+      });
+    });
+
+    // ── FORM SUBMISSION ────────────────────────────────────────────
+    const form = document.getElementById('diagnostic-form');
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      // Validate all required real-inputs (custom selects)
+      const realInputs = form.querySelectorAll('.real-input[required]');
+      let valid = true;
+      realInputs.forEach(inp => {
+        if (!inp.value) {
+          valid = false;
+          // Highlight the parent options group
+          const group = inp.previousElementSibling;
+          if (group) {
+            group.style.outline = '1px solid #B08D57';
+            setTimeout(() => group.style.outline = '', 3000);
+          }
+        }
+      });
+      if (!valid) {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        return;
+      }
+
+      const data = new FormData(form);
+
+      try {
+        const res = await fetch(form.action, {
+          method: 'POST',
+          body: data,
+          headers: { 'Accept': 'application/json' }
+        });
+
+        if (res.ok) {
+          form.style.display = 'none';
+          const conf = document.getElementById('confirmation');
+          conf.classList.add('active');
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        } else {
+          alert('Something went wrong. Please try again or email editor@quietpremium.com directly.');
+        }
+      } catch (err) {
+        alert('Something went wrong. Please try again or email editor@quietpremium.com directly.');
+      }
+    });
+  </script>
+
+</body>
+</html>
