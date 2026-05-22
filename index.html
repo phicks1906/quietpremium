@@ -1,865 +1,771 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
-<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-2R14ZESQ0R"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-  gtag('config', 'G-2R14ZESQ0R');
-</script>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Quiet Premium — Tier 1 Diagnostic</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=DM+Mono:ital,wght@0,300;0,400;1,300&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
-
-<style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-  :root {
-    --black: #0a0a0a;
-    --white: #f5f2ed;
-    --cream: #ede9e2;
-    --gold: #b8975a;
-    --gold-light: #d4b07a;
-    --gray: #6b6560;
-    --gray-light: #9a9390;
-    --rule: #2a2620;
-  }
-
-  html { scroll-behavior: smooth; }
-
-  body {
-    background: var(--black);
-    color: var(--white);
-    font-family: 'Libre Baskerville', Georgia, serif;
-    font-weight: 400;
-    line-height: 1.7;
-    overflow-x: hidden;
-  }
-
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
-    pointer-events: none;
-    z-index: 1000;
-    opacity: 0.4;
-  }
-
-  nav {
-    position: fixed;
-    top: 0; left: 0; right: 0;
-    z-index: 100;
-    padding: 28px 48px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-
-  .nav-logo {
-    font-family: 'DM Mono', monospace;
-    font-size: 11px;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    color: var(--gold);
-    font-weight: 300;
-  }
-
-  .nav-cta {
-    font-family: 'DM Mono', monospace;
-    font-size: 10px;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    color: var(--white);
-    text-decoration: none;
-    border-bottom: 1px solid var(--gold);
-    padding-bottom: 2px;
-    transition: color 0.3s;
-  }
-  .nav-cta:hover { color: var(--gold); }
-
-  .hero {
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-end;
-    padding: 0 48px 80px;
-    position: relative;
-  }
-
-  .hero-eyebrow {
-    font-family: 'DM Mono', monospace;
-    font-size: 10px;
-    letter-spacing: 0.25em;
-    text-transform: uppercase;
-    color: var(--gold);
-    margin-bottom: 32px;
-    opacity: 0;
-    animation: fadeUp 1s ease forwards 0.3s;
-  }
-
-  .hero-headline {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: clamp(52px, 8vw, 110px);
-    font-weight: 300;
-    line-height: 0.95;
-    letter-spacing: -0.02em;
-    max-width: 900px;
-    opacity: 0;
-    animation: fadeUp 1s ease forwards 0.5s;
-  }
-
-  .hero-headline em {
-    font-style: italic;
-    color: var(--gold-light);
-  }
-
-  .hero-sub {
-    margin-top: 40px;
-    font-size: 15px;
-    color: var(--gray-light);
-    max-width: 460px;
-    line-height: 1.8;
-    opacity: 0;
-    animation: fadeUp 1s ease forwards 0.8s;
-  }
-
-  .hero-value {
-    margin-top: 24px;
-    font-family: 'DM Mono', monospace;
-    font-size: 11px;
-    letter-spacing: 0.1em;
-    color: var(--gold);
-    max-width: 460px;
-    line-height: 1.8;
-    opacity: 0;
-    animation: fadeUp 1s ease forwards 1.0s;
-  }
-
-  .hero-scroll {
-    position: absolute;
-    bottom: 40px;
-    right: 48px;
-    font-family: 'DM Mono', monospace;
-    font-size: 9px;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    color: var(--gray);
-    writing-mode: vertical-rl;
-    opacity: 0;
-    animation: fadeUp 1s ease forwards 1.2s;
-  }
-
-  .section-rule {
-    width: 100%;
-    height: 1px;
-    background: var(--rule);
-    margin: 0 48px;
-    width: calc(100% - 96px);
-  }
-
-  section {
-    padding: 100px 48px;
-  }
-
-  .section-label {
-    font-family: 'DM Mono', monospace;
-    font-size: 9px;
-    letter-spacing: 0.3em;
-    text-transform: uppercase;
-    color: var(--gold);
-    margin-bottom: 60px;
-    display: flex;
-    align-items: center;
-    gap: 16px;
-  }
-  .section-label::after {
-    content: '';
-    display: block;
-    height: 1px;
-    width: 40px;
-    background: var(--gold);
-    opacity: 0.4;
-  }
-
-  .reframe { background: var(--black); }
-
-  .reframe-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 2px;
-    background: var(--rule);
-  }
-
-  .reframe-cell {
-    background: var(--black);
-    padding: 56px 48px;
-  }
-
-  .reframe-cell-label {
-    font-family: 'DM Mono', monospace;
-    font-size: 9px;
-    letter-spacing: 0.25em;
-    text-transform: uppercase;
-    color: var(--gray);
-    margin-bottom: 24px;
-  }
-
-  .reframe-cell-text {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: clamp(22px, 2.5vw, 32px);
-    font-weight: 300;
-    line-height: 1.4;
-    color: var(--white);
-  }
-
-  .reframe-cell.after .reframe-cell-text { color: var(--gold-light); }
-
-  .gap-index-section {
-    background: #0e0c09;
-    border-top: 1px solid var(--rule);
-    border-bottom: 1px solid var(--rule);
-    padding: 80px 48px;
-  }
-
-  .gap-index-inner {
-    max-width: 600px;
-  }
-
-  .gap-index-title {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: clamp(32px, 4vw, 52px);
-    font-weight: 300;
-    color: var(--white);
-    margin-bottom: 16px;
-    line-height: 1.2;
-  }
-
-  .gap-index-body {
-    font-size: 14px;
-    color: var(--gray-light);
-    line-height: 1.9;
-    margin-bottom: 32px;
-  }
-
-  .briefing {
-    background: #0e0c09;
-    border-top: 1px solid var(--rule);
-    border-bottom: 1px solid var(--rule);
-  }
-
-  .briefing-intro {
-    font-size: 15px;
-    color: var(--gray-light);
-    max-width: 520px;
-    margin-bottom: 64px;
-    line-height: 1.9;
-  }
-
-  .briefing-doc {
-    border: 1px solid #2a2620;
-    max-width: 680px;
-    background: #0a0906;
-  }
-
-  .briefing-doc-header {
-    padding: 28px 40px;
-    border-bottom: 1px solid #1e1c18;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-
-  .briefing-doc-title {
-    font-family: 'DM Mono', monospace;
-    font-size: 10px;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    color: var(--gold);
-  }
-
-  .briefing-doc-tag {
-    font-family: 'DM Mono', monospace;
-    font-size: 9px;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    color: var(--gray);
-    border: 1px solid var(--rule);
-    padding: 4px 10px;
-  }
-
-  .briefing-doc-body { padding: 40px; }
-
-  .briefing-client-line {
-    font-family: 'DM Mono', monospace;
-    font-size: 11px;
-    color: var(--gray);
-    margin-bottom: 32px;
-    letter-spacing: 0.05em;
-  }
-
-  .briefing-snapshot {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 19px;
-    font-style: italic;
-    color: var(--gray-light);
-    line-height: 1.8;
-    margin-bottom: 40px;
-    padding-bottom: 40px;
-    border-bottom: 1px solid #1e1c18;
-  }
-
-  .briefing-cols {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 40px;
-    margin-bottom: 40px;
-    padding-bottom: 40px;
-    border-bottom: 1px solid #1e1c18;
-  }
-
-  .briefing-col-label {
-    font-family: 'DM Mono', monospace;
-    font-size: 9px;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    color: var(--gold);
-    margin-bottom: 20px;
-  }
-
-  .briefing-col ul { list-style: none; }
-
-  .briefing-col ul li {
-    font-size: 13px;
-    color: var(--gray-light);
-    line-height: 2;
-    padding-left: 16px;
-    position: relative;
-  }
-
-  .briefing-col ul li::before {
-    content: '—';
-    position: absolute;
-    left: 0;
-    color: var(--rule);
-    font-size: 11px;
-  }
-
-  .briefing-outcome {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 17px;
-    line-height: 2;
-    color: var(--white);
-  }
-
-  .briefing-outcome p { margin-bottom: 4px; }
-
-  .briefing-note {
-    margin-top: 40px;
-    padding-top: 40px;
-    border-top: 1px solid #1e1c18;
-    font-family: 'DM Mono', monospace;
-    font-size: 10px;
-    color: var(--gray);
-    letter-spacing: 0.05em;
-    line-height: 1.8;
-  }
-
-  .how { background: var(--black); }
-
-  .how-steps {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 2px;
-    background: var(--rule);
-  }
-
-  .how-step {
-    background: var(--black);
-    padding: 48px 40px;
-  }
-
-  .how-step-num {
-    font-family: 'DM Mono', monospace;
-    font-size: 9px;
-    letter-spacing: 0.2em;
-    color: var(--gold);
-    margin-bottom: 24px;
-  }
-
-  .how-step-title {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 26px;
-    font-weight: 300;
-    color: var(--white);
-    margin-bottom: 16px;
-    line-height: 1.2;
-  }
-
-  .how-step-body {
-    font-size: 13px;
-    color: var(--gray-light);
-    line-height: 1.9;
-  }
-
-  .pricing {
-    background: #0e0c09;
-    border-top: 1px solid var(--rule);
-  }
-
-  .pricing-block { max-width: 600px; }
-
-  .pricing-amount {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: clamp(56px, 7vw, 88px);
-    font-weight: 300;
-    color: var(--white);
-    line-height: 1;
-    margin-bottom: 8px;
-  }
-
-  .pricing-amount span {
-    font-size: 0.4em;
-    color: var(--gold);
-    vertical-align: super;
-    font-family: 'DM Mono', monospace;
-    letter-spacing: 0.1em;
-  }
-
-  .pricing-label {
-    font-family: 'DM Mono', monospace;
-    font-size: 10px;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    color: var(--gray);
-    margin-bottom: 48px;
-  }
-
-  .pricing-includes { margin-bottom: 56px; }
-
-  .pricing-includes-label {
-    font-family: 'DM Mono', monospace;
-    font-size: 9px;
-    letter-spacing: 0.25em;
-    text-transform: uppercase;
-    color: var(--gold);
-    margin-bottom: 24px;
-  }
-
-  .pricing-includes ul { list-style: none; }
-
-  .pricing-includes ul li {
-    font-size: 14px;
-    color: var(--gray-light);
-    line-height: 2.2;
-    padding-left: 20px;
-    position: relative;
-  }
-
-  .pricing-includes ul li::before {
-    content: '→';
-    position: absolute;
-    left: 0;
-    color: var(--gold);
-    font-size: 12px;
-  }
-
-  .pricing-note {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 16px;
-    font-style: italic;
-    color: var(--gray);
-    margin-bottom: 24px;
-    line-height: 1.7;
-  }
-
-  .pricing-value-hook {
-    font-family: 'DM Mono', monospace;
-    font-size: 11px;
-    letter-spacing: 0.08em;
-    color: var(--gold);
-    margin-bottom: 40px;
-    line-height: 1.8;
-    padding: 20px 24px;
-    border: 1px solid var(--rule);
-    background: rgba(184, 151, 90, 0.05);
-  }
-
-  .cta-button {
-    display: inline-block;
-    background: var(--gold);
-    color: var(--black);
-    text-decoration: none;
-    font-family: 'DM Mono', monospace;
-    font-size: 11px;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    padding: 20px 48px;
-    transition: background 0.3s, transform 0.2s;
-    font-weight: 400;
-  }
-
-  .cta-button:hover {
-    background: var(--gold-light);
-    transform: translateY(-1px);
-  }
-
-  .cta-secondary {
-    display: block;
-    margin-top: 20px;
-    font-family: 'DM Mono', monospace;
-    font-size: 9px;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    color: var(--gray);
-  }
-
-  .qualifier {
-    background: var(--black);
-    border-top: 1px solid var(--rule);
-  }
-
-  .qualifier-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 80px;
-    align-items: start;
-  }
-
-  .qualifier-heading {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: clamp(32px, 4vw, 52px);
-    font-weight: 300;
-    line-height: 1.2;
-    color: var(--white);
-    margin-bottom: 32px;
-  }
-
-  .qualifier-heading em {
-    font-style: italic;
-    color: var(--gold-light);
-  }
-
-  .qualifier-body {
-    font-size: 14px;
-    color: var(--gray-light);
-    line-height: 1.9;
-  }
-
-  .qualifier-list { list-style: none; margin-top: 8px; }
-
-  .qualifier-list li {
-    font-size: 14px;
-    color: var(--gray-light);
-    line-height: 2.2;
-    padding-left: 20px;
-    position: relative;
-    border-bottom: 1px solid #1a1816;
-    padding-bottom: 8px;
-    margin-bottom: 8px;
-  }
-
-  .qualifier-list li::before {
-    content: '✓';
-    position: absolute;
-    left: 0;
-    color: var(--gold);
-    font-size: 11px;
-  }
-
-  .closing {
-    background: #0a0906;
-    border-top: 1px solid var(--rule);
-    text-align: center;
-    padding: 120px 48px;
-  }
-
-  .closing-quote {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: clamp(28px, 4vw, 52px);
-    font-weight: 300;
-    font-style: italic;
-    color: var(--white);
-    line-height: 1.4;
-    max-width: 700px;
-    margin: 0 auto 16px;
-  }
-
-  .closing-quote-sub {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: clamp(22px, 3vw, 38px);
-    font-weight: 300;
-    color: var(--gold-light);
-    margin-bottom: 64px;
-  }
-
-  footer {
-    padding: 32px 48px;
-    border-top: 1px solid var(--rule);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-
-  .footer-logo {
-    font-family: 'DM Mono', monospace;
-    font-size: 10px;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    color: var(--gray);
-  }
-
-  .footer-note {
-    font-family: 'DM Mono', monospace;
-    font-size: 9px;
-    letter-spacing: 0.1em;
-    color: #3a3630;
-  }
-
-  .sample-screenshots {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 32px;
-    max-width: 1100px;
-  }
-
-  .sample-screenshot-item {}
-
-  .sample-screenshot-label {
-    font-family: 'DM Mono', monospace;
-    font-size: 9px;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    color: var(--gold);
-    margin-bottom: 12px;
-  }
-
-  .sample-img {
-    width: 100%;
-    display: block;
-    border: 1px solid var(--rule);
-  }
-
-  .sample-screenshot-caption {
-    margin-top: 12px;
-    font-size: 12px;
-    color: var(--gray-light);
-    line-height: 1.7;
-  }
-
-  @media (max-width: 768px) {
-    .sample-screenshots { grid-template-columns: 1fr; gap: 40px; }
-  }
-
-  @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(24px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-
-  .reveal {
-    opacity: 0;
-    transform: translateY(20px);
-    transition: opacity 0.8s ease, transform 0.8s ease;
-  }
-  .reveal.visible {
-    opacity: 1;
-    transform: translateY(0);
-  }
-
-  @media (max-width: 768px) {
-    nav { padding: 24px 24px; }
-    .hero { min-height: auto !important; padding-top: 100px !important; padding-bottom: 48px !important; justify-content: flex-start !important; }
-    .hero-mobile-cta { display: block !important; margin-top: 32px; }
-    .hero-scroll { display: none; }
-    .hero { padding: 0 24px 64px; }
-    section { padding: 72px 24px; }
-    .gap-index-section { padding: 60px 24px; }
-    .section-rule { margin: 0 24px; width: calc(100% - 48px); }
-    .reframe-grid { grid-template-columns: 1fr; }
-    .reframe-cell { padding: 40px 24px; }
-    .how-steps { grid-template-columns: 1fr; }
-    .briefing-cols { grid-template-columns: 1fr; gap: 32px; }
-    .briefing-doc-body { padding: 28px 24px; }
-    .qualifier-grid { grid-template-columns: 1fr; gap: 48px; }
-    footer { flex-direction: column; gap: 12px; text-align: center; }
-    .closing { padding: 80px 24px; }
-  }
-</style>
-
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Quiet Premium</title>
+  <meta name="description" content="Same spend. Different outcome. Quiet Premium restructures how your existing income moves through airlines, hotels, and card networks — so the premium life your budget already funds finally arrives." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=DM+Mono:wght@300;400;500&family=Inter:wght@300;400;500&display=swap" rel="stylesheet" />
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --black:   #0A0A0A;
+      --gold:    #B08D57;
+      --gold-lt: #C9A96E;
+      --gold-dk: #8B6D3F;
+      --white:   #F5F2EC;
+      --grey:    #9A9590;
+      --grey-dk: #3A3530;
+      --serif:   'Cormorant Garamond', Georgia, serif;
+      --mono:    'DM Mono', monospace;
+      --sans:    'Inter', sans-serif;
+    }
+
+    html {
+      scroll-behavior: smooth;
+      background-color: #0A0A0A;
+    }
+
+    body {
+      background-color: #0A0A0A;
+      background: #0A0A0A;
+      color: #F5F2EC;
+      font-family: var(--sans);
+      font-weight: 300;
+      font-size: 16px;
+      line-height: 1.7;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── UTILITIES ───────────────────────────────────── */
+    .container { max-width: 1100px; margin: 0 auto; padding: 0 40px; }
+    .mono      { font-family: var(--mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--gold); }
+    .divider   { width: 40px; height: 1px; background: var(--gold-dk); margin: 0 auto; }
+    .divider--left { margin: 0; }
+
+    /* ── NAV ─────────────────────────────────────────── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      padding: 24px 40px;
+      display: flex; align-items: center; justify-content: space-between;
+      background: linear-gradient(to bottom, rgba(10,10,10,0.95), transparent);
+    }
+    .nav-logo {
+      display: flex; align-items: center; gap: 12px;
+      text-decoration: none;
+    }
+    .nav-logo-badge {
+      width: 36px; height: 36px; border-radius: 50%;
+      border: 1px solid var(--gold);
+      display: flex; align-items: center; justify-content: center;
+      flex-direction: column; gap: 2px;
+    }
+    .nav-logo-badge span {
+      font-family: var(--mono); font-size: 7px; letter-spacing: 0.15em;
+      color: var(--gold); line-height: 1;
+    }
+    .nav-logo-badge .divider-line {
+      width: 18px; height: 1px; background: var(--gold-dk);
+    }
+    .nav-cta {
+      font-family: var(--mono); font-size: 10px; letter-spacing: 0.14em;
+      color: var(--gold); text-decoration: none; text-transform: uppercase;
+      border: 1px solid var(--gold-dk); padding: 8px 18px;
+      transition: all 0.3s ease;
+    }
+    .nav-cta:hover { border-color: var(--gold); background: rgba(176,141,87,0.08); }
+
+    /* ── HERO ────────────────────────────────────────── */
+    #hero {
+      min-height: 100vh;
+      display: flex; align-items: center;
+      padding: 120px 0 80px;
+      position: relative; overflow: hidden;
+    }
+    #hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse 60% 50% at 70% 50%, rgba(176,141,87,0.05) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .hero-eyebrow {
+      font-family: var(--mono); font-size: 10px; letter-spacing: 0.2em;
+      color: var(--gold); text-transform: uppercase; margin-bottom: 32px;
+    }
+    .hero-headline {
+      font-family: var(--serif); font-size: clamp(48px, 6vw, 86px);
+      font-weight: 300; line-height: 1.08; letter-spacing: -0.01em;
+      margin-bottom: 20px; max-width: 800px;
+    }
+    .hero-headline em { font-style: italic; color: var(--gold); }
+    .hero-subhead {
+      font-size: 18px; font-weight: 300; color: var(--grey);
+      max-width: 520px; line-height: 1.75; margin-bottom: 52px;
+    }
+    .hero-actions { display: flex; align-items: center; gap: 32px; flex-wrap: wrap; }
+    .btn-primary {
+      background: var(--gold); color: var(--black);
+      font-family: var(--mono); font-size: 11px; letter-spacing: 0.14em;
+      text-transform: uppercase; text-decoration: none;
+      padding: 16px 32px; display: inline-block;
+      transition: background 0.3s ease;
+    }
+    .btn-primary:hover { background: var(--gold-lt); }
+    .hero-secondary {
+      font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em;
+      color: var(--grey); text-transform: uppercase;
+    }
+    .hero-rule {
+      position: absolute; bottom: 0; left: 40px; right: 40px;
+      height: 1px; background: var(--grey-dk);
+    }
+
+    /* ── SECTION BASE ────────────────────────────────── */
+    section { padding: 120px 0; }
+    .section-label {
+      font-family: var(--mono); font-size: 10px; letter-spacing: 0.18em;
+      color: var(--gold); text-transform: uppercase; margin-bottom: 48px;
+    }
+    .section-label span { color: var(--grey-dk); margin-right: 12px; }
+
+    /* ── THE GAP ─────────────────────────────────────── */
+    #gap { border-top: 1px solid var(--grey-dk); }
+    .gap-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center;
+    }
+    .gap-headline {
+      font-family: var(--serif); font-size: clamp(36px, 4vw, 54px);
+      font-weight: 300; line-height: 1.15; margin-bottom: 28px;
+    }
+    .gap-headline em { font-style: italic; color: var(--gold); }
+    .gap-body { color: var(--grey); font-size: 15px; line-height: 1.8; margin-bottom: 36px; }
+    .gap-stat-block {
+      border-left: 1px solid var(--gold-dk); padding-left: 24px; margin-top: 40px;
+    }
+    .gap-stat-number {
+      font-family: var(--serif); font-size: 52px; font-weight: 300;
+      color: var(--gold); line-height: 1;
+    }
+    .gap-stat-label {
+      font-family: var(--mono); font-size: 10px; letter-spacing: 0.14em;
+      color: var(--grey); text-transform: uppercase; margin-top: 8px;
+    }
+    .gap-right { display: flex; flex-direction: column; gap: 24px; }
+    .gap-card {
+      border: 1px solid var(--grey-dk); padding: 28px 32px;
+      transition: border-color 0.3s ease;
+    }
+    .gap-card:hover { border-color: var(--gold-dk); }
+    .gap-card-label {
+      font-family: var(--mono); font-size: 9px; letter-spacing: 0.16em;
+      text-transform: uppercase; color: var(--gold); margin-bottom: 10px;
+    }
+    .gap-card-text { font-size: 14px; color: var(--grey); line-height: 1.7; }
+
+    /* ── HOW IT WORKS ────────────────────────────────── */
+    #how { border-top: 1px solid var(--grey-dk); background: #0D0D0D; }
+    .how-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 48px;
+    }
+    .how-step { padding: 40px 0; border-top: 1px solid var(--grey-dk); }
+    .how-step-num {
+      font-family: var(--mono); font-size: 10px; letter-spacing: 0.16em;
+      color: var(--gold-dk); text-transform: uppercase; margin-bottom: 20px;
+    }
+    .how-step-title {
+      font-family: var(--serif); font-size: 26px; font-weight: 300;
+      line-height: 1.2; margin-bottom: 16px;
+    }
+    .how-step-body { font-size: 14px; color: var(--grey); line-height: 1.8; }
+
+    /* ── OUTCOMES ────────────────────────────────────── */
+    #outcomes { border-top: 1px solid var(--grey-dk); }
+    .outcomes-intro {
+      max-width: 600px; margin-bottom: 80px;
+    }
+    .outcomes-headline {
+      font-family: var(--serif); font-size: clamp(32px, 3.5vw, 48px);
+      font-weight: 300; line-height: 1.15; margin-bottom: 20px;
+    }
+    .outcomes-sub { font-size: 15px; color: var(--grey); line-height: 1.8; }
+    .outcomes-grid {
+      display: grid; grid-template-columns: repeat(2, 1fr); gap: 2px;
+    }
+    .outcome-item {
+      padding: 36px 40px; border: 1px solid var(--grey-dk);
+      display: flex; gap: 20px; align-items: flex-start;
+      transition: border-color 0.3s ease;
+    }
+    .outcome-item:hover { border-color: var(--gold-dk); }
+    .outcome-icon {
+      width: 32px; height: 32px; border: 1px solid var(--gold-dk);
+      border-radius: 50%; display: flex; align-items: center;
+      justify-content: center; flex-shrink: 0; margin-top: 2px;
+    }
+    .outcome-icon svg { width: 14px; height: 14px; stroke: var(--gold); fill: none; stroke-width: 1.5; }
+    .outcome-text h4 {
+      font-size: 15px; font-weight: 400; margin-bottom: 6px; color: var(--white);
+    }
+    .outcome-text p { font-size: 13px; color: var(--grey); line-height: 1.7; }
+
+    /* ── SAMPLE OUTPUT ───────────────────────────────── */
+    #sample { border-top: 1px solid var(--grey-dk); background: #0D0D0D; }
+    .sample-intro { max-width: 560px; margin-bottom: 64px; }
+    .sample-headline {
+      font-family: var(--serif); font-size: clamp(30px, 3vw, 44px);
+      font-weight: 300; line-height: 1.2; margin-bottom: 16px;
+    }
+    .sample-sub { font-size: 14px; color: var(--grey); line-height: 1.8; }
+    .sample-images {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 24px;
+    }
+    .sample-image-wrap {
+      position: relative; overflow: hidden;
+      border: 1px solid var(--grey-dk);
+    }
+    .sample-image-wrap img {
+      width: 100%; height: auto; display: block;
+      transition: transform 0.6s ease;
+    }
+    .sample-image-wrap:hover img { transform: scale(1.02); }
+    .sample-image-caption {
+      padding: 14px 20px;
+      font-family: var(--mono); font-size: 9px; letter-spacing: 0.14em;
+      color: var(--grey); text-transform: uppercase;
+      border-top: 1px solid var(--grey-dk);
+    }
+    .sample-caveat {
+      margin-top: 32px; font-family: var(--mono); font-size: 10px;
+      letter-spacing: 0.1em; color: var(--grey-dk); text-align: center;
+    }
+
+    /* ── WHO THIS IS FOR ─────────────────────────────── */
+    #who { border-top: 1px solid var(--grey-dk); }
+    .who-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; }
+    .who-headline {
+      font-family: var(--serif); font-size: clamp(32px, 3.5vw, 48px);
+      font-weight: 300; line-height: 1.15; margin-bottom: 24px;
+    }
+    .who-headline em { font-style: italic; color: var(--gold); }
+    .who-body { font-size: 15px; color: var(--grey); line-height: 1.85; margin-bottom: 40px; }
+    .who-list { list-style: none; display: flex; flex-direction: column; gap: 16px; }
+    .who-list li {
+      display: flex; gap: 16px; align-items: flex-start;
+      font-size: 14px; color: var(--grey); line-height: 1.65;
+    }
+    .who-list li::before {
+      content: '—'; color: var(--gold-dk); font-family: var(--mono);
+      flex-shrink: 0; margin-top: 1px;
+    }
+    .who-not { margin-top: 48px; padding-top: 40px; border-top: 1px solid var(--grey-dk); }
+    .who-not-label {
+      font-family: var(--mono); font-size: 9px; letter-spacing: 0.16em;
+      text-transform: uppercase; color: var(--grey-dk); margin-bottom: 16px;
+    }
+    .who-not-list { list-style: none; display: flex; flex-direction: column; gap: 12px; }
+    .who-not-list li {
+      font-size: 13px; color: var(--grey-dk); display: flex; gap: 12px;
+    }
+    .who-not-list li::before { content: '×'; color: var(--grey-dk); flex-shrink: 0; }
+
+    /* ── PRICING ─────────────────────────────────────── */
+    #pricing { border-top: 1px solid var(--grey-dk); background: #0D0D0D; }
+    .pricing-intro { text-align: center; max-width: 560px; margin: 0 auto 80px; }
+    .pricing-intro-headline {
+      font-family: var(--serif); font-size: clamp(32px, 3.5vw, 48px);
+      font-weight: 300; line-height: 1.15; margin-bottom: 16px;
+    }
+    .pricing-intro-sub { font-size: 15px; color: var(--grey); line-height: 1.8; }
+    .pricing-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; align-items: start; }
+
+    /* Tier 1 card */
+    .pricing-card {
+      border: 1px solid var(--grey-dk); padding: 48px;
+      display: flex; flex-direction: column;
+    }
+    .pricing-card--featured { border-color: var(--gold-dk); }
+    .pricing-tier-label {
+      font-family: var(--mono); font-size: 9px; letter-spacing: 0.18em;
+      text-transform: uppercase; color: var(--gold); margin-bottom: 32px;
+    }
+
+    /* ROI as hero */
+    .pricing-roi {
+      font-family: var(--serif); font-size: clamp(52px, 6vw, 80px);
+      font-weight: 300; color: var(--gold); line-height: 1; margin-bottom: 6px;
+    }
+    .pricing-roi-label {
+      font-family: var(--mono); font-size: 9px; letter-spacing: 0.14em;
+      text-transform: uppercase; color: var(--grey); margin-bottom: 28px;
+    }
+    .pricing-price-row {
+      display: flex; align-items: baseline; gap: 10px; margin-bottom: 8px;
+    }
+    .pricing-price {
+      font-family: var(--serif); font-size: 28px; font-weight: 300; color: var(--white);
+    }
+    .pricing-price-label {
+      font-family: var(--mono); font-size: 9px; letter-spacing: 0.12em;
+      text-transform: uppercase; color: var(--grey);
+    }
+    .pricing-divider { height: 1px; background: var(--grey-dk); margin: 28px 0; }
+    .pricing-title {
+      font-family: var(--serif); font-size: 22px; font-weight: 300; margin-bottom: 8px;
+    }
+    .pricing-desc { font-size: 13px; color: var(--grey); line-height: 1.75; margin-bottom: 32px; }
+    .pricing-includes {
+      font-family: var(--mono); font-size: 9px; letter-spacing: 0.14em;
+      text-transform: uppercase; color: var(--gold-dk); margin-bottom: 16px;
+    }
+    .pricing-features { list-style: none; display: flex; flex-direction: column; gap: 12px; margin-bottom: 40px; }
+    .pricing-features li {
+      font-size: 13px; color: var(--grey); display: flex; gap: 14px; line-height: 1.6;
+    }
+    .pricing-features li::before { content: '→'; color: var(--gold-dk); flex-shrink: 0; }
+    .pricing-cta {
+      display: inline-block; text-align: center;
+      background: var(--gold); color: var(--black);
+      font-family: var(--mono); font-size: 10px; letter-spacing: 0.14em;
+      text-transform: uppercase; text-decoration: none;
+      padding: 14px 28px; transition: background 0.3s ease; margin-top: auto;
+    }
+    .pricing-cta:hover { background: var(--gold-lt); }
+    .pricing-cta--outline {
+      background: transparent; color: var(--gold);
+      border: 1px solid var(--gold-dk);
+    }
+    .pricing-cta--outline:hover { background: rgba(176,141,87,0.08); border-color: var(--gold); }
+
+    /* Tier 2 card */
+    .pricing-card--tier2 .pricing-roi { font-size: clamp(40px, 4.5vw, 60px); }
+
+    /* ── GAP INDEX CTA ───────────────────────────────── */
+    #gap-index {
+      border-top: 1px solid var(--grey-dk);
+      text-align: center; padding: 100px 0;
+      position: relative; overflow: hidden;
+    }
+    #gap-index::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse 50% 70% at 50% 50%, rgba(176,141,87,0.04) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .gap-index-eyebrow {
+      font-family: var(--mono); font-size: 10px; letter-spacing: 0.2em;
+      text-transform: uppercase; color: var(--gold); margin-bottom: 24px;
+    }
+    .gap-index-headline {
+      font-family: var(--serif); font-size: clamp(36px, 4.5vw, 60px);
+      font-weight: 300; line-height: 1.1; margin-bottom: 20px;
+    }
+    .gap-index-headline em { font-style: italic; color: var(--gold); }
+    .gap-index-sub {
+      font-size: 15px; color: var(--grey); max-width: 480px;
+      margin: 0 auto 48px; line-height: 1.8;
+    }
+    .gap-index-meta {
+      font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em;
+      color: var(--grey-dk); text-transform: uppercase; margin-top: 20px;
+    }
+
+    /* ── FOOTER ──────────────────────────────────────── */
+    footer {
+      border-top: 1px solid var(--grey-dk); padding: 48px 0;
+    }
+    .footer-inner {
+      display: flex; align-items: center; justify-content: space-between;
+      flex-wrap: wrap; gap: 24px;
+    }
+    .footer-left {
+      font-family: var(--mono); font-size: 9px; letter-spacing: 0.14em;
+      text-transform: uppercase; color: var(--grey-dk);
+    }
+    .footer-tagline {
+      font-family: var(--serif); font-style: italic;
+      font-size: 16px; color: var(--gold-dk);
+    }
+    .footer-right {
+      font-family: var(--mono); font-size: 9px; letter-spacing: 0.12em;
+      text-transform: uppercase; color: var(--grey-dk);
+    }
+    .footer-right a { color: var(--grey-dk); text-decoration: none; }
+    .footer-right a:hover { color: var(--gold); }
+
+    /* ── RESPONSIVE ──────────────────────────────────── */
+    @media (max-width: 900px) {
+      .container { padding: 0 24px; }
+      nav { padding: 20px 24px; }
+      .hero-rule { left: 24px; right: 24px; }
+      .gap-grid, .who-grid, .how-grid,
+      .outcomes-grid, .pricing-grid, .sample-images {
+        grid-template-columns: 1fr;
+        gap: 40px;
+      }
+      .how-grid { gap: 0; }
+      section { padding: 80px 0; }
+      .pricing-card { padding: 36px 28px; }
+    }
+
+    /* ── SCROLL FADE IN ──────────────────────────────── */
+    .fade-in {
+      opacity: 0; transform: translateY(24px);
+      transition: opacity 0.7s ease, transform 0.7s ease;
+    }
+    .fade-in.visible { opacity: 1; transform: translateY(0); }
+  </style>
 </head>
 <body>
 
-<nav>
-  <div class="nav-logo">Quiet Premium</div>
-  <a href="https://quietpremium.com/gap-index" class="nav-cta">Take The Gap Index →</a>
-</nav>
+  <!-- NAV -->
+  <nav>
+    <a href="#" class="nav-logo">
+      <div class="nav-logo-badge">
+        <span>QUIET</span>
+        <div class="divider-line"></div>
+        <span>PREM</span>
+      </div>
+    </a>
+    <a href="gap-index.html" class="nav-cta">Take The Gap Index</a>
+  </nav>
 
-<section class="hero">
-  <div class="hero-eyebrow">Tier 1 Diagnostic</div>
-  <h1 class="hero-headline">
-    You were already<br>
-    <em>paying for it.</em>
-  </h1>
-  <p class="hero-sub">
-    Most high earners are funding a premium travel experience they never actually receive. The spend capacity is there. The routing isn't.
-  </p>
-  <p class="hero-value">Most clients identify between $8,000 and $14,000 in annual value once the architecture is correct. The diagnostic costs $1,500.</p>
-  <a href="https://quietpremium.com/gap-index" class="cta-button hero-mobile-cta" style="display:none; margin-top:32px;">Take The Gap Index →</a>
-  <div class="hero-scroll">Scroll</div>
-</section>
-
-<div class="section-rule"></div>
-
-<section class="reframe">
-  <div class="section-label">The gap</div>
-  <div class="reframe-grid">
-    <div class="reframe-cell reveal">
-      <div class="reframe-cell-label">What most people do</div>
-      <div class="reframe-cell-text">Spread spend across 4–5 cards. Pay cash for things that could be earning. Distribute it without a system. Pay retail for upgrades. Assume premium costs more than it does.</div>
-    </div>
-    <div class="reframe-cell after reveal">
-      <div class="reframe-cell-label">What Quiet Premium corrects</div>
-      <div class="reframe-cell-text">Same spend capacity. Concentrated correctly. Status builds faster. Travel upgrades itself. The savings migrate everywhere else.</div>
-    </div>
-  </div>
-</section>
-
-<div class="section-rule"></div>
-
-<div class="gap-index-section reveal">
-  <div class="gap-index-inner">
-    <div class="section-label">The Gap Index</div>
-    <h2 class="gap-index-title">Not sure if your setup has a problem worth fixing?</h2>
-    <p class="gap-index-body">The Gap Index is a six-question assessment that takes two minutes. It tells you whether your current card structure, spend routing, and travel behavior have a meaningful gap — and what that gap is likely costing you annually. No email required to see your result.</p>
-    <a href="https://quietpremium.com/gap-index" class="cta-button">Take The Gap Index →</a>
-  </div>
-</div>
-
-<div class="section-rule"></div>
-
-<section class="briefing">
-  <div class="section-label">Sample output</div>
-  <p class="briefing-intro reveal">
-    This is what a completed Diagnostic produces. Twelve pages. Private. Specific to your setup. Every gap identified, quantified, and mapped to a correction.
-  </p>
-
-  <div class="sample-screenshots reveal">
-    <div class="sample-screenshot-item">
-      <div class="sample-screenshot-label">Experience Gap — Current vs. Projected</div>
-      <img src="website_screenshot_1.png" alt="Quiet Premium Diagnostic — Experience Gap Analysis" class="sample-img">
-      <div class="sample-screenshot-caption">Every item on the left is a correctable problem. Every item on the right is what the architecture produces instead.</div>
-    </div>
-    <div class="sample-screenshot-item">
-      <div class="sample-screenshot-label">Spend Distribution — Where the Leakage Is</div>
-      <img src="website_screenshot_2.png" alt="Quiet Premium Diagnostic — Spend Distribution Analysis" class="sample-img">
-      <div class="sample-screenshot-caption">58% of spend misaligned. $14,200–$18,400 in estimated annual premium leakage. The diagnostic shows exactly where it's going and what correcting it produces.</div>
-    </div>
-  </div>
-</section>
-
-<div class="section-rule"></div>
-
-<section class="how">
-  <div class="section-label">How it works</div>
-  <div class="how-steps">
-    <div class="how-step reveal">
-      <div class="how-step-num">01</div>
-      <div class="how-step-title">Take The Gap Index</div>
-      <div class="how-step-body">Six questions. Two minutes. It tells you whether your setup has a gap worth addressing and what it is likely costing you annually. If it does, you move to the full diagnostic intake.</div>
-    </div>
-    <div class="how-step reveal">
-      <div class="how-step-num">02</div>
-      <div class="how-step-title">The gap gets mapped</div>
-      <div class="how-step-body">Your current setup is analyzed against your spend capacity and travel patterns. Where points are leaking. Where status is being missed. Where the system isn't recognizing you at all. Most clients find between $8,000 and $14,000 in unrealized annual value. The briefing tells you exactly where yours is.</div>
-    </div>
-    <div class="how-step reveal">
-      <div class="how-step-num">03</div>
-      <div class="how-step-title">You receive the briefing</div>
-      <div class="how-step-body">A private document delivered within 48 hours. Specific to your setup. Direct about what needs to change. Not everyone qualifies for further work.</div>
-    </div>
-  </div>
-</section>
-
-<div class="section-rule"></div>
-
-<section class="pricing">
-  <div class="section-label">The diagnostic</div>
-  <div class="pricing-block reveal">
-    <div class="pricing-amount"><span>$</span>1,500</div>
-    <div class="pricing-label">One-time &nbsp;·&nbsp; Delivered within 48 hours</div>
-
-    <div class="pricing-includes">
-      <div class="pricing-includes-label">What's included</div>
-      <ul>
-        <li>Full intake review of your current card portfolio and spend capacity</li>
-        <li>Routing gap analysis — where points and status are leaking</li>
-        <li>Dollar estimate of unrealized value over the past 12 months</li>
-        <li>Written private briefing with specific corrections</li>
-        <li>Qualification assessment for Implementation</li>
-      </ul>
-    </div>
-
-    <p class="pricing-note">"If the spend capacity is already there but the experience still isn't — that's the gap."</p>
-
-    <div class="pricing-value-hook">Most clients identify $8,000–$14,000 in annual value. The diagnostic costs $1,500. The gap does the rest of the math.</div>
-
-    <a href="https://quietpremium.com/gap-index" class="cta-button">Take The Gap Index →</a>
-    <span class="cta-secondary">Two minutes · No email required to see your result</span>
-  </div>
-</section>
-
-<div class="section-rule"></div>
-
-<section class="qualifier">
-  <div class="section-label">Who this is for</div>
-  <div class="qualifier-grid">
-    <div class="reveal">
-      <h2 class="qualifier-heading">This works if the<br><em>spend capacity is already there.</em></h2>
-      <p class="qualifier-body">Not every submission moves forward.<br><br>
-        Quiet Premium is not optimization for its own sake. It only produces meaningful outcomes when the underlying spend capacity and travel frequency can support real status and redemption volume. If it can't, that gets said directly.
+  <!-- HERO -->
+  <section id="hero">
+    <div class="container">
+      <p class="hero-eyebrow">Quiet Premium · Private Lifestyle Advisory</p>
+      <h1 class="hero-headline">
+        Same spend.<br><em>Different outcome.</em>
+      </h1>
+      <p class="hero-subhead">
+        Most high earners are already spending enough for a materially better travel experience. The money is there. The infrastructure underneath it is wrong.
       </p>
+      <div class="hero-actions">
+        <a href="gap-index.html" class="btn-primary">Take The Gap Index</a>
+        <span class="hero-secondary">Five questions &nbsp;·&nbsp; Two minutes</span>
+      </div>
     </div>
-    <div class="reveal">
-      <ul class="qualifier-list">
-        <li>$100,000+ in annual household spend capacity — whether currently on cards or not</li>
-        <li>4 or more trips per year</li>
-        <li>Paying cash for upgrades, premium fares, or hotel rooms</li>
-        <li>Willing to concentrate spend rather than spread it</li>
-        <li>Or not currently routing household spend through premium cards at all</li>
-      </ul>
+    <div class="hero-rule"></div>
+  </section>
+
+  <!-- THE GAP -->
+  <section id="gap">
+    <div class="container">
+      <p class="section-label"><span>01</span> The Gap</p>
+      <div class="gap-grid fade-in">
+        <div class="gap-left">
+          <h2 class="gap-headline">
+            Your spend is already there.<br>
+            <em>Your routing isn't.</em>
+          </h2>
+          <p class="gap-body">
+            The problem is not your budget. At $100,000 or more in annual household spend, the premium outcomes you're not experiencing are not beyond your reach — they're being misdirected. Fragmented across the wrong cards, spread across too many programs, invisible to the institutions that decide who gets upgraded, who boards first, and who gets called when a flight cancels.
+          </p>
+          <p class="gap-body">
+            Quiet Premium identifies exactly where that break is happening. Then we restructure the routing so your existing income starts producing the outcomes it was already capable of funding.
+          </p>
+          <div class="gap-stat-block">
+            <div class="gap-stat-number">$8–14K</div>
+            <div class="gap-stat-label">Estimated annual value identified<br>for a typical $150K+ spend profile</div>
+          </div>
+        </div>
+        <div class="gap-right">
+          <div class="gap-card">
+            <div class="gap-card-label">What's actually happening</div>
+            <div class="gap-card-text">High earners boarding in group 4 or 5 on every flight. Paying cash for upgrades that status would produce for free. Spread across four airline programs and none of them reaching meaningful tier. Hotels treating you like a first-time guest on every stay.</div>
+          </div>
+          <div class="gap-card">
+            <div class="gap-card-label">Why it happens</div>
+            <div class="gap-card-text">Spend is fragmented. The wrong cards are capturing the wrong categories. No concentration strategy, so no status path. Every institution sees a small slice — not the full picture of a premium client.</div>
+          </div>
+          <div class="gap-card">
+            <div class="gap-card-label">What changes</div>
+            <div class="gap-card-text">The same income, restructured. Spend consolidates onto the right architecture. Status accumulates on a single airline and a single hotel program. The institutions that control treatment finally see you clearly — and respond accordingly.</div>
+          </div>
+        </div>
+      </div>
     </div>
-  </div>
-</section>
+  </section>
 
-<section class="closing">
-  <p class="closing-quote">"Same spend. Better routing."</p>
-  <p class="closing-quote-sub">The savings show up everywhere else.</p>
-  <a href="https://quietpremium.com/gap-index" class="cta-button">Take The Gap Index →</a>
-</section>
+  <!-- HOW IT WORKS -->
+  <section id="how">
+    <div class="container">
+      <p class="section-label"><span>02</span> How It Works</p>
+      <div class="how-grid fade-in">
+        <div class="how-step">
+          <div class="how-step-num">Step 01</div>
+          <h3 class="how-step-title">Diagnostic intake</h3>
+          <p class="how-step-body">You complete a 43-question intake covering your current card structure, spend distribution, travel frequency, airline behavior, and hotel patterns. No guesswork. Every recommendation is built from your actual numbers.</p>
+        </div>
+        <div class="how-step">
+          <div class="how-step-num">Step 02</div>
+          <h3 class="how-step-title">Spend Alignment Briefing</h3>
+          <p class="how-step-body">You receive a 12-page private briefing — built to the standard of a Goldman Sachs wealth document, not a travel blog PDF. It maps exactly where your spend is leaking, what your status trajectory looks like, and where the highest-leverage adjustments are.</p>
+        </div>
+        <div class="how-step">
+          <div class="how-step-num">Step 03</div>
+          <h3 class="how-step-title">Architecture rebuilt</h3>
+          <p class="how-step-body">If you move to implementation, we rebuild your routing end-to-end — card structure, spend concentration, status path, hotel program, service ecosystem. The engagement closes when the first measurable proof arrives: status earned, first premium cabin on a previously cash route, first hotel treatment differential.</p>
+        </div>
+      </div>
+    </div>
+  </section>
 
-<footer>
-  <div class="footer-logo">Quiet Premium</div>
-  <div class="footer-note">Spend routing · Private client work</div>
-</footer>
+  <!-- OUTCOMES -->
+  <section id="outcomes">
+    <div class="container">
+      <p class="section-label"><span>03</span> What Changes</p>
+      <div class="outcomes-intro fade-in">
+        <h2 class="outcomes-headline">The experience stops feeling negotiated.</h2>
+        <p class="outcomes-sub">These are the outcomes Quiet Premium clients reach at Gold-to-Platinum airline status and Hyatt Globalist. Access and upgrade frequency vary by route and tier — nothing is guaranteed. What changes is probability, consistency, and the baseline expectation.</p>
+      </div>
+      <div class="outcomes-grid fade-in">
 
-<script>
-  const reveals = document.querySelectorAll('.reveal');
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach((entry, i) => {
-      if (entry.isIntersecting) {
-        setTimeout(() => entry.target.classList.add('visible'), i * 80);
-        observer.unobserve(entry.target);
-      }
-    });
-  }, { threshold: 0.1 });
-  reveals.forEach(el => observer.observe(el));
-</script>
+        <div class="outcome-item">
+          <div class="outcome-icon">
+            <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </div>
+          <div class="outcome-text">
+            <h4>Priority boarding, every flight</h4>
+            <p>Zone 1 or 2 at Gold and above. Overhead bin space is never a concern. Gate checks disappear.</p>
+          </div>
+        </div>
+
+        <div class="outcome-item">
+          <div class="outcome-icon">
+            <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          </div>
+          <div class="outcome-text">
+            <h4>Upgrade eligibility on every flight</h4>
+            <p>Clearing rate depends on status tier and route. Economy becomes optional rather than default on routes where premium inventory exists.</p>
+          </div>
+        </div>
+
+        <div class="outcome-item">
+          <div class="outcome-icon">
+            <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+          </div>
+          <div class="outcome-text">
+            <h4>Lounge access on departure days</h4>
+            <p>Sky Club, Centurion Lounge, and Priority Pass network. A different airport experience before the gate.</p>
+          </div>
+        </div>
+
+        <div class="outcome-item">
+          <div class="outcome-icon">
+            <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>
+          </div>
+          <div class="outcome-text">
+            <h4>Hotel upgrades as program benefits</h4>
+            <p>Room upgrades, late checkout, and recognition at check-in as published Globalist benefits — not requests, not luck.</p>
+          </div>
+        </div>
+
+        <div class="outcome-item">
+          <div class="outcome-icon">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+          </div>
+          <div class="outcome-text">
+            <h4>Disruption priority</h4>
+            <p>Improved rebooking position and direct customer service access when flights cancel or delay. The difference between a two-hour fix and a six-hour ordeal.</p>
+          </div>
+        </div>
+
+        <div class="outcome-item">
+          <div class="outcome-icon">
+            <svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+          </div>
+          <div class="outcome-text">
+            <h4>Cash redirected, not increased</h4>
+            <p>Money currently spent on upgrade fees and buy-ups becomes available to redirect. No increase in total household spend required.</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- SAMPLE OUTPUT -->
+  <section id="sample">
+    <div class="container">
+      <p class="section-label"><span>04</span> The Briefing</p>
+      <div class="sample-intro fade-in">
+        <h2 class="sample-headline">Built to private wealth standards.</h2>
+        <p class="sample-sub">The Spend Alignment Briefing is a 12-page landscape document. Black background, warm gold accents, executive typography. Designed to the standard of a Goldman Sachs private wealth report — not a points blog PDF. Two pages shown below.</p>
+      </div>
+      <div class="sample-images fade-in">
+        <div class="sample-image-wrap">
+          <img
+            src="https://raw.githubusercontent.com/phicks1906/quietpremium/main/website_screenshot_1.png"
+            alt="Quiet Premium Briefing — Experience Gap Analysis"
+            loading="lazy"
+          />
+          <div class="sample-image-caption">Experience Gap Analysis — Current vs. Projected</div>
+        </div>
+        <div class="sample-image-wrap">
+          <img
+            src="https://raw.githubusercontent.com/phicks1906/quietpremium/main/website_screenshot_2.png"
+            alt="Quiet Premium Briefing — Spend Distribution"
+            loading="lazy"
+          />
+          <div class="sample-image-caption">Spend Distribution — Misalignment &amp; Leakage</div>
+        </div>
+      </div>
+      <p class="sample-caveat fade-in">Sample pages shown. Client data is private and not displayed.</p>
+    </div>
+  </section>
+
+  <!-- WHO THIS IS FOR -->
+  <section id="who">
+    <div class="container">
+      <p class="section-label"><span>05</span> Who This Is For</p>
+      <div class="who-grid fade-in">
+        <div>
+          <h2 class="who-headline">
+            You're already spending<br>at <em>this level.</em>
+          </h2>
+          <p class="who-body">
+            Quiet Premium works for high earners who have the spend — $100,000 or more annually that could move through a premium card architecture — but whose current setup is either misrouted, fragmented, or simply never built. If you travel four or more times a year and haven't reached meaningful airline or hotel status, something structural is off.
+          </p>
+          <ul class="who-list">
+            <li>VP-level and above at mid-to-large companies — traveling regularly, boarding in economy</li>
+            <li>Senior professionals with household spend capacity of $100K+ and no premium travel infrastructure</li>
+            <li>High earners paying cash or check for things that could be building status and points</li>
+            <li>Anyone who travels 4+ times a year and has never had a consistent upgrade</li>
+          </ul>
+        </div>
+        <div>
+          <div class="who-not">
+            <div class="who-not-label">This is not for</div>
+            <ul class="who-not-list">
+              <li>Points optimizers looking to maximize redemption math</li>
+              <li>Travel hackers managing fifteen cards and four transfer partners</li>
+              <li>Aspiration buyers — clients who want the lifestyle but the spend isn't there yet</li>
+              <li>Anyone under $75,000 in annual routable household spend</li>
+              <li>Credit scores below 720 — the card approval path breaks before the architecture can work</li>
+            </ul>
+          </div>
+          <div style="margin-top: 48px; padding: 32px; border: 1px solid var(--grey-dk);">
+            <div class="mono" style="margin-bottom: 12px;">Not sure where you fall?</div>
+            <p style="font-size: 14px; color: var(--grey); line-height: 1.75; margin-bottom: 24px;">
+              The Gap Index takes two minutes. It maps your current setup against the qualifying profile and shows you exactly what you're leaving on the table — before you commit to anything.
+            </p>
+            <a href="gap-index.html" class="btn-primary" style="display: inline-block;">Take The Gap Index</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRICING -->
+  <section id="pricing">
+    <div class="container">
+      <p class="section-label" style="text-align:center;"><span>06</span> The Work</p>
+      <div class="pricing-intro fade-in">
+        <h2 class="pricing-intro-headline">Private. Selective. Built around your numbers.</h2>
+        <p class="pricing-intro-sub">Two engagement tiers. The diagnostic first — always. Implementation only after the briefing confirms the opportunity is there.</p>
+      </div>
+      <div class="pricing-grid fade-in">
+
+        <!-- TIER 1 -->
+        <div class="pricing-card pricing-card--featured">
+          <div class="pricing-tier-label">Tier 1 &nbsp;·&nbsp; Spend Alignment Briefing</div>
+          <div class="pricing-roi">$8–14K</div>
+          <div class="pricing-roi-label">Estimated annual value identified · typical $150K+ spend profile</div>
+          <div class="pricing-price-row">
+            <span class="pricing-price">$1,500</span>
+            <span class="pricing-price-label">one-time diagnostic fee</span>
+          </div>
+          <div class="pricing-divider"></div>
+          <h3 class="pricing-title">The Spend Alignment Briefing</h3>
+          <p class="pricing-desc">A complete diagnostic of your current card structure, spend routing, status trajectory, and hotel program — delivered as a 12-page private briefing. Identifies exactly where the misalignment is and what it's costing you annually.</p>
+          <div class="pricing-includes">What's included</div>
+          <ul class="pricing-features">
+            <li>43-question diagnostic intake — your actual numbers, not estimates</li>
+            <li>12-page landscape PDF briefing — private wealth document standard</li>
+            <li>Spend distribution analysis with misalignment percentage</li>
+            <li>Airline concentration scorecard and status gap calculation</li>
+            <li>Hotel program fragmentation analysis</li>
+            <li>Six friction scores across your current travel experience</li>
+            <li>Estimated annual value identified from restructuring</li>
+            <li>Implementation recommendation with Tier 2 pathway</li>
+          </ul>
+          <a href="https://buy.quietpremium.com/b/cNibJ184x6p97OK1oPffy00" class="pricing-cta">Begin the Diagnostic — $1,500</a>
+        </div>
+
+        <!-- TIER 2 -->
+        <div class="pricing-card">
+          <div class="pricing-tier-label">Tier 2 &nbsp;·&nbsp; Implementation</div>
+          <div class="pricing-roi pricing-card--tier2" style="font-size: clamp(40px,4.5vw,60px);">End-to-end rebuild</div>
+          <div class="pricing-roi-label">Card structure · Spend concentration · Status path · Hotel program</div>
+          <div class="pricing-price-row">
+            <span class="pricing-price">$3,500–$5,000</span>
+            <span class="pricing-price-label">implementation engagement</span>
+          </div>
+          <div class="pricing-divider"></div>
+          <h3 class="pricing-title">Architecture Implementation</h3>
+          <p class="pricing-desc">Available after completing the Tier 1 briefing. Rebuilds your routing architecture end-to-end. The engagement closes at first measurable proof — status earned, first confirmed premium cabin on a previously cash route, first hotel treatment differential.</p>
+          <div class="pricing-includes">What's included</div>
+          <ul class="pricing-features">
+            <li>Full card architecture rebuild — right cards for your spend profile</li>
+            <li>Spend concentration strategy — every category correctly assigned</li>
+            <li>Single-airline status path with quarterly milestones</li>
+            <li>Hotel program selection and concentration plan</li>
+            <li>Service ecosystem alignment</li>
+            <li>Ongoing advisory through implementation</li>
+            <li>Engagement closes at first measurable proof event</li>
+          </ul>
+          <a href="gap-index.html" class="pricing-cta pricing-cta--outline">Start with The Gap Index</a>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- GAP INDEX CTA -->
+  <section id="gap-index">
+    <div class="container">
+      <p class="gap-index-eyebrow">The Gap Index</p>
+      <h2 class="gap-index-headline">
+        Find out what your<br>spend is <em>actually producing.</em>
+      </h2>
+      <p class="gap-index-sub">
+        Five questions. Two minutes. The Gap Index maps your current setup against the qualifying profile and shows you the estimated annual value sitting in your existing spend — before you commit to anything.
+      </p>
+      <a href="gap-index.html" class="btn-primary">Take The Gap Index</a>
+      <p class="gap-index-meta">No email required to see your results</p>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="container">
+      <div class="footer-inner">
+        <div class="footer-left">
+          © 2026 Quiet Premium &nbsp;·&nbsp; Paul Hicks &nbsp;·&nbsp; editor@quietpremium.com
+        </div>
+        <div class="footer-tagline">Same spend. Different outcome.</div>
+        <div class="footer-right">
+          <a href="gap-index.html">Gap Index</a>
+          &nbsp;·&nbsp;
+          <a href="https://buy.quietpremium.com/b/cNibJ184x6p97OK1oPffy00">Begin Diagnostic</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // Scroll-triggered fade
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (e.isIntersecting) { e.target.classList.add('visible'); }
+      });
+    }, { threshold: 0.1 });
+    document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+  </script>
 
 </body>
 </html>
