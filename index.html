@@ -15,7 +15,6 @@
 <title>Quiet Premium — Tier 1 Diagnostic</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Suisse+Int%27l:wght@300;400&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=DM+Mono:ital,wght@0,300;0,400;1,300&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
 
 <style>
@@ -131,6 +130,18 @@
     animation: fadeUp 1s ease forwards 0.8s;
   }
 
+  .hero-value {
+    margin-top: 24px;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    color: var(--gold);
+    max-width: 460px;
+    line-height: 1.8;
+    opacity: 0;
+    animation: fadeUp 1s ease forwards 1.0s;
+  }
+
   .hero-scroll {
     position: absolute;
     bottom: 40px;
@@ -209,6 +220,33 @@
   }
 
   .reframe-cell.after .reframe-cell-text { color: var(--gold-light); }
+
+  .gap-index-section {
+    background: #0e0c09;
+    border-top: 1px solid var(--rule);
+    border-bottom: 1px solid var(--rule);
+    padding: 80px 48px;
+  }
+
+  .gap-index-inner {
+    max-width: 600px;
+  }
+
+  .gap-index-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(32px, 4vw, 52px);
+    font-weight: 300;
+    color: var(--white);
+    margin-bottom: 16px;
+    line-height: 1.2;
+  }
+
+  .gap-index-body {
+    font-size: 14px;
+    color: var(--gray-light);
+    line-height: 1.9;
+    margin-bottom: 32px;
+  }
 
   .briefing {
     background: #0e0c09;
@@ -437,8 +475,20 @@
     font-size: 16px;
     font-style: italic;
     color: var(--gray);
-    margin-bottom: 56px;
+    margin-bottom: 24px;
     line-height: 1.7;
+  }
+
+  .pricing-value-hook {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    color: var(--gold);
+    margin-bottom: 40px;
+    line-height: 1.8;
+    padding: 20px 24px;
+    border: 1px solid var(--rule);
+    background: rgba(184, 151, 90, 0.05);
   }
 
   .cta-button {
@@ -572,6 +622,41 @@
     color: #3a3630;
   }
 
+  .sample-screenshots {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+    max-width: 1100px;
+  }
+
+  .sample-screenshot-item {}
+
+  .sample-screenshot-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 12px;
+  }
+
+  .sample-img {
+    width: 100%;
+    display: block;
+    border: 1px solid var(--rule);
+  }
+
+  .sample-screenshot-caption {
+    margin-top: 12px;
+    font-size: 12px;
+    color: var(--gray-light);
+    line-height: 1.7;
+  }
+
+  @media (max-width: 768px) {
+    .sample-screenshots { grid-template-columns: 1fr; gap: 40px; }
+  }
+
   @keyframes fadeUp {
     from { opacity: 0; transform: translateY(24px); }
     to { opacity: 1; transform: translateY(0); }
@@ -594,6 +679,7 @@
     .hero-scroll { display: none; }
     .hero { padding: 0 24px 64px; }
     section { padding: 72px 24px; }
+    .gap-index-section { padding: 60px 24px; }
     .section-rule { margin: 0 24px; width: calc(100% - 48px); }
     .reframe-grid { grid-template-columns: 1fr; }
     .reframe-cell { padding: 40px 24px; }
@@ -611,7 +697,7 @@
 
 <nav>
   <div class="nav-logo">Quiet Premium</div>
-  <a href="https://docs.google.com/forms/d/e/1FAIpQLScnotl_OtX_cI2mu6VdTn-JOyvJkVUjrOywuEDujE_TsxAglg/viewform" class="nav-cta">Request Diagnostic →</a>
+  <a href="https://quietpremium.com/gap-index" class="nav-cta">Take The Gap Index →</a>
 </nav>
 
 <section class="hero">
@@ -621,9 +707,10 @@
     <em>paying for it.</em>
   </h1>
   <p class="hero-sub">
-    Most people spending $150k+ annually are funding a premium travel experience they never actually receive. The spend is there. The routing isn't.
+    Most high earners are funding a premium travel experience they never actually receive. The spend capacity is there. The routing isn't.
   </p>
-  <a href="https://docs.google.com/forms/d/e/1FAIpQLScnotl_OtX_cI2mu6VdTn-JOyvJkVUjrOywuEDujE_TsxAglg/viewform" class="cta-button hero-mobile-cta" style="display:none; margin-top:32px;">Request the Diagnostic →</a>
+  <p class="hero-value">Most clients identify between $8,000 and $14,000 in annual value once the architecture is correct. The diagnostic costs $1,500.</p>
+  <a href="https://quietpremium.com/gap-index" class="cta-button hero-mobile-cta" style="display:none; margin-top:32px;">Take The Gap Index →</a>
   <div class="hero-scroll">Scroll</div>
 </section>
 
@@ -634,80 +721,45 @@
   <div class="reframe-grid">
     <div class="reframe-cell reveal">
       <div class="reframe-cell-label">What most people do</div>
-      <div class="reframe-cell-text">Spend $150k–$300k across 4–5 cards. Distribute it randomly. Pay retail for upgrades. Assume premium costs more.</div>
+      <div class="reframe-cell-text">Spread spend across 4–5 cards. Pay cash for things that could be earning. Distribute it without a system. Pay retail for upgrades. Assume premium costs more than it does.</div>
     </div>
     <div class="reframe-cell after reveal">
       <div class="reframe-cell-label">What Quiet Premium corrects</div>
-      <div class="reframe-cell-text">Same spend. Concentrated correctly. Status builds faster. Travel upgrades itself. The savings migrate everywhere else.</div>
+      <div class="reframe-cell-text">Same spend capacity. Concentrated correctly. Status builds faster. Travel upgrades itself. The savings migrate everywhere else.</div>
     </div>
   </div>
 </section>
 
 <div class="section-rule"></div>
 
+<div class="gap-index-section reveal">
+  <div class="gap-index-inner">
+    <div class="section-label">The Gap Index</div>
+    <h2 class="gap-index-title">Not sure if your setup has a problem worth fixing?</h2>
+    <p class="gap-index-body">The Gap Index is a six-question assessment that takes two minutes. It tells you whether your current card structure, spend routing, and travel behavior have a meaningful gap — and what that gap is likely costing you annually. No email required to see your result.</p>
+    <a href="https://quietpremium.com/gap-index" class="cta-button">Take The Gap Index →</a>
+  </div>
+</div>
+
+<div class="section-rule"></div>
+
 <section class="briefing">
   <div class="section-label">Sample output</div>
   <p class="briefing-intro reveal">
-    This is what a completed Diagnostic produces. The client receives a private briefing — direct, specific, actionable. No filler. No generic advice.
+    This is what a completed Diagnostic produces. Twelve pages. Private. Specific to your setup. Every gap identified, quantified, and mapped to a correction.
   </p>
 
-  <div class="briefing-doc reveal">
-    <div class="briefing-doc-header">
-      <div class="briefing-doc-title">Quiet Premium — Private Briefing</div>
-      <div class="briefing-doc-tag">Redacted</div>
+  <div class="sample-screenshots reveal">
+    <div class="sample-screenshot-item">
+      <div class="sample-screenshot-label">Experience Gap — Current vs. Projected</div>
+      <img src="website_screenshot_1.png" alt="Quiet Premium Diagnostic — Experience Gap Analysis" class="sample-img">
+      <div class="sample-screenshot-caption">Every item on the left is a correctable problem. Every item on the right is what the architecture produces instead.</div>
     </div>
-    <div class="briefing-doc-body">
-      <div class="briefing-client-line">Client: Anonymous &nbsp;·&nbsp; 90-Day Engagement Snapshot</div>
-
-```
-  <div class="briefing-snapshot">
-    He flies out of Atlanta twice a month.<br>
-    Same routes. Same airlines.<br>
-    He thought he needed to spend more to fix it.<br>
-    He didn't.
-  </div>
-
-  <div class="briefing-cols">
-    <div class="briefing-col">
-      <div class="briefing-col-label">What was happening</div>
-      <ul>
-        <li>$180k annual card spend</li>
-        <li>Split across 4–5 cards</li>
-        <li>No airline concentration</li>
-        <li>Hotels booked ad hoc</li>
-        <li>Upgrades occasional, unpredictable</li>
-        <li>Arrival state: tired, catching up</li>
-      </ul>
+    <div class="sample-screenshot-item">
+      <div class="sample-screenshot-label">Spend Distribution — Where the Leakage Is</div>
+      <img src="website_screenshot_2.png" alt="Quiet Premium Diagnostic — Spend Distribution Analysis" class="sample-img">
+      <div class="sample-screenshot-caption">58% of spend misaligned. $14,200–$18,400 in estimated annual premium leakage. The diagnostic shows exactly where it's going and what correcting it produces.</div>
     </div>
-    <div class="briefing-col">
-      <div class="briefing-col-label">What changed</div>
-      <ul>
-        <li>Consolidated spend → Delta</li>
-        <li>Status acceleration introduced</li>
-        <li>Hotel concentration (2 brands max)</li>
-        <li>Flights booked earlier, routed intentionally</li>
-        <li>Points used selectively</li>
-        <li>No increase in total spend</li>
-      </ul>
-    </div>
-  </div>
-
-  <div class="briefing-col-label" style="margin-bottom: 20px;">What that did</div>
-  <div class="briefing-outcome">
-    <p>He boards early. Seat is already his.</p>
-    <p>No scanning overhead bins.</p>
-    <p>Car is waiting. Room is ready.</p>
-    <p>Name already on file.</p>
-    <p>He lands focused. Not recovering.</p>
-  </div>
-
-  <div class="briefing-note">
-    The trip reflects decisions made weeks earlier.<br>
-    That's where the change happens — not in the trip itself.
-  </div>
-</div>
-```
-
   </div>
 </section>
 
@@ -718,13 +770,13 @@
   <div class="how-steps">
     <div class="how-step reveal">
       <div class="how-step-num">01</div>
-      <div class="how-step-title">You submit the intake form</div>
-      <div class="how-step-body">Detailed questions about your current card setup, annual spend, travel patterns, and what you're experiencing now. Answer directly. Estimates are fine.</div>
+      <div class="how-step-title">Take The Gap Index</div>
+      <div class="how-step-body">Six questions. Two minutes. It tells you whether your setup has a gap worth addressing and what it is likely costing you annually. If it does, you move to the full diagnostic intake.</div>
     </div>
     <div class="how-step reveal">
       <div class="how-step-num">02</div>
       <div class="how-step-title">The gap gets mapped</div>
-      <div class="how-step-body">Your current routing is analyzed against your actual spend and travel patterns. Where points are leaking. Where status is being missed. What the correction is worth in dollar terms.</div>
+      <div class="how-step-body">Your current setup is analyzed against your spend capacity and travel patterns. Where points are leaking. Where status is being missed. Where the system isn't recognizing you at all. Most clients find between $8,000 and $14,000 in unrealized annual value. The briefing tells you exactly where yours is.</div>
     </div>
     <div class="how-step reveal">
       <div class="how-step-num">03</div>
@@ -742,26 +794,23 @@
     <div class="pricing-amount"><span>$</span>1,500</div>
     <div class="pricing-label">One-time &nbsp;·&nbsp; Delivered within 48 hours</div>
 
-```
-<div class="pricing-includes">
-  <div class="pricing-includes-label">What's included</div>
-  <ul>
-    <li>Full intake review of your current card portfolio and spend</li>
-    <li>Routing gap analysis — where points and status are leaking</li>
-    <li>Dollar estimate of unrealized value over the past 12 months</li>
-    <li>Written private briefing with specific corrections</li>
-    <li>Qualification assessment for Implementation</li>
-  </ul>
-</div>
+    <div class="pricing-includes">
+      <div class="pricing-includes-label">What's included</div>
+      <ul>
+        <li>Full intake review of your current card portfolio and spend capacity</li>
+        <li>Routing gap analysis — where points and status are leaking</li>
+        <li>Dollar estimate of unrealized value over the past 12 months</li>
+        <li>Written private briefing with specific corrections</li>
+        <li>Qualification assessment for Implementation</li>
+      </ul>
+    </div>
 
-<p class="pricing-note">
-  "If your spend already supports this but the experience still feels negotiated — that's the gap."
-</p>
+    <p class="pricing-note">"If the spend capacity is already there but the experience still isn't — that's the gap."</p>
 
-<a href="https://docs.google.com/forms/d/e/1FAIpQLScnotl_OtX_cI2mu6VdTn-JOyvJkVUjrOywuEDujE_TsxAglg/viewform" class="cta-button">Request the Diagnostic →</a>
-<span class="cta-secondary">Form submission · Response within 24 hours</span>
-```
+    <div class="pricing-value-hook">Most clients identify $8,000–$14,000 in annual value. The diagnostic costs $1,500. The gap does the rest of the math.</div>
 
+    <a href="https://quietpremium.com/gap-index" class="cta-button">Take The Gap Index →</a>
+    <span class="cta-secondary">Two minutes · No email required to see your result</span>
   </div>
 </section>
 
@@ -771,17 +820,18 @@
   <div class="section-label">Who this is for</div>
   <div class="qualifier-grid">
     <div class="reveal">
-      <h2 class="qualifier-heading">This works if the<br><em>spend is already there.</em></h2>
+      <h2 class="qualifier-heading">This works if the<br><em>spend capacity is already there.</em></h2>
       <p class="qualifier-body">Not every submission moves forward.<br><br>
-        Quiet Premium is not optimization for its own sake. It only produces meaningful outcomes when the underlying spend and travel frequency can support real status and redemption volume. If it can't, that gets said directly.
+        Quiet Premium is not optimization for its own sake. It only produces meaningful outcomes when the underlying spend capacity and travel frequency can support real status and redemption volume. If it can't, that gets said directly.
       </p>
     </div>
     <div class="reveal">
       <ul class="qualifier-list">
-        <li>$100,000+ annual spend across personal cards</li>
+        <li>$100,000+ in annual household spend capacity — whether currently on cards or not</li>
         <li>4 or more trips per year</li>
         <li>Paying cash for upgrades, premium fares, or hotel rooms</li>
         <li>Willing to concentrate spend rather than spread it</li>
+        <li>Or not currently routing household spend through premium cards at all</li>
       </ul>
     </div>
   </div>
@@ -790,7 +840,7 @@
 <section class="closing">
   <p class="closing-quote">"Same spend. Better routing."</p>
   <p class="closing-quote-sub">The savings show up everywhere else.</p>
-  <a href="https://docs.google.com/forms/d/e/1FAIpQLScnotl_OtX_cI2mu6VdTn-JOyvJkVUjrOywuEDujE_TsxAglg/viewform" class="cta-button">Request the Diagnostic →</a>
+  <a href="https://quietpremium.com/gap-index" class="cta-button">Take The Gap Index →</a>
 </section>
 
 <footer>
