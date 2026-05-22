@@ -636,11 +636,14 @@
 
       // ── HARD DISQUALIFIERS ─────────────────────────────────────
       const creditDisqualified = creditVal < 0 || creditVal === 0; // below 720
-      const belowSpend = spendVal === 0;
-      const lowTrips   = tripsVal === 0 && spendVal <= 1;
+      const belowSpend    = spendVal === 0;
+      const lowTrips      = tripsVal === 0 && spendVal <= 1;
+      const alreadyWorking = expVal === 3; // system is already working — no gap to close
 
       let bucket;
-      if (creditDisqualified || belowSpend || lowTrips) {
+      if (alreadyWorking) {
+        bucket = 'already';
+      } else if (creditDisqualified || belowSpend || lowTrips) {
         bucket = 'redirect';
       } else if (totalScore >= 10) {
         bucket = 'strong';
@@ -680,7 +683,29 @@
       // ── BUILD HTML ────────────────────────────────────────────
       let html = '';
 
-      if (bucket === 'strong') {
+      if (bucket === 'already') {
+        html = `
+          <p class="result-eyebrow">Your Gap Index Result</p>
+          <h2 class="result-headline">The system is <em>already working.</em></h2>
+          <p class="result-body">
+            Based on your answers, you're getting consistent upgrades and hotel recognition — which means the architecture underneath your spending is doing its job. There's no gap to close here. The Quiet Premium diagnostic is designed for people who aren't getting these outcomes yet.
+          </p>
+          <div class="result-redirect-block">
+            <div class="result-roi-label">What this means</div>
+            <div class="finding">You're already at or near the outcome floor QP is built to reach — priority boarding, upgrade eligibility, hotel recognition.</div>
+            <div class="finding">The diagnostic would confirm your setup is correct. That's not a useful way to spend $1,500.</div>
+            <div class="finding">If something changes — you switch airlines, lose status, or want a second opinion on your card architecture — come back.</div>
+          </div>
+          <p class="result-body" style="margin-bottom: 32px;">
+            Follow Quiet Premium for content on maintaining and extending what's already working.
+          </p>
+          <div class="result-cta-block">
+            <a href="https://www.linkedin.com/in/paulhicksjr" class="btn-result-primary" target="_blank" rel="noopener">Follow on LinkedIn</a>
+            <a href="index.html" class="btn-result-secondary">Back to quietpremium.com</a>
+          </div>
+        `;
+
+      } else if (bucket === 'strong') {
         html = `
           <p class="result-eyebrow">Your Gap Index Result</p>
           <h2 class="result-headline">The gap is <em>significant.</em></h2>
