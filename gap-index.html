@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>The Gap Index — Quiet Premium</title>
-  <meta name="description" content="Five questions. Two minutes. Find out what your existing spend is actually capable of producing in premium travel outcomes." />
+  <meta name="description" content="Six questions. Two minutes. Find out what your existing spend is actually capable of producing in premium travel outcomes." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=DM+Mono:wght@300;400;500&family=Inter:wght@300;400;500&display=swap" rel="stylesheet" />
@@ -128,6 +128,8 @@
     }
     .option:hover { border-color: var(--gold-dk); background: rgba(176,141,87,0.04); }
     .option.selected { border-color: var(--gold); background: rgba(176,141,87,0.08); }
+
+    /* Radio bullet (single-select) */
     .option-bullet {
       width: 20px; height: 20px; border: 1px solid var(--grey-dk);
       border-radius: 50%; flex-shrink: 0; display: flex;
@@ -141,8 +143,32 @@
       content: ''; width: 6px; height: 6px;
       background: var(--black); border-radius: 50%;
     }
+
+    /* Checkbox (multi-select) */
+    .option-checkbox {
+      width: 20px; height: 20px; border: 1px solid var(--grey-dk);
+      border-radius: 3px; flex-shrink: 0; display: flex;
+      align-items: center; justify-content: center;
+      transition: all 0.2s ease;
+    }
+    .option.selected .option-checkbox {
+      border-color: var(--gold); background: var(--gold);
+    }
+    .option.selected .option-checkbox::after {
+      content: '';
+      width: 10px; height: 6px;
+      border-left: 1.5px solid var(--black);
+      border-bottom: 1.5px solid var(--black);
+      transform: rotate(-45deg) translateY(-1px);
+      display: block;
+    }
+
     .option-label { font-size: 14px; color: var(--white); line-height: 1.5; }
     .option.selected .option-label { color: var(--white); }
+    .multi-hint {
+      font-family: var(--mono); font-size: 9px; letter-spacing: 0.12em;
+      text-transform: uppercase; color: var(--grey-dk); margin-bottom: 16px;
+    }
 
     /* ── NEXT BUTTON ────────────────────────── */
     .q-nav { margin-top: 40px; display: flex; align-items: center; gap: 24px; }
@@ -259,7 +285,7 @@
         Find out what your spend<br>is <em>actually producing.</em>
       </h1>
       <p class="intro-sub">
-        Five questions. Two minutes. No email required to see your results. The Gap Index maps your current setup against the qualifying profile and shows you the estimated annual value sitting in your existing spend.
+        Six questions. Two minutes. No email required to see your results. The Gap Index maps your current setup against the qualifying profile and shows you the estimated annual value sitting in your existing spend.
       </p>
     </div>
 
@@ -274,44 +300,100 @@
     <!-- QUESTIONS -->
     <div id="questions-wrap">
 
-      <!-- Q1 -->
+      <!-- Q1 — multi-select cards -->
       <div class="question-block active" id="q1">
-        <div class="q-number">01 / 05</div>
+        <div class="q-number">01 / 06</div>
         <div class="q-text">
           Which premium cards do you currently hold?
-          <div class="q-sub">Select the one that best describes your current setup.</div>
+          <div class="q-sub">Select all that apply.</div>
         </div>
-        <div class="options" data-q="1">
-          <div class="option" data-value="3" data-score="3">
-            <div class="option-bullet"></div>
-            <div class="option-label">Amex Platinum and/or Centurion</div>
+        <p class="multi-hint">Select all that apply — then continue</p>
+        <div class="options multi" data-q="1">
+          <div class="option" data-card="amex-platinum">
+            <div class="option-checkbox"></div>
+            <div class="option-label">Amex Platinum</div>
           </div>
-          <div class="option" data-value="2" data-score="2">
-            <div class="option-bullet"></div>
-            <div class="option-label">Chase Sapphire Reserve or Amex Gold</div>
+          <div class="option" data-card="amex-centurion">
+            <div class="option-checkbox"></div>
+            <div class="option-label">Amex Centurion (Black Card)</div>
           </div>
-          <div class="option" data-value="1" data-score="1">
-            <div class="option-bullet"></div>
-            <div class="option-label">Capital One Venture X, Citi Prestige, or similar mid-tier</div>
+          <div class="option" data-card="amex-gold">
+            <div class="option-checkbox"></div>
+            <div class="option-label">Amex Gold</div>
           </div>
-          <div class="option" data-value="0" data-score="0">
-            <div class="option-bullet"></div>
+          <div class="option" data-card="amex-green">
+            <div class="option-checkbox"></div>
+            <div class="option-label">Amex Green</div>
+          </div>
+          <div class="option" data-card="chase-reserve">
+            <div class="option-checkbox"></div>
+            <div class="option-label">Chase Sapphire Reserve</div>
+          </div>
+          <div class="option" data-card="chase-preferred">
+            <div class="option-checkbox"></div>
+            <div class="option-label">Chase Sapphire Preferred</div>
+          </div>
+          <div class="option" data-card="cap1-venturex">
+            <div class="option-checkbox"></div>
+            <div class="option-label">Capital One Venture X</div>
+          </div>
+          <div class="option" data-card="cap1-venture">
+            <div class="option-checkbox"></div>
+            <div class="option-label">Capital One Venture</div>
+          </div>
+          <div class="option" data-card="none">
+            <div class="option-checkbox"></div>
             <div class="option-label">None — I don't currently hold premium cards</div>
           </div>
         </div>
         <div class="q-nav">
-          <button class="btn-next" id="next-1" onclick="nextQ(1)">Continue</button>
+          <button class="btn-next ready" id="next-1" onclick="nextQ(1)">Continue</button>
         </div>
       </div>
 
-      <!-- Q2 -->
+      <!-- Q2 — credit score (NEW — hard disqualifier below 720) -->
       <div class="question-block" id="q2">
-        <div class="q-number">02 / 05</div>
+        <div class="q-number">02 / 06</div>
+        <div class="q-text">
+          What is your approximate credit score?
+          <div class="q-sub">The card approval path requires a minimum of 720. This is a mechanical gate, not a judgment.</div>
+        </div>
+        <div class="options" data-q="2">
+          <div class="option" data-value="3" data-score="3">
+            <div class="option-bullet"></div>
+            <div class="option-label">800 or above</div>
+          </div>
+          <div class="option" data-value="2" data-score="2">
+            <div class="option-bullet"></div>
+            <div class="option-label">760–799</div>
+          </div>
+          <div class="option" data-value="1" data-score="1">
+            <div class="option-bullet"></div>
+            <div class="option-label">720–759</div>
+          </div>
+          <div class="option" data-value="0" data-score="0">
+            <div class="option-bullet"></div>
+            <div class="option-label">680–719</div>
+          </div>
+          <div class="option" data-value="-1" data-score="-99">
+            <div class="option-bullet"></div>
+            <div class="option-label">Below 680</div>
+          </div>
+        </div>
+        <div class="q-nav">
+          <button class="btn-next" id="next-2" onclick="nextQ(2)">Continue</button>
+          <button class="btn-back" onclick="backQ(2)">Back</button>
+        </div>
+      </div>
+
+      <!-- Q3 — spend -->
+      <div class="question-block" id="q3">
+        <div class="q-number">03 / 06</div>
         <div class="q-text">
           How much could your household route through premium cards annually?
           <div class="q-sub">Include spend currently paid by check, bank transfer, or cash that could go on a card.</div>
         </div>
-        <div class="options" data-q="2">
+        <div class="options" data-q="3">
           <div class="option" data-value="4" data-score="4">
             <div class="option-bullet"></div>
             <div class="option-label">$300,000 or more</div>
@@ -334,16 +416,16 @@
           </div>
         </div>
         <div class="q-nav">
-          <button class="btn-next" id="next-2" onclick="nextQ(2)">Continue</button>
-          <button class="btn-back" onclick="backQ(2)">Back</button>
+          <button class="btn-next" id="next-3" onclick="nextQ(3)">Continue</button>
+          <button class="btn-back" onclick="backQ(3)">Back</button>
         </div>
       </div>
 
-      <!-- Q3 -->
-      <div class="question-block" id="q3">
-        <div class="q-number">03 / 05</div>
+      <!-- Q4 — trips -->
+      <div class="question-block" id="q4">
+        <div class="q-number">04 / 06</div>
         <div class="q-text">How many personal trips do you take per year?</div>
-        <div class="options" data-q="3">
+        <div class="options" data-q="4">
           <div class="option" data-value="3" data-score="3">
             <div class="option-bullet"></div>
             <div class="option-label">15 or more</div>
@@ -362,16 +444,16 @@
           </div>
         </div>
         <div class="q-nav">
-          <button class="btn-next" id="next-3" onclick="nextQ(3)">Continue</button>
-          <button class="btn-back" onclick="backQ(3)">Back</button>
+          <button class="btn-next" id="next-4" onclick="nextQ(4)">Continue</button>
+          <button class="btn-back" onclick="backQ(4)">Back</button>
         </div>
       </div>
 
-      <!-- Q4 -->
-      <div class="question-block" id="q4">
-        <div class="q-number">04 / 05</div>
+      <!-- Q5 — cabin -->
+      <div class="question-block" id="q5">
+        <div class="q-number">05 / 06</div>
         <div class="q-text">What cabin do you typically fly?</div>
-        <div class="options" data-q="4">
+        <div class="options" data-q="5">
           <div class="option" data-value="0" data-score="0">
             <div class="option-bullet"></div>
             <div class="option-label">Economy — always or almost always</div>
@@ -390,16 +472,16 @@
           </div>
         </div>
         <div class="q-nav">
-          <button class="btn-next" id="next-4" onclick="nextQ(4)">Continue</button>
-          <button class="btn-back" onclick="backQ(4)">Back</button>
+          <button class="btn-next" id="next-5" onclick="nextQ(5)">Continue</button>
+          <button class="btn-back" onclick="backQ(5)">Back</button>
         </div>
       </div>
 
-      <!-- Q5 -->
-      <div class="question-block" id="q5">
-        <div class="q-number">05 / 05</div>
+      <!-- Q6 — experience -->
+      <div class="question-block" id="q6">
+        <div class="q-number">06 / 06</div>
         <div class="q-text">Which best describes your current travel experience?</div>
-        <div class="options" data-q="5">
+        <div class="options" data-q="6">
           <div class="option" data-value="0" data-score="0">
             <div class="option-bullet"></div>
             <div class="option-label">Boarding group 4 or 5 on every flight — I'm not in any system</div>
@@ -418,8 +500,8 @@
           </div>
         </div>
         <div class="q-nav">
-          <button class="btn-next" id="next-5" onclick="showResults()">See My Results</button>
-          <button class="btn-back" onclick="backQ(5)">Back</button>
+          <button class="btn-next" id="next-6" onclick="showResults()">See My Results</button>
+          <button class="btn-back" onclick="backQ(6)">Back</button>
         </div>
       </div>
 
@@ -434,11 +516,48 @@
 
   <script>
     // ── STATE ──────────────────────────────────────────────────────
-    const answers = { 1: null, 2: null, 3: null, 4: null, 5: null };
-    const scores  = { 1: 0,    2: 0,    3: 0,    4: 0,    5: 0    };
+    // Q1 is multi-select — stored as Set of card slugs
+    const selectedCards = new Set();
+    // Q2–Q6 single-select
+    const answers = { 2: null, 3: null, 4: null, 5: null, 6: null };
+    const scores  = { 2: 0,    3: 0,    4: 0,    5: 0,    6: 0    };
 
-    // ── OPTION SELECTION ───────────────────────────────────────────
-    document.querySelectorAll('.options').forEach(group => {
+    // ── Q1 MULTI-SELECT ────────────────────────────────────────────
+    document.querySelectorAll('#q1 .option').forEach(opt => {
+      opt.addEventListener('click', () => {
+        const card = opt.dataset.card;
+        if (card === 'none') {
+          // "None" clears all others
+          if (selectedCards.has('none')) {
+            selectedCards.delete('none');
+            opt.classList.remove('selected');
+          } else {
+            selectedCards.clear();
+            document.querySelectorAll('#q1 .option').forEach(o => o.classList.remove('selected'));
+            selectedCards.add('none');
+            opt.classList.add('selected');
+          }
+        } else {
+          // Selecting a real card removes "none"
+          if (selectedCards.has('none')) {
+            selectedCards.delete('none');
+            document.querySelector('#q1 .option[data-card="none"]').classList.remove('selected');
+          }
+          if (selectedCards.has(card)) {
+            selectedCards.delete(card);
+            opt.classList.remove('selected');
+          } else {
+            selectedCards.add(card);
+            opt.classList.add('selected');
+          }
+        }
+        // Q1 continue button is always ready (zero selection = no cards = valid answer)
+        document.getElementById('next-1').classList.add('ready');
+      });
+    });
+
+    // ── Q2–Q6 SINGLE SELECT ────────────────────────────────────────
+    document.querySelectorAll('.options:not(.multi)').forEach(group => {
       group.querySelectorAll('.option').forEach(opt => {
         opt.addEventListener('click', () => {
           group.querySelectorAll('.option').forEach(o => o.classList.remove('selected'));
@@ -452,31 +571,48 @@
       });
     });
 
+    // ── CARD SCORING ───────────────────────────────────────────────
+    // Full ideal QP stack = Amex Platinum + Chase Reserve + Cap1 Venture X
+    // Having all three but still in economy = misrouting → strong gap
+    // Having none = unconverted spender → strong gap
+    // Having some = partial → moderate signal
+    function getCardScore() {
+      if (selectedCards.has('none') || selectedCards.size === 0) return 0; // unconverted
+      const ideal = ['amex-platinum', 'chase-reserve', 'cap1-venturex'];
+      const hasIdeal = ideal.filter(c => selectedCards.has(c)).length;
+      if (hasIdeal === 3) return 3; // full stack — gap is routing not cards
+      if (hasIdeal >= 1) return 2;
+      return 1;
+    }
+
+    function hasFullStack() {
+      return selectedCards.has('amex-platinum') &&
+             selectedCards.has('chase-reserve') &&
+             selectedCards.has('cap1-venturex');
+    }
+
     // ── NAVIGATION ─────────────────────────────────────────────────
     function showQ(n) {
       document.querySelectorAll('.question-block').forEach(b => b.classList.remove('active'));
-      const block = document.getElementById('q' + n);
-      if (block) block.classList.add('active');
-
-      // progress
+      document.getElementById('q' + n).classList.add('active');
       document.getElementById('progress-wrap').style.display = 'block';
       document.getElementById('intro-block').style.display   = 'none';
-      document.getElementById('progress-fill').style.width   = ((n - 1) / 5 * 100) + '%';
-      document.getElementById('progress-label').textContent  = 'Question ' + n + ' of 5';
+      document.getElementById('progress-fill').style.width   = ((n - 1) / 6 * 100) + '%';
+      document.getElementById('progress-label').textContent  = 'Question ' + n + ' of 6';
     }
 
     function nextQ(current) {
+      if (current === 1) { showQ(2); return; }
       if (!answers[current]) return;
-      showQ(current + 1);
+      if (current < 6) showQ(current + 1);
     }
 
     function backQ(current) {
       if (current === 2) {
-        // back to Q1 — also restore intro state
         document.querySelectorAll('.question-block').forEach(b => b.classList.remove('active'));
         document.getElementById('q1').classList.add('active');
         document.getElementById('progress-fill').style.width  = '0%';
-        document.getElementById('progress-label').textContent = 'Question 1 of 5';
+        document.getElementById('progress-label').textContent = 'Question 1 of 6';
         return;
       }
       showQ(current - 1);
@@ -484,52 +620,49 @@
 
     // ── RESULTS ────────────────────────────────────────────────────
     function showResults() {
-      if (!answers[5]) return;
+      if (!answers[6]) return;
 
-      // hide questions
       document.getElementById('questions-wrap').style.display = 'none';
       document.getElementById('progress-wrap').style.display  = 'none';
 
-      // total score
-      const total = Object.values(scores).reduce((a, b) => a + b, 0);
-      const spendVal  = parseInt(answers[2]);  // 0–4
-      const tripsVal  = parseInt(answers[3]);  // 0–3
-      const expVal    = parseInt(answers[5]);  // 0–3
+      const creditVal = parseInt(answers[2]); // -99 = hard disqualify, 0 = 680-719, 1-3 = qualifying
+      const spendVal  = parseInt(answers[3]); // 0–4
+      const tripsVal  = parseInt(answers[4]); // 0–3
+      const expVal    = parseInt(answers[6]); // 0–3
+      const cardScore = getCardScore();
+      const fullStack = hasFullStack();
 
-      // ── BUCKET LOGIC ──────────────────────────────────────────
-      // Below threshold: spend < $75k (value 0)
-      const belowThreshold = spendVal === 0;
-      // Low trips: fewer than 4 AND spend < $100k
-      const lowTrips = tripsVal === 0 && spendVal <= 1;
+      const totalScore = creditVal + spendVal + tripsVal + scores[5] + scores[6] + cardScore;
+
+      // ── HARD DISQUALIFIERS ─────────────────────────────────────
+      const creditDisqualified = creditVal < 0 || creditVal === 0; // below 720
+      const belowSpend = spendVal === 0;
+      const lowTrips   = tripsVal === 0 && spendVal <= 1;
 
       let bucket;
-      if (belowThreshold || lowTrips) {
+      if (creditDisqualified || belowSpend || lowTrips) {
         bucket = 'redirect';
-      } else if (total >= 10) {
+      } else if (totalScore >= 10) {
         bucket = 'strong';
-      } else if (total >= 5) {
+      } else if (totalScore >= 5) {
         bucket = 'moderate';
       } else {
         bucket = 'redirect';
       }
 
       // ── ROI RANGE ─────────────────────────────────────────────
-      const roiRanges = {
-        4: '$12,000–$20,000',
-        3: '$8,000–$14,000',
-        2: '$4,000–$8,000',
-        1: null,
-        0: null
-      };
+      const roiRanges = { 4: '$12,000–$20,000', 3: '$8,000–$14,000', 2: '$4,000–$8,000', 1: null, 0: null };
       const roiRange = roiRanges[spendVal];
 
       // ── FINDINGS ──────────────────────────────────────────────
       const findings = [];
 
-      if (parseInt(answers[1]) <= 1) {
-        findings.push('Your current card setup is not capturing the spend multipliers or benefits that would accelerate status and points accumulation at your level.');
-      } else if (parseInt(answers[1]) === 2) {
-        findings.push('Your card setup has the right foundation, but category assignment and spend concentration may still be leaving value on the table.');
+      if (selectedCards.size === 0 || selectedCards.has('none')) {
+        findings.push('You have no premium card infrastructure in place. At your spend level, this is the highest-leverage change available — the entire system starts with the right cards.');
+      } else if (fullStack && expVal <= 1) {
+        findings.push('You have the right cards but the experience data suggests spend isn\'t being routed correctly across them. The architecture exists — the assignment is off.');
+      } else if (!fullStack) {
+        findings.push('Your card setup is partial. The QP architecture uses three specific cards working together — missing one breaks the concentration strategy.');
       }
 
       if (spendVal >= 2) {
@@ -540,8 +673,8 @@
         findings.push('Your travel frequency is high enough to reach meaningful status, but the experience data suggests the routing infrastructure isn\'t there yet.');
       }
 
-      if (expVal === 0) {
-        findings.push('Boarding group 4 or 5 at your travel frequency and spend level is a clear indicator of a structural routing problem — not a budget problem.');
+      if (expVal === 0 && spendVal >= 2) {
+        findings.push('Boarding group 4 or 5 at your spend level is a clear indicator of a structural routing problem — not a budget problem.');
       }
 
       // ── BUILD HTML ────────────────────────────────────────────
@@ -574,7 +707,6 @@
           </div>
           <p class="result-disclaimer">Value estimates are based on spend bracket modeling for a typical household. Actual outcomes depend on status tier, route, program, and individual travel patterns. Upgrade frequency, lounge access, and hotel treatment vary. Nothing in these results constitutes a guarantee of specific benefits.</p>
         `;
-
       } else if (bucket === 'moderate') {
         html = `
           <p class="result-eyebrow">Your Gap Index Result</p>
@@ -602,20 +734,21 @@
           </div>
           <p class="result-disclaimer">Value estimates are based on spend bracket modeling for a typical household. Actual outcomes depend on status tier, route, program, and individual travel patterns. Nothing in these results constitutes a guarantee of specific benefits.</p>
         `;
-
       } else {
-        // redirect
+        // Tailor redirect message for credit disqualification specifically
+        const creditMsg = creditDisqualified
+          ? 'Your credit score is below the 720 minimum the card approval path requires. The architecture depends on approval for three specific premium cards — below 720, that path becomes uncertain before the work can start.'
+          : 'The Quiet Premium diagnostic isn\'t the right investment at this stage. The architecture requires a spend floor and travel frequency where the math produces a return that justifies the work. You\'re not there yet — but that\'s a timeline, not a ceiling.';
+
         html = `
           <p class="result-eyebrow">Your Gap Index Result</p>
           <h2 class="result-headline">Not the right fit <em>right now.</em></h2>
-          <p class="result-body">
-            Based on your answers, the Quiet Premium diagnostic isn't the right investment at this stage. The architecture requires a spend floor and travel frequency where the math produces a return that justifies the work. You're not there yet — but that's a timeline, not a ceiling.
-          </p>
+          <p class="result-body">${creditMsg}</p>
           <div class="result-redirect-block">
             <div class="result-roi-label">What changes the picture</div>
+            <div class="finding">Credit score of 720 or above — the card approval path requires it</div>
             <div class="finding">Household routable spend reaching $100,000 or more annually</div>
             <div class="finding">Personal travel frequency of four or more trips per year</div>
-            <div class="finding">Credit score of 720 or above — the card approval path requires it</div>
           </div>
           <p class="result-body" style="margin-bottom: 32px;">
             Follow Quiet Premium on LinkedIn or subscribe to the newsletter. When your situation shifts, the diagnostic will be here.
