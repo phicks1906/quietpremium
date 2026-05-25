@@ -176,7 +176,9 @@ textarea{resize:vertical;min-height:80px}
 </head>
 <body>
 
-<nav>
+<div id="test-banner" style="display:none;position:fixed;top:0;left:0;right:0;z-index:999;background:#C0392B;color:#fff;font-family:var(--mono);font-size:9px;letter-spacing:.14em;text-transform:uppercase;text-align:center;padding:6px">Test Mode — Formspree submissions disabled</div>
+
+<nav id="main-nav">
   <div style="display:flex;align-items:center;gap:10px">
     <div class="nb"><span>QUIET</span><div class="nbr"></div><span>PREM</span></div>
     <span class="nav-wm">Quiet Premium</span>
@@ -531,6 +533,16 @@ textarea{resize:vertical;min-height:80px}
 </div>
 
 <script>
+// ── TEST MODE ─────────────────────────────────────────
+if(new URLSearchParams(window.location.search).get('test')==='true'){
+  const banner=document.getElementById('test-banner');
+  const nav=document.getElementById('main-nav');
+  banner.style.display='block';
+  const bh=banner.offsetHeight||28;
+  nav.style.top=bh+'px';
+  document.getElementById('intake').style.paddingTop=(80+bh)+'px';
+}
+
 // ── OPTS WIRING ─────────────────────────────────────
 document.querySelectorAll('.opts[data-name]').forEach(group=>{
   const type=group.dataset.type,name=group.dataset.name,max=group.dataset.max?parseInt(group.dataset.max):null;
@@ -562,12 +574,17 @@ function handleSubmit(e){
   e.preventDefault();
   const d=Object.fromEntries(new FormData(e.target).entries());
 
-  // Send to Formspree silently
-  fetch('https://formspree.io/f/mnjrvbpn',{
-    method:'POST',
-    headers:{'Content-Type':'application/json','Accept':'application/json'},
-    body:JSON.stringify({...d,_subject:'New Architecture Submission — '+d.email})
-  }).catch(err=>console.log('Formspree error:',err));
+  // Send to Formspree unless in test mode
+  const isTest=new URLSearchParams(window.location.search).get('test')==='true';
+  if(!isTest){
+    fetch('https://formspree.io/f/mnjrvbpn',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Accept':'application/json'},
+      body:JSON.stringify({...d,_subject:'New Architecture Submission — '+d.email})
+    }).catch(err=>console.log('Formspree error:',err));
+  } else {
+    console.log('TEST MODE — Formspree submission skipped');
+  }
 
   // Show loading screen
   document.getElementById('intake').classList.remove('active');
