@@ -562,6 +562,13 @@ function handleSubmit(e){
   e.preventDefault();
   const d=Object.fromEntries(new FormData(e.target).entries());
 
+  // Send to Formspree silently
+  fetch('https://formspree.io/f/mnjrvbpn',{
+    method:'POST',
+    headers:{'Content-Type':'application/json','Accept':'application/json'},
+    body:JSON.stringify({...d,_subject:'New Architecture Submission — '+d.email})
+  }).catch(err=>console.log('Formspree error:',err));
+
   // Show loading screen
   document.getElementById('intake').classList.remove('active');
   const loadingEl=document.getElementById('loading');
