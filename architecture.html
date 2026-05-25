@@ -654,10 +654,10 @@ textarea{resize:vertical;min-height:80px}
     </div>
 
     <div class="hs-grid">
-      <div class="hs-cell"><div class="hs-lbl">Annual Leakage Identified</div><div class="hs-val gold" id="r-leakage">$—</div><div class="hs-sub">Value leaving your setup annually</div></div>
+      <div class="hs-cell"><div class="hs-lbl">Potential Annual Leakage</div><div class="hs-val gold" id="r-leakage">$—</div><div class="hs-sub">Estimated value lost to misrouting annually</div></div>
       <div class="hs-cell"><div class="hs-lbl">Gap Score</div><div class="hs-val gold" id="r-gap">—</div><div class="hs-sub">Out of 10 · Overall misalignment</div></div>
-      <div class="hs-cell"><div class="hs-lbl">Misaligned Spend</div><div class="hs-val amber" id="r-misaligned">—%</div><div class="hs-sub">Of annual spend on wrong cards</div></div>
-      <div class="hs-cell"><div class="hs-lbl">Annual Value Available</div><div class="hs-val gold" id="r-value">$—</div><div class="hs-sub">In existing spend · no increase required</div></div>
+      <div class="hs-cell"><div class="hs-lbl">Misaligned Spend</div><div class="hs-val amber" id="r-misaligned">—%</div><div class="hs-sub">Of annual spend on suboptimal cards</div></div>
+      <div class="hs-cell"><div class="hs-lbl">Potential Annual Value</div><div class="hs-val gold" id="r-value">$—</div><div class="hs-sub">Based on inputs · outcomes vary</div></div>
     </div>
 
     <div class="g2">
@@ -703,19 +703,23 @@ textarea{resize:vertical;min-height:80px}
         <div style="font-size:11px;color:var(--grey);line-height:1.7" id="hotel-detail">—</div>
       </div>
       <div class="r-cell">
-        <div class="r-cell-lbl">Annual Value Breakdown</div>
+        <div class="r-cell-lbl">Potential Annual Value Breakdown</div>
         <div class="vr-row"><div class="vr-label">Card routing corrections</div><div class="vr-val" id="vv1">—</div></div>
-        <div class="vr-row"><div class="vr-label">Upgrade cost elimination</div><div class="vr-val" id="vv2">—</div></div>
+        <div class="vr-row"><div class="vr-label">Upgrade cost reduction</div><div class="vr-val" id="vv2">—</div></div>
         <div class="vr-row"><div class="vr-label">Hotel program benefits</div><div class="vr-val" id="vv3">—</div></div>
-        <div class="vr-row"><div class="vr-label">Amex Platinum FHR activation</div><div class="vr-val" id="vv4">—</div></div>
+        <div class="vr-row"><div class="vr-label">Amex Platinum FHR benefits</div><div class="vr-val" id="vv4">—</div></div>
         <div class="vr-row"><div class="vr-label">Companion certificate value</div><div class="vr-val" id="vv5">—</div></div>
-        <div class="vr-total"><div class="vr-total-lbl">Total Annual Value</div><div class="vr-total-val" id="vvt">$—</div></div>
+        <div class="vr-total"><div class="vr-total-lbl">Potential Annual Value</div><div class="vr-total-val" id="vvt">$—</div></div>
       </div>
     </div>
 
     <div class="res-actions">
       <button class="btn-outline" onclick="window.print()">Save / Print Results</button>
       <button class="btn-outline" onclick="showScreen('landing')">← Start Over</button>
+    </div>
+
+    <div style="margin-top:40px;padding-top:24px;border-top:1px solid #1a1a1a">
+      <p style="font-family:var(--mono);font-size:8px;letter-spacing:.08em;color:var(--grey-mid);line-height:1.8">Potential value estimates are based on your inputs and published program benefits as of 2025–2026. Actual outcomes vary by redemption choices, program availability, and issuer terms. Status benefits are subject to airline and hotel program policies and may change. Quiet Premium is not affiliated with any airline, hotel, or card issuer mentioned in this analysis.</p>
     </div>
   </div>
 
@@ -933,9 +937,9 @@ function generateResults(d){
     if(bar)bar.style.width=(score*10)+'%';
     if(de)de.textContent=desc;
   }
-  setFr('b',hasStatus?4:8,hasStatus?'Status provides priority boarding on primary airline.':'No status means general boarding on every flight — group 4 or 5 on every departure.');
+  setFr('b',hasStatus?4:8,hasStatus?'Status typically includes priority boarding on primary airline, subject to program terms.':'No status means general boarding — group 4 or 5 on most departures.');
   setFr('u',hasUpgrades?3:9,hasUpgrades?'Upgrades arriving without asking — system is working in this area.':'No complimentary upgrade eligibility without status. Economy is the default, not a choice.');
-  setFr('h',hasHotelStatus?3:8,hasHotelStatus?'Hotel concentration producing recognition at primary brand.':'No hotel status means every stay begins at zero — no recognition, no upgrade probability, standard checkout.');
+  setFr('h',hasHotelStatus?3:8,hasHotelStatus?'Hotel concentration producing recognition at primary brand.':'No hotel status means most stays begin without recognition — no upgrade probability, standard checkout.');
   setFr('a',6,'Lounge access partially available through card benefits. Sky Club access requires Delta status or Reserve card.');
   setFr('d',disrupted?7:4,disrupted?'Disruption experienced — without status, recovery relies on standard queue and general service channels.':'No disruptions reported. Status would provide priority recovery when they occur.');
   setFr('p',noRedeem?8:4,noRedeem?'Points accumulated but not deployed. Your spend is earning — the redemption architecture is not working.':'Points being redeemed. Routing corrections will increase earning rate significantly.');
@@ -977,7 +981,7 @@ function generateResults(d){
   document.getElementById('st3n').textContent=canPlat?'Complimentary upgrade priority. Suite upgrade eligibility at Globalist. Premium treatment becomes structural.':'Meaningful status reached. Recognition begins changing materially across both airline and hotel.';
 
   document.getElementById('hotel-name').textContent='World of Hyatt · '+(globFeasible?'Globalist':'Explorist Path');
-  document.getElementById('hotel-body').textContent=globFeasible?'At '+nights+'+ hotel nights per year, Hyatt Globalist (60 qualifying nights) is achievable within 12 months with concentration. Globalist delivers confirmed suite upgrade eligibility, complimentary breakfast, club lounge access, and 4pm late checkout as published benefits.':'At your current hotel volume, Hyatt Explorist (30 nights) is the realistic year-one target. Explorist delivers upgrade requests, recognition at check-in, and late checkout. Globalist becomes the year-two goal.';
+  document.getElementById('hotel-body').textContent=globFeasible?'At '+nights+'+ hotel nights per year, Hyatt Globalist (60 qualifying nights) may be achievable within 12 months with concentration. Globalist members may receive suite upgrades when available, complimentary breakfast, club lounge access, and late checkout — subject to Hyatt program terms.':'At your current hotel volume, Hyatt Explorist (30 nights) is a realistic year-one target. Explorist members may receive upgrade consideration and late checkout. Globalist becomes the year-two goal.';
   document.getElementById('hotel-detail').textContent='Booking discipline: all Hyatt stays booked direct or via Amex Travel — never OTA. OTA bookings strip status credit and FHR eligibility simultaneously. This single change produces the status accumulation.';
 
   const v1=Math.round(cardLeak*0.9/100)*100;
