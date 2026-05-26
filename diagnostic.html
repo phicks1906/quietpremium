@@ -267,6 +267,16 @@ textarea{resize:vertical;min-height:80px}
       <div class="field"><label class="field-lbl">Groceries — which card do you primarily use? <span class="req">*</span></label><input type="text" name="card_groceries" required placeholder="e.g. Amex Gold" oninput="updateProgress()"/></div>
       <div class="field"><label class="field-lbl">General / non-bonused spend — which card do you primarily use? <span class="req">*</span></label><input type="text" name="card_general" required placeholder="e.g. Delta SkyMiles Reserve" oninput="updateProgress()"/></div>
 
+      <div class="field"><label class="field-lbl">Have you activated TSA PreCheck and CLEAR through your current card benefits? <span class="req">*</span></label>
+        <div class="opts" data-name="tsa_clear_activated" data-type="radio">
+          <div class="opt" data-value="Yes — both"><div class="opt-ind circle"></div><div class="opt-txt">Yes — both activated</div></div>
+          <div class="opt" data-value="PreCheck only"><div class="opt-ind circle"></div><div class="opt-txt">Yes — TSA PreCheck only</div></div>
+          <div class="opt" data-value="CLEAR only"><div class="opt-ind circle"></div><div class="opt-txt">Yes — CLEAR only</div></div>
+          <div class="opt" data-value="No"><div class="opt-ind circle"></div><div class="opt-txt">No — neither activated</div></div>
+          <div class="opt" data-value="Not available"><div class="opt-ind circle"></div><div class="opt-txt">My cards don't include these credits</div></div>
+        </div><input class="real-inp" type="text" name="tsa_clear_activated" required/>
+      </div>
+
       <div class="sec-hd">
         <div class="sec-hd-num">Travel · Section 03 of 05</div>
         <div class="sec-hd-title">Travel Profile</div>
@@ -415,15 +425,6 @@ textarea{resize:vertical;min-height:80px}
           <div class="opt" data-value="Through dedicated advisor"><div class="opt-ind circle"></div><div class="opt-txt">Through a dedicated client advisor</div></div>
           <div class="opt" data-value="Mixed"><div class="opt-ind circle"></div><div class="opt-txt">Mixed</div></div>
         </div><input class="real-inp" type="text" name="luxury_retail_method" required/>
-      </div>
-
-      <div class="field"><label class="field-lbl">Have you activated your TSA PreCheck and CLEAR credits through Amex Platinum? <span class="req">*</span></label>
-        <div class="opts" data-name="tsa_clear_activated" data-type="radio">
-          <div class="opt" data-value="Yes"><div class="opt-ind circle"></div><div class="opt-txt">Yes — both activated</div></div>
-          <div class="opt" data-value="One"><div class="opt-ind circle"></div><div class="opt-txt">One of the two activated</div></div>
-          <div class="opt" data-value="No"><div class="opt-ind circle"></div><div class="opt-txt">No — neither activated</div></div>
-          <div class="opt" data-value="No Platinum"><div class="opt-ind circle"></div><div class="opt-txt">I don't hold Amex Platinum</div></div>
-        </div><input class="real-inp" type="text" name="tsa_clear_activated" required/>
       </div>
 
       <div class="field"><label class="field-lbl">Who typically controls how your flights are booked? <span class="req">*</span></label>
@@ -767,7 +768,7 @@ function generateResults(d){
 
   const fhrVal=isPlatHotel&&isAmexTravelBooking?0:nights>=6?800:400;
   const tsaClearActivated=d.tsa_clear_activated||'No';
-  const clearVal=tsaClearActivated==='Yes'?0:tsaClearActivated==='One'?137:274;
+  const clearVal=tsaClearActivated==='Yes — both'?0:tsaClearActivated==='PreCheck only'?189:tsaClearActivated==='CLEAR only'?85:tsaClearActivated==='Not available'?0:274;
   const cardCredits=isGoldDining?0:204;
   const ptsVal=noRedeem?Math.round(spend*0.003/100)*100:0;
   const compVal=isDeltaReserveAirfare?0:spend>=150000?800:400;
@@ -1022,7 +1023,7 @@ function generateResults(d){
   const valRows=[
     {lbl:'Card routing corrections',sub:'Incremental gain from moving spend to correct cards. Not total points earned — only the difference between current earning and optimal earning, valued at ~1.5 cents per point.',amt:v1},
     {lbl:'Amex Fine Hotels + Resorts',sub:'Room upgrade consideration, daily breakfast for two, $100+ property credit, 4pm checkout — on every eligible stay booked through Amex Travel.',amt:v2},
-    {lbl:'TSA PreCheck + CLEAR',sub:'Amex Platinum covers the PreCheck application fee ($85) and CLEAR Plus membership ($189). Available immediately — no status required.',amt:v3},
+    {lbl:'TSA PreCheck + CLEAR',sub:'Your card benefits include credits for TSA PreCheck ($85) and CLEAR Plus membership ($189). These are available now — no status required. Activating both takes under 10 minutes.',amt:v3},
     {lbl:'Points deployment',sub:'Conservative estimate of first-year redemption value from points currently sitting idle across existing card accounts.',amt:v4},
     {lbl:'Amex Gold card credits',sub:'$120 dining credit and $84 Dunkin credit annually — partially offsetting the Gold card annual fee.',amt:v5},
     {lbl:'Companion certificate',sub:'Delta Reserve annual companion certificate — one round-trip companion fare after year one of card hold.',amt:v6},
