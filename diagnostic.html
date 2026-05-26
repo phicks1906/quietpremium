@@ -744,17 +744,21 @@ function generateResults(d){
   // ── MQD CALCULATION ─ validated logic ──────────────
   // $2,500 headstart + $1 per $10 Reserve spend + ~$1 per $1 Delta airfare
   const airlineSpendEst=d.airline_spend==='$20k+'?22000:d.airline_spend==='$10k-$20k'?15000:d.airline_spend==='$5k-$10k'?7500:d.airline_spend==='Under $5k'?3000:d.airline_spend==='Likely over $10k'?12000:8000;
-  // MQD calc: headstart + $1 per $10 Reserve spend + ~$1 per $1 Delta airfare spend
-  // Reserve spend estimated at 40% of total for airfare+general routing
-  const reserveSpendEst=isDeltaReserveAirfare?(spend*0.40):(spend*0.15);
+  // MQD calc — validated formula:
+  // Reserve spend = total − dining − grocery − hotel spend estimate
+  // MQD Boost = Reserve spend ÷ 10
+  // Total = $2,500 Headstart + MQD Boost + flight MQDs
+  const hotelSpendEst=nights*500; // conservative $500/night
+  const reserveSpendEst=Math.max(0, spend - dining - grocery - hotelSpendEst);
   const mqdsHeadstart=2500;
   const mqdsCard=Math.round(reserveSpendEst/10);
   const mqdsFlights=Math.round(airlineSpendEst*0.95);
   const mqdsTotal=mqdsHeadstart+mqdsCard+mqdsFlights;
+  const canReachDiamond=mqdsTotal>=28000;
   const canReachPlatinum=mqdsTotal>=15000;
   const canReachGold=mqdsTotal>=10000;
   const canReachSilver=mqdsTotal>=5000;
-  const statusTarget=canReachPlatinum?'Delta Platinum Medallion':canReachGold?'Delta Gold Medallion':canReachSilver?'Delta Silver Medallion':'Delta status building';
+  const statusTarget=canReachDiamond?'Delta Diamond Medallion':canReachPlatinum?'Delta Platinum Medallion':canReachGold?'Delta Gold Medallion':canReachSilver?'Delta Silver Medallion':'Delta status building';
 
   // ── VALUE CALCULATION ─ incremental only ───────────
   const diningLeakPerDollar=(4-diningCurrentRate)*0.015; // 1.5cpp
@@ -772,6 +776,7 @@ function generateResults(d){
   const cardCredits=isGoldDining?0:204;
   const ptsVal=noRedeem?Math.round(spend*0.003/100)*100:0;
   const compVal=isDeltaReserveAirfare?0:spend>=150000?800:400;
+  const rucVal=canReachPlatinum?800:0;
 
   const v1=Math.round(totalCardLeak*0.9/100)*100;
   const v2=fhrVal;
@@ -779,7 +784,8 @@ function generateResults(d){
   const v4=ptsVal;
   const v5=cardCredits;
   const v6=compVal;
-  const vt=v1+v2+v3+v4+v5+v6;
+  const v7=rucVal;
+  const vt=v1+v2+v3+v4+v5+v6+v7;
 
   // Gap score
   let gap=3.5;
@@ -878,7 +884,9 @@ function generateResults(d){
 
 
   beforeItems.push({txt:'One lounge network. Half the coverage.',note:'Centurion Lounge through Platinum is active. Sky Club requires Delta Reserve or status. Every Delta departure without the Reserve card starts at the gate.'});
-  afterItems.push({txt:'Both lounge networks on every departure.',note:'Centurion Lounge via Platinum. Sky Club via Delta Reserve. The airport stops being somewhere to endure. It becomes the start of the trip.'});
+  afterItems.push({txt:'Both lounge networks on every departure. Plus Priority Pass worldwide.',note:'Centurion Lounge via Platinum. Sky Club via Delta Reserve. Priority Pass Select included with Platinum — covers additional lounge networks globally, including airports where neither Centurion nor Sky Club is present. The airport stops being somewhere to endure.'});
+
+  afterItems.push({txt:'The hotel room is better before check-in.',note:'Fine Hotels + Resorts through Amex Travel — room upgrade when available, daily breakfast for two, $100+ property credit, 4pm checkout. Activates on every eligible stay the moment bookings route through Amex Travel. No new card required. Available right now and currently producing nothing.'});
 
   // Hotel
   if(!hasHotelStatus||hotelFragmented){
@@ -939,7 +947,10 @@ function generateResults(d){
 
   // ── STATUS PATH ─ MQD-based ────────────────────────
   // Status projection — based on current status entered, not calculated from spend
-  const nextTierLabel=isAtPlatinumOrAbove?'Diamond Medallion':isAtGoldOrAbove?'Delta Platinum Medallion':hasDeltaStatus?'Delta Gold Medallion':'Delta Silver Medallion';
+  // Next tier — use MQD projection, not just entered status
+  const projectedTierLabel=canReachDiamond?'Delta Diamond Medallion':canReachPlatinum?'Delta Platinum Medallion':canReachGold?'Delta Gold Medallion':canReachSilver?'Delta Silver Medallion':'Delta status building';
+  // Override: if person already has a tier, project at least the next one
+  const nextTierLabel=isAtPlatinumOrAbove?(canReachDiamond?'Diamond Medallion':'Diamond Medallion — longer runway'):isAtGoldOrAbove?(canReachPlatinum?'Delta Platinum Medallion':'Delta Platinum Medallion — within reach'):projectedTierLabel;
   const nextTierMQD=isAtPlatinumOrAbove?28000:isAtGoldOrAbove?15000:hasDeltaStatus?10000:5000;
   const nextTierDesc=isAtPlatinumOrAbove
     ?'Diamond delivers unlimited Sky Club access for up to two guests, Global Upgrade Certificates, and the highest tier of Delta recognition on every departure.'
@@ -1022,11 +1033,12 @@ function generateResults(d){
   // ── VALUE BREAKDOWN ────────────────────────────────
   const valRows=[
     {lbl:'Card routing corrections',sub:'Incremental gain from moving spend to correct cards. Not total points earned — only the difference between current earning and optimal earning, valued at ~1.5 cents per point.',amt:v1},
-    {lbl:'Amex Fine Hotels + Resorts',sub:'Room upgrade consideration, daily breakfast for two, $100+ property credit, 4pm checkout — on every eligible stay booked through Amex Travel.',amt:v2},
-    {lbl:'TSA PreCheck + CLEAR',sub:'Your card benefits include credits for TSA PreCheck ($85) and CLEAR Plus membership ($189). These are available now — no status required. Activating both takes under 10 minutes.',amt:v3},
+    {lbl:'Amex Fine Hotels + Resorts',sub:'Room upgrade when available, daily breakfast for two, $100+ property credit, 4pm checkout — on every eligible stay booked through Amex Travel. One booking method change activates all of it.',amt:v2},
+    {lbl:'TSA PreCheck + CLEAR',sub:'Card credits cover the PreCheck application fee ($85) and CLEAR Plus membership ($189). Available immediately — no status required. Activating both takes under 10 minutes.',amt:v3},
     {lbl:'Points deployment',sub:'Conservative estimate of first-year redemption value from points currently sitting idle across existing card accounts.',amt:v4},
     {lbl:'Amex Gold card credits',sub:'$120 dining credit and $84 Dunkin credit annually — partially offsetting the Gold card annual fee.',amt:v5},
-    {lbl:'Companion certificate',sub:'Delta Reserve annual companion certificate — one round-trip companion fare after year one of card hold.',amt:v6},
+    {lbl:'Annual companion certificate',sub:'Delta Reserve annual companion certificate — one round-trip companion fare after year one of card hold.',amt:v6},
+    {lbl:'Regional Upgrade Certificates (×4)',sub:'Four confirmed domestic First Class upgrades annually — a Platinum Medallion Choice Benefit. $200 per certificate based on average fare differential. Not waitlisted. Confirmed.',amt:v7},
   ].filter(r=>r.amt>0);
 
   document.getElementById('value-body').innerHTML=valRows.map(r=>`
