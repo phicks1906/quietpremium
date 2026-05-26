@@ -549,7 +549,7 @@ document.querySelectorAll('.opts[data-name]').forEach(group=>{
   const ri=document.querySelector('input[name="'+name+'"]');
   group.querySelectorAll('.opt').forEach(opt=>{
     opt.addEventListener('click',()=>{
-      if(type==='radio'){group.querySelectorAll('.opt').forEach(o=>o.classList.remove('selected'));opt.classList.add('selected');if(ri)ri.value=opt.dataset.value}
+      if(type==='radio'){group.querySelectorAll('.opt').forEach(o=>o.classList.remove('selected'));opt.classList.add('selected');if(ri)ri.value=opt.dataset.value;group.style.border='';group.style.padding='';const fe=group.closest('.field');if(fe){const em=fe.querySelector('.field-error');if(em)em.remove();}}
       else{const sel=group.querySelectorAll('.opt.selected');if(opt.classList.contains('selected')){opt.classList.remove('selected')}else{if(max&&sel.length>=max)return;opt.classList.add('selected')}const vals=Array.from(group.querySelectorAll('.opt.selected')).map(o=>o.dataset.value);if(ri)ri.value=vals.join('; ')}
       updateProgress();
     });
@@ -572,6 +572,56 @@ function updateProgress(){
 // ── SUBMIT + LOADING ANIMATION ────────────────────────
 function handleSubmit(e){
   e.preventDefault();
+
+  // Validate — highlight missing fields
+  const form=document.getElementById('arch-form');
+  const required=form.querySelectorAll('[required]');
+  let firstError=null;
+  let hasError=false;
+
+  // Clear previous errors
+  form.querySelectorAll('.field-error').forEach(el=>el.remove());
+  form.querySelectorAll('.field-err-border').forEach(el=>el.classList.remove('field-err-border'));
+
+  required.forEach(inp=>{
+    if(!inp.value||inp.value.trim()===''){
+      hasError=true;
+      // Find the parent field div
+      const field=inp.closest('.field')||inp.parentElement;
+      // Add red border to the input or opts group
+      const optsGroup=field?field.querySelector('.opts'):null;
+      if(optsGroup){
+        optsGroup.style.border='1px solid var(--red)';
+        optsGroup.style.padding='4px';
+        if(!firstError)firstError=optsGroup;
+      } else if(inp.type!=='hidden'&&!inp.classList.contains('real-inp')){
+        inp.style.borderColor='var(--red)';
+        if(!firstError)firstError=inp;
+      }
+      // Add error message if not already there
+      if(field&&!field.querySelector('.field-error')){
+        const msg=document.createElement('div');
+        msg.className='field-error';
+        msg.style.cssText='color:#C0392B;font-family:var(--mono);font-size:8px;letter-spacing:.1em;text-transform:uppercase;margin-top:5px';
+        msg.textContent='Required — please complete this field';
+        field.appendChild(msg);
+      }
+    } else {
+      // Clear error state on filled fields
+      const field=inp.closest('.field')||inp.parentElement;
+      const optsGroup=field?field.querySelector('.opts'):null;
+      if(optsGroup){optsGroup.style.border='';optsGroup.style.padding='';}
+      else{inp.style.borderColor='';}
+      const msg=field?field.querySelector('.field-error'):null;
+      if(msg)msg.remove();
+    }
+  });
+
+  if(hasError){
+    if(firstError)firstError.scrollIntoView({behavior:'smooth',block:'center'});
+    return;
+  }
+
   const d=Object.fromEntries(new FormData(e.target).entries());
 
   // Send to Formspree unless in test mode
