@@ -596,14 +596,14 @@ textarea{resize:vertical;min-height:80px}
 
 <script>
 // ── TEST MODE ──────────────────────────────────────────
-document.addEventListener('DOMContentLoaded',function(){
-  if(new URLSearchParams(window.location.search).get('test')==='true'){
+window.addEventListener('load',function(){
+  if(window.location.search.indexOf('test=true')!==-1){
     const banner=document.getElementById('test-banner');
     const nav=document.getElementById('main-nav');
-    banner.style.display='block';
-    const bh=banner.offsetHeight||28;
-    nav.style.top=bh+'px';
-    document.getElementById('intake').style.paddingTop=(80+bh)+'px';
+    if(banner){banner.style.display='block';}
+    if(nav){nav.style.top='28px';}
+    const intake=document.getElementById('intake');
+    if(intake){intake.style.paddingTop='108px';}
   }
 });
 
@@ -915,4 +915,63 @@ function generateResults(d){
   if(hasMarriott&&hotelConcentrated){
     hotelHTML=`
       <div class="hotel-box">
-        <div class="hotel-lbl">Current Prog
+        <div class="hotel-lbl">Current Prog      <div class="hotel-lbl">Current Program</div>
+        <div class="hotel-name">Marriott Bonvoy — Stay in it</div>
+        <div class="hotel-body">${fname} already has Marriott concentration. The relationship is worth protecting. Amex Platinum includes Marriott Bonvoy Gold Elite status as a cardholder benefit — meaning ${fname} may already have more recognition than the account currently shows.</div>
+      </div>
+      <div style="font-size:12px;color:var(--grey);line-height:1.75;margin-top:12px">One thing worth knowing: at comparable night volume, Hyatt tends to produce more consistent suite upgrade recognition and stronger redemption value per point than equivalent Marriott status. Not a reason to walk away from what's built — but worth keeping in mind as volume grows.</div>`;
+  } else if(hasHyatt&&hotelConcentrated){
+    const nextTier=nights>=60?'Globalist':nights>=30?'Explorist':nights>=10?'Discoverist':'Member';
+    hotelHTML=`
+      <div class="hotel-box">
+        <div class="hotel-lbl">Current Program</div>
+        <div class="hotel-name">World of Hyatt — Deepen it</div>
+        <div class="hotel-body">${fname} is already in the right program. The path forward is concentration — every stay in Hyatt, every booking made direct or via Amex Travel.</div>
+      </div>
+      <div style="font-size:12px;color:var(--grey);line-height:1.75;margin-top:12px">Booking rule: never OTA for hotels. OTA bookings strip both status credit and FHR eligibility simultaneously. Direct or Amex Travel only.</div>`;
+  } else if(hasHotelStatus&&hotelConcentrated){
+    hotelHTML=`
+      <div class="hotel-box">
+        <div class="hotel-lbl">Current Program</div>
+        <div class="hotel-name">${d.primary_hotel} — Protect what's built</div>
+        <div class="hotel-body">${fname} has an existing hotel relationship worth maintaining. The priority is booking correctly — direct or via Amex Travel — to preserve status credit and activate FHR benefits simultaneously.</div>
+      </div>
+      <div style="font-size:12px;color:var(--grey);line-height:1.75;margin-top:12px">As volume grows, World of Hyatt is worth considering for its redemption value and consistent suite upgrade recognition at Globalist tier.</div>`;
+  } else {
+    const globPath=nights>=30?'achievable within 12 months':nights>=15?'a realistic 18-month target':'a multi-year goal — Discoverist (10 nights) is year one';
+    hotelHTML=`
+      <div class="hotel-box">
+        <div class="hotel-lbl">Recommended Program</div>
+        <div class="hotel-name">World of Hyatt</div>
+        <div class="hotel-body">At ${nights} hotel nights annually, Hyatt Globalist (60 qualifying nights) is ${globPath}. Globalist members may receive suite upgrades when available, complimentary breakfast daily, and 4pm checkout.</div>
+      </div>
+      <div style="font-size:12px;color:var(--grey);line-height:1.75;margin-top:12px">Begin concentrating nights in Hyatt and booking direct or via Amex Travel from month one. The Amex Platinum already provides Marriott Bonvoy Gold Elite status as a cardholder benefit — but for meaningful status, Hyatt produces better outcomes at this volume.</div>`;
+  }
+  document.getElementById('hotel-section').innerHTML=hotelHTML;
+
+  // ── VALUE BREAKDOWN ────────────────────────────────
+  const valRows=[
+    {lbl:'Card routing corrections',sub:'Incremental value from moving spend to correct cards — not total points earned, only the gain from correct routing',amt:v1},
+    {lbl:'Amex Fine Hotels + Resorts',sub:'Room upgrade consideration, daily breakfast, property credits, late checkout on eligible stays',amt:v2},
+    {lbl:'TSA PreCheck + CLEAR',sub:'Application fee credit ($85) and CLEAR Plus membership ($189) — both through Amex Platinum',amt:v3},
+    {lbl:'Points deployment',sub:'Value from first redemption of idle points accumulating across current card stack',amt:v4},
+    {lbl:'Amex Gold card credits',sub:'$120 dining credit + $84 Dunkin credit annually',amt:v5},
+    {lbl:'Annual companion certificate',sub:'Delta Reserve companion certificate activates after year one',amt:v6},
+  ].filter(r=>r.amt>0);
+
+  document.getElementById('value-body').innerHTML=valRows.map(r=>`
+    <div class="val-row">
+      <div><div class="val-lbl">${r.lbl}</div><div class="val-lbl-sub">${r.sub}</div></div>
+      <div class="val-amt">${fmtD(r.amt)}</div>
+    </div>`).join('');
+  document.getElementById('vvt').textContent=fmtD(vt);
+  document.getElementById('val-note').textContent='All figures represent potential value based on '+d.full_name+'\'s inputs and published program benefits as of 2025–2026. Actual outcomes vary by redemption choices, program availability, and issuer terms.';
+
+  document.getElementById('val-narrative').innerHTML=`
+    <p style="margin-bottom:14px">The total spend going through ${fname}'s cards isn't changing. The budget isn't changing. The income isn't changing.</p>
+    <p style="margin-bottom:14px">What changes is where every dollar routes — and what it produces when it gets there. The card corrections recover value that's currently leaving the system on every transaction. The FHR benefits exist today and have never been activated. The points have been accumulating and sitting idle.</p>
+    <p>The ${fmtD(vt)} potential isn't new money. It's the return on money that's already being spent — finally arriving.</p>`;
+}
+</script>
+</body>
+</html>
