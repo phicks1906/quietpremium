@@ -468,26 +468,21 @@ textarea{resize:vertical;min-height:80px}
     </div>
 
     <!-- SECTION 1 — DASHBOARD -->
-    <div class="dash">
+    <div class="dash" style="grid-template-columns:repeat(3,1fr)">
       <div class="dash-cell">
-        <div class="dash-lbl">Estimated Annual Leakage</div>
-        <div class="dash-val gold" id="r-leakage">$—</div>
-        <div class="dash-sub">Leaving your setup every year · same spend</div>
+        <div class="dash-lbl">Potential Annual Value</div>
+        <div class="dash-val gold" id="r-value">$—</div>
+        <div class="dash-sub">Year one · same spend · correct routing · outcomes vary</div>
       </div>
       <div class="dash-cell">
         <div class="dash-lbl">Gap Score</div>
         <div class="dash-val gold" id="r-gap">—</div>
-        <div class="dash-sub">Out of 10 · overall misalignment</div>
+        <div class="dash-sub">Out of 10 · overall infrastructure misalignment</div>
       </div>
       <div class="dash-cell">
         <div class="dash-lbl">Spend Misrouted</div>
         <div class="dash-val amber" id="r-misaligned">—%</div>
-        <div class="dash-sub">Of annual spend on wrong cards</div>
-      </div>
-      <div class="dash-cell">
-        <div class="dash-lbl">Potential Annual Value</div>
-        <div class="dash-val gold" id="r-value">$—</div>
-        <div class="dash-sub">Year one · outcomes vary by profile</div>
+        <div class="dash-sub">Of annual spend currently on wrong cards</div>
       </div>
     </div>
 
@@ -519,7 +514,7 @@ textarea{resize:vertical;min-height:80px}
       <div class="res-sec-lbl">The routing map</div>
       <div class="res-sec-hl">Current spend vs. <em>corrected architecture.</em></div>
       <table class="sp-table">
-        <thead><tr><th style="width:18%">Category</th><th style="width:22%">Current card</th><th style="width:14%">Status</th><th style="width:22%">Corrected card</th><th style="width:24%">What changes</th></tr></thead>
+        <thead><tr><th style="width:18%">Category</th><th style="width:16%">Current card</th><th style="width:10%">Rate now</th><th style="width:10%">Rate fixed</th><th style="width:10%">Status</th><th style="width:18%">Corrected card</th><th style="width:18%">Annual impact</th></tr></thead>
         <tbody id="sp-body"></tbody>
       </table>
     </div>
@@ -739,10 +734,12 @@ function generateResults(d){
   // ── MQD CALCULATION ─ validated logic ──────────────
   // $2,500 headstart + $1 per $10 Reserve spend + ~$1 per $1 Delta airfare
   const airlineSpendEst=d.airline_spend==='$20k+'?22000:d.airline_spend==='$10k-$20k'?15000:d.airline_spend==='$5k-$10k'?7500:d.airline_spend==='Under $5k'?3000:d.airline_spend==='Likely over $10k'?12000:8000;
-  const reserveSpend=isDeltaReserveAirfare?(spend*0.35):(spend*0.1); // estimated % on Reserve
+  // MQD calc: headstart + $1 per $10 Reserve spend + ~$1 per $1 Delta airfare spend
+  // Reserve spend estimated at 40% of total for airfare+general routing
+  const reserveSpendEst=isDeltaReserveAirfare?(spend*0.40):(spend*0.15);
   const mqdsHeadstart=2500;
-  const mqdsCard=Math.round(reserveSpend/10);
-  const mqdsFlights=Math.round(airlineSpendEst*0.9);
+  const mqdsCard=Math.round(reserveSpendEst/10);
+  const mqdsFlights=Math.round(airlineSpendEst*0.95);
   const mqdsTotal=mqdsHeadstart+mqdsCard+mqdsFlights;
   const canReachPlatinum=mqdsTotal>=15000;
   const canReachGold=mqdsTotal>=10000;
@@ -799,20 +796,6 @@ function generateResults(d){
   document.getElementById('r-gap').textContent=gap.toFixed(1);
   document.getElementById('r-misaligned').textContent=misPct+'%';
   document.getElementById('r-value').textContent=fmtD(vt);
-  // Replace leakage cell with Opportunity
-  const leakCell=document.getElementById('r-leakage');
-  if(leakCell){
-    leakCell.textContent=fmtD(vt);
-    const leakLbl=leakCell.closest('.dash-cell')&&leakCell.closest('.dash-cell').querySelector('.dash-lbl');
-    const leakSub=leakCell.closest('.dash-cell')&&leakCell.closest('.dash-cell').querySelector('.dash-sub');
-    if(leakLbl)leakLbl.textContent='Potential Annual Value';
-    if(leakSub)leakSub.textContent='Year one · same spend · correct routing';
-  }
-  // Hide redundant value cell
-  const valCell=document.getElementById('r-value');
-  if(valCell&&valCell.closest('.dash-cell')){
-    valCell.closest('.dash-cell').style.display='none';
-  }
 
   // ── CORRECTIONS ────────────────────────────────────
   const corrections=[];
@@ -864,13 +847,13 @@ function generateResults(d){
   // Boarding
   if(!hasDeltaGold){
     beforeItems.push({txt:'Boards with everyone else.',note:'General boarding means group 4 or 5 on most US departures. The bins are filling. The trip starts compressed before it starts.'});
-    afterItems.push({txt:'Sky Priority boarding on every Delta departure.',note:'Zone 4 — before general cabin, dedicated lane. Overhead bin space guaranteed. The departure experience changes permanently.'});
+    afterItems.push({txt:'Boards ahead of the main cabin on every Delta departure.',note:'Delta Platinum means Sky Priority — dedicated lane, before general boarding. With Comfort+ confirmed at booking, the seat is already better before boarding begins. With an RUC-confirmed First Class seat, it is Zone 1.'});
   }
 
   // Upgrades
   if(!hasUpgrades){
     beforeItems.push({txt:'Economy is the only option.',note:'No upgrade eligibility without status. Comfort+ and First Class are purchase decisions — not earned outcomes. Every premium seat costs money.'});
-    afterItems.push({txt:'Comfort+ at booking. First Class on occasion. Four confirmed upgrades annually.',note:statusTarget+' delivers complimentary upgrade priority. Four Regional Upgrade Certificates for confirmed domestic First Class — not waitlisted, confirmed, four times a year.'});
+    afterItems.push({txt:'Comfort+ at booking. First Class on the waitlist. Four confirmed First Class upgrades annually.',note:'Delta Platinum delivers three upgrade tiers. Complimentary Comfort+ at booking on eligible fares — consistent, reliable, no waitlist. First Class clears on the waitlist 120 hours out — occasional but real. Four Regional Upgrade Certificates via Choice Benefit — confirmed domestic First Class, four times per year. Economy becomes genuinely optional.'});
   }
 
   // Lounge
@@ -909,20 +892,32 @@ function generateResults(d){
 
   // ── SPEND TABLE ────────────────────────────────────
   const diningRateDisplay=diningCurrentRate+'x';
+  // Airfare rate
+  const airfareCurrentRate=isDeltaReserveAirfare?'3x (Delta)':cardAirfare.includes('platinum')?'5x (non-Delta via Amex Travel)':'1x';
+  const airfareFixedRate=isDeltaReserveAirfare?'3x + MQDs':'3x + MQDs (Delta) / 5x (non-Delta)';
+  const airfareImpact=isDeltaReserveAirfare?'—':fmtD(Math.round(cardLeakAirfare*0.9/100)*100)+'/yr';
+
+  const diningImpact=isGoldDining?'—':fmtD(Math.round(cardLeakDining*0.9/100)*100)+'/yr';
+  const groceryImpact=isGoldGrocery?'—':fmtD(Math.round(cardLeakGrocery*0.9/100)*100)+'/yr';
+  const hotelImpact=isPlatHotel&&isAmexTravelBooking?'—':fmtD(fhrVal)+' in FHR benefits';
+  const generalImpact=isDeltaReserveGeneral?'—':fmtD(Math.round(cardLeakGeneral*0.9/100)*100)+'/yr + MQDs';
+
   const spRows=[
-    {cat:'Airfare',cur:d.card_airfare||'—',ok:isDeltaReserveAirfare,fix:'Delta SkyMiles Reserve',what:'3x earning + MQD status credit on every dollar'},
-    {cat:'Dining · '+fmtD(dining),cur:d.card_dining||'—',ok:isGoldDining,fix:'Amex Gold',what:'4x at restaurants worldwide — currently '+diningRateDisplay},
-    {cat:'Groceries · '+fmtD(grocery),cur:d.card_groceries||'—',ok:isGoldGrocery,fix:'Amex Gold',what:'4x at US supermarkets — currently '+groceryCurrentRate+'x'},
-    {cat:'Hotels',cur:d.card_hotels||'—',ok:isPlatHotel&&isAmexTravelBooking,fix:'Amex Platinum via Amex Travel',what:'5x earning + FHR benefits activated simultaneously'},
-    {cat:'General · '+fmtD(general),cur:d.card_general||'—',ok:isDeltaReserveGeneral,fix:'Delta SkyMiles Reserve',what:'1.5x + every dollar toward MQD status'},
+    {cat:'Airfare',cur:d.card_airfare||'—',rateNow:airfareCurrentRate,rateFix:airfareFixedRate,ok:isDeltaReserveAirfare,fix:'Delta SkyMiles Reserve',impact:airfareImpact},
+    {cat:'Dining · '+fmtD(dining),cur:d.card_dining||'—',rateNow:diningCurrentRate+'x',rateFix:'4x',ok:isGoldDining,fix:'Amex Gold',impact:diningImpact},
+    {cat:'Groceries · '+fmtD(grocery),cur:d.card_groceries||'—',rateNow:groceryCurrentRate+'x',rateFix:'4x',ok:isGoldGrocery,fix:'Amex Gold',impact:groceryImpact},
+    {cat:'Hotels',cur:d.card_hotels||'—',rateNow:isPlatHotel?'5x (if via Amex Travel)':'1–5x',rateFix:'5x + FHR',ok:isPlatHotel&&isAmexTravelBooking,fix:'Amex Platinum via Amex Travel',impact:hotelImpact},
+    {cat:'General · '+fmtD(general),cur:d.card_general||'—',rateNow:isDeltaReserveGeneral?'1.5x':'1x',rateFix:'1.5x + MQDs',ok:isDeltaReserveGeneral,fix:'Delta SkyMiles Reserve',impact:generalImpact},
   ];
   document.getElementById('sp-body').innerHTML=spRows.map(r=>`
     <tr>
       <td>${r.cat}</td>
       <td style="color:${r.ok?'var(--gold)':'var(--grey)'}">${r.cur}</td>
-      <td><span class="${r.ok?'tag-ok':'tag-leak'}">${r.ok?'✓ Correct':'⚠ Misrouted'}</span></td>
+      <td style="font-family:var(--mono);font-size:10px;color:${r.ok?'var(--gold)':'var(--red)'}">${r.rateNow}</td>
+      <td style="font-family:var(--mono);font-size:10px;color:var(--gold)">${r.rateFix}</td>
+      <td><span class="${r.ok?'tag-ok':'tag-leak'}">${r.ok?'✓':'⚠'}</span></td>
       <td style="color:${r.ok?'var(--grey-dk)':'var(--gold)'};font-size:10px;font-family:var(--mono)">${r.ok?'—':r.fix}</td>
-      <td style="font-size:10px;color:var(--grey-mid)">${r.ok?'No change needed':r.what}</td>
+      <td style="font-size:10px;color:${r.ok?'var(--grey-mid)':'var(--gold)'}font-weight:400">${r.impact}</td>
     </tr>`).join('');
 
   // ── STATUS PATH ─ MQD-based ────────────────────────
@@ -948,7 +943,7 @@ function generateResults(d){
       period:'Month 12',dot:'target',
       title:statusTarget+' — projected',
       body:canReachPlatinum
-        ?'~'+fmtD(mqdsTotal)+' projected MQDs. Platinum delivers Zone 4 Sky Priority, complimentary upgrade priority over Gold on every waitlist, and four Regional Upgrade Certificates for confirmed domestic First Class. Economy becomes optional.'
+        ?'~'+fmtD(mqdsTotal)+' projected MQDs. Platinum delivers Sky Priority boarding — ahead of main cabin, dedicated lane. With Comfort+ confirmed at booking, the seat is already better before departure. Four Regional Upgrade Certificates for confirmed domestic First Class annually. Economy becomes optional.'
         :canReachGold
         ?'~'+fmtD(mqdsTotal)+' projected MQDs reaches Gold Medallion. Sky Priority boarding, upgrade eligibility on Delta flights, dedicated Medallion line for disruptions. Platinum becomes the year-two target.'
         :'~'+fmtD(mqdsTotal)+' projected MQDs. Status building materially. Recognition begins changing on Delta departures. The trajectory compounds in year two.'
