@@ -571,26 +571,6 @@ textarea{resize:vertical;min-height:80px}
   </div>
 
   <!-- UPSELL -->
-  <div class="upsell">
-    <div class="upsell-inner">
-      <div>
-        <div class="upsell-ey">For edge cases and complex situations</div>
-        <h3 class="upsell-hl">When the results raise<br><em>more questions.</em></h3>
-        <p class="upsell-body">The Architecture handles the majority of profiles cleanly. For situations that fall outside the standard system — unusual travel patterns, complex household setups, international-primary routing, or anything your results flagged as requiring judgment — a private 60-minute consultation is available.</p>
-      </div>
-      <div>
-        <div class="upsell-price">$1,500</div>
-        <div class="upsell-price-lbl">Private Consultation · 60 Minutes</div>
-        <div style="margin-bottom:20px">
-          <div class="upsell-feat">Direct access to Quiet Premium</div>
-          <div class="upsell-feat">Judgment on what the algorithm can't resolve</div>
-          <div class="upsell-feat">Complex household and international profiles</div>
-        </div>
-        <a href="https://buy.quietpremium.com/b/cNibJ184x6p97OK1oPffy00" class="cta-btn">Book Consultation — $1,500</a>
-      </div>
-    </div>
-  </div>
-
   <div class="disclaimer">Potential value estimates are based on published program benefits as of 2025–2026. Actual outcomes vary by redemption choices, program availability, and issuer terms. Quiet Premium is not affiliated with any airline, hotel, or card issuer mentioned.</div>
 </div>
 
@@ -710,7 +690,6 @@ function handleSubmit(e){
 }
 
 // ── HELPERS ───────────────────────────────────────────
-function fmt(n){return'$'+Math.round(n/100)*100>0?'$'+Math.round(n/100)*100+'00'.slice(0,0):'$0';}
 function fmtD(n){const r=Math.round(n/100)*100;return'$'+r.toLocaleString();}
 function firstName(fullName){return(fullName||'').split(' ')[0]||'You';}
 
@@ -730,33 +709,53 @@ function generateResults(d){
 
   const isGoldDining=cardDining.includes('gold');
   const isGoldGrocery=cardGrocery.includes('gold');
-  const isDeltaReserveAirfare=cardAirfare.includes('reserve')&&(cardAirfare.includes('delta')||cardAirfare.includes('skymiles'));
+  const isDeltaReserve=id=>id.includes('reserve')&&(id.includes('delta')||id.includes('skymiles'));
+  const isDeltaReserveAirfare=isDeltaReserve(cardAirfare);
+  const isDeltaReserveGeneral=isDeltaReserve(cardGeneral);
   const isPlatHotel=cardHotels.includes('platinum');
   const isAmexTravelBooking=d.booking_method==='Direct'||d.booking_method==='Mixed';
-  const isDeltaReserveGeneral=cardGeneral.includes('reserve')&&(cardGeneral.includes('delta')||cardGeneral.includes('skymiles'));
+
+  // Dining current rate — Platinum earns 1x, Chase/Citi earn 3x, Gold earns 4x
+  const diningCurrentRate=cardDining.includes('platinum')?1:cardDining.includes('gold')?4:3;
+  const groceryCurrentRate=cardGrocery.includes('platinum')?1:cardGrocery.includes('gold')?4:3;
 
   const hasAirlineStatus=d.primary_airline&&!d.primary_airline.toLowerCase().includes('none')&&d.primary_airline.trim()!=='';
   const hasDeltaStatus=d.primary_airline&&d.primary_airline.toLowerCase().includes('delta');
+  const hasDeltaGold=hasDeltaStatus&&(d.primary_airline.toLowerCase().includes('gold')||d.primary_airline.toLowerCase().includes('platinum')||d.primary_airline.toLowerCase().includes('diamond'));
   const hotelInput=(d.primary_hotel||'').toLowerCase();
   const hasHyatt=hotelInput.includes('hyatt');
   const hasMarriott=hotelInput.includes('marriott')||hotelInput.includes('bonvoy')||hotelInput.includes('starwood');
-  const hasHilton=hotelInput.includes('hilton');
   const hasHotelStatus=hotelInput!==''&&!hotelInput.includes('none')&&hotelInput.trim()!=='';
   const hotelConcentrated=['50-74%','75-100%'].includes(d.hotel_conc);
   const hotelFragmented=['0-24%','25-49%'].includes(d.hotel_conc);
-
   const hasUpgrades=d.upgrades_unasked==='Yes';
   const noRedeem=d.pts_redeemed==='None'||d.pts_redeemed==='Unsure';
   const disrupted=d.disruption==='Yes';
+  const luxuryEngaged=d.luxury_retail_method&&d.luxury_retail_method!=='Not engaged';
 
   const flights=d.flights_taken==='40+'?42:d.flights_taken==='21-40'?30:d.flights_taken==='11-20'?15:d.flights_taken==='6-10'?8:4;
   const nights=d.hotel_nights==='40+'?42:d.hotel_nights==='21-39'?30:d.hotel_nights==='11-20'?15:d.hotel_nights==='6-10'?8:4;
 
-  // ── LEAKAGE CALCULATION ─ incremental only ─────────
-  let cardLeakAirfare=isDeltaReserveAirfare?0:spend*0.014;
-  let cardLeakDining=isGoldDining?0:dining*0.01;
-  let cardLeakGrocery=isGoldGrocery?0:grocery*0.01;
-  let cardLeakHotel=isPlatHotel&&isAmexTravelBooking?0:spend*0.006;
+  // ── MQD CALCULATION ─ validated logic ──────────────
+  // $2,500 headstart + $1 per $10 Reserve spend + ~$1 per $1 Delta airfare
+  const airlineSpendEst=d.airline_spend==='$20k+'?22000:d.airline_spend==='$10k-$20k'?15000:d.airline_spend==='$5k-$10k'?7500:d.airline_spend==='Under $5k'?3000:d.airline_spend==='Likely over $10k'?12000:8000;
+  const reserveSpend=isDeltaReserveAirfare?(spend*0.35):(spend*0.1); // estimated % on Reserve
+  const mqdsHeadstart=2500;
+  const mqdsCard=Math.round(reserveSpend/10);
+  const mqdsFlights=Math.round(airlineSpendEst*0.9);
+  const mqdsTotal=mqdsHeadstart+mqdsCard+mqdsFlights;
+  const canReachPlatinum=mqdsTotal>=15000;
+  const canReachGold=mqdsTotal>=10000;
+  const canReachSilver=mqdsTotal>=5000;
+  const statusTarget=canReachPlatinum?'Delta Platinum Medallion':canReachGold?'Delta Gold Medallion':canReachSilver?'Delta Silver Medallion':'Delta status building';
+
+  // ── VALUE CALCULATION ─ incremental only ───────────
+  const diningLeakPerDollar=(4-diningCurrentRate)*0.015; // 1.5cpp
+  const groceryLeakPerDollar=(4-groceryCurrentRate)*0.015;
+  let cardLeakAirfare=isDeltaReserveAirfare?0:spend*0.012;
+  let cardLeakDining=isGoldDining?0:Math.max(0,dining*diningLeakPerDollar);
+  let cardLeakGrocery=isGoldGrocery?0:Math.max(0,grocery*groceryLeakPerDollar);
+  let cardLeakHotel=isPlatHotel&&isAmexTravelBooking?0:spend*0.005;
   let cardLeakGeneral=isDeltaReserveGeneral?0:general*0.005;
   let totalCardLeak=cardLeakAirfare+cardLeakDining+cardLeakGrocery+cardLeakHotel+cardLeakGeneral;
 
@@ -765,7 +764,6 @@ function generateResults(d){
   const cardCredits=isGoldDining?0:204;
   const ptsVal=noRedeem?Math.round(spend*0.003/100)*100:0;
   const compVal=isDeltaReserveAirfare?0:spend>=150000?800:400;
-  const upgradeVal=d.upgrade_spend==='Over $7k'?2000:d.upgrade_spend==='$3k-$7k'?1200:d.upgrade_spend==='$1k-$3k'?600:0;
 
   const v1=Math.round(totalCardLeak*0.9/100)*100;
   const v2=fhrVal;
@@ -774,7 +772,6 @@ function generateResults(d){
   const v5=cardCredits;
   const v6=compVal;
   const vt=v1+v2+v3+v4+v5+v6;
-  const leakage=Math.round((totalCardLeak+upgradeVal)/100)*100;
 
   // Gap score
   let gap=3.5;
@@ -787,7 +784,6 @@ function generateResults(d){
   if(noRedeem)gap+=0.6;
   if(!hasUpgrades)gap+=0.5;
   gap=Math.min(9.9,Math.max(3.5,gap));
-  const gapDisplay=gap.toFixed(1);
 
   let miscount=0;
   if(!isDeltaReserveAirfare)miscount++;
@@ -800,10 +796,23 @@ function generateResults(d){
   // ── HEADER ─────────────────────────────────────────
   document.getElementById('r-name').textContent=d.full_name||'Your Results';
   document.getElementById('r-date').textContent=new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
-  document.getElementById('r-leakage').textContent=fmtD(leakage);
-  document.getElementById('r-gap').textContent=gapDisplay;
+  document.getElementById('r-gap').textContent=gap.toFixed(1);
   document.getElementById('r-misaligned').textContent=misPct+'%';
   document.getElementById('r-value').textContent=fmtD(vt);
+  // Replace leakage cell with Opportunity
+  const leakCell=document.getElementById('r-leakage');
+  if(leakCell){
+    leakCell.textContent=fmtD(vt);
+    const leakLbl=leakCell.closest('.dash-cell')&&leakCell.closest('.dash-cell').querySelector('.dash-lbl');
+    const leakSub=leakCell.closest('.dash-cell')&&leakCell.closest('.dash-cell').querySelector('.dash-sub');
+    if(leakLbl)leakLbl.textContent='Potential Annual Value';
+    if(leakSub)leakSub.textContent='Year one · same spend · correct routing';
+  }
+  // Hide redundant value cell
+  const valCell=document.getElementById('r-value');
+  if(valCell&&valCell.closest('.dash-cell')){
+    valCell.closest('.dash-cell').style.display='none';
+  }
 
   // ── CORRECTIONS ────────────────────────────────────
   const corrections=[];
@@ -811,31 +820,32 @@ function generateResults(d){
     const imp=Math.round(cardLeakAirfare*0.9/100)*100;
     corrections.push({
       t:'Move all Delta airfare to the Delta SkyMiles Reserve',
-      i:fmtD(imp)+' in incremental value recovered annually — plus the status acceleration that changes how every subsequent flight feels',
-      b:'Every dollar of Delta airfare on your current card earns minimal miles and zero credit toward Medallion status. The Delta Reserve earns 3x on Delta purchases, generates MQD credit on card spend, and activates Sky Club access — all simultaneously. The $2,500 MQD Headstart alone gives you a running start toward status from the first billing cycle.'
+      i:fmtD(imp)+' in incremental value recovered annually — plus the status acceleration that changes how every flight after it feels',
+      b:'Your current card earns minimal Delta miles and zero credit toward Medallion status. Delta Reserve earns 3x on Delta purchases, generates MQD credit on every dollar of card spend, and activates Sky Club access simultaneously. The $2,500 MQD Headstart activates on the first billing cycle — a running start toward status before a single flight is taken.'
     });
   }
   if(!isGoldDining&&dining>0){
+    const currentRateTxt=diningCurrentRate===1?'1x':'3x';
     const imp=Math.round(cardLeakDining*0.9/100)*100;
     corrections.push({
       t:'Move all dining and groceries to Amex Gold',
       i:fmtD(imp)+' in incremental value recovered annually on '+fmtD(dining+grocery)+' in combined spend',
-      b:'Amex Gold earns 4x at restaurants worldwide and 4x at US supermarkets. Your current cards earn 3x in these categories — meaning every dollar you spend on dining and groceries is leaving value behind. The correction is immediate, the impact compounds every month, and the $120 dining credit and $84 Dunkin credit partially offset the annual fee.'
+      b:'Amex Gold earns 4x at restaurants worldwide and 4x at US supermarkets. Your current card earns '+currentRateTxt+' on dining — meaning every dollar spent on food and groceries is producing less than it should. The correction is immediate. The $120 dining credit and $84 Dunkin credit partially offset the annual fee.'
     });
   }
   if(!isPlatHotel||!isAmexTravelBooking){
     corrections.push({
       t:'Book every hotel through Amex Platinum via Amex Travel',
       i:fmtD(fhrVal)+' in Fine Hotels + Resorts benefits currently going unused on every eligible stay',
-      b:'Amex Platinum includes Fine Hotels + Resorts benefits on every eligible stay booked through Amex Travel — room upgrades when available, daily breakfast for two, a $100+ property credit, and 4pm late checkout. These benefits exist right now and are producing nothing. One change in where you make the booking activates all of them immediately.'
+      b:'Amex Platinum includes Fine Hotels + Resorts on every eligible stay booked through Amex Travel — room upgrade when available, daily breakfast for two, a $100+ property credit, 4pm checkout. These benefits exist right now. They are producing nothing. One change in booking URL activates all of them on the very next stay.'
     });
   }
   if(!isDeltaReserveGeneral&&general>0){
     const imp=Math.round(cardLeakGeneral*0.9/100)*100;
     corrections.push({
       t:'Route all general spend through Delta SkyMiles Reserve',
-      i:fmtD(imp)+' in incremental value — plus every dollar contributing toward Medallion status',
-      b:'General spend on your current card earns 1x and produces nothing toward status. Delta Reserve earns 1.5x on all purchases and every dollar counts toward MQD accumulation. At '+fmtD(general)+' in annual general spend, the difference adds up quickly — and the status acceleration is worth more than the incremental points.'
+      i:fmtD(imp)+' in incremental value — plus every dollar building toward Medallion status',
+      b:'General spend on your current card earns 1x and produces nothing toward status. Delta Reserve earns 1.5x on all purchases and every dollar counts toward MQD accumulation. At '+fmtD(general)+' in annual general spend, the status acceleration compounds quickly — and that outcome is worth more than the incremental points difference alone.'
     });
   }
 
@@ -846,29 +856,51 @@ function generateResults(d){
       <div class="corr-impact">${c.i}</div>
       <div class="corr-body">${c.b}</div>
     </div>`).join('');
-  document.getElementById('corrections-body').innerHTML=corrHTML||'<div class="corr-item"><div class="corr-body" style="color:var(--gold)">Your current card architecture is well-aligned. The remaining opportunity lies in optimizing booking methods and status accumulation.</div></div>';
+  document.getElementById('corrections-body').innerHTML=corrHTML||'<div class="corr-item"><div class="corr-body" style="color:var(--gold)">Your card architecture is well-aligned. The remaining opportunity is in booking method corrections and status accumulation pace.</div></div>';
 
   // ── EXPERIENCE CHANGE ──────────────────────────────
   const beforeItems=[];const afterItems=[];
 
-  if(!hasAirlineStatus||!hasDeltaStatus){
-    beforeItems.push({txt:'Boards with everyone else.',note:'No US airline status means group 4 or 5 on most departures. The overhead bins are filling up. The trip starts before it starts.'});
-    afterItems.push({txt:'Boards with the first group on Delta.',note:'Sky Priority boarding. Overhead bin space. No gate checks. The physical experience of departure changes — on every US flight.'});
+  // Boarding
+  if(!hasDeltaGold){
+    beforeItems.push({txt:'Boards with everyone else.',note:'General boarding means group 4 or 5 on most US departures. The bins are filling. The trip starts compressed before it starts.'});
+    afterItems.push({txt:'Sky Priority boarding on every Delta departure.',note:'Zone 4 — before general cabin, dedicated lane. Overhead bin space guaranteed. The departure experience changes permanently.'});
   }
-  if(!hasUpgrades){
-    beforeItems.push({txt:'Economy on every flight.',note:'No upgrade eligibility without status. Comfort+ and First Class are purchased when wanted, not earned.'});
-    afterItems.push({txt:'Comfort+ upgrades at booking on eligible tickets. First Class on occasion.',note:'Delta Platinum status delivers complimentary upgrade priority. Four Regional Upgrade Certificates for confirmed domestic First Class annually — not waitlisted, confirmed.'});
-  }
-  if(!hasHotelStatus||hotelFragmented){
-    beforeItems.push({txt:'Every hotel stay starts at zero.',note:'No status means standard room, standard checkout, no recognition. The same stay costs the same but delivers less.'});
-    afterItems.push({txt:'The room is better before check-in.',note:'FHR benefits activate immediately — upgrade consideration, breakfast, property credits, late checkout. Hotel stays stop being transactions and start being experiences.'});
-  }
-  beforeItems.push({txt:'Two lounge networks available. One being used.',note:'Centurion Lounge through Platinum is active. Sky Club access requires Delta Reserve or status. Half the network is sitting unused.'});
-  afterItems.push({txt:'Both lounge networks covered on every departure.',note:'Centurion Lounge via Platinum. Sky Club via Delta Reserve. The airport stops being somewhere to wait. It becomes the start of the trip.'});
 
+  // Upgrades
+  if(!hasUpgrades){
+    beforeItems.push({txt:'Economy is the only option.',note:'No upgrade eligibility without status. Comfort+ and First Class are purchase decisions — not earned outcomes. Every premium seat costs money.'});
+    afterItems.push({txt:'Comfort+ at booking. First Class on occasion. Four confirmed upgrades annually.',note:statusTarget+' delivers complimentary upgrade priority. Four Regional Upgrade Certificates for confirmed domestic First Class — not waitlisted, confirmed, four times a year.'});
+  }
+
+  // Lounge
+  beforeItems.push({txt:'Security is still security.',note:'TSA PreCheck and CLEAR credits available through Amex Platinum — currently unused. Every security line is longer than it needs to be.'});
+  afterItems.push({txt:'Through security faster. Into the lounge.',note:'TSA PreCheck application and CLEAR membership both covered by Amex Platinum credits ($274 combined value). The airport starts differently from the first trip after activation.'});
+
+  beforeItems.push({txt:'One lounge network. Half the coverage.',note:'Centurion Lounge through Platinum is active. Sky Club requires Delta Reserve or status. Every Delta departure without the Reserve card starts at the gate.'});
+  afterItems.push({txt:'Both lounge networks on every departure.',note:'Centurion Lounge via Platinum. Sky Club via Delta Reserve. The airport stops being somewhere to endure. It becomes the start of the trip.'});
+
+  // Hotel
+  if(!hasHotelStatus||hotelFragmented){
+    beforeItems.push({txt:'Every hotel stay begins at zero.',note:'No program, no recognition. Standard room, standard checkout. The same budget producing the minimum the property will give any anonymous guest.'});
+    afterItems.push({txt:'The room is better before check-in.',note:'FHR benefits through Amex Travel — upgrade when available, breakfast, property credit, late checkout. The stay begins differently on the very first booking after the method correction.'});
+  }
+
+  // Points
   if(noRedeem){
-    beforeItems.push({txt:'Points accumulating. Nothing being deployed.',note:'Spend is earning. The return is sitting idle — growing as a number, producing nothing as an outcome.'});
-    afterItems.push({txt:'Points working as hard as the spend that earned them.',note:'First redemption identified and executed. The infrastructure earns and deploys. Same money, two jobs.'});
+    beforeItems.push({txt:'Points accumulating. Nothing being deployed.',note:'The spend is happening. The return is sitting in accounts going nowhere. Earning without deploying is not a strategy — it is deferred value that may never arrive.'});
+    afterItems.push({txt:'Points working as hard as the spend that earned them.',note:'First redemption identified and executed in year one. The infrastructure earns and deploys. Same money. Two outcomes.'});
+  }
+
+  // Luxury retail / discretionary
+  if(luxuryEngaged){
+    afterItems.push({txt:'Money that used to disappear into paid upgrades reappears.',note:'What the corrected architecture recovers isn\'t a spreadsheet number. It\'s the amount that used to fund seat upgrades, or simply vanish into misrouted spend — available now for premium hotels, luxury retail, or whatever comes next.'});
+  }
+
+  // Disruption
+  if(disrupted){
+    beforeItems.push({txt:'Disruptions resolved through the general queue.',note:'No status means waiting with everyone else when flights cancel or delay. No dedicated line. No priority rebooking. Recovery takes as long as it takes.'});
+    afterItems.push({txt:'Priority recovery when things go wrong.',note:'Delta Medallion status provides dedicated phone lines and priority rebooking. On 40+ annual flights, this difference gets felt. The question is when, not if.'});
   }
 
   const mkExp=(items,cls)=>items.map(i=>`<div class="exp-item"><div class="exp-dot ${cls}"></div><div><div class="exp-txt">${i.txt}</div><div class="exp-note">${i.note}</div></div></div>`).join('');
@@ -876,12 +908,13 @@ function generateResults(d){
   document.getElementById('exp-after').innerHTML=mkExp(afterItems,'after');
 
   // ── SPEND TABLE ────────────────────────────────────
+  const diningRateDisplay=diningCurrentRate+'x';
   const spRows=[
     {cat:'Airfare',cur:d.card_airfare||'—',ok:isDeltaReserveAirfare,fix:'Delta SkyMiles Reserve',what:'3x earning + MQD status credit on every dollar'},
-    {cat:`Dining · ${fmtD(dining)}`,cur:d.card_dining||'—',ok:isGoldDining,fix:'Amex Gold',what:'4x at restaurants worldwide — up from 3x'},
-    {cat:`Groceries · ${fmtD(grocery)}`,cur:d.card_groceries||'—',ok:isGoldGrocery,fix:'Amex Gold',what:'4x at US supermarkets — up from 3x'},
-    {cat:'Hotels',cur:d.card_hotels||'—',ok:isPlatHotel&&isAmexTravelBooking,fix:'Amex Platinum via Amex Travel',what:'5x + FHR benefits activated simultaneously'},
-    {cat:`General · ${fmtD(general)}`,cur:d.card_general||'—',ok:isDeltaReserveGeneral,fix:'Delta SkyMiles Reserve',what:'1.5x + every dollar toward MQD status'},
+    {cat:'Dining · '+fmtD(dining),cur:d.card_dining||'—',ok:isGoldDining,fix:'Amex Gold',what:'4x at restaurants worldwide — currently '+diningRateDisplay},
+    {cat:'Groceries · '+fmtD(grocery),cur:d.card_groceries||'—',ok:isGoldGrocery,fix:'Amex Gold',what:'4x at US supermarkets — currently '+groceryCurrentRate+'x'},
+    {cat:'Hotels',cur:d.card_hotels||'—',ok:isPlatHotel&&isAmexTravelBooking,fix:'Amex Platinum via Amex Travel',what:'5x earning + FHR benefits activated simultaneously'},
+    {cat:'General · '+fmtD(general),cur:d.card_general||'—',ok:isDeltaReserveGeneral,fix:'Delta SkyMiles Reserve',what:'1.5x + every dollar toward MQD status'},
   ];
   document.getElementById('sp-body').innerHTML=spRows.map(r=>`
     <tr>
@@ -892,17 +925,34 @@ function generateResults(d){
       <td style="font-size:10px;color:var(--grey-mid)">${r.ok?'No change needed':r.what}</td>
     </tr>`).join('');
 
-  // ── STATUS PATH ────────────────────────────────────
-  const canPlat=flights>=30&&spend>=100000;
-  const canGold=flights>=15;
-  const mqdsFromCard=Math.round((spend*0.3)*0.1/100)*100;
-  const mqdsTotal=2500+mqdsFromCard+Math.round(spend*0.08*0.9);
-
+  // ── STATUS PATH ─ MQD-based ────────────────────────
   const statusRows=[
-    {period:'Now',dot:'now',title:hasDeltaStatus?d.primary_airline:'No US airline status',body:hasDeltaStatus?fname+' has existing Delta status. The architecture builds on what\'s already there — faster.':fname+' is currently invisible to the programs that decide who boards first and who gets upgraded. That\'s the gap. It\'s fixable.'},
-    {period:'Month 1',dot:'future',title:'Full architecture deployed',body:'Delta Reserve and Amex Gold added. All spend correctly routed from day one. MQD earning begins immediately — $2,500 Headstart activates on first billing cycle. FHR benefits live on the next hotel stay booked through Amex Travel.'},
-    {period:'Months 2–6',dot:'future',title:canGold?'Delta status building toward Gold or Platinum':'Delta Silver Medallion range',body:'Sky Priority boarding activates. Comfort+ upgrades begin clearing at booking on eligible tickets. Sky Club access available on every Delta departure day. The airport experience changes materially — and permanently.'},
-    {period:'Month 12',dot:'target',title:canPlat?'Delta Platinum Medallion — realistic target':'Delta Gold Medallion — on track',body:canPlat?'Projected ~'+fmtD(Math.round(mqdsTotal/100)*100)+' in MQDs positions '+fname+' for Platinum. Four Regional Upgrade Certificates for confirmed domestic First Class. Upgrade priority ahead of Gold on every waitlist. Economy stops being the default.':'Gold Medallion delivers Sky Priority boarding, upgrade eligibility, and the beginning of consistent recognition. Platinum becomes the year-two target.'},
+    {
+      period:'Now',dot:'now',
+      title:hasAirlineStatus?d.primary_airline:'No US airline status',
+      body:hasDeltaStatus
+        ?fname+' has existing Delta status. The architecture accelerates what\'s already building — MQD Headstart and card spend boost add to the flight MQDs already accumulating.'
+        :fname+' is currently invisible to the programs that decide who boards first and who gets upgraded. The infrastructure change makes that visible — immediately.'
+    },
+    {
+      period:'Month 1',dot:'future',
+      title:'Full architecture deployed',
+      body:'Delta Reserve and Amex Gold added. All spend correctly routed from day one. $2,500 MQD Headstart activates on first billing cycle. Every dollar on Reserve now builds toward status. FHR benefits live on the next hotel stay booked through Amex Travel.'
+    },
+    {
+      period:'Months 2–6',dot:'future',
+      title:'MQDs accumulating · Status visible',
+      body:'Projected MQDs from card spend alone: '+fmtD(mqdsCard+mqdsHeadstart)+' before a single flight. Combined with flight spend, '+statusTarget+' moves from target to trajectory. Sky Priority boarding activates at Silver. Comfort+ upgrades begin at Gold.'
+    },
+    {
+      period:'Month 12',dot:'target',
+      title:statusTarget+' — projected',
+      body:canReachPlatinum
+        ?'~'+fmtD(mqdsTotal)+' projected MQDs. Platinum delivers Zone 4 Sky Priority, complimentary upgrade priority over Gold on every waitlist, and four Regional Upgrade Certificates for confirmed domestic First Class. Economy becomes optional.'
+        :canReachGold
+        ?'~'+fmtD(mqdsTotal)+' projected MQDs reaches Gold Medallion. Sky Priority boarding, upgrade eligibility on Delta flights, dedicated Medallion line for disruptions. Platinum becomes the year-two target.'
+        :'~'+fmtD(mqdsTotal)+' projected MQDs. Status building materially. Recognition begins changing on Delta departures. The trajectory compounds in year two.'
+    },
   ];
   document.getElementById('status-path').innerHTML=statusRows.map(r=>`
     <div class="sp-row">
@@ -915,48 +965,47 @@ function generateResults(d){
   if(hasMarriott&&hotelConcentrated){
     hotelHTML=`
       <div class="hotel-box">
-        <div class="hotel-lbl">Current Prog      <div class="hotel-lbl">Current Program</div>
+        <div class="hotel-lbl">Current Program</div>
         <div class="hotel-name">Marriott Bonvoy — Stay in it</div>
-        <div class="hotel-body">${fname} already has Marriott concentration. The relationship is worth protecting. Amex Platinum includes Marriott Bonvoy Gold Elite status as a cardholder benefit — meaning ${fname} may already have more recognition than the account currently shows.</div>
+        <div class="hotel-body">The Marriott relationship is worth protecting — what's built has value. One thing worth knowing: Amex Platinum already includes Marriott Bonvoy Gold Elite status as a cardholder benefit. ${fname} may have more recognition available than the account currently reflects.</div>
       </div>
-      <div style="font-size:12px;color:var(--grey);line-height:1.75;margin-top:12px">One thing worth knowing: at comparable night volume, Hyatt tends to produce more consistent suite upgrade recognition and stronger redemption value per point than equivalent Marriott status. Not a reason to walk away from what's built — but worth keeping in mind as volume grows.</div>`;
+      <div style="font-size:12px;color:var(--grey);line-height:1.75;margin-top:12px">As volume grows, World of Hyatt is worth a conversation. At comparable night counts, Hyatt tends to produce more consistent suite upgrade recognition and meaningfully stronger redemption value per point. Not a reason to walk away from what's built — a reason to keep it in mind.</div>`;
   } else if(hasHyatt&&hotelConcentrated){
-    const nextTier=nights>=60?'Globalist':nights>=30?'Explorist':nights>=10?'Discoverist':'Member';
     hotelHTML=`
       <div class="hotel-box">
         <div class="hotel-lbl">Current Program</div>
         <div class="hotel-name">World of Hyatt — Deepen it</div>
-        <div class="hotel-body">${fname} is already in the right program. The path forward is concentration — every stay in Hyatt, every booking made direct or via Amex Travel.</div>
+        <div class="hotel-body">${fname} is already in the right program. Every Hyatt stay booked direct or via Amex Travel compounds toward the next tier. Globalist — suite upgrades, breakfast, 4pm checkout — is the target worth building toward.</div>
       </div>
-      <div style="font-size:12px;color:var(--grey);line-height:1.75;margin-top:12px">Booking rule: never OTA for hotels. OTA bookings strip both status credit and FHR eligibility simultaneously. Direct or Amex Travel only.</div>`;
+      <div style="font-size:12px;color:var(--grey);line-height:1.75;margin-top:12px">The booking rule never changes: direct or Amex Travel only. OTA strips both status credit and FHR eligibility simultaneously on every booking it touches.</div>`;
   } else if(hasHotelStatus&&hotelConcentrated){
     hotelHTML=`
       <div class="hotel-box">
         <div class="hotel-lbl">Current Program</div>
-        <div class="hotel-name">${d.primary_hotel} — Protect what's built</div>
-        <div class="hotel-body">${fname} has an existing hotel relationship worth maintaining. The priority is booking correctly — direct or via Amex Travel — to preserve status credit and activate FHR benefits simultaneously.</div>
+        <div class="hotel-name">${d.primary_hotel} — Protect it</div>
+        <div class="hotel-body">${fname} has a hotel relationship worth maintaining. The priority is booking correctly — direct or via Amex Travel — to keep status credit accumulating and FHR benefits activating on every eligible stay.</div>
       </div>
-      <div style="font-size:12px;color:var(--grey);line-height:1.75;margin-top:12px">As volume grows, World of Hyatt is worth considering for its redemption value and consistent suite upgrade recognition at Globalist tier.</div>`;
+      <div style="font-size:12px;color:var(--grey);line-height:1.75;margin-top:12px">World of Hyatt is worth considering as volume grows. Globalist produces some of the most consistent upgrade recognition in premium hospitality. Not an immediate move — a longer-term option.</div>`;
   } else {
-    const globPath=nights>=30?'achievable within 12 months':nights>=15?'a realistic 18-month target':'a multi-year goal — Discoverist (10 nights) is year one';
+    const globPath=nights>=30?'within 12 months with concentration':nights>=15?'an 18-month target':'a multi-year build — Discoverist (10 nights) is year one';
     hotelHTML=`
       <div class="hotel-box">
         <div class="hotel-lbl">Recommended Program</div>
         <div class="hotel-name">World of Hyatt</div>
-        <div class="hotel-body">At ${nights} hotel nights annually, Hyatt Globalist (60 qualifying nights) is ${globPath}. Globalist members may receive suite upgrades when available, complimentary breakfast daily, and 4pm checkout.</div>
+        <div class="hotel-body">At ${nights} hotel nights annually, Hyatt Globalist (60 qualifying nights) is ${globPath}. Globalist members may receive suite upgrades when available, complimentary breakfast, club lounge access, and 4pm checkout — per Hyatt program terms.</div>
       </div>
-      <div style="font-size:12px;color:var(--grey);line-height:1.75;margin-top:12px">Begin concentrating nights in Hyatt and booking direct or via Amex Travel from month one. The Amex Platinum already provides Marriott Bonvoy Gold Elite status as a cardholder benefit — but for meaningful status, Hyatt produces better outcomes at this volume.</div>`;
+      <div style="font-size:12px;color:var(--grey);line-height:1.75;margin-top:12px">Note: Amex Platinum includes Marriott Bonvoy Gold Elite status as a cardholder benefit — so ${fname} already has Marriott recognition without earning it. For status that produces meaningful upgrade recognition, Hyatt produces better outcomes at this volume. Start concentrating now. Book direct or via Amex Travel only.</div>`;
   }
   document.getElementById('hotel-section').innerHTML=hotelHTML;
 
   // ── VALUE BREAKDOWN ────────────────────────────────
   const valRows=[
-    {lbl:'Card routing corrections',sub:'Incremental value from moving spend to correct cards — not total points earned, only the gain from correct routing',amt:v1},
-    {lbl:'Amex Fine Hotels + Resorts',sub:'Room upgrade consideration, daily breakfast, property credits, late checkout on eligible stays',amt:v2},
-    {lbl:'TSA PreCheck + CLEAR',sub:'Application fee credit ($85) and CLEAR Plus membership ($189) — both through Amex Platinum',amt:v3},
-    {lbl:'Points deployment',sub:'Value from first redemption of idle points accumulating across current card stack',amt:v4},
-    {lbl:'Amex Gold card credits',sub:'$120 dining credit + $84 Dunkin credit annually',amt:v5},
-    {lbl:'Annual companion certificate',sub:'Delta Reserve companion certificate activates after year one',amt:v6},
+    {lbl:'Card routing corrections',sub:'Incremental gain from moving spend to correct cards. Not total points earned — only the difference between current earning and optimal earning, valued at ~1.5 cents per point.',amt:v1},
+    {lbl:'Amex Fine Hotels + Resorts',sub:'Room upgrade consideration, daily breakfast for two, $100+ property credit, 4pm checkout — on every eligible stay booked through Amex Travel.',amt:v2},
+    {lbl:'TSA PreCheck + CLEAR',sub:'Amex Platinum covers the PreCheck application fee ($85) and CLEAR Plus membership ($189). Available immediately — no status required.',amt:v3},
+    {lbl:'Points deployment',sub:'Conservative estimate of first-year redemption value from points currently sitting idle across existing card accounts.',amt:v4},
+    {lbl:'Amex Gold card credits',sub:'$120 dining credit and $84 Dunkin credit annually — partially offsetting the Gold card annual fee.',amt:v5},
+    {lbl:'Companion certificate',sub:'Delta Reserve annual companion certificate — one round-trip companion fare after year one of card hold.',amt:v6},
   ].filter(r=>r.amt>0);
 
   document.getElementById('value-body').innerHTML=valRows.map(r=>`
@@ -965,12 +1014,15 @@ function generateResults(d){
       <div class="val-amt">${fmtD(r.amt)}</div>
     </div>`).join('');
   document.getElementById('vvt').textContent=fmtD(vt);
-  document.getElementById('val-note').textContent='All figures represent potential value based on '+d.full_name+'\'s inputs and published program benefits as of 2025–2026. Actual outcomes vary by redemption choices, program availability, and issuer terms.';
+  document.getElementById('val-note').textContent='Potential value based on '+d.full_name+'\'s inputs and published program benefits as of 2025–2026. Actual outcomes vary by redemption choices, program availability, and issuer terms. These figures represent incremental gain from correct routing — not total points earned.';
+
+  const luxuryLine=luxuryEngaged?`<p style="margin-bottom:14px">The money recovered from misrouted spend doesn't disappear. It reappears — in premium hotel stays, in luxury retail, in experiences the budget was always capable of funding. The infrastructure correction doesn't change the spending. It changes what the spending produces.</p>`:'';
 
   document.getElementById('val-narrative').innerHTML=`
-    <p style="margin-bottom:14px">The total spend going through ${fname}'s cards isn't changing. The budget isn't changing. The income isn't changing.</p>
-    <p style="margin-bottom:14px">What changes is where every dollar routes — and what it produces when it gets there. The card corrections recover value that's currently leaving the system on every transaction. The FHR benefits exist today and have never been activated. The points have been accumulating and sitting idle.</p>
-    <p>The ${fmtD(vt)} potential isn't new money. It's the return on money that's already being spent — finally arriving.</p>`;
+    <p style="margin-bottom:14px">${fname}'s total spend isn't changing. The budget isn't changing. The income isn't changing.</p>
+    <p style="margin-bottom:14px">What changes is where every dollar routes — and what arrives when it gets there. The card corrections recover value leaving the system on every transaction. The FHR benefits already exist and have never been activated. The points have been accumulating and sitting idle.</p>
+    ${luxuryLine}
+    <p>The ${fmtD(vt)} isn't new money. It's the return on money that's already being spent — finally showing up.</p>`;
 }
 </script>
 </body>
