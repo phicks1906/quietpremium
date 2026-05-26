@@ -596,14 +596,16 @@ textarea{resize:vertical;min-height:80px}
 
 <script>
 // ── TEST MODE ──────────────────────────────────────────
-if(new URLSearchParams(window.location.search).get('test')==='true'){
-  const banner=document.getElementById('test-banner');
-  const nav=document.getElementById('main-nav');
-  banner.style.display='block';
-  const bh=banner.offsetHeight||28;
-  nav.style.top=bh+'px';
-  document.getElementById('intake').style.paddingTop=(80+bh)+'px';
-}
+document.addEventListener('DOMContentLoaded',function(){
+  if(new URLSearchParams(window.location.search).get('test')==='true'){
+    const banner=document.getElementById('test-banner');
+    const nav=document.getElementById('main-nav');
+    banner.style.display='block';
+    const bh=banner.offsetHeight||28;
+    nav.style.top=bh+'px';
+    document.getElementById('intake').style.paddingTop=(80+bh)+'px';
+  }
+});
 
 // ── OPTS WIRING ────────────────────────────────────────
 document.querySelectorAll('.opts[data-name]').forEach(group=>{
