@@ -417,6 +417,15 @@ textarea{resize:vertical;min-height:80px}
         </div><input class="real-inp" type="text" name="luxury_retail_method" required/>
       </div>
 
+      <div class="field"><label class="field-lbl">Have you activated your TSA PreCheck and CLEAR credits through Amex Platinum? <span class="req">*</span></label>
+        <div class="opts" data-name="tsa_clear_activated" data-type="radio">
+          <div class="opt" data-value="Yes"><div class="opt-ind circle"></div><div class="opt-txt">Yes — both activated</div></div>
+          <div class="opt" data-value="One"><div class="opt-ind circle"></div><div class="opt-txt">One of the two activated</div></div>
+          <div class="opt" data-value="No"><div class="opt-ind circle"></div><div class="opt-txt">No — neither activated</div></div>
+          <div class="opt" data-value="No Platinum"><div class="opt-ind circle"></div><div class="opt-txt">I don't hold Amex Platinum</div></div>
+        </div><input class="real-inp" type="text" name="tsa_clear_activated" required/>
+      </div>
+
       <div class="field"><label class="field-lbl">Who typically controls how your flights are booked? <span class="req">*</span></label>
         <div class="opts" data-name="booking_control" data-type="radio">
           <div class="opt" data-value="I do"><div class="opt-ind circle"></div><div class="opt-txt">I do</div></div>
@@ -461,8 +470,8 @@ textarea{resize:vertical;min-height:80px}
         <div class="res-ey">The Architecture · Your Results</div>
         <h1 class="res-hl">Your spend.<br><em>Your answer.</em></h1>
       </div>
-      <div style="text-align:right">
-        <div class="res-name" id="r-name">—</div>
+      <div id="res-hd-right" style="text-align:right;visibility:hidden">
+        <div class="res-name" id="r-name"></div>
         <div class="res-meta">Generated <span id="r-date"></span><br>Quiet Premium · Confidential</div>
       </div>
     </div>
@@ -757,7 +766,8 @@ function generateResults(d){
   let totalCardLeak=cardLeakAirfare+cardLeakDining+cardLeakGrocery+cardLeakHotel+cardLeakGeneral;
 
   const fhrVal=isPlatHotel&&isAmexTravelBooking?0:nights>=6?800:400;
-  const clearVal=274;
+  const tsaClearActivated=d.tsa_clear_activated||'No';
+  const clearVal=tsaClearActivated==='Yes'?0:tsaClearActivated==='One'?137:274;
   const cardCredits=isGoldDining?0:204;
   const ptsVal=noRedeem?Math.round(spend*0.003/100)*100:0;
   const compVal=isDeltaReserveAirfare?0:spend>=150000?800:400;
@@ -791,6 +801,7 @@ function generateResults(d){
   const misPct=Math.round(miscount/5*100);
 
   // ── HEADER ─────────────────────────────────────────
+  document.getElementById('res-hd-right').style.visibility='visible';
   document.getElementById('r-name').textContent=d.full_name||'Your Results';
   document.getElementById('r-date').textContent=new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
   document.getElementById('r-gap').textContent=gap.toFixed(1);
@@ -845,20 +856,25 @@ function generateResults(d){
   const beforeItems=[];const afterItems=[];
 
   // Boarding
-  if(!hasDeltaGold){
-    beforeItems.push({txt:'Boards with everyone else.',note:'General boarding means group 4 or 5 on most US departures. The bins are filling. The trip starts compressed before it starts.'});
-    afterItems.push({txt:'Boards ahead of the main cabin on every Delta departure.',note:'Delta Platinum means Sky Priority — dedicated lane, before general boarding. With Comfort+ confirmed at booking, the seat is already better before boarding begins. With an RUC-confirmed First Class seat, it is Zone 1.'});
+    // Status — foundation of everything
+  const isAtGoldOrAbove=hasDeltaStatus&&(d.primary_airline.toLowerCase().includes('gold')||d.primary_airline.toLowerCase().includes('platinum')||d.primary_airline.toLowerCase().includes('diamond'));
+  const isAtPlatinumOrAbove=hasDeltaStatus&&(d.primary_airline.toLowerCase().includes('platinum')||d.primary_airline.toLowerCase().includes('diamond'));
+
+  if(!isAtPlatinumOrAbove){
+    beforeItems.push({txt:'Boards with the general cabin.',note:'Without Platinum status, every US departure starts the same way — group 4 or 5, bins filling, the trip beginning compressed. No recognition. No priority. No difference from any other traveler at that gate.'});
+    afterItems.push({txt:'Delta Platinum Medallion. The foundation everything else is built on.',note:'At Platinum, Comfort+ upgrades confirm at booking on eligible fares — no waitlist, already done. Sky Priority boarding in a dedicated lane, before the general cabin. First Class waitlist opens 120 hours out and Platinum clears ahead of every Gold and Silver member on the same flight. Four Regional Upgrade Certificates per year for confirmed domestic First Class — not requested, confirmed. The trip starts differently on every departure. That difference is structural, not occasional.'});
   }
 
-  // Upgrades
-  if(!hasUpgrades){
-    beforeItems.push({txt:'Economy is the only option.',note:'No upgrade eligibility without status. Comfort+ and First Class are purchase decisions — not earned outcomes. Every premium seat costs money.'});
-    afterItems.push({txt:'Comfort+ at booking. First Class on the waitlist. Four confirmed First Class upgrades annually.',note:'Delta Platinum delivers three upgrade tiers. Complimentary Comfort+ at booking on eligible fares — consistent, reliable, no waitlist. First Class clears on the waitlist 120 hours out — occasional but real. Four Regional Upgrade Certificates via Choice Benefit — confirmed domestic First Class, four times per year. Economy becomes genuinely optional.'});
+  if(!isAtGoldOrAbove){
+    beforeItems.push({txt:'No upgrade eligibility on US flights.',note:'Without Gold status or above, there is no complimentary upgrade path on Delta. Comfort+ and First Class are purchased when wanted. Every premium seat costs money every time.'});
+    afterItems.push({txt:'Upgrade eligibility begins at Gold. It is supercharged at Platinum.',note:'Gold Medallion delivers complimentary upgrade eligibility on the waitlist. Platinum moves that priority ahead of every Gold member on the same flight — and adds four Regional Upgrade Certificates for confirmed domestic First Class. The path from no status to Gold to Platinum is a single year with the correct infrastructure in place.'});
+  } else if(!isAtPlatinumOrAbove){
+    beforeItems.push({txt:'Gold upgrade eligibility — but no confirmed RUCs.',note:'Gold delivers upgrade priority and waitlist eligibility. Comfort+ is consistent. First Class clears when available. But the four confirmed Regional Upgrade Certificates belong to Platinum, not Gold. That gap is the next target — and the architecture gets there faster.'});
+    afterItems.push({txt:'Platinum adds what Gold does not have.',note:'Four Regional Upgrade Certificates for confirmed domestic First Class — not waitlisted, confirmed, four times per year. Upgrade priority that moves ahead of every Gold member on the same flight. The difference between Gold and Platinum is not incremental. It is the difference between eligibility and confirmation.'});
   }
 
   // Lounge
-  beforeItems.push({txt:'Security is still security.',note:'TSA PreCheck and CLEAR credits available through Amex Platinum — currently unused. Every security line is longer than it needs to be.'});
-  afterItems.push({txt:'Through security faster. Into the lounge.',note:'TSA PreCheck application and CLEAR membership both covered by Amex Platinum credits ($274 combined value). The airport starts differently from the first trip after activation.'});
+
 
   beforeItems.push({txt:'One lounge network. Half the coverage.',note:'Centurion Lounge through Platinum is active. Sky Club requires Delta Reserve or status. Every Delta departure without the Reserve card starts at the gate.'});
   afterItems.push({txt:'Both lounge networks on every departure.',note:'Centurion Lounge via Platinum. Sky Club via Delta Reserve. The airport stops being somewhere to endure. It becomes the start of the trip.'});
@@ -921,32 +937,41 @@ function generateResults(d){
     </tr>`).join('');
 
   // ── STATUS PATH ─ MQD-based ────────────────────────
+  // Status projection — based on current status entered, not calculated from spend
+  const nextTierLabel=isAtPlatinumOrAbove?'Diamond Medallion':isAtGoldOrAbove?'Delta Platinum Medallion':hasDeltaStatus?'Delta Gold Medallion':'Delta Silver Medallion';
+  const nextTierMQD=isAtPlatinumOrAbove?28000:isAtGoldOrAbove?15000:hasDeltaStatus?10000:5000;
+  const nextTierDesc=isAtPlatinumOrAbove
+    ?'Diamond delivers unlimited Sky Club access for up to two guests, Global Upgrade Certificates, and the highest tier of Delta recognition on every departure.'
+    :isAtGoldOrAbove
+    ?'Platinum adds four Regional Upgrade Certificates for confirmed domestic First Class — not waitlisted, confirmed. Upgrade priority moves ahead of every Gold member on the same flight. The confirmed RUCs alone are worth the status gap.'
+    :hasDeltaStatus
+    ?'Gold delivers Sky Priority boarding, complimentary upgrade eligibility, and priority recovery during disruptions. The foundation of consistent recognition on US departures.'
+    :'Silver activates Sky Priority boarding and the beginning of upgrade eligibility. The first tier where Delta starts treating the traveler differently.';
+
   const statusRows=[
     {
       period:'Now',dot:'now',
       title:hasAirlineStatus?d.primary_airline:'No US airline status',
       body:hasDeltaStatus
-        ?fname+' has existing Delta status. The architecture accelerates what\'s already building — MQD Headstart and card spend boost add to the flight MQDs already accumulating.'
-        :fname+' is currently invisible to the programs that decide who boards first and who gets upgraded. The infrastructure change makes that visible — immediately.'
+        ?fname+' has existing Delta status. The architecture accelerates what\'s already accumulating — Reserve card MQD Boost adds to flight MQDs already building toward the next tier.'
+        :fname+' is currently invisible to the programs that decide who boards first and who gets upgraded. The card architecture changes that — the $2,500 MQD Headstart activates from the first billing cycle.'
     },
     {
       period:'Month 1',dot:'future',
       title:'Full architecture deployed',
-      body:'Delta Reserve and Amex Gold added. All spend correctly routed from day one. $2,500 MQD Headstart activates on first billing cycle. Every dollar on Reserve now builds toward status. FHR benefits live on the next hotel stay booked through Amex Travel.'
+      body:'Delta Reserve and Amex Gold added. All spend correctly routed from day one. $2,500 MQD Headstart activates on first billing cycle. Every dollar on Reserve earns MQD Boost. FHR benefits live on the next hotel stay booked through Amex Travel.'
     },
     {
       period:'Months 2–6',dot:'future',
-      title:'MQDs accumulating · Status visible',
-      body:'Projected MQDs from card spend alone: '+fmtD(mqdsCard+mqdsHeadstart)+' before a single flight. Combined with flight spend, '+statusTarget+' moves from target to trajectory. Sky Priority boarding activates at Silver. Comfort+ upgrades begin at Gold.'
+      title:'MQDs building · Recognition begins',
+      body:isAtGoldOrAbove
+        ?'Already at Gold. Platinum gap closes as Reserve card spend compounds the MQD Boost alongside flight MQDs. Comfort+ at booking already active. RUCs arrive at Platinum.'
+        :'Reserve card MQD Boost earning daily. Combined with flight MQDs, the first status tier comes into range. The airport experience begins changing before year-end.'
     },
     {
-      period:'Month 12',dot:'target',
-      title:statusTarget+' — projected',
-      body:canReachPlatinum
-        ?'~'+fmtD(mqdsTotal)+' projected MQDs. Platinum delivers Sky Priority boarding — ahead of main cabin, dedicated lane. With Comfort+ confirmed at booking, the seat is already better before departure. Four Regional Upgrade Certificates for confirmed domestic First Class annually. Economy becomes optional.'
-        :canReachGold
-        ?'~'+fmtD(mqdsTotal)+' projected MQDs reaches Gold Medallion. Sky Priority boarding, upgrade eligibility on Delta flights, dedicated Medallion line for disruptions. Platinum becomes the year-two target.'
-        :'~'+fmtD(mqdsTotal)+' projected MQDs. Status building materially. Recognition begins changing on Delta departures. The trajectory compounds in year two.'
+      period:'Year end',dot:'target',
+      title:nextTierLabel+' — the target',
+      body:nextTierDesc
     },
   ];
   document.getElementById('status-path').innerHTML=statusRows.map(r=>`
