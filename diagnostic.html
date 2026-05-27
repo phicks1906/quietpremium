@@ -776,6 +776,30 @@ function generateResults(d){
   const canReachSilver=mqdsTotal>=5000;
   const statusTarget=canReachDiamond?'Delta Diamond Medallion':canReachPlatinum?'Delta Platinum Medallion':canReachGold?'Delta Gold Medallion':canReachSilver?'Delta Silver Medallion':'Delta status building';
 
+  // ── UNITED STATUS CALCULATION ───────────────────────
+  // Club Infinite: up to 28K PQP/yr from card spend (roughly $15 spend per PQP) + 1,500 PQP bonus
+  // Flight PQPs: ~$1 per $1 United airfare
+  const pqpCard=isUnitedEco?Math.min(28000,Math.round(reserveSpendEst/15)):0;
+  const pqpBonus=isUnitedEco?1500:0;
+  const pqpFlights=isUnitedEco?Math.round(airlineSpendEst):0;
+  const pqpTotal=pqpCard+pqpBonus+pqpFlights;
+  const canReachUnited1K=pqpTotal>=28000;
+  const canReachUnitedPlatinum=pqpTotal>=18000;
+  const canReachUnitedGold=pqpTotal>=12000;
+  const canReachUnitedSilver=pqpTotal>=6000;
+  const unitedStatusTarget=canReachUnited1K?'United Premier 1K':canReachUnitedPlatinum?'United Premier Platinum':canReachUnitedGold?'United Premier Gold':canReachUnitedSilver?'United Premier Silver':'United Silver — within reach';
+
+  // ── AMERICAN STATUS CALCULATION ─────────────────────
+  // Citi AA Executive: 1 LP per $1 on card spend (same as miles earned)
+  // AA flights: 5 LP per $1 base airfare
+  const lpCard=isAmericanEco?Math.round(reserveSpendEst):0;
+  const lpFlights=isAmericanEco?Math.round(airlineSpendEst*5):0;
+  const lpTotal=lpCard+lpFlights;
+  const canReachAAExecPlat=lpTotal>=200000;
+  const canReachAAPlat=lpTotal>=75000;
+  const canReachAAGold=lpTotal>=40000;
+  const aaStatusTarget=canReachAAExecPlat?'AAdvantage Executive Platinum':canReachAAPlat?'AAdvantage Platinum':canReachAAGold?'AAdvantage Gold':'AAdvantage Gold — within reach';
+
   // ── VALUE CALCULATION ─ incremental only ───────────
   const diningLeakPerDollar=(4-diningCurrentRate)*0.015; // 1.5cpp
   const groceryLeakPerDollar=(4-groceryCurrentRate)*0.015;
@@ -791,8 +815,11 @@ function generateResults(d){
   const clearVal=tsaClearActivated==='Yes — both'?0:tsaClearActivated==='PreCheck only'?189:tsaClearActivated==='CLEAR only'?85:tsaClearActivated==='Not available'?0:274;
   const cardCredits=isGoldDining?0:204;
   const ptsVal=noRedeem?Math.round(spend*0.003/100)*100:0;
-  const compVal=isDeltaReserveAirfare?0:spend>=150000?800:400;
-  const rucVal=canReachPlatinum?800:0;
+  // Companion cert: Delta Reserve only. Bag savings: United Club Infinite and Citi AA Exec.
+  const compVal=isDeltaEco&&isDeltaReserveAirfare?0:isDeltaEco?spend>=150000?800:400:0;
+  const rucVal=isDeltaEco&&canReachPlatinum?800:0;
+  // Bag fee savings: United Club Infinite covers 1st+2nd bag; Citi AA Exec covers 1st bag
+  const bagVal=isUnitedEco?Math.round(flights*0.6)*60:isAmericanEco?Math.round(flights*0.6)*35:0;
 
   const v1=Math.round(totalCardLeak*0.9/100)*100;
   const v2=fhrVal;
@@ -801,7 +828,8 @@ function generateResults(d){
   const v5=cardCredits;
   const v6=compVal;
   const v7=rucVal;
-  const vt=v1+v2+v3+v4+v5+v6+v7;
+  const v8=bagVal;
+  const vt=v1+v2+v3+v4+v5+v6+v7+v8;
 
   // Gap score
   let gap=3.5;
@@ -833,12 +861,28 @@ function generateResults(d){
 
   // ── CORRECTIONS ────────────────────────────────────
   const corrections=[];
-  if(!isDeltaReserveAirfare){
+  if(!isDeltaReserveAirfare&&isDeltaEco){
     const imp=Math.round(cardLeakAirfare*0.9/100)*100;
     corrections.push({
       t:'Move all Delta airfare to the Delta SkyMiles Reserve',
       i:fmtD(imp)+' in incremental value recovered annually — plus the status acceleration that changes how every flight after it feels',
       b:'Your current card earns minimal Delta miles and zero credit toward Medallion status. Delta Reserve earns 3x on Delta purchases, generates MQD credit on every dollar of card spend, and activates Sky Club access simultaneously. The $2,500 MQD Headstart activates on the first billing cycle — a running start toward status before a single flight is taken.'
+    });
+  }
+  if(isUnitedEco){
+    const imp=Math.round(cardLeakAirfare*0.9/100)*100;
+    corrections.push({
+      t:'Add the United Club Infinite card for your United flights',
+      i:fmtD(imp)+' in incremental value annually — plus United Club lounge access and Premier status acceleration',
+      b:'United Club Infinite earns 11x on United purchases, generates up to 28,000 PQP per year toward Premier status, and delivers unlimited United Club lounge access for you and two guests on every United departure. The card covers first and second checked bags for you and a companion — recovering bag fee costs immediately.'
+    });
+  }
+  if(isAmericanEco){
+    const imp=Math.round(cardLeakAirfare*0.9/100)*100;
+    corrections.push({
+      t:'Add the Citi AAdvantage Executive card for your American flights',
+      i:fmtD(imp)+' in incremental value annually — plus Admirals Club membership and AAdvantage status acceleration',
+      b:'The Citi AAdvantage Executive card includes full Admirals Club membership — extending to authorized users and travel companions. It earns Loyalty Points on every dollar of card spend, accelerating AAdvantage status. First checked bag is free for the cardholder and up to eight companions on the same reservation.'
     });
   }
   if(!isGoldDining&&dining>0){
@@ -857,12 +901,22 @@ function generateResults(d){
       b:'Amex Platinum includes Fine Hotels + Resorts on every eligible stay booked through Amex Travel — room upgrade when available, daily breakfast for two, a $100+ property credit, 4pm checkout. These benefits exist right now. They are producing nothing. One change in booking URL activates all of them on the very next stay.'
     });
   }
-  if(!isDeltaReserveGeneral&&general>0){
+  if(!isDeltaReserveGeneral&&general>0&&isDeltaEco){
     const imp=Math.round(cardLeakGeneral*0.9/100)*100;
     corrections.push({
       t:'Route all general spend through Delta SkyMiles Reserve',
       i:fmtD(imp)+' in incremental value — plus every dollar building toward Medallion status',
       b:'General spend on your current card earns 1x and produces nothing toward status. Delta Reserve earns 1.5x on all purchases and every dollar counts toward MQD accumulation. At '+fmtD(general)+' in annual general spend, the status acceleration compounds quickly — and that outcome is worth more than the incremental points difference alone.'
+    });
+  }
+  if(general>0&&(isUnitedEco||isAmericanEco)){
+    const imp=Math.round(cardLeakGeneral*0.9/100)*100;
+    const airlineCard=isUnitedEco?'United Club Infinite':'Citi AAdvantage Executive';
+    const currency=isUnitedEco?'PQP':'Loyalty Points';
+    corrections.push({
+      t:'Route remaining spend through your airline card for status acceleration',
+      i:fmtD(imp)+' in incremental value — plus every dollar building toward '+currency,
+      b:'General spend routed through the '+airlineCard+' earns '+currency+' on every purchase. At '+fmtD(general)+' in annual general spend, the status acceleration from everyday purchases compounds alongside flight earning — often the difference between one tier and the next.'
     });
   }
 
@@ -899,8 +953,16 @@ function generateResults(d){
   // Lounge
 
 
-  beforeItems.push({txt:'One lounge network. Half the coverage.',note:'Centurion Lounge through Platinum is active. Sky Club requires Delta Reserve or status. Every Delta departure without the Reserve card starts at the gate.'});
-  afterItems.push({txt:'Both lounge networks on every departure. Plus Priority Pass worldwide.',note:'Centurion Lounge via Platinum. Sky Club via Delta Reserve. Priority Pass Select included with Platinum — covers additional lounge networks globally, including airports where neither Centurion nor Sky Club is present. The airport stops being somewhere to endure.'});
+  if(isDeltaEco){
+    beforeItems.push({txt:'One lounge network. Half the coverage.',note:'Centurion Lounge through Platinum is active. Sky Club requires Delta Reserve or status. Every Delta departure without the Reserve card starts at the gate.'});
+    afterItems.push({txt:'Both lounge networks on every departure. Plus Priority Pass worldwide.',note:'Centurion Lounge via Platinum. Sky Club via Delta Reserve. Priority Pass Select included with Platinum — covers additional lounge networks globally, including airports where neither Centurion nor Sky Club is present. The airport stops being somewhere to endure.'});
+  } else if(isUnitedEco){
+    beforeItems.push({txt:'One lounge network. Limited coverage.',note:'Centurion Lounge through Platinum is active where it exists. United Club requires the United Club Infinite card or Premier status. Every United departure without the card starts at the gate.'});
+    afterItems.push({txt:'United Club on every United departure. Plus Centurion and Priority Pass worldwide.',note:'United Club Infinite delivers unlimited United Club access for you and two guests on every United departure. Centurion Lounge via Platinum for non-United travel and international departures. Priority Pass Select via Platinum adds 1,300+ additional lounges globally.'});
+  } else if(isAmericanEco){
+    beforeItems.push({txt:'One lounge network. No Admirals Club.',note:'Centurion Lounge through Platinum is active where it exists. Admirals Club requires the Citi AAdvantage Executive card or AA status. Every American departure without the card starts at the gate.'});
+    afterItems.push({txt:'Admirals Club on every American departure. Plus Centurion and Priority Pass worldwide.',note:'Citi AAdvantage Executive delivers full Admirals Club membership — extending to authorized users and travel companions, not just the cardholder. Centurion Lounge via Platinum for non-AA travel. Priority Pass Select via Platinum adds 1,300+ additional lounges globally.'});
+  }
 
   afterItems.push({txt:'The hotel room is better before check-in.',note:'Fine Hotels + Resorts through Amex Travel — room upgrade when available, daily breakfast for two, $100+ property credit, 4pm checkout. Activates on every eligible stay the moment bookings route through Amex Travel. No new card required. Available right now and currently producing nothing.'});
 
@@ -962,55 +1024,52 @@ function generateResults(d){
     </tr>`).join('');
 
   // ── STATUS PATH ─ MQD-based ────────────────────────
-  // Status projection — based on current status entered, not calculated from spend
-  // Next tier — use MQD projection, not just entered status
+  // Status projection — branched by ecosystem
   const projectedTierLabel=canReachDiamond?'Delta Diamond Medallion':canReachPlatinum?'Delta Platinum Medallion':canReachGold?'Delta Gold Medallion':canReachSilver?'Delta Silver Medallion':'Delta status building';
-  // Override: if person already has a tier, project at least the next one
   const nextTierLabel=isAtPlatinumOrAbove?(canReachDiamond?'Diamond Medallion':'Diamond Medallion — longer runway'):isAtGoldOrAbove?(canReachPlatinum?'Delta Platinum Medallion':'Delta Platinum Medallion — within reach'):projectedTierLabel;
-  const nextTierMQD=isAtPlatinumOrAbove?28000:isAtGoldOrAbove?15000:hasDeltaStatus?10000:5000;
   const nextTierDesc=isAtPlatinumOrAbove
     ?'Diamond delivers unlimited Sky Club access for up to two guests, Global Upgrade Certificates, and the highest tier of Delta recognition on every departure.'
     :isAtGoldOrAbove
-    ?'Platinum adds four Regional Upgrade Certificates for confirmed domestic First Class — not waitlisted, confirmed. Upgrade priority moves ahead of every Gold member on the same flight. The confirmed RUCs alone are worth the status gap.'
+    ?'Platinum adds four First Class upgrade certificates annually. When inventory is open, confirmed immediately. When it is not, first in line ahead of every standard upgrade request. Subject to availability per program terms.'
     :hasDeltaStatus
     ?'Gold delivers Sky Priority boarding, complimentary upgrade eligibility, and priority recovery during disruptions. The foundation of consistent recognition on US departures.'
-    :'Silver activates Sky Priority boarding and the beginning of upgrade eligibility. The first tier where Delta starts treating the traveler differently.';
+    :'Silver activates Sky Priority boarding and the beginning of upgrade eligibility. The first tier where the airline treats the traveler differently.';
 
-  const statusRows=[
-    {
-      period:'Now',dot:'now',
-      title:hasAirlineStatus?d.primary_airline:'No US airline status',
-      body:hasDeltaStatus
-        ?fname+' has existing Delta status. The architecture accelerates what\'s already accumulating — Reserve card MQD Boost adds to flight MQDs already building toward the next tier.'
-        :fname+' is currently invisible to the programs that decide who boards first and who gets upgraded. The card architecture changes that — the $2,500 MQD Headstart activates from the first billing cycle.'
-    },
-    {
-      period:'Month 1',dot:'future',
-      title:'Full architecture deployed',
-      body:'Delta Reserve and Amex Gold added. All spend correctly routed from day one. $2,500 MQD Headstart activates on first billing cycle. Every dollar on Reserve earns MQD Boost. FHR benefits live on the next hotel stay booked through Amex Travel.'
-    },
-    {
-      period:'Months 2–6',dot:'future',
-      title:'MQDs building · Recognition begins',
-      body:isAtGoldOrAbove
-        ?'Already at Gold. Platinum gap closes as Reserve card spend compounds the MQD Boost alongside flight MQDs. Comfort+ at booking already active. RUCs arrive at Platinum.'
-        :'Reserve card MQD Boost earning daily. Combined with flight MQDs, the first status tier comes into range. The airport experience begins changing before year-end.'
-    },
-    {
-      period:'Year end',dot:'target',
-      title:nextTierLabel+' — the target',
-      body:nextTierDesc
-    },
+  const unitedNextDesc=canReachUnited1K
+    ?'United Premier 1K delivers the highest upgrade priority, PlusPoints for confirmed upgrades, and 120% mileage bonus on every United flight. The top of the United recognition hierarchy.'
+    :canReachUnitedPlatinum
+    ?'United Premier Platinum delivers priority upgrade access, PlusPoints for domestic upgrades, and significantly higher mileage earning. The tier where United recognition becomes consistent.'
+    :canReachUnitedGold
+    ?'United Premier Gold delivers priority boarding, upgrade eligibility, free checked bags for a companion, and expanded Economy Plus access. The foundation of consistent United recognition.'
+    :'United Premier Silver delivers priority boarding, Economy Plus access when available, and the beginning of upgrade eligibility. The first tier where United treats the traveler differently.';
+
+  const aaNextDesc=canReachAAExecPlat
+    ?'AAdvantage Executive Platinum delivers complimentary international upgrades, Group 1 boarding, 120% mileage bonus, and the highest priority on every American departure.'
+    :canReachAAPlat
+    ?'AAdvantage Platinum delivers Group 3 boarding, complimentary upgrade eligibility with 48-hour window, and first two checked bags free. The tier where American recognition becomes reliable.'
+    :'AAdvantage Gold delivers Group 4 boarding, complimentary upgrade eligibility, and first checked bag free for you and up to eight companions. The foundation of consistent American recognition.';
+
+  const statusRows=isDeltaEco?[
+    {period:'Now',dot:'now',title:hasAirlineStatus?d.primary_airline:'No US airline status',body:hasDeltaStatus?fname+' has existing Delta status. The architecture accelerates what\'s already accumulating — Reserve card MQD Boost adds to flight MQDs already building toward the next tier.':fname+' is currently invisible to the programs that decide who boards first and who gets upgraded. The card architecture changes that — the $2,500 MQD Headstart activates from the first billing cycle.'},
+    {period:'Month 1',dot:'future',title:'Full architecture deployed',body:'Delta Reserve and Amex Gold added. All spend correctly routed from day one. $2,500 MQD Headstart activates on first billing cycle. FHR benefits live on the next hotel stay booked through Amex Travel.'},
+    {period:'Months 2–6',dot:'future',title:'MQDs building · Recognition begins',body:isAtGoldOrAbove?'Already at Gold. Platinum gap closes as Reserve card spend compounds the MQD Boost alongside flight MQDs. RUCs arrive at Platinum.':'Reserve card MQD Boost earning daily. Combined with flight MQDs, the first status tier comes into range.'},
+    {period:'Year end',dot:'target',title:nextTierLabel+' — the target',body:nextTierDesc},
+  ]:isUnitedEco?[
+    {period:'Now',dot:'now',title:hasAirlineStatus?d.primary_airline:'No United status',body:fname+' is currently earning miles without building Premier status efficiently. United Club Infinite adds up to 28,000 PQP per year from card spend — status accelerates from everyday purchases, not just flights.'},
+    {period:'Month 1',dot:'future',title:'United Club Infinite + Amex Gold added',body:'United Club lounge access activates on day one. 1,500 PQP card bonus posts within weeks. All United airfare earns 11x miles. Amex Gold routes dining and grocery to 4x. FHR activates on next hotel stay via Amex Travel.'},
+    {period:'Months 2–6',dot:'future',title:'PQPs accumulating · Lounge access active',body:'Projected ~'+fmtD(pqpCard+pqpBonus)+' PQP from card spend alone by year end before a single flight. United Club access active on every United departure immediately.'},
+    {period:'Year end',dot:'target',title:unitedStatusTarget+' — projected',body:unitedNextDesc},
+  ]:[
+    {period:'Now',dot:'now',title:hasAirlineStatus?d.primary_airline:'No AAdvantage status',body:fname+' is currently flying American without building AAdvantage status efficiently. The Citi AAdvantage Executive card earns Loyalty Points on every dollar of card spend — accelerating status from everyday purchases alongside flights.'},
+    {period:'Month 1',dot:'future',title:'Citi AAdvantage Executive + Amex Gold added',body:'Admirals Club membership activates on day one — extending to travel companions. First checked bag free immediately. Every purchase earns Loyalty Points. FHR activates on next hotel stay via Amex Travel.'},
+    {period:'Months 2–6',dot:'future',title:'Loyalty Points building · Admirals Club active',body:'Projected ~'+fmtD(lpCard)+' LP from card spend alone before a single flight. Admirals Club access active on every American departure immediately.'},
+    {period:'Year end',dot:'target',title:aaStatusTarget+' — projected',body:aaNextDesc},
   ];
-  if(isDeltaEco){
-    document.getElementById('status-path').innerHTML=statusRows.map(r=>`
+  document.getElementById('status-path').innerHTML=statusRows.map(r=>`
     <div class="sp-row">
       <div><div class="sp-dot ${r.dot}"></div><div class="sp-period">${r.period}</div></div>
       <div><div class="sp-title">${r.title}</div><div class="sp-body">${r.body}</div></div>
     </div>`).join('');
-  } else {
-    document.getElementById('status-path').innerHTML=`<div class="sp-row"><div><div class="sp-dot future"></div><div class="sp-period">Coming</div></div><div><div class="sp-title">${d.primary_airline_eco} status projection</div><div class="sp-body">Status path calculations for ${d.primary_airline_eco} are in development and will be included in an update. Your spend routing corrections and hotel recommendations below remain fully applicable.</div></div></div>`;
-  }
 
   // ── HOTEL ──────────────────────────────────────────
   let hotelHTML='';
@@ -1059,6 +1118,7 @@ function generateResults(d){
     {lbl:'Amex Gold card credits',sub:'$120 dining credit and $84 Dunkin credit annually — partially offsetting the Gold card annual fee.',amt:v5},
     {lbl:'Annual companion certificate',sub:'Delta Reserve annual companion certificate — one round-trip companion fare after year one of card hold.',amt:v6},
     {lbl:"Regional Upgrade Certificates (×4)",sub:"Four First Class upgrade certificates annually as a Platinum Medallion Choice Benefit. When upgrade inventory is open, confirmed immediately. When it is not, first in line ahead of every standard upgrade request on that flight. $200 per certificate estimated value. Subject to availability per program terms.",amt:v7},
+    {lbl:isUnitedEco?"Bag savings — United Club Infinite":isAmericanEco?"Bag savings — Citi AAdvantage Executive":"",sub:isUnitedEco?"First and second checked bags free for cardholder and companion on every United flight.":isAmericanEco?"First checked bag free for cardholder and up to eight companions on every American itinerary.":"",amt:v8},
   ].filter(r=>r.amt>0);
 
   document.getElementById('value-body').innerHTML=valRows.map(r=>`
