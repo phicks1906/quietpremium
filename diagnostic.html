@@ -284,7 +284,17 @@ textarea{resize:vertical;min-height:80px}
 
       <div class="field"><label class="field-lbl">Primary home airport <span class="req">*</span></label><input type="text" name="home_airport" required placeholder="e.g. ATL, JFK, BNA" oninput="updateProgress()"/></div>
       <div class="field"><label class="field-lbl">Which airports do you fly to most frequently? <span class="req">*</span></label><textarea name="frequent_destinations" required placeholder="e.g. JFK, LAX, BNA, ORD" oninput="updateProgress()"></textarea></div>
-      <div class="field"><label class="field-lbl">Current primary airline and elite tier <span class="req">*</span></label><input type="text" name="primary_airline" required placeholder="e.g. Delta — Platinum Medallion, or None" oninput="updateProgress()"/></div>
+      <div class="field"><label class="field-lbl">Primary airline for US domestic travel <span class="req">*</span></label>
+        <div class="opts" data-name="primary_airline_eco" data-type="radio">
+          <div class="opt" data-value="Delta"><div class="opt-ind circle"></div><div class="opt-txt">Delta</div></div>
+          <div class="opt" data-value="United"><div class="opt-ind circle"></div><div class="opt-txt">United</div></div>
+          <div class="opt" data-value="American"><div class="opt-ind circle"></div><div class="opt-txt">American</div></div>
+          <div class="opt" data-value="Southwest"><div class="opt-ind circle"></div><div class="opt-txt">Southwest</div></div>
+          <div class="opt" data-value="Mixed"><div class="opt-ind circle"></div><div class="opt-txt">Mixed or no preference</div></div>
+        </div><input class="real-inp" type="text" name="primary_airline_eco" required/>
+      </div>
+
+      <div class="field"><label class="field-lbl">Current elite tier with that airline <span class="req">*</span></label><input type="text" name="primary_airline" required placeholder="e.g. Delta Gold Medallion, United Silver, or None" oninput="updateProgress()"/></div>
 
       <div class="field"><label class="field-lbl">Flights personally taken — past 12 months <span class="req">*</span></label>
         <div class="opts" data-name="flights_taken" data-type="radio">
@@ -725,6 +735,12 @@ function generateResults(d){
   const groceryCurrentRate=cardGrocery.includes('platinum')?1:cardGrocery.includes('gold')?4:3;
 
   const hasAirlineStatus=d.primary_airline&&!d.primary_airline.toLowerCase().includes('none')&&d.primary_airline.trim()!=='';
+  const airlineEco=(d.primary_airline_eco||'').toLowerCase();
+  const isDeltaEco=airlineEco==='delta'||airlineEco==='mixed'||airlineEco==='';
+  const isUnitedEco=airlineEco==='united';
+  const isAmericanEco=airlineEco==='american';
+  const isSouthwestEco=airlineEco==='southwest';
+  const isNonDeltaEco=isUnitedEco||isAmericanEco;
   const hasDeltaStatus=d.primary_airline&&d.primary_airline.toLowerCase().includes('delta');
   const hasDeltaGold=hasDeltaStatus&&(d.primary_airline.toLowerCase().includes('gold')||d.primary_airline.toLowerCase().includes('platinum')||d.primary_airline.toLowerCase().includes('diamond'));
   const hotelInput=(d.primary_hotel||'').toLowerCase();
@@ -986,11 +1002,15 @@ function generateResults(d){
       body:nextTierDesc
     },
   ];
-  document.getElementById('status-path').innerHTML=statusRows.map(r=>`
+  if(isDeltaEco){
+    document.getElementById('status-path').innerHTML=statusRows.map(r=>`
     <div class="sp-row">
       <div><div class="sp-dot ${r.dot}"></div><div class="sp-period">${r.period}</div></div>
       <div><div class="sp-title">${r.title}</div><div class="sp-body">${r.body}</div></div>
     </div>`).join('');
+  } else {
+    document.getElementById('status-path').innerHTML=`<div class="sp-row"><div><div class="sp-dot future"></div><div class="sp-period">Coming</div></div><div><div class="sp-title">${d.primary_airline_eco} status projection</div><div class="sp-body">Status path calculations for ${d.primary_airline_eco} are in development and will be included in an update. Your spend routing corrections and hotel recommendations below remain fully applicable.</div></div></div>`;
+  }
 
   // ── HOTEL ──────────────────────────────────────────
   let hotelHTML='';
