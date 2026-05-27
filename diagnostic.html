@@ -994,23 +994,37 @@ function generateResults(d){
   document.getElementById('exp-after').innerHTML=mkExp(afterItems,'after');
 
   // ── SPEND TABLE ────────────────────────────────────
-  const diningRateDisplay=diningCurrentRate+'x';
-  // Airfare rate
-  const airfareCurrentRate=isDeltaReserveAirfare?'3x (Delta)':cardAirfare.includes('platinum')?'5x (non-Delta via Amex Travel)':'1x';
-  const airfareFixedRate=isDeltaReserveAirfare?'3x + MQDs':'3x + MQDs (Delta) / 5x (non-Delta)';
-  const airfareImpact=isDeltaReserveAirfare?'—':fmtD(Math.round(cardLeakAirfare*0.9/100)*100)+'/yr';
 
+  // Ecosystem-aware third card
+  const ecosystem=airlineEco; // 'delta','united','american','southwest','' — all set earlier
+  const thirdCardName=ecosystem==='united'?'United Club Infinite':ecosystem==='american'?'Citi AAdvantage Executive':'Delta SkyMiles Reserve';
+
+  // Correct-card checks per ecosystem
+  const isCorrectAirfareCard=ecosystem==='united'?(cardAirfare||'').toLowerCase().includes('united club'):ecosystem==='american'?((cardAirfare||'').toLowerCase().includes('aadvantage')||(cardAirfare||'').toLowerCase().includes('citi')):isDeltaReserveAirfare;
+  const isCorrectGeneralCard=ecosystem==='united'?(cardGeneral||'').toLowerCase().includes('united club'):ecosystem==='american'?((cardGeneral||'').toLowerCase().includes('aadvantage')||(cardGeneral||'').toLowerCase().includes('citi')):isDeltaReserveGeneral;
+
+  // Airfare rates
+  const airfareRateNow=isCorrectAirfareCard?(ecosystem==='united'?'11x (United)':ecosystem==='american'?'2x (AA)':'3x (Delta)'):(cardAirfare||'').toLowerCase().includes('platinum')?'5x (non-Delta via Amex Travel)':'1x';
+  const airfareRateFixed=ecosystem==='united'?'11x on United purchases':ecosystem==='american'?'2x AA + 1 LP per $1':'3x + MQDs (Delta) / 5x (non-Delta)';
+
+  // General rates
+  const generalRateNow=isCorrectGeneralCard?(ecosystem==='united'?'1x + PQP':ecosystem==='american'?'1x + LP':'1.5x'):'1x';
+  const generalRateFixed=ecosystem==='united'?'1x + PQP accumulation':ecosystem==='american'?'1x + 1 LP per $1':'1.5x + MQDs';
+  const generalStatusCurrency=ecosystem==='united'?'PQPs':ecosystem==='american'?'LPs':'MQDs';
+
+  // Impact
+  const airfareImpact=isCorrectAirfareCard?'—':fmtD(Math.round(cardLeakAirfare*0.9/100)*100)+'/yr';
   const diningImpact=isGoldDining?'—':fmtD(Math.round(cardLeakDining*0.9/100)*100)+'/yr';
   const groceryImpact=isGoldGrocery?'—':fmtD(Math.round(cardLeakGrocery*0.9/100)*100)+'/yr';
-  const hotelImpact=isPlatHotel&&isAmexTravelBooking?'—':fmtD(fhrVal)+' in FHR benefits';
-  const generalImpact=isDeltaReserveGeneral?'—':fmtD(Math.round(cardLeakGeneral*0.9/100)*100)+'/yr + MQDs';
+  const hotelImpact=(isPlatHotel&&isAmexTravelBooking)?'—':fmtD(fhrVal)+' in FHR benefits';
+  const generalImpact=isCorrectGeneralCard?'—':fmtD(Math.round(cardLeakGeneral*0.9/100)*100)+'/yr + '+generalStatusCurrency;
 
   const spRows=[
-    {cat:'Airfare',cur:d.card_airfare||'—',rateNow:airfareCurrentRate,rateFix:airfareFixedRate,ok:isDeltaReserveAirfare,fix:'Delta SkyMiles Reserve',impact:airfareImpact},
+    {cat:'Airfare',cur:d.card_airfare||'—',rateNow:airfareRateNow,rateFix:airfareRateFixed,ok:isCorrectAirfareCard,fix:thirdCardName,impact:airfareImpact},
     {cat:'Dining · '+fmtD(dining),cur:d.card_dining||'—',rateNow:diningCurrentRate+'x',rateFix:'4x',ok:isGoldDining,fix:'Amex Gold',impact:diningImpact},
     {cat:'Groceries · '+fmtD(grocery),cur:d.card_groceries||'—',rateNow:groceryCurrentRate+'x',rateFix:'4x',ok:isGoldGrocery,fix:'Amex Gold',impact:groceryImpact},
     {cat:'Hotels',cur:d.card_hotels||'—',rateNow:isPlatHotel?'5x (if via Amex Travel)':'1–5x',rateFix:'5x + FHR',ok:isPlatHotel&&isAmexTravelBooking,fix:'Amex Platinum via Amex Travel',impact:hotelImpact},
-    {cat:'General · '+fmtD(general),cur:d.card_general||'—',rateNow:isDeltaReserveGeneral?'1.5x':'1x',rateFix:'1.5x + MQDs',ok:isDeltaReserveGeneral,fix:'Delta SkyMiles Reserve',impact:generalImpact},
+    {cat:'General · '+fmtD(general),cur:d.card_general||'—',rateNow:generalRateNow,rateFix:generalRateFixed,ok:isCorrectGeneralCard,fix:thirdCardName,impact:generalImpact},
   ];
   document.getElementById('sp-body').innerHTML=spRows.map(r=>`
     <tr>
@@ -1020,8 +1034,8 @@ function generateResults(d){
       <td style="font-family:var(--mono);font-size:10px;color:var(--gold)">${r.rateFix}</td>
       <td><span class="${r.ok?'tag-ok':'tag-leak'}">${r.ok?'✓':'⚠'}</span></td>
       <td style="color:${r.ok?'var(--grey-dk)':'var(--gold)'};font-size:10px;font-family:var(--mono)">${r.ok?'—':r.fix}</td>
-      <td style="font-size:10px;color:${r.ok?'var(--grey-mid)':'var(--gold)'}font-weight:400">${r.impact}</td>
-    </tr>`).join('');
+      <td style="font-size:10px;color:${r.ok?'var(--grey-mid)':'var(--gold)'};font-weight:400">${r.impact}</td>
+    </tr>`).join('')
 
   // ── STATUS PATH ─ MQD-based ────────────────────────
   // Status projection — branched by ecosystem
