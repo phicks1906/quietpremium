@@ -271,25 +271,36 @@ textarea{resize:vertical;min-height:80px}
       <div>
         <div class="pv-card">
           <div class="pv-lbl">Sample Output — Your results will look like this</div>
-          <div class="pv-stat">
-            <div class="pv-stat-lbl">Annual Leakage Identified</div>
-            <div class="pv-stat-val">$11,400</div>
-            <div class="pv-stat-sub">Leaving your setup every year · same spend · no increase required</div>
+
+          <!-- Dashboard -->
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--grey-dk);margin-bottom:14px">
+            <div style="background:#0A0A0A;padding:12px 10px">
+              <div style="font-family:var(--mono);font-size:6px;letter-spacing:.1em;text-transform:uppercase;color:var(--grey-mid);margin-bottom:4px">Potential Value</div>
+              <div style="font-family:var(--serif);font-size:22px;font-weight:300;color:var(--gold)">$11,400</div>
+              <div style="font-family:var(--mono);font-size:6px;color:var(--grey);margin-top:2px">Year one · same spend</div>
+            </div>
+            <div style="background:#0A0A0A;padding:12px 10px">
+              <div style="font-family:var(--mono);font-size:6px;letter-spacing:.1em;text-transform:uppercase;color:var(--grey-mid);margin-bottom:4px">Gap Score</div>
+              <div style="font-family:var(--serif);font-size:22px;font-weight:300;color:var(--gold)">8.2</div>
+              <div style="font-family:var(--mono);font-size:6px;color:var(--grey);margin-top:2px">Out of 10</div>
+            </div>
+            <div style="background:#0A0A0A;padding:12px 10px">
+              <div style="font-family:var(--mono);font-size:6px;letter-spacing:.1em;text-transform:uppercase;color:var(--grey-mid);margin-bottom:4px">Spend Misrouted</div>
+              <div style="font-family:var(--serif);font-size:22px;font-weight:300;color:var(--amber)">80%</div>
+              <div style="font-family:var(--mono);font-size:6px;color:var(--grey);margin-top:2px">Of annual spend</div>
+            </div>
           </div>
-          <div style="font-family:var(--mono);font-size:7px;letter-spacing:.1em;text-transform:uppercase;color:var(--grey-mid);margin-bottom:8px;padding-bottom:7px;border-bottom:1px solid var(--grey-dk)">Complete audit across 5 dimensions</div>
-          <div style="display:flex;flex-direction:column;gap:5px;margin-bottom:14px">
-            <div style="display:flex;justify-content:space-between;font-size:10px"><span style="color:var(--grey)">Card architecture</span><span style="font-family:var(--mono);font-size:9px;color:var(--red)">2/10</span></div>
-            <div style="display:flex;justify-content:space-between;font-size:10px"><span style="color:var(--grey)">Airline concentration</span><span style="font-family:var(--mono);font-size:9px;color:var(--red)">1/10</span></div>
-            <div style="display:flex;justify-content:space-between;font-size:10px"><span style="color:var(--grey)">Hotel program</span><span style="font-family:var(--mono);font-size:9px;color:var(--red)">1/10</span></div>
-            <div style="display:flex;justify-content:space-between;font-size:10px"><span style="color:var(--grey)">Points utilization</span><span style="font-family:var(--mono);font-size:9px;color:var(--amber)">3/10</span></div>
-            <div style="display:flex;justify-content:space-between;font-size:10px"><span style="color:var(--grey)">Spend routing</span><span style="font-family:var(--mono);font-size:9px;color:var(--red)">2/10</span></div>
-          </div>
-          <div style="font-family:var(--mono);font-size:7px;letter-spacing:.1em;text-transform:uppercase;color:var(--grey-mid);margin-bottom:8px;padding-bottom:7px;border-bottom:1px solid var(--grey-dk)">What the audit concludes</div>
-          <div class="pv-m-item"><strong>$38,000 in airfare</strong> on the wrong card. Zero MQM credit toward status. One card change fixes it.</div>
-          <div class="pv-m-item"><strong>$28,000 in dining</strong> earning 3x instead of 4x. $1,680 left on the table annually.</div>
-          <div class="pv-m-item"><strong>38 hotel nights</strong> split across 6 brands. Globalist achievable in 11 months with concentration.</div>
+
+          <div style="font-family:var(--mono);font-size:7px;letter-spacing:.1em;text-transform:uppercase;color:var(--grey-mid);margin-bottom:8px;padding-bottom:7px;border-bottom:1px solid var(--grey-dk)">Three highest-impact corrections</div>
+          <div class="pv-m-item"><strong>Airfare routing</strong> — $38,000 on the wrong card. Zero MQD credit toward status. One change fixes both simultaneously.</div>
+          <div class="pv-m-item"><strong>Dining category</strong> — $28,000 earning below optimal rate. $1,680 in recoverable value annually.</div>
+          <div class="pv-m-item"><strong>Hotel booking method</strong> — existing card benefits unused on every eligible stay. No new card required.</div>
+
+          <div style="font-family:var(--mono);font-size:7px;letter-spacing:.1em;text-transform:uppercase;color:var(--grey-mid);margin-bottom:8px;padding-bottom:7px;border-top:1px solid var(--grey-dk);padding-top:10px;margin-top:10px">12-month status projection</div>
+          <div class="pv-m-item"><strong>Delta Platinum Medallion</strong> — projected by year end. Comfort+ at booking on eligible fares. Boards as early as Zone 3. Four First Class upgrade certificates annually — confirmed when inventory is open, first in line when it isn't. The trip starts differently.</div>
+
           <div style="border-top:1px solid var(--grey-dk);margin-top:12px;padding-top:10px;display:flex;justify-content:space-between;align-items:baseline">
-            <div style="font-family:var(--mono);font-size:7px;letter-spacing:.1em;text-transform:uppercase;color:var(--grey-mid)">Total annual value available</div>
+            <div style="font-family:var(--mono);font-size:7px;letter-spacing:.1em;text-transform:uppercase;color:var(--grey-mid)">Potential annual value</div>
             <div style="font-family:var(--serif);font-size:20px;font-weight:300;color:var(--gold)">$11,400</div>
           </div>
         </div>
