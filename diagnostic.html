@@ -730,7 +730,6 @@ function generateResults(d){
   const isPlatHotel=cardHotels.includes('platinum');
   const isAmexTravelBooking=d.booking_method==='Direct'||d.booking_method==='Mixed';
 
-  // Dining current rate — Platinum earns 1x, Chase/Citi earn 3x, Gold earns 4x
   const diningCurrentRate=cardDining.includes('platinum')?1:cardDining.includes('gold')?4:3;
   const groceryCurrentRate=cardGrocery.includes('platinum')?1:cardGrocery.includes('gold')?4:3;
 
@@ -757,15 +756,10 @@ function generateResults(d){
   const flights=d.flights_taken==='40+'?42:d.flights_taken==='21-40'?30:d.flights_taken==='11-20'?15:d.flights_taken==='6-10'?8:4;
   const nights=d.hotel_nights==='40+'?42:d.hotel_nights==='21-39'?30:d.hotel_nights==='11-20'?15:d.hotel_nights==='6-10'?8:4;
 
-  // ── MQD CALCULATION ─ validated logic ──────────────
-  // $2,500 headstart + $1 per $10 Reserve spend + ~$1 per $1 Delta airfare
+  // ── MQD CALCULATION ─────────────────────────────────
   const airlineSpendEst=d.airline_spend==='$20k+'?22000:d.airline_spend==='$10k-$20k'?15000:d.airline_spend==='$5k-$10k'?7500:d.airline_spend==='Under $5k'?3000:d.airline_spend==='Likely over $10k'?12000:8000;
-  // MQD calc — validated formula:
-  // Reserve spend = total − dining − grocery − hotel spend estimate
-  // MQD Boost = Reserve spend ÷ 10
-  // Total = $2,500 Headstart + MQD Boost + flight MQDs
-  const hotelSpendEst=nights*500; // conservative $500/night
-  const reserveSpendEst=Math.max(0, spend - dining - grocery - hotelSpendEst);
+  const hotelSpendEst=nights*500;
+  const reserveSpendEst=Math.max(0,spend-dining-grocery-hotelSpendEst);
   const mqdsHeadstart=2500;
   const mqdsCard=Math.round(reserveSpendEst/10);
   const mqdsFlights=Math.round(airlineSpendEst*0.95);
@@ -774,11 +768,8 @@ function generateResults(d){
   const canReachPlatinum=mqdsTotal>=15000;
   const canReachGold=mqdsTotal>=10000;
   const canReachSilver=mqdsTotal>=5000;
-  const statusTarget=canReachDiamond?'Delta Diamond Medallion':canReachPlatinum?'Delta Platinum Medallion':canReachGold?'Delta Gold Medallion':canReachSilver?'Delta Silver Medallion':'Delta status building';
 
-  // ── UNITED STATUS CALCULATION ───────────────────────
-  // Club Infinite: up to 28K PQP/yr from card spend (roughly $15 spend per PQP) + 1,500 PQP bonus
-  // Flight PQPs: ~$1 per $1 United airfare
+  // ── UNITED PQP CALCULATION ───────────────────────────
   const pqpCard=isUnitedEco?Math.min(28000,Math.round(reserveSpendEst/15)):0;
   const pqpBonus=isUnitedEco?1500:0;
   const pqpFlights=isUnitedEco?Math.round(airlineSpendEst):0;
@@ -789,9 +780,7 @@ function generateResults(d){
   const canReachUnitedSilver=pqpTotal>=6000;
   const unitedStatusTarget=canReachUnited1K?'United Premier 1K':canReachUnitedPlatinum?'United Premier Platinum':canReachUnitedGold?'United Premier Gold':canReachUnitedSilver?'United Premier Silver':'United Silver — within reach';
 
-  // ── AMERICAN STATUS CALCULATION ─────────────────────
-  // Citi AA Executive: 1 LP per $1 on card spend (same as miles earned)
-  // AA flights: 5 LP per $1 base airfare
+  // ── AMERICAN LP CALCULATION ──────────────────────────
   const lpCard=isAmericanEco?Math.round(reserveSpendEst):0;
   const lpFlights=isAmericanEco?Math.round(airlineSpendEst*5):0;
   const lpTotal=lpCard+lpFlights;
@@ -800,8 +789,8 @@ function generateResults(d){
   const canReachAAGold=lpTotal>=40000;
   const aaStatusTarget=canReachAAExecPlat?'AAdvantage Executive Platinum':canReachAAPlat?'AAdvantage Platinum':canReachAAGold?'AAdvantage Gold':'AAdvantage Gold — within reach';
 
-  // ── VALUE CALCULATION ─ incremental only ───────────
-  const diningLeakPerDollar=(4-diningCurrentRate)*0.015; // 1.5cpp
+  // ── VALUE CALCULATION ────────────────────────────────
+  const diningLeakPerDollar=(4-diningCurrentRate)*0.015;
   const groceryLeakPerDollar=(4-groceryCurrentRate)*0.015;
   let cardLeakAirfare=isDeltaReserveAirfare?0:spend*0.012;
   let cardLeakDining=isGoldDining?0:Math.max(0,dining*diningLeakPerDollar);
@@ -815,10 +804,8 @@ function generateResults(d){
   const clearVal=tsaClearActivated==='Yes — both'?0:tsaClearActivated==='PreCheck only'?189:tsaClearActivated==='CLEAR only'?85:tsaClearActivated==='Not available'?0:274;
   const cardCredits=isGoldDining?0:204;
   const ptsVal=noRedeem?Math.round(spend*0.003/100)*100:0;
-  // Companion cert: Delta Reserve only. Bag savings: United Club Infinite and Citi AA Exec.
   const compVal=isDeltaEco&&isDeltaReserveAirfare?0:isDeltaEco?spend>=150000?800:400:0;
   const rucVal=isDeltaEco&&canReachPlatinum?800:0;
-  // Bag fee savings: United Club Infinite covers 1st+2nd bag; Citi AA Exec covers 1st bag
   const bagVal=isUnitedEco?Math.round(flights*0.6)*60:isAmericanEco?Math.round(flights*0.6)*35:0;
 
   const v1=Math.round(totalCardLeak*0.9/100)*100;
@@ -851,7 +838,7 @@ function generateResults(d){
   if(!isDeltaReserveGeneral)miscount++;
   const misPct=Math.round(miscount/5*100);
 
-  // ── HEADER ─────────────────────────────────────────
+  // ── HEADER ──────────────────────────────────────────
   document.getElementById('res-hd-right').style.visibility='visible';
   document.getElementById('r-name').textContent=d.full_name||'Your Results';
   document.getElementById('r-date').textContent=new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
@@ -859,7 +846,7 @@ function generateResults(d){
   document.getElementById('r-misaligned').textContent=misPct+'%';
   document.getElementById('r-value').textContent=fmtD(vt);
 
-  // ── CORRECTIONS ────────────────────────────────────
+  // ── CORRECTIONS ─────────────────────────────────────
   const corrections=[];
   if(!isDeltaReserveAirfare&&isDeltaEco){
     const imp=Math.round(cardLeakAirfare*0.9/100)*100;
@@ -912,7 +899,7 @@ function generateResults(d){
   if(general>0&&(isUnitedEco||isAmericanEco)){
     const imp=Math.round(cardLeakGeneral*0.9/100)*100;
     const airlineCard=isUnitedEco?'United Club Infinite':'Citi AAdvantage Executive';
-    const currency=isUnitedEco?'PQP':'Loyalty Points';
+    const currency=isUnitedEco?'PQPs':'Loyalty Points';
     corrections.push({
       t:'Route remaining spend through your airline card for status acceleration',
       i:fmtD(imp)+' in incremental value — plus every dollar building toward '+currency,
@@ -929,30 +916,53 @@ function generateResults(d){
     </div>`).join('');
   document.getElementById('corrections-body').innerHTML=corrHTML||'<div class="corr-item"><div class="corr-body" style="color:var(--gold)">Your card architecture is well-aligned. The remaining opportunity is in booking method corrections and status accumulation pace.</div></div>';
 
-  // ── EXPERIENCE CHANGE ──────────────────────────────
+  // ── EXPERIENCE CHANGE ────────────────────────────────
   const beforeItems=[];const afterItems=[];
 
-  // Boarding
-    // Status — foundation of everything
+  // ── STATUS / BOARDING — ecosystem-aware ─────────────
   const isAtGoldOrAbove=hasDeltaStatus&&(d.primary_airline.toLowerCase().includes('gold')||d.primary_airline.toLowerCase().includes('platinum')||d.primary_airline.toLowerCase().includes('diamond'));
   const isAtPlatinumOrAbove=hasDeltaStatus&&(d.primary_airline.toLowerCase().includes('platinum')||d.primary_airline.toLowerCase().includes('diamond'));
+  const statusInput=(d.primary_airline||'').toLowerCase();
+  const hasUnitedStatus=statusInput.includes('premier')||(statusInput.includes('united')&&!statusInput.includes('none'));
+  const isAtUnitedGoldOrAbove=hasUnitedStatus&&(statusInput.includes('gold')||statusInput.includes('platinum')||statusInput.includes('1k'));
+  const isAtUnitedPlatOrAbove=hasUnitedStatus&&(statusInput.includes('platinum')||statusInput.includes('1k'));
+  const hasAAStatus=statusInput.includes('aadvantage')||statusInput.includes('executive platinum')||(statusInput.includes('american')&&!statusInput.includes('none')&&!statusInput.includes('american express'));
+  const isAtAAGoldOrAbove=hasAAStatus&&(statusInput.includes('gold')||statusInput.includes('platinum'));
+  const isAtAAExecPlatOrAbove=hasAAStatus&&statusInput.includes('executive platinum');
 
-  if(!isAtPlatinumOrAbove){
-    beforeItems.push({txt:'Boards with the general cabin.',note:'Without Platinum status, every US departure starts the same way — group 4 or 5, bins filling, the trip beginning compressed. No recognition. No priority. No difference from any other traveler at that gate.'});
-    afterItems.push({txt:'Delta Platinum Medallion. The foundation everything else is built on.',note:'At Platinum, Comfort+ upgrades confirm at booking on eligible fares — no waitlist, already done. Boards as early as Zone 3 — ahead of most of the plane. With Comfort+ confirmed at booking on eligible fares, you board with the Comfort+ cabin. Without the upgrade, Zone 4 Sky Priority still puts you well ahead of the general cabin. The boarding experience compounds with the seat upgrade.'});
+  if(isDeltaEco){
+    if(!isAtPlatinumOrAbove){
+      beforeItems.push({txt:'Boards with the general cabin.',note:'Without Platinum status, every US departure starts the same way — group 4 or 5, bins filling, the trip beginning compressed. No recognition. No priority. No difference from any other traveler at that gate.'});
+      afterItems.push({txt:'Delta Platinum Medallion. The foundation everything else is built on.',note:'At Platinum, Comfort+ upgrades confirm at booking on eligible fares — no waitlist, already done. Boards as early as Zone 3 — ahead of most of the plane. With Comfort+ confirmed at booking on eligible fares, you board with the Comfort+ cabin. Without the upgrade, Zone 4 Sky Priority still puts you well ahead of the general cabin. The boarding experience compounds with the seat upgrade.'});
+    }
+    if(!isAtGoldOrAbove){
+      beforeItems.push({txt:'No upgrade eligibility on US flights.',note:'Without Gold status or above, there is no complimentary upgrade path on Delta. Comfort+ and First Class are purchased when wanted. Every premium seat costs money every time.'});
+      afterItems.push({txt:'Upgrade eligibility begins at Gold. It is supercharged at Platinum.',note:'Gold Medallion delivers complimentary upgrade eligibility on the waitlist. Platinum moves that priority ahead of every Gold member on the same flight — and adds four Regional Upgrade Certificates for confirmed domestic First Class. The path from no status to Gold to Platinum is a single year with the correct infrastructure in place.'});
+    } else if(!isAtPlatinumOrAbove){
+      beforeItems.push({txt:'Gold upgrade eligibility — but no confirmed RUCs.',note:'Gold delivers upgrade priority and waitlist eligibility. Comfort+ is consistent. First Class clears when available. But the four confirmed Regional Upgrade Certificates belong to Platinum, not Gold. That gap is the next target — and the architecture gets there faster.'});
+      afterItems.push({txt:'Platinum adds what Gold does not have.',note:'Four Regional Upgrade Certificates for confirmed domestic First Class — not waitlisted, confirmed, four times per year. Upgrade priority that moves ahead of every Gold member on the same flight. The difference between Gold and Platinum is not incremental. It is the difference between eligibility and confirmation.'});
+    }
+  } else if(isUnitedEco){
+    if(!isAtUnitedPlatOrAbove){
+      beforeItems.push({txt:'Boards with the general economy group on United.',note:'Without United Platinum or above, every United departure places you in Group 3 or later. No priority lane. No recognition. The trip begins compressed before the seat is reached.'});
+      afterItems.push({txt:'United Premier status. The foundation of consistent United recognition.',note:'United Club Infinite builds Premier status through PQP accumulation on every purchase. Premier Silver activates Economy Plus access and priority boarding. Gold adds upgrade eligibility. Platinum and above deliver the upgrade priority and mileage bonuses that change what the flight costs to experience.'});
+    }
+    if(!isAtUnitedGoldOrAbove){
+      beforeItems.push({txt:'No upgrade eligibility or priority recovery on United.',note:'Without Gold or above, there is no complimentary upgrade path on United. Every premium seat purchased. Every departure in the general priority queue.'});
+      afterItems.push({txt:'Premier Gold delivers upgrade eligibility. Platinum adds PlusPoints for confirmed upgrades.',note:'Gold delivers Economy Plus access, upgrade eligibility, and priority boarding. Platinum adds PlusPoints for confirmed upgrades and higher mileage earning. The United Club Infinite card builds toward both through everyday spend — not just from flights.'});
+    }
+  } else if(isAmericanEco){
+    if(!isAtAAExecPlatOrAbove){
+      beforeItems.push({txt:'Boards in Group 4 or later on American.',note:'Without AAdvantage status, every American departure places you behind Executive Platinum, Platinum Pro, and Platinum members. No priority lane. No recognition. The trip begins in the general queue.'});
+      afterItems.push({txt:'AAdvantage status built from everyday spend — not just flights.',note:'The Citi AAdvantage Executive card earns Loyalty Points on every purchase — accelerating AAdvantage status without additional flights. Gold delivers Group 4 boarding and upgrade eligibility. Platinum moves that to Group 3 with a 48-hour upgrade window. The architecture builds status from the card, compounding alongside flight earning.'});
+    }
+    if(!isAtAAGoldOrAbove){
+      beforeItems.push({txt:'No upgrade eligibility on American flights.',note:'Without AAdvantage Gold or above, there is no complimentary upgrade path. Every premium cabin seat paid for. Every departure without recognition from the airline.'});
+      afterItems.push({txt:'AAdvantage Gold — the entry point to American recognition.',note:'Gold delivers Group 4 boarding, upgrade eligibility, and first checked bag free for the cardholder and up to eight companions. At the spend level entering The Architecture, Gold is achievable in year one through the combination of card Loyalty Points and flight earning.'});
+    }
   }
 
-  if(!isAtGoldOrAbove){
-    beforeItems.push({txt:'No upgrade eligibility on US flights.',note:'Without Gold status or above, there is no complimentary upgrade path on Delta. Comfort+ and First Class are purchased when wanted. Every premium seat costs money every time.'});
-    afterItems.push({txt:'Upgrade eligibility begins at Gold. It is supercharged at Platinum.',note:'Gold Medallion delivers complimentary upgrade eligibility on the waitlist. Platinum moves that priority ahead of every Gold member on the same flight — and adds four Regional Upgrade Certificates for confirmed domestic First Class. The path from no status to Gold to Platinum is a single year with the correct infrastructure in place.'});
-  } else if(!isAtPlatinumOrAbove){
-    beforeItems.push({txt:'Gold upgrade eligibility — but no confirmed RUCs.',note:'Gold delivers upgrade priority and waitlist eligibility. Comfort+ is consistent. First Class clears when available. But the four confirmed Regional Upgrade Certificates belong to Platinum, not Gold. That gap is the next target — and the architecture gets there faster.'});
-    afterItems.push({txt:'Platinum adds what Gold does not have.',note:'Four Regional Upgrade Certificates for confirmed domestic First Class — not waitlisted, confirmed, four times per year. Upgrade priority that moves ahead of every Gold member on the same flight. The difference between Gold and Platinum is not incremental. It is the difference between eligibility and confirmation.'});
-  }
-
-  // Lounge
-
-
+  // Lounge — ecosystem-aware
   if(isDeltaEco){
     beforeItems.push({txt:'One lounge network. Half the coverage.',note:'Centurion Lounge through Platinum is active. Sky Club requires Delta Reserve or status. Every Delta departure without the Reserve card starts at the gate.'});
     afterItems.push({txt:'Both lounge networks on every departure. Plus Priority Pass worldwide.',note:'Centurion Lounge via Platinum. Sky Club via Delta Reserve. Priority Pass Select included with Platinum — covers additional lounge networks globally, including airports where neither Centurion nor Sky Club is present. The airport stops being somewhere to endure.'});
@@ -966,53 +976,43 @@ function generateResults(d){
 
   afterItems.push({txt:'The hotel room is better before check-in.',note:'Fine Hotels + Resorts through Amex Travel — room upgrade when available, daily breakfast for two, $100+ property credit, 4pm checkout. Activates on every eligible stay the moment bookings route through Amex Travel. No new card required. Available right now and currently producing nothing.'});
 
-  // Hotel
   if(!hasHotelStatus||hotelFragmented){
     beforeItems.push({txt:'Every hotel stay begins at zero.',note:'No program, no recognition. Standard room, standard checkout. The same budget producing the minimum the property will give any anonymous guest.'});
     afterItems.push({txt:'The room is better before check-in.',note:'FHR benefits through Amex Travel — upgrade when available, breakfast, property credit, late checkout. The stay begins differently on the very first booking after the method correction.'});
   }
 
-  // Points
   if(noRedeem){
     beforeItems.push({txt:'Points accumulating. Nothing being deployed.',note:'The spend is happening. The return is sitting in accounts going nowhere. Earning without deploying is not a strategy — it is deferred value that may never arrive.'});
     afterItems.push({txt:'Points working as hard as the spend that earned them.',note:'First redemption identified and executed in year one. The infrastructure earns and deploys. Same money. Two outcomes.'});
   }
 
-  // Luxury retail / discretionary
   if(luxuryEngaged){
     afterItems.push({txt:'Money that used to disappear into paid upgrades reappears.',note:'What the corrected architecture recovers isn\'t a spreadsheet number. It\'s the amount that used to fund seat upgrades, or simply vanish into misrouted spend — available now for premium hotels, luxury retail, or whatever comes next.'});
   }
 
-  // Disruption
   if(disrupted){
     beforeItems.push({txt:'Disruptions resolved through the general queue.',note:'No status means waiting with everyone else when flights cancel or delay. No dedicated line. No priority rebooking. Recovery takes as long as it takes.'});
-    afterItems.push({txt:'Priority recovery when things go wrong.',note:'Delta Medallion status provides dedicated phone lines and priority rebooking. On 40+ annual flights, this difference gets felt. The question is when, not if.'});
+    afterItems.push({txt:'Priority recovery when things go wrong.',note:'Airline status provides dedicated phone lines and priority rebooking. On 20+ annual flights, this difference gets felt. The question is when, not if.'});
   }
 
   const mkExp=(items,cls)=>items.map(i=>`<div class="exp-item"><div class="exp-dot ${cls}"></div><div><div class="exp-txt">${i.txt}</div><div class="exp-note">${i.note}</div></div></div>`).join('');
   document.getElementById('exp-before').innerHTML=mkExp(beforeItems,'before');
   document.getElementById('exp-after').innerHTML=mkExp(afterItems,'after');
 
-  // ── SPEND TABLE ────────────────────────────────────
-
-  // Ecosystem-aware third card
-  const ecosystem=airlineEco; // 'delta','united','american','southwest','' — all set earlier
+  // ── SPEND TABLE ──────────────────────────────────────
+  const ecosystem=airlineEco;
   const thirdCardName=ecosystem==='united'?'United Club Infinite':ecosystem==='american'?'Citi AAdvantage Executive':'Delta SkyMiles Reserve';
 
-  // Correct-card checks per ecosystem
   const isCorrectAirfareCard=ecosystem==='united'?(cardAirfare||'').toLowerCase().includes('united club'):ecosystem==='american'?((cardAirfare||'').toLowerCase().includes('aadvantage')||(cardAirfare||'').toLowerCase().includes('citi')):isDeltaReserveAirfare;
   const isCorrectGeneralCard=ecosystem==='united'?(cardGeneral||'').toLowerCase().includes('united club'):ecosystem==='american'?((cardGeneral||'').toLowerCase().includes('aadvantage')||(cardGeneral||'').toLowerCase().includes('citi')):isDeltaReserveGeneral;
 
-  // Airfare rates
   const airfareRateNow=isCorrectAirfareCard?(ecosystem==='united'?'11x (United)':ecosystem==='american'?'2x (AA)':'3x (Delta)'):(cardAirfare||'').toLowerCase().includes('platinum')?'5x (non-Delta via Amex Travel)':'1x';
   const airfareRateFixed=ecosystem==='united'?'11x on United purchases':ecosystem==='american'?'2x AA + 1 LP per $1':'3x + MQDs (Delta) / 5x (non-Delta)';
 
-  // General rates
   const generalRateNow=isCorrectGeneralCard?(ecosystem==='united'?'1x + PQP':ecosystem==='american'?'1x + LP':'1.5x'):'1x';
   const generalRateFixed=ecosystem==='united'?'1x + PQP accumulation':ecosystem==='american'?'1x + 1 LP per $1':'1.5x + MQDs';
   const generalStatusCurrency=ecosystem==='united'?'PQPs':ecosystem==='american'?'LPs':'MQDs';
 
-  // Impact
   const airfareImpact=isCorrectAirfareCard?'—':fmtD(Math.round(cardLeakAirfare*0.9/100)*100)+'/yr';
   const diningImpact=isGoldDining?'—':fmtD(Math.round(cardLeakDining*0.9/100)*100)+'/yr';
   const groceryImpact=isGoldGrocery?'—':fmtD(Math.round(cardLeakGrocery*0.9/100)*100)+'/yr';
@@ -1037,13 +1037,14 @@ function generateResults(d){
       <td style="font-size:10px;color:${r.ok?'var(--grey-mid)':'var(--gold)'};font-weight:400">${r.impact}</td>
     </tr>`).join('')
 
-  // ── STATUS PATH ─ MQD-based ────────────────────────
-  // Status projection — branched by ecosystem
+  // ── STATUS PATH ──────────────────────────────────────
   const projectedTierLabel=canReachDiamond?'Delta Diamond Medallion':canReachPlatinum?'Delta Platinum Medallion':canReachGold?'Delta Gold Medallion':canReachSilver?'Delta Silver Medallion':'Delta status building';
-  const nextTierLabel=isAtPlatinumOrAbove?(canReachDiamond?'Diamond Medallion':'Diamond Medallion — longer runway'):isAtGoldOrAbove?(canReachPlatinum?'Delta Platinum Medallion':'Delta Platinum Medallion — within reach'):projectedTierLabel;
-  const nextTierDesc=isAtPlatinumOrAbove
+  const isAtGoldOrAboveForPath=hasDeltaStatus&&(d.primary_airline.toLowerCase().includes('gold')||d.primary_airline.toLowerCase().includes('platinum')||d.primary_airline.toLowerCase().includes('diamond'));
+  const isAtPlatinumOrAboveForPath=hasDeltaStatus&&(d.primary_airline.toLowerCase().includes('platinum')||d.primary_airline.toLowerCase().includes('diamond'));
+  const nextTierLabel=isAtPlatinumOrAboveForPath?(canReachDiamond?'Diamond Medallion':'Diamond Medallion — longer runway'):isAtGoldOrAboveForPath?(canReachPlatinum?'Delta Platinum Medallion':'Delta Platinum Medallion — within reach'):projectedTierLabel;
+  const nextTierDesc=isAtPlatinumOrAboveForPath
     ?'Diamond delivers unlimited Sky Club access for up to two guests, Global Upgrade Certificates, and the highest tier of Delta recognition on every departure.'
-    :isAtGoldOrAbove
+    :isAtGoldOrAboveForPath
     ?'Platinum adds four First Class upgrade certificates annually. When inventory is open, confirmed immediately. When it is not, first in line ahead of every standard upgrade request. Subject to availability per program terms.'
     :hasDeltaStatus
     ?'Gold delivers Sky Priority boarding, complimentary upgrade eligibility, and priority recovery during disruptions. The foundation of consistent recognition on US departures.'
@@ -1066,7 +1067,7 @@ function generateResults(d){
   const statusRows=isDeltaEco?[
     {period:'Now',dot:'now',title:hasAirlineStatus?d.primary_airline:'No US airline status',body:hasDeltaStatus?fname+' has existing Delta status. The architecture accelerates what\'s already accumulating — Reserve card MQD Boost adds to flight MQDs already building toward the next tier.':fname+' is currently invisible to the programs that decide who boards first and who gets upgraded. The card architecture changes that — the $2,500 MQD Headstart activates from the first billing cycle.'},
     {period:'Month 1',dot:'future',title:'Full architecture deployed',body:'Delta Reserve and Amex Gold added. All spend correctly routed from day one. $2,500 MQD Headstart activates on first billing cycle. FHR benefits live on the next hotel stay booked through Amex Travel.'},
-    {period:'Months 2–6',dot:'future',title:'MQDs building · Recognition begins',body:isAtGoldOrAbove?'Already at Gold. Platinum gap closes as Reserve card spend compounds the MQD Boost alongside flight MQDs. RUCs arrive at Platinum.':'Reserve card MQD Boost earning daily. Combined with flight MQDs, the first status tier comes into range.'},
+    {period:'Months 2–6',dot:'future',title:'MQDs building · Recognition begins',body:isAtGoldOrAboveForPath?'Already at Gold. Platinum gap closes as Reserve card spend compounds the MQD Boost alongside flight MQDs. RUCs arrive at Platinum.':'Reserve card MQD Boost earning daily. Combined with flight MQDs, the first status tier comes into range.'},
     {period:'Year end',dot:'target',title:nextTierLabel+' — the target',body:nextTierDesc},
   ]:isUnitedEco?[
     {period:'Now',dot:'now',title:hasAirlineStatus?d.primary_airline:'No United status',body:fname+' is currently earning miles without building Premier status efficiently. United Club Infinite adds up to 28,000 PQP per year from card spend — status accelerates from everyday purchases, not just flights.'},
@@ -1085,7 +1086,7 @@ function generateResults(d){
       <div><div class="sp-title">${r.title}</div><div class="sp-body">${r.body}</div></div>
     </div>`).join('');
 
-  // ── HOTEL ──────────────────────────────────────────
+  // ── HOTEL ────────────────────────────────────────────
   let hotelHTML='';
   if(hasMarriott&&hotelConcentrated){
     hotelHTML=`
@@ -1123,7 +1124,7 @@ function generateResults(d){
   }
   document.getElementById('hotel-section').innerHTML=hotelHTML;
 
-  // ── VALUE BREAKDOWN ────────────────────────────────
+  // ── VALUE BREAKDOWN ──────────────────────────────────
   const valRows=[
     {lbl:'Card routing corrections',sub:'Incremental gain from moving spend to correct cards. Not total points earned — only the difference between current earning and optimal earning, valued at ~1.5 cents per point.',amt:v1},
     {lbl:'Amex Fine Hotels + Resorts',sub:'Room upgrade when available, daily breakfast for two, $100+ property credit, 4pm checkout — on every eligible stay booked through Amex Travel. One booking method change activates all of it.',amt:v2},
