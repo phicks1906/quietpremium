@@ -735,7 +735,7 @@ function generateResults(d){
 
   const hasAirlineStatus=d.primary_airline&&!d.primary_airline.toLowerCase().includes('none')&&d.primary_airline.trim()!=='';
   const airlineEco=(d.primary_airline_eco||'').toLowerCase();
-  const isDeltaEco=airlineEco==='delta'||airlineEco==='mixed'||airlineEco==='';
+  const isDeltaEco=airlineEco==='delta'||airlineEco==='mixed'||airlineEco==='southwest'||airlineEco==='';
   const isUnitedEco=airlineEco==='united';
   const isAmericanEco=airlineEco==='american';
   const isSouthwestEco=airlineEco==='southwest';
@@ -850,11 +850,19 @@ function generateResults(d){
   const corrections=[];
   if(!isDeltaReserveAirfare&&isDeltaEco){
     const imp=Math.round(cardLeakAirfare*0.9/100)*100;
-    corrections.push({
-      t:'Move all Delta airfare to the Delta SkyMiles Reserve',
-      i:fmtD(imp)+' in incremental value recovered annually — plus the status acceleration that changes how every flight after it feels',
-      b:'Your current card earns minimal Delta miles and zero credit toward Medallion status. Delta Reserve earns 3x on Delta purchases, generates MQD credit on every dollar of card spend, and activates Sky Club access simultaneously. The $2,500 MQD Headstart activates on the first billing cycle — a running start toward status before a single flight is taken.'
-    });
+    if(isSouthwestEco){
+      corrections.push({
+        t:'Build a Delta relationship alongside your existing Southwest travel',
+        i:fmtD(imp)+' in incremental value recovered annually — plus a premium airline infrastructure that Southwest cannot provide',
+        b:'Southwest has no premium cabin. A-List and A-List Preferred deliver better boarding position — but the seat doesn\'t change. There is no first class to upgrade into, no lounge network to access, no moment where status produces a materially different travel experience. The ceiling on Southwest loyalty, regardless of spend or status tier, is a better position in the same boarding line. The Delta SkyMiles Reserve redirects spend toward a relationship without that ceiling. Medallion status delivers confirmed Comfort+ upgrades at booking, First Class upgrade certificates, and Sky Club access on every Delta departure. The $2,500 MQD Headstart means accumulation begins before a single Delta flight is taken. This is not a recommendation to stop flying Southwest. It is a recommendation to stop routing spend through an infrastructure that cannot convert it into a premium outcome — and to build one alongside it that can.'
+      });
+    } else {
+      corrections.push({
+        t:'Move all Delta airfare to the Delta SkyMiles Reserve',
+        i:fmtD(imp)+' in incremental value recovered annually — plus the status acceleration that changes how every flight after it feels',
+        b:'Your current card earns minimal Delta miles and zero credit toward Medallion status. Delta Reserve earns 3x on Delta purchases, generates MQD credit on every dollar of card spend, and activates Sky Club access simultaneously. The $2,500 MQD Headstart activates on the first billing cycle — a running start toward status before a single flight is taken.'
+      });
+    }
   }
   if(isUnitedEco){
     const imp=Math.round(cardLeakAirfare*0.9/100)*100;
@@ -931,16 +939,25 @@ function generateResults(d){
   const isAtAAExecPlatOrAbove=hasAAStatus&&statusInput.includes('executive platinum');
 
   if(isDeltaEco){
-    if(!isAtPlatinumOrAbove){
-      beforeItems.push({txt:'Boards with the general cabin.',note:'Without Platinum status, every US departure starts the same way — group 4 or 5, bins filling, the trip beginning compressed. No recognition. No priority. No difference from any other traveler at that gate.'});
-      afterItems.push({txt:'Delta Platinum Medallion. The foundation everything else is built on.',note:'At Platinum, Comfort+ upgrades confirm at booking on eligible fares — no waitlist, already done. Boards as early as Zone 3 — ahead of most of the plane. With Comfort+ confirmed at booking on eligible fares, you board with the Comfort+ cabin. Without the upgrade, Zone 4 Sky Priority still puts you well ahead of the general cabin. The boarding experience compounds with the seat upgrade.'});
-    }
-    if(!isAtGoldOrAbove){
-      beforeItems.push({txt:'No upgrade eligibility on US flights.',note:'Without Gold status or above, there is no complimentary upgrade path on Delta. Comfort+ and First Class are purchased when wanted. Every premium seat costs money every time.'});
-      afterItems.push({txt:'Upgrade eligibility begins at Gold. It is supercharged at Platinum.',note:'Gold Medallion delivers complimentary upgrade eligibility on the waitlist. Platinum moves that priority ahead of every Gold member on the same flight — and adds four Regional Upgrade Certificates for confirmed domestic First Class. The path from no status to Gold to Platinum is a single year with the correct infrastructure in place.'});
-    } else if(!isAtPlatinumOrAbove){
-      beforeItems.push({txt:'Gold upgrade eligibility — but no confirmed RUCs.',note:'Gold delivers upgrade priority and waitlist eligibility. Comfort+ is consistent. First Class clears when available. But the four confirmed Regional Upgrade Certificates belong to Platinum, not Gold. That gap is the next target — and the architecture gets there faster.'});
-      afterItems.push({txt:'Platinum adds what Gold does not have.',note:'Four Regional Upgrade Certificates for confirmed domestic First Class — not waitlisted, confirmed, four times per year. Upgrade priority that moves ahead of every Gold member on the same flight. The difference between Gold and Platinum is not incremental. It is the difference between eligibility and confirmation.'});
+    if(isSouthwestEco){
+      beforeItems.push({txt:'Southwest status produces a boarding position — not a seat change.',note:'A-List and A-List Preferred are genuine improvements to the Southwest experience. Earlier boarding, middle seat protection, same-day standby flexibility. But the product ceiling is fixed: there is no first class cabin to upgrade into regardless of status tier or spend level.'});
+      beforeItems.push({txt:'No lounge access through any Southwest co-brand card.',note:'Southwest co-brand cards carry no lounge benefit. Every Southwest departure begins at the gate, regardless of card spend or status. There is no equivalent to Sky Club, Centurion, or Priority Pass in the Southwest ecosystem.'});
+      beforeItems.push({txt:'Dining and grocery spend earning 2x — half of what it should.',note:'The Southwest Priority card earns 2x at restaurants. Amex Gold earns 4x worldwide with no cap. On combined dining and grocery spend, that difference compounds every month into value that is currently not arriving.'});
+      afterItems.push({txt:'A parallel premium airline relationship — built from existing spend.',note:'The Delta Reserve routes everyday spend toward MQD accumulation. The $2,500 Headstart activates on the first billing cycle. Southwest routes stay exactly as they are. What changes is that every dollar spent outside of Southwest is now building toward a relationship that has an upgrade path, a lounge network, and a first class cabin.'});
+      afterItems.push({txt:'Lounge access on every departure — including Southwest travel days.',note:'Centurion Lounge via Amex Platinum. Sky Club via Delta Reserve. Priority Pass Select via Platinum covers additional networks globally. None of these require flying Delta to access. A Southwest departure from any covered airport now begins differently.'});
+      afterItems.push({txt:'A first class cabin that actually upgrades.',note:'Delta Platinum Medallion delivers four Regional Upgrade Certificates annually — confirmed First Class when inventory is open. First Class on Delta is a different seat, a different start to the trip. Southwest has no equivalent and cannot offer one regardless of status or spend.'});
+    } else {
+      if(!isAtPlatinumOrAbove){
+        beforeItems.push({txt:'Boards with the general cabin.',note:'Without Platinum status, every US departure starts the same way — group 4 or 5, bins filling, the trip beginning compressed. No recognition. No priority. No difference from any other traveler at that gate.'});
+        afterItems.push({txt:'Delta Platinum Medallion. The foundation everything else is built on.',note:'At Platinum, Comfort+ upgrades confirm at booking on eligible fares — no waitlist, already done. Boards as early as Zone 3 — ahead of most of the plane. With Comfort+ confirmed at booking on eligible fares, you board with the Comfort+ cabin. Without the upgrade, Zone 4 Sky Priority still puts you well ahead of the general cabin. The boarding experience compounds with the seat upgrade.'});
+      }
+      if(!isAtGoldOrAbove){
+        beforeItems.push({txt:'No upgrade eligibility on US flights.',note:'Without Gold status or above, there is no complimentary upgrade path on Delta. Comfort+ and First Class are purchased when wanted. Every premium seat costs money every time.'});
+        afterItems.push({txt:'Upgrade eligibility begins at Gold. It is supercharged at Platinum.',note:'Gold Medallion delivers complimentary upgrade eligibility on the waitlist. Platinum moves that priority ahead of every Gold member on the same flight — and adds four Regional Upgrade Certificates for confirmed domestic First Class. The path from no status to Gold to Platinum is a single year with the correct infrastructure in place.'});
+      } else if(!isAtPlatinumOrAbove){
+        beforeItems.push({txt:'Gold upgrade eligibility — but no confirmed RUCs.',note:'Gold delivers upgrade priority and waitlist eligibility. Comfort+ is consistent. First Class clears when available. But the four confirmed Regional Upgrade Certificates belong to Platinum, not Gold. That gap is the next target — and the architecture gets there faster.'});
+        afterItems.push({txt:'Platinum adds what Gold does not have.',note:'Four Regional Upgrade Certificates for confirmed domestic First Class — not waitlisted, confirmed, four times per year. Upgrade priority that moves ahead of every Gold member on the same flight. The difference between Gold and Platinum is not incremental. It is the difference between eligibility and confirmation.'});
+      }
     }
   } else if(isUnitedEco){
     if(!isAtUnitedPlatOrAbove){
@@ -1065,8 +1082,8 @@ function generateResults(d){
     :'AAdvantage Gold delivers Group 4 boarding, complimentary upgrade eligibility, and first checked bag free for you and up to eight companions. The foundation of consistent American recognition.';
 
   const statusRows=isDeltaEco?[
-    {period:'Now',dot:'now',title:hasAirlineStatus?d.primary_airline:'No US airline status',body:hasDeltaStatus?fname+' has existing Delta status. The architecture accelerates what\'s already accumulating — Reserve card MQD Boost adds to flight MQDs already building toward the next tier.':fname+' is currently invisible to the programs that decide who boards first and who gets upgraded. The card architecture changes that — the $2,500 MQD Headstart activates from the first billing cycle.'},
-    {period:'Month 1',dot:'future',title:'Full architecture deployed',body:'Delta Reserve and Amex Gold added. All spend correctly routed from day one. $2,500 MQD Headstart activates on first billing cycle. FHR benefits live on the next hotel stay booked through Amex Travel.'},
+    {period:'Now',dot:'now',title:hasAirlineStatus?d.primary_airline:'No US airline status',body:isSouthwestEco?fname+' flies Southwest. Southwest has no lounge network, no premium cabin, and no card co-brand that produces a materially different travel experience from spend. The architecture builds a parallel Delta relationship from spend that is already happening — so the travel calendar that currently runs entirely through one product ceiling now has access to one that doesn\'t have it.':hasDeltaStatus?fname+' has existing Delta status. The architecture accelerates what\'s already accumulating — Reserve card MQD Boost adds to flight MQDs already building toward the next tier.':fname+' is currently invisible to the programs that decide who boards first and who gets upgraded. The card architecture changes that — the $2,500 MQD Headstart activates from the first billing cycle.'},
+    {period:'Month 1',dot:'future',title:isSouthwestEco?'Delta Reserve + Amex Gold added. Delta relationship begins.':'Full architecture deployed',body:isSouthwestEco?'Delta Reserve and Amex Gold added alongside existing Southwest travel. All non-Southwest spend correctly routed from day one. $2,500 MQD Headstart activates on first billing cycle — status accumulation begins before a single Delta flight. FHR benefits live on the next hotel stay booked through Amex Travel.':'Delta Reserve and Amex Gold added. All spend correctly routed from day one. $2,500 MQD Headstart activates on first billing cycle. FHR benefits live on the next hotel stay booked through Amex Travel.'},
     {period:'Months 2–6',dot:'future',title:'MQDs building · Recognition begins',body:isAtGoldOrAboveForPath?'Already at Gold. Platinum gap closes as Reserve card spend compounds the MQD Boost alongside flight MQDs. RUCs arrive at Platinum.':'Reserve card MQD Boost earning daily. Combined with flight MQDs, the first status tier comes into range.'},
     {period:'Year end',dot:'target',title:nextTierLabel+' — the target',body:nextTierDesc},
   ]:isUnitedEco?[
