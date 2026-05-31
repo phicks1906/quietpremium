@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Contact — Quiet Premium</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=DM+Mono:wght@300;400;500&family=Inter:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --black:#0A0A0A;--gold:#B08D57;--gold-lt:#C9A96E;--gold-dk:#8B6D3F;
+  --gold-pale:rgba(176,141,87,0.08);--white:#F5F2EC;--grey:#9A9590;
+  --grey-dk:#3A3530;--grey-mid:#6A6560;
+  --serif:'Cormorant Garamond',Georgia,serif;
+  --mono:'DM Mono',monospace;--sans:'Inter',sans-serif;
+}
+html,body{background:#0A0A0A;color:#F5F2EC;font-family:var(--sans);font-weight:300;-webkit-font-smoothing:antialiased;min-height:100vh}
+
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;z-index:50;padding:20px 48px;display:flex;align-items:center;justify-content:space-between;background:rgba(10,10,10,1.0);border-bottom:1px solid rgba(58,53,48,.4)}
+.nb{width:28px;height:28px;border-radius:50%;border:1px solid var(--gold);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1.5px}
+.nb span{font-family:var(--mono);font-size:5px;letter-spacing:.14em;color:var(--gold);line-height:1}
+.nb .nbr{width:12px;height:.5px;background:var(--gold-dk)}
+.nav-wm{font-family:var(--mono);font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin-left:10px}
+.nav-r{font-family:var(--mono);font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--grey-mid)}
+
+/* PAGE */
+.page{padding-top:80px;min-height:100vh;display:flex;align-items:center;justify-content:center}
+.wrap{max-width:680px;width:100%;margin:0 auto;padding:72px 48px 80px}
+
+.eyebrow{font-family:var(--mono);font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin-bottom:14px}
+.headline{font-family:var(--serif);font-size:clamp(32px,5vw,52px);font-weight:300;line-height:1.08;margin-bottom:16px}
+.headline em{font-style:italic;color:var(--gold)}
+.subtext{font-size:13px;color:var(--grey);line-height:1.85;margin-bottom:52px;max-width:480px}
+
+/* FORM */
+.form-row{margin-bottom:28px}
+.form-row label{display:block;font-size:12px;font-weight:400;color:var(--white);margin-bottom:6px;letter-spacing:.02em}
+.form-row input,
+.form-row textarea,
+.form-row select{
+  width:100%;background:#111;border:1px solid var(--grey-dk);
+  color:var(--white);font-family:var(--sans);font-size:13px;
+  font-weight:300;padding:13px 16px;outline:none;
+  transition:border-color .2s ease;-webkit-appearance:none;
+  border-radius:0;
+}
+.form-row input:focus,
+.form-row textarea:focus,
+.form-row select:focus{border-color:var(--gold)}
+.form-row input::placeholder,
+.form-row textarea::placeholder{color:var(--grey-dk)}
+.form-row textarea{resize:vertical;min-height:140px;line-height:1.7}
+.form-row select{cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%236A6560' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 16px center}
+.form-row select option{background:#111;color:var(--white)}
+
+.divider{height:1px;background:var(--grey-dk);margin:36px 0}
+
+.submit-note{font-size:11px;color:var(--grey);line-height:1.8;margin-bottom:20px}
+.btn-submit{background:var(--gold);color:#0A0A0A;font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;border:none;cursor:pointer;padding:15px 36px;transition:background .3s ease;display:inline-block}
+.btn-submit:hover{background:var(--gold-lt)}
+.btn-submit:disabled{background:var(--grey-dk);cursor:not-allowed}
+
+/* SUCCESS */
+.success{display:none;padding:32px;border:1px solid var(--gold-dk);background:var(--gold-pale);margin-top:24px}
+.success-ey{font-family:var(--mono);font-size:8px;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);margin-bottom:10px}
+.success-hl{font-family:var(--serif);font-size:22px;font-weight:300;color:var(--white);margin-bottom:8px}
+.success-body{font-size:12px;color:var(--grey);line-height:1.8}
+
+/* ERROR */
+.field-error{color:#C0392B;font-family:var(--mono);font-size:8px;letter-spacing:.1em;text-transform:uppercase;margin-top:5px}
+
+@media(max-width:680px){
+  nav{padding:16px 24px}
+  .wrap{padding:56px 24px 60px}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div style="display:flex;align-items:center;gap:10px">
+    <div class="nb"><span>QUIET</span><div class="nbr"></div><span>PREM</span></div>
+    <span class="nav-wm">Quiet Premium</span>
+  </div>
+  <a href="/" style="text-decoration:none"><span class="nav-r">← Back</span></a>
+</nav>
+
+<div class="page">
+  <div class="wrap">
+
+    <div class="eyebrow">Get in touch</div>
+    <h1 class="headline">A question worth<br><em>asking.</em></h1>
+    <p class="subtext">If you're not sure whether The Architecture is right for your situation, or if you have a question before committing, send a note. Every message goes directly to the team.</p>
+
+    <form id="contact-form">
+
+      <div class="form-row">
+        <label for="name">Full name</label>
+        <input type="text" id="name" name="name" required placeholder="Your full name"/>
+      </div>
+
+      <div class="form-row">
+        <label for="email">Email address</label>
+        <input type="email" id="email" name="email" required placeholder="you@example.com"/>
+      </div>
+
+      <div class="form-row">
+        <label for="reason">What's this about?</label>
+        <select id="reason" name="reason" required>
+          <option value="" disabled selected>Select one</option>
+          <option value="Question before purchasing">Question before purchasing</option>
+          <option value="Already purchased — need support">Already purchased — need support</option>
+          <option value="Not sure if it's right for me">Not sure if it's right for me</option>
+          <option value="Something else">Something else</option>
+        </select>
+      </div>
+
+      <div class="form-row">
+        <label for="message">Your message</label>
+        <textarea id="message" name="message" required placeholder="What's on your mind?"></textarea>
+      </div>
+
+      <div class="divider"></div>
+
+      <p class="submit-note">Messages are reviewed personally. You'll hear back within one business day.</p>
+      <button type="submit" class="btn-submit" id="submit-btn">Send Message</button>
+
+      <div class="success" id="success-box">
+        <div class="success-ey">Message received</div>
+        <div class="success-hl">You'll hear back within one business day.</div>
+        <div class="success-body">In the meantime, if you haven't taken the Gap Index, it takes two minutes and shows you exactly where the leak is — no email required. <a href="/gap-index.html" style="color:var(--gold);text-decoration:none">quietpremium.com/gap-index.html</a></div>
+      </div>
+
+    </form>
+
+  </div>
+</div>
+
+<script>
+document.getElementById('contact-form').addEventListener('submit', async function(e){
+  e.preventDefault();
+
+  // Clear previous errors
+  document.querySelectorAll('.field-error').forEach(el => el.remove());
+
+  const btn = document.getElementById('submit-btn');
+  const form = e.target;
+
+  // Validate
+  let valid = true;
+  ['name','email','reason','message'].forEach(id => {
+    const el = document.getElementById(id);
+    if(!el.value || el.value.trim() === ''){
+      valid = false;
+      const err = document.createElement('div');
+      err.className = 'field-error';
+      err.textContent = 'Required';
+      el.parentElement.appendChild(err);
+    }
+  });
+  if(!valid) return;
+
+  btn.disabled = true;
+  btn.textContent = 'Sending...';
+
+  const data = {
+    name: document.getElementById('name').value,
+    email: document.getElementById('email').value,
+    reason: document.getElementById('reason').value,
+    message: document.getElementById('message').value,
+    _subject: 'Contact — ' + document.getElementById('name').value + ' — ' + document.getElementById('reason').value
+  };
+
+  try {
+    const res = await fetch('https://formspree.io/f/mnjrvbpn', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json','Accept':'application/json'},
+      body: JSON.stringify(data)
+    });
+
+    if(res.ok){
+      form.querySelectorAll('input,textarea,select,button').forEach(el => el.style.display = 'none');
+      document.querySelector('.submit-note').style.display = 'none';
+      document.querySelector('.divider').style.display = 'none';
+      document.getElementById('success-box').style.display = 'block';
+    } else {
+      btn.disabled = false;
+      btn.textContent = 'Send Message';
+      alert('Something went wrong. Please try again or email editor@quietpremium.com directly.');
+    }
+  } catch(err){
+    btn.disabled = false;
+    btn.textContent = 'Send Message';
+    alert('Something went wrong. Please email editor@quietpremium.com directly.');
+  }
+});
+</script>
+</body>
+</html>
