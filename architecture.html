@@ -4,236 +4,155 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
 <title>The Architecture — Quiet Premium</title>
+<meta name="description" content="A complete audit of your card stack, spend routing, airline status, and hotel program. Your personalized plan on screen in 15 minutes."/>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=DM+Mono:wght@300;400;500&family=Inter:wght@300;400;500&display=swap" rel="stylesheet"/>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
---black:#0A0A0A;--black2:#0F0F0F;--gold:#B08D57;--gold-lt:#C9A96E;
---gold-dk:#8B6D3F;--gold-pale:rgba(176,141,87,0.08);--white:#F5F2EC;
---grey:#9A9590;--grey-dk:#3A3530;--grey-mid:#6A6560;
---red:#C0392B;--amber:#E8A87C;
---serif:'Cormorant Garamond',Georgia,serif;
---mono:'DM Mono',monospace;--sans:'Inter',sans-serif;
+  --black:#0A0A0A;--black2:#0F0F0F;--gold:#B08D57;--gold-lt:#C9A96E;
+  --gold-dk:#8B6D3F;--gold-pale:rgba(176,141,87,0.08);--white:#F5F2EC;
+  --grey:#9A9590;--grey-dk:#3A3530;--grey-mid:#6A6560;--red:#C0392B;
+  --serif:'Cormorant Garamond',Georgia,serif;
+  --mono:'DM Mono',monospace;--sans:'Inter',sans-serif;
 }
-html{background:#0A0A0A !important;scroll-behavior:smooth}
-body{background:#0A0A0A !important;color:#F5F2EC !important;font-family:var(--sans);font-weight:300;-webkit-font-smoothing:antialiased;min-height:100vh}
-.screen{display:none;min-height:100vh;background:#0A0A0A}
-.screen.active{display:block;animation:fadeIn .5s ease;background:#0A0A0A}
-@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+html{background:#0A0A0A}
+body{background:#0A0A0A;color:#F5F2EC;font-family:var(--sans);font-weight:300;-webkit-font-smoothing:antialiased}
 
 /* NAV */
-nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:20px 48px;display:flex;align-items:center;justify-content:space-between;background:linear-gradient(to bottom,rgba(10,10,10,1.0),transparent);border-bottom:1px solid rgba(58,53,48,.4)}
-.nb{width:28px;height:28px;border-radius:50%;border:1px solid var(--gold);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1.5px}
+nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:20px 48px;display:flex;align-items:center;justify-content:space-between;background:rgba(10,10,10,0.97);border-bottom:1px solid rgba(58,53,48,0.4)}
+.nb{width:28px;height:28px;border-radius:50%;border:1px solid var(--gold);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1.5px;flex-shrink:0}
 .nb span{font-family:var(--mono);font-size:5px;letter-spacing:.14em;color:var(--gold);line-height:1}
 .nb .nbr{width:12px;height:.5px;background:var(--gold-dk)}
 .nav-wm{font-family:var(--mono);font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin-left:10px}
-.nav-r{font-family:var(--mono);font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--grey-mid)}
+.nav-links{display:flex;gap:24px;align-items:center}
+.nav-link{font-family:var(--mono);font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--grey);text-decoration:none;transition:color .2s}
+.nav-link:hover{color:var(--gold)}
+
+/* LAYOUT */
+section{padding:88px 48px;border-top:1px solid var(--grey-dk)}
+section:first-of-type{border-top:none}
+.inner{max-width:1100px;margin:0 auto}
+.inner-sm{max-width:720px;margin:0 auto}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:72px;align-items:start}
+
+/* TYPE */
+.eyebrow{font-family:var(--mono);font-size:9px;letter-spacing:.22em;text-transform:uppercase;color:var(--gold);margin-bottom:16px}
+.eyebrow-sm{font-family:var(--mono);font-size:8px;letter-spacing:.16em;text-transform:uppercase;color:var(--gold-dk);margin-bottom:10px}
+.h1{font-family:var(--serif);font-size:clamp(44px,6vw,80px);font-weight:300;line-height:1.0}
+.h1 em{font-style:italic;color:var(--gold)}
+.h2{font-family:var(--serif);font-size:clamp(28px,3.5vw,44px);font-weight:300;line-height:1.08}
+.h2 em{font-style:italic;color:var(--gold)}
+.body{font-size:14px;color:var(--grey);line-height:1.88}
 
 /* BUTTONS */
-.cta-btn{display:inline-block;background:var(--gold);color:var(--black);font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;border:none;cursor:pointer;padding:15px 34px;transition:background .3s ease;text-decoration:none}
-.cta-btn:hover{background:var(--gold-lt)}
-.btn-outline{border:1px solid var(--gold-dk);color:var(--gold);font-family:var(--mono);font-size:9px;letter-spacing:.14em;text-transform:uppercase;background:none;cursor:pointer;padding:11px 22px;transition:all .3s ease}
-.btn-outline:hover{border-color:var(--gold);background:rgba(176,141,87,.06)}
+.btn-gold{display:inline-block;background:var(--gold);color:#0A0A0A;font-family:var(--mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;border:none;cursor:pointer;padding:16px 36px;transition:background .3s;text-decoration:none}
+.btn-gold:hover{background:var(--gold-lt)}
+.btn-outline{display:inline-block;border:1px solid var(--gold-dk);color:var(--gold);font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;background:none;cursor:pointer;padding:15px 32px;transition:all .3s;text-decoration:none}
+.btn-outline:hover{border-color:var(--gold);background:var(--gold-pale)}
 
-/* ============ LANDING ============ */
-#landing{padding-top:80px;background:#0A0A0A}
-.hero{min-height:100vh;display:flex;align-items:center;padding:80px 48px;position:relative;overflow:hidden;background:#0A0A0A}
-.hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 55% 60% at 65% 45%,rgba(176,141,87,.06) 0%,transparent 65%);pointer-events:none}
-.hero-inner{max-width:1100px;margin:0 auto;width:100%;display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:center}
-.h-ey{font-family:var(--mono);font-size:9px;letter-spacing:.22em;text-transform:uppercase;color:var(--gold);margin-bottom:26px}
-.h-hl{font-family:var(--serif);font-size:clamp(40px,5.5vw,68px);font-weight:300;line-height:1.05;margin-bottom:22px}
-.h-hl em{font-style:italic;color:var(--gold)}
-.h-sub{font-size:14px;color:var(--grey);line-height:1.85;max-width:460px;margin-bottom:44px}
-.price-b{margin-bottom:36px}
-.price-f{font-family:var(--mono);font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:var(--gold-dk);margin-bottom:5px}
-.price-n{font-family:var(--serif);font-size:46px;font-weight:300;color:var(--white);line-height:1}
-.price-w{font-family:var(--mono);font-size:9px;letter-spacing:.1em;color:var(--grey-mid);text-decoration:line-through;margin-left:8px}
-.price-note{font-family:var(--mono);font-size:8px;letter-spacing:.1em;text-transform:uppercase;color:var(--grey);margin-top:5px}
-.cta-subnote{font-family:var(--mono);font-size:8px;letter-spacing:.1em;text-transform:uppercase;color:var(--grey);margin-top:12px}
+/* HERO */
+#hero{padding:148px 48px 88px}
+.hero-grid{display:grid;grid-template-columns:1fr 1fr;gap:72px;align-items:center}
+.price-block{padding:28px 32px;border:1px solid var(--gold-dk);background:#0F0F0F;margin-top:36px}
+.price-lbl{font-family:var(--mono);font-size:8px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold-dk);margin-bottom:10px}
+.price-val{font-family:var(--serif);font-size:52px;font-weight:300;color:var(--gold);line-height:1;margin-bottom:4px}
+.price-note{font-family:var(--mono);font-size:8px;letter-spacing:.1em;text-transform:uppercase;color:var(--grey-mid);margin-bottom:20px}
+.price-cta{display:block;background:var(--gold);color:#0A0A0A;font-family:var(--mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;border:none;cursor:pointer;padding:15px 24px;transition:background .3s;text-decoration:none;text-align:center;width:100%}
+.price-cta:hover{background:var(--gold-lt)}
+.price-guarantee{font-size:11px;color:var(--grey);line-height:1.7;margin-top:12px}
 
-/* Preview card */
-.pv-card{border:1px solid var(--grey-dk);background:#0F0F0F;padding:28px}
-.pv-lbl{font-family:var(--mono);font-size:8px;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);margin-bottom:18px;padding-bottom:12px;border-bottom:1px solid var(--grey-dk)}
-.pv-stat{margin-bottom:18px}
-.pv-stat-lbl{font-family:var(--mono);font-size:7px;letter-spacing:.1em;text-transform:uppercase;color:var(--grey-mid);margin-bottom:3px}
-.pv-stat-val{font-family:var(--serif);font-size:30px;font-weight:300;color:var(--gold);line-height:1}
-.pv-stat-sub{font-family:var(--mono);font-size:7px;letter-spacing:.08em;text-transform:uppercase;color:var(--grey);margin-top:2px}
-.pv-sc-row{display:flex;align-items:center;gap:8px;margin-bottom:7px}
-.pv-sc-lbl{font-family:var(--mono);font-size:7px;letter-spacing:.08em;text-transform:uppercase;color:var(--grey-mid);width:80px;flex-shrink:0}
-.pv-sc-track{flex:1;height:2px;background:var(--grey-dk);position:relative}
-.pv-sc-fill{height:2px;position:absolute;top:0;left:0}
-.pv-sc-num{font-family:var(--mono);font-size:7px;color:var(--grey);width:22px;text-align:right;flex-shrink:0}
-.pv-m-lbl{font-family:var(--mono);font-size:7.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);margin-bottom:9px;margin-top:16px}
-.pv-m-item{display:flex;gap:7px;align-items:flex-start;margin-bottom:7px;font-size:11px;color:var(--grey);line-height:1.5}
-.pv-m-item::before{content:'→';color:var(--gold-dk);font-family:var(--mono);font-size:8px;flex-shrink:0;margin-top:1px}
-.pv-m-item strong{color:var(--white);font-weight:400}
+/* ANCHOR BAR */
+.anchor-bar{background:#0F0F0F;border-top:1px solid var(--grey-dk);border-bottom:1px solid var(--grey-dk);padding:20px 48px}
+.anchor-inner{max-width:1100px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;gap:24px}
+.anchor-stat{text-align:center}
+.anchor-val{font-family:var(--serif);font-size:28px;font-weight:300;color:var(--gold);line-height:1}
+.anchor-lbl{font-family:var(--mono);font-size:7px;letter-spacing:.1em;text-transform:uppercase;color:var(--grey);margin-top:3px}
+.anchor-div{width:1px;background:var(--grey-dk);height:40px}
 
-/* What you get */
-.what-s{padding:90px 48px;border-top:1px solid var(--grey-dk);background:#0A0A0A}
-.what-i{max-width:1100px;margin:0 auto;background:#0A0A0A}
-.sec-ey{font-family:var(--mono);font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin-bottom:44px}
-.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--grey-dk)}
-.g3-item{background:#0A0A0A;padding:28px 24px}
-.g3-num{font-family:var(--mono);font-size:9px;letter-spacing:.14em;color:var(--gold-dk);margin-bottom:12px}
-.g3-title{font-family:var(--serif);font-size:19px;font-weight:300;margin-bottom:9px}
-.g3-body{font-size:12px;color:var(--grey);line-height:1.8}
+/* DELIVERABLES */
+.deliv-list{display:flex;flex-direction:column;gap:0}
+.deliv-item{padding:20px 0;border-bottom:1px solid #1a1a1a;display:flex;gap:16px;align-items:flex-start}
+.deliv-item:last-child{border-bottom:none}
+.deliv-num{font-family:var(--mono);font-size:9px;letter-spacing:.1em;color:var(--gold-dk);flex-shrink:0;margin-top:2px;width:24px}
+.deliv-title{font-size:13px;font-weight:400;color:var(--white);margin-bottom:4px}
+.deliv-body{font-size:12px;color:var(--grey);line-height:1.75}
 
-/* How it works */
-.how-s{padding:90px 48px;border-top:1px solid var(--grey-dk);background:#0F0F0F}
-.how-steps{display:grid;grid-template-columns:repeat(4,1fr);gap:28px}
-.how-num{font-family:var(--mono);font-size:9px;letter-spacing:.14em;color:var(--gold-dk);margin-bottom:10px}
-.how-title{font-family:var(--serif);font-size:17px;font-weight:300;margin-bottom:8px}
-.how-body{font-size:12px;color:var(--grey);line-height:1.8}
+/* SAMPLE OUTPUT */
+.sample-wrap{border:1px solid var(--grey-dk);background:#0A0A0A;padding:0}
+.sample-hd{padding:16px 24px;border-bottom:1px solid var(--grey-dk);display:flex;justify-content:space-between;align-items:center}
+.sample-hd-lbl{font-family:var(--mono);font-size:8px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold)}
+.sample-hd-note{font-family:var(--mono);font-size:7px;letter-spacing:.1em;text-transform:uppercase;color:var(--grey-mid)}
+.sample-body{padding:24px}
+.sample-dash{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--grey-dk);margin-bottom:24px}
+.sample-cell{background:#0F0F0F;padding:16px 18px}
+.sample-cell-lbl{font-family:var(--mono);font-size:7px;letter-spacing:.1em;text-transform:uppercase;color:var(--grey);margin-bottom:5px}
+.sample-cell-val{font-family:var(--serif);font-size:26px;font-weight:300;line-height:1}
+.sample-corr{margin-bottom:18px}
+.sample-corr-hd{font-family:var(--mono);font-size:7.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);margin-bottom:10px}
+.sample-corr-item{padding:10px 0;border-bottom:1px solid #1a1a1a;font-size:11px;color:var(--grey);line-height:1.55}
+.sample-corr-item:last-child{border-bottom:none}
+.sample-corr-item strong{color:var(--white);font-weight:400}
+.sample-note{font-family:var(--mono);font-size:7px;letter-spacing:.08em;color:var(--grey-mid);text-align:center;margin-top:4px}
 
-/* Bottom CTA */
-.bot-cta{padding:90px 48px;border-top:1px solid var(--grey-dk);text-align:center;background:#0A0A0A}
-.bot-hl{font-family:var(--serif);font-size:clamp(30px,4vw,46px);font-weight:300;line-height:1.1;margin-bottom:14px}
-.bot-hl em{font-style:italic;color:var(--gold)}
-.bot-sub{font-size:13px;color:var(--grey);line-height:1.8;margin-bottom:36px}
+/* HOW IT WORKS */
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:40px}
+.step-num{font-family:var(--mono);font-size:8px;letter-spacing:.16em;text-transform:uppercase;color:var(--gold-dk);margin-bottom:12px}
+.step-title{font-family:var(--serif);font-size:22px;font-weight:300;margin-bottom:8px}
+.step-body{font-size:12px;color:var(--grey);line-height:1.85}
+.step-connector{display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:10px;color:var(--grey-dk);padding-top:24px}
 
-/* ============ INTAKE ============ */
-#intake{padding-top:80px;background:#0A0A0A}
-.int-wrap{max-width:660px;margin:0 auto;padding:56px 40px 110px;background:#0A0A0A}
-.int-intro{margin-bottom:48px;padding-bottom:36px;border-bottom:1px solid var(--grey-dk)}
-.int-ey{font-family:var(--mono);font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin-bottom:14px}
-.int-hl{font-family:var(--serif);font-size:clamp(26px,4vw,38px);font-weight:300;line-height:1.1;margin-bottom:10px}
-.int-hl em{font-style:italic;color:var(--gold)}
-.int-sub{font-size:12px;color:var(--grey);line-height:1.8}
-.prog-wrap{margin-bottom:44px}
-.prog-track{height:1px;background:var(--grey-dk);position:relative;margin-bottom:8px}
-.prog-fill{height:1px;background:var(--gold);position:absolute;top:0;left:0;transition:width .5s ease}
-.prog-txt{font-family:var(--mono);font-size:8px;letter-spacing:.12em;text-transform:uppercase;color:var(--grey);display:flex;justify-content:space-between}
-.sec-hd{margin:44px 0 24px;padding-top:36px;border-top:1px solid var(--grey-dk)}
-.sec-hd-num{font-family:var(--mono);font-size:8px;letter-spacing:.16em;text-transform:uppercase;color:var(--gold-dk);margin-bottom:5px}
-.sec-hd-title{font-family:var(--serif);font-size:22px;font-weight:300;margin-bottom:3px}
-.sec-hd-sub{font-size:12px;color:var(--grey)}
-.field{margin-bottom:28px}
-.field-lbl{display:block;font-size:13px;font-weight:400;color:var(--white);margin-bottom:4px;line-height:1.5}
-.field-lbl .req{color:var(--gold)}
-.field-hint{font-size:11px;color:var(--grey);margin-bottom:7px;line-height:1.6}
-input[type=text],input[type=email],input[type=number],textarea,select{width:100%;background:#111;border:1px solid var(--grey-dk);color:var(--white);font-family:var(--sans);font-size:13px;font-weight:300;padding:12px 15px;outline:none;transition:border-color .2s ease;-webkit-appearance:none;border-radius:0}
-input:focus,textarea:focus,select:focus{border-color:var(--gold)}
-input::placeholder,textarea::placeholder{color:var(--grey-dk)}
-textarea{resize:vertical;min-height:80px}
-.opts{display:flex;flex-direction:column;gap:7px}
-.opt{display:flex;align-items:flex-start;gap:11px;padding:12px 14px;border:1px solid var(--grey-dk);cursor:pointer;transition:all .2s ease;user-select:none}
-.opt:hover{border-color:var(--gold-dk);background:rgba(176,141,87,.03)}
-.opt.selected{border-color:var(--gold);background:rgba(176,141,87,.07)}
-.opt-ind{width:15px;height:15px;flex-shrink:0;margin-top:1px;border:1px solid var(--grey-dk);display:flex;align-items:center;justify-content:center;transition:all .2s ease}
-.opt-ind.circle{border-radius:50%}
-.opt.selected .opt-ind{border-color:var(--gold);background:var(--gold)}
-.opt.selected .opt-ind.circle::after{content:'';width:5px;height:5px;background:var(--black);border-radius:50%;display:block}
-.opt.selected .opt-ind.square::after{content:'';width:7px;height:4px;border-left:1.5px solid var(--black);border-bottom:1.5px solid var(--black);transform:rotate(-45deg) translateY(-1px);display:block}
-.opt-txt{font-size:12px;color:var(--white);line-height:1.5}
-.real-inp{display:none}
-.submit-s{margin-top:48px;padding-top:36px;border-top:1px solid var(--grey-dk)}
-.submit-note{font-size:12px;color:var(--grey);line-height:1.8;margin-bottom:24px;max-width:460px}
-.btn-submit{background:var(--gold);color:var(--black);font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;border:none;cursor:pointer;padding:14px 34px;transition:background .3s ease}
-.btn-submit:hover{background:var(--gold-lt)}
+/* GATE */
+#gate{background:#0F0F0F}
+.gate-wrap{max-width:600px;margin:0 auto}
+.gate-q{margin-bottom:20px}
+.gate-q-txt{font-size:13px;color:var(--white);font-weight:400;margin-bottom:10px}
+.gate-opts{display:flex;flex-direction:column;gap:6px}
+.gate-opt{display:flex;gap:10px;align-items:center;padding:11px 14px;border:1px solid var(--grey-dk);cursor:pointer;transition:all .2s;user-select:none;-webkit-tap-highlight-color:transparent}
+.gate-opt:hover{border-color:var(--gold-dk);background:var(--gold-pale)}
+.gate-opt.selected{border-color:var(--gold);background:var(--gold-pale)}
+.gate-opt-ind{width:12px;height:12px;border:1px solid var(--grey-dk);border-radius:50%;flex-shrink:0;transition:all .2s}
+.gate-opt.selected .gate-opt-ind{border-color:var(--gold);background:var(--gold)}
+.gate-opt-lbl{font-size:12px;color:var(--white)}
+.gate-cta{margin-top:28px;padding-top:24px;border-top:1px solid var(--grey-dk)}
+#gate-btn{background:var(--gold);color:#0A0A0A;font-family:var(--mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;border:none;cursor:pointer;padding:16px 36px;transition:background .3s;display:inline-block;text-decoration:none}
+#gate-btn:hover{background:var(--gold-lt)}
+.gate-note{font-family:var(--mono);font-size:8px;letter-spacing:.1em;text-transform:uppercase;color:var(--grey);margin-top:10px;display:block}
 
-/* ============ RESULTS ============ */
-#results{padding-top:80px;background:#0A0A0A}
-.res-wrap{max-width:1100px;margin:0 auto;padding:56px 48px 100px;background:#0A0A0A}
-.res-hd{margin-bottom:48px;padding-bottom:36px;border-bottom:1px solid var(--grey-dk);display:flex;justify-content:space-between;align-items:flex-end}
-.res-ey{font-family:var(--mono);font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin-bottom:10px}
-.res-hl{font-family:var(--serif);font-size:clamp(30px,4vw,46px);font-weight:300;line-height:1.1}
-.res-hl em{font-style:italic;color:var(--gold)}
-.res-client{font-family:var(--serif);font-size:17px;font-weight:300;color:var(--white)}
-.res-meta{font-family:var(--mono);font-size:7px;letter-spacing:.12em;text-transform:uppercase;color:var(--grey-mid);line-height:1.7;margin-top:3px;text-align:right}
+/* SOFT REDIRECT */
+#redirect-msg{display:none;padding:24px 32px;border:1px solid var(--grey-dk);margin-top:24px}
+#redirect-msg p{font-size:13px;color:var(--grey);line-height:1.85;margin-bottom:16px}
 
-/* Hero stats */
-.hs-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--grey-dk);margin-bottom:1px}
-.hs-cell{background:#0F0F0F;padding:24px 22px}
-.hs-lbl{font-family:var(--mono);font-size:7.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--grey-mid);margin-bottom:7px}
-.hs-val{font-family:var(--serif);font-size:34px;font-weight:300;line-height:1}
-.hs-val.gold{color:var(--gold)}.hs-val.red{color:var(--red)}.hs-val.amber{color:var(--amber)}
-.hs-sub{font-family:var(--mono);font-size:7px;letter-spacing:.08em;text-transform:uppercase;color:var(--grey);margin-top:3px}
+/* FOOTER */
+footer{background:#0A0A0A;border-top:1px solid var(--grey-dk);padding:32px 48px;display:flex;justify-content:space-between;align-items:center}
+.footer-left{font-family:var(--mono);font-size:8px;letter-spacing:.1em;text-transform:uppercase;color:var(--grey-mid);line-height:1.8}
+.footer-links{display:flex;gap:24px}
+.footer-link{font-family:var(--mono);font-size:8px;letter-spacing:.1em;text-transform:uppercase;color:var(--grey-mid);text-decoration:none}
+.footer-link:hover{color:var(--gold)}
+.disclaimer{font-family:var(--mono);font-size:7.5px;letter-spacing:.06em;color:var(--grey-mid);line-height:1.8;max-width:900px;margin:0 auto;text-align:center;padding:0 48px 44px}
 
-/* Grid layouts */
-.g2{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--grey-dk);margin-bottom:1px}
-.r-cell{background:#0A0A0A;padding:26px}
-.r-cell-lbl{font-family:var(--mono);font-size:8px;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid var(--grey-dk)}
+/* MOBILE NAV */
+.hamburger{display:none;flex-direction:column;gap:5px;cursor:pointer;padding:4px}
+.hamburger span{width:20px;height:1px;background:var(--grey);display:block;transition:all .3s}
+.mobile-menu{display:none;position:fixed;top:69px;left:0;right:0;background:#0A0A0A;border-bottom:1px solid var(--grey-dk);padding:20px 24px;z-index:99;flex-direction:column;gap:16px}
+.mobile-menu.open{display:flex}
+.mobile-menu a{font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--grey);text-decoration:none;padding:8px 0;border-bottom:1px solid #1a1a1a}
+.mobile-menu a:last-child{border-bottom:none;color:var(--gold)}
 
-/* Friction */
-.fr-row{display:flex;align-items:center;gap:9px;margin-bottom:11px}
-.fr-num{font-family:var(--serif);font-size:21px;font-weight:300;width:24px;flex-shrink:0;line-height:1}
-.fr-num.critical{color:var(--red)}.fr-num.alert{color:var(--amber)}.fr-num.ok{color:var(--gold)}
-.fr-right{flex:1}
-.fr-title{font-family:var(--mono);font-size:7px;letter-spacing:.1em;text-transform:uppercase;color:var(--grey-mid);margin-bottom:3px}
-.fr-track{height:2px;background:var(--grey-dk);position:relative;margin-bottom:3px}
-.fr-fill{height:2px;position:absolute;top:0;left:0}
-.fr-desc{font-size:10px;color:var(--grey-mid);line-height:1.5}
-
-/* Moves */
-.move-item{border:1px solid var(--grey-dk);padding:16px 18px;margin-bottom:9px;transition:border-color .2s}
-.move-item:hover{border-color:var(--gold-dk)}
-.move-num{font-family:var(--mono);font-size:7.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold-dk);margin-bottom:5px}
-.move-title{font-size:13px;font-weight:400;color:var(--white);margin-bottom:3px}
-.move-impact{font-family:var(--mono);font-size:8px;letter-spacing:.08em;color:var(--gold);margin-bottom:5px}
-.move-body{font-size:11px;color:var(--grey);line-height:1.6}
-
-/* Spend table */
-.sp-table{width:100%;border-collapse:collapse}
-.sp-table th{font-family:var(--mono);font-size:7px;letter-spacing:.1em;text-transform:uppercase;color:var(--grey-mid);padding:0 0 9px;text-align:left;border-bottom:1px solid var(--grey-dk)}
-.sp-table td{padding:9px 0;border-bottom:1px solid #1a1a1a;font-size:11px;color:var(--grey);vertical-align:top}
-.sp-table td:first-child{color:var(--white)}
-.leak{color:var(--red)!important;font-family:var(--mono);font-size:10px}
-.fix{color:var(--gold)!important;font-family:var(--mono);font-size:10px}
-
-/* Status timeline */
-.st-row{display:flex;gap:14px;padding:10px 0;border-bottom:1px solid #1a1a1a;align-items:flex-start}
-.st-row:last-child{border-bottom:none}
-.st-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;margin-top:4px}
-.st-dot.current{background:var(--amber)}.st-dot.future{background:var(--grey-dk);border:1px solid var(--grey-mid)}
-.st-period{font-family:var(--mono);font-size:7px;letter-spacing:.1em;text-transform:uppercase;color:var(--grey-mid);margin-bottom:2px}
-.st-label{font-size:12px;color:var(--white);font-weight:400;margin-bottom:2px}
-.st-note{font-size:10px;color:var(--grey);line-height:1.5}
-
-/* Hotel rec */
-.hotel-rec{border:1px solid var(--gold-dk);padding:18px;margin-bottom:12px;background:var(--gold-pale)}
-.hotel-rec-lbl{font-family:var(--mono);font-size:7.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold-dk);margin-bottom:5px}
-.hotel-rec-name{font-family:var(--serif);font-size:17px;font-weight:300;color:var(--white);margin-bottom:5px}
-.hotel-rec-body{font-size:11px;color:var(--grey);line-height:1.65}
-
-/* Value breakdown */
-.vr-row{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid #1a1a1a}
-.vr-row:last-child{border-bottom:none}
-.vr-label{font-size:11px;color:var(--grey)}
-.vr-val{font-family:var(--mono);font-size:10px;color:var(--gold)}
-.vr-total{display:flex;justify-content:space-between;align-items:baseline;padding-top:14px;border-top:1px solid var(--gold-dk);margin-top:3px}
-.vr-total-lbl{font-family:var(--mono);font-size:8px;letter-spacing:.1em;text-transform:uppercase;color:var(--grey-mid)}
-.vr-total-val{font-family:var(--serif);font-size:26px;font-weight:300;color:var(--gold)}
-
-/* Actions */
-.res-actions{display:flex;gap:14px;margin-top:36px;padding-top:28px;border-top:1px solid var(--grey-dk)}
-
-/* Upsell */
-.upsell{background:#0F0F0F}
-.upsell-inner{background:#0A0A0A;padding:44px 48px;display:grid;grid-template-columns:1fr 1fr;gap:44px;align-items:center}
-.upsell-ey{font-family:var(--mono);font-size:8px;letter-spacing:.16em;text-transform:uppercase;color:var(--gold-dk);margin-bottom:10px}
-.upsell-hl{font-family:var(--serif);font-size:26px;font-weight:300;line-height:1.15;margin-bottom:12px}
-.upsell-hl em{font-style:italic;color:var(--gold)}
-.upsell-body{font-size:12px;color:var(--grey);line-height:1.8}
-.upsell-price{font-family:var(--serif);font-size:38px;font-weight:300;color:var(--white);margin-bottom:3px}
-.upsell-price-lbl{font-family:var(--mono);font-size:8px;letter-spacing:.1em;text-transform:uppercase;color:var(--grey-mid);margin-bottom:20px}
-.upsell-feat{display:flex;gap:9px;margin-bottom:7px;font-size:11px;color:var(--grey)}
-.upsell-feat::before{content:'→';color:var(--gold-dk);font-family:var(--mono);font-size:7px;flex-shrink:0}
-
-/* Responsive */
 @media(max-width:900px){
   nav{padding:16px 24px}
-  .hero,.what-s,.how-s,.bot-cta{padding-left:24px;padding-right:24px}
-  .hero-inner{grid-template-columns:1fr;gap:44px}
-  .g3{grid-template-columns:1fr}
-  .how-steps{grid-template-columns:1fr 1fr;gap:20px}
-  .int-wrap{padding:44px 24px 80px}
-  .res-wrap{padding:44px 24px 80px}
-  .res-hd{flex-direction:column;gap:16px;align-items:flex-start}
-  .hs-grid{grid-template-columns:1fr 1fr}
-  .g2{grid-template-columns:1fr}
-  .upsell-inner{grid-template-columns:1fr;padding:32px 24px}
+  .nav-links{display:none}
+  .hamburger{display:flex}
+  section,#hero,.anchor-bar{padding-left:24px;padding-right:24px}
+  .hero-grid,.two-col{grid-template-columns:1fr;gap:44px}
+  .anchor-inner{flex-wrap:wrap;gap:16px;justify-content:center}
+  .anchor-div{display:none}
+  .steps{grid-template-columns:1fr;gap:28px}
+  footer{flex-direction:column;gap:16px;text-align:center}
+  .footer-links{justify-content:center}
+  .disclaimer{padding:0 24px 40px}
+  .sample-dash{grid-template-columns:1fr 1fr}
 }
 </style>
 </head>
@@ -244,770 +163,306 @@ textarea{resize:vertical;min-height:80px}
     <div class="nb"><span>QUIET</span><div class="nbr"></div><span>PREM</span></div>
     <span class="nav-wm">Quiet Premium</span>
   </div>
-  <div class="nav-r">The Architecture</div>
+  <div class="nav-links">
+    <a href="index.html" class="nav-link">Home</a>
+    <a href="gap-index.html" class="nav-link">Gap Index — Free</a>
+    <a href="contact.html" class="nav-link">Contact</a>
+  </div>
+  <div class="hamburger" onclick="toggleMenu()">
+    <span></span><span></span><span></span>
+  </div>
 </nav>
 
-<!-- LANDING -->
-<div id="landing" class="screen active">
-  <section class="hero">
-    <div class="hero-inner">
-      <div>
-        <div class="h-ey">The Architecture · Quiet Premium</div>
-        <h1 class="h-hl">Your spend.<br>Your routing.<br><em>Your answer.</em></h1>
-        <p class="h-sub">Most high earners are spending enough for a materially better travel life. The money isn't the problem. The infrastructure underneath it is. The Architecture runs a complete audit of your card stack, spend routing, airline concentration, hotel program, and lifestyle alignment — and delivers a personalized plan showing exactly where value is being lost and exactly how to recover it. On screen. Immediately.</p>
-        <div class="price-b">
-          <div class="price-f">The Architecture</div>
-          <div><span class="price-n" style="color:var(--white);font-size:52px">$297</span></div>
-          <div class="price-note">One time · No subscription · Results delivered immediately</div>
-          <div style="margin-top:14px;padding:14px 18px;border:1px solid var(--grey-dk);max-width:420px;background:rgba(176,141,87,0.04)">
-            <div style="font-family:var(--mono);font-size:7px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold-dk);margin-bottom:5px">The Standard</div>
-            <div style="font-size:11px;color:var(--grey);line-height:1.75">Your investment is protected. If The Architecture can't produce a clear path forward for your situation, we return it. That's not a policy — it's how this works.</div>
-          </div>
-        </div>
-        <button class="cta-btn" onclick="showIntake()">Begin The Architecture</button>
-        <div class="cta-subnote">43 questions · approximately 15 minutes · results on screen</div>
-      </div>
-
-      <div>
-        <div class="pv-card">
-          <div class="pv-lbl">Sample Output — Your results will look like this</div>
-
-          <!-- Dashboard -->
-          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--grey-dk);margin-bottom:14px">
-            <div style="background:#0A0A0A;padding:12px 10px">
-              <div style="font-family:var(--mono);font-size:6px;letter-spacing:.1em;text-transform:uppercase;color:var(--grey-mid);margin-bottom:4px">Potential Value</div>
-              <div style="font-family:var(--serif);font-size:22px;font-weight:300;color:var(--gold)">$11,400</div>
-              <div style="font-family:var(--mono);font-size:6px;color:var(--grey);margin-top:2px">Year one · same spend</div>
-            </div>
-            <div style="background:#0A0A0A;padding:12px 10px">
-              <div style="font-family:var(--mono);font-size:6px;letter-spacing:.1em;text-transform:uppercase;color:var(--grey-mid);margin-bottom:4px">Gap Score</div>
-              <div style="font-family:var(--serif);font-size:22px;font-weight:300;color:var(--gold)">8.2</div>
-              <div style="font-family:var(--mono);font-size:6px;color:var(--grey);margin-top:2px">Out of 10</div>
-            </div>
-            <div style="background:#0A0A0A;padding:12px 10px">
-              <div style="font-family:var(--mono);font-size:6px;letter-spacing:.1em;text-transform:uppercase;color:var(--grey-mid);margin-bottom:4px">Spend Misrouted</div>
-              <div style="font-family:var(--serif);font-size:22px;font-weight:300;color:var(--amber)">80%</div>
-              <div style="font-family:var(--mono);font-size:6px;color:var(--grey);margin-top:2px">Of annual spend</div>
-            </div>
-          </div>
-
-          <div style="font-family:var(--mono);font-size:7px;letter-spacing:.1em;text-transform:uppercase;color:var(--grey-mid);margin-bottom:8px;padding-bottom:7px;border-bottom:1px solid var(--grey-dk)">Three highest-impact corrections</div>
-          <div class="pv-m-item"><strong>Airfare routing</strong> — $38,000 on the wrong card. Zero MQD credit toward status. One change fixes both simultaneously.</div>
-          <div class="pv-m-item"><strong>Dining category</strong> — $28,000 earning below optimal rate. $1,680 in recoverable value annually.</div>
-          <div class="pv-m-item"><strong>Hotel booking method</strong> — existing card benefits unused on every eligible stay. No new card required.</div>
-
-          <div style="font-family:var(--mono);font-size:7px;letter-spacing:.1em;text-transform:uppercase;color:var(--grey-mid);margin-bottom:8px;padding-bottom:7px;border-top:1px solid var(--grey-dk);padding-top:10px;margin-top:10px">12-month status projection</div>
-          <div class="pv-m-item"><strong>Delta Platinum Medallion</strong> — projected by year end. Comfort+ at booking on eligible fares. Boards as early as Zone 3. Four First Class upgrade certificates annually — confirmed when inventory is open, first in line when it isn't. The trip starts differently.</div>
-
-          <div style="border-top:1px solid var(--grey-dk);margin-top:12px;padding-top:10px;display:flex;justify-content:space-between;align-items:baseline">
-            <div style="font-family:var(--mono);font-size:7px;letter-spacing:.1em;text-transform:uppercase;color:var(--grey-mid)">Potential annual value</div>
-            <div style="font-family:var(--serif);font-size:20px;font-weight:300;color:var(--gold)">$11,400</div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <section class="what-s">
-    <div class="what-i">
-      <div class="sec-ey">What The Architecture delivers</div>
-      <div class="g3">
-        <div class="g3-item"><div class="g3-num">01</div><div class="g3-title">Your Leakage Number</div><div class="g3-body">The exact annual dollar amount leaving your setup due to misrouted spend. Not a range. Your number — calculated from your actual inputs across every category.</div></div>
-        <div class="g3-item"><div class="g3-num">02</div><div class="g3-title">Complete Routing Audit</div><div class="g3-body">Every spend category analyzed against the optimal card. Where your current infrastructure is working and where it's costing you — line by line. The same money, routed correctly, produces materially different outcomes.</div></div>
-        <div class="g3-item"><div class="g3-num">03</div><div class="g3-title">Six Friction Scores</div><div class="g3-body">Boarding experience, upgrade reliability, hotel recognition, airport access, disruption recovery, and value capture — each scored against what your income level should be producing in the real world.</div></div>
-        <div class="g3-item"><div class="g3-num">04</div><div class="g3-title">12-Month Status Path</div><div class="g3-body">Which airline to concentrate with, what status tier you can reach, and at what pace — based on your actual flight volume, home airport, and spend concentration. A timeline, not a suggestion.</div></div>
-        <div class="g3-item"><div class="g3-num">05</div><div class="g3-title">Hotel Program Recommendation</div><div class="g3-body">Which program to concentrate in, what recognition tier is achievable within 12 months, and what that change means for your actual experience — at check-in, at checkout, and every night between.</div></div>
-        <div class="g3-item"><div class="g3-num">06</div><div class="g3-title">The Specific Corrections</div><div class="g3-body">The conclusions of the full audit — your highest-leverage infrastructure changes, in order of impact, with the annual value each one recovers. The output of your specific analysis. Not a list of tips.</div></div>
-      </div>
-    </div>
-  </section>
-
-  <section class="how-s">
-    <div class="what-i">
-      <div class="sec-ey">How it works</div>
-      <div class="how-steps" style="grid-template-columns:repeat(3,1fr)">
-        <div><div class="how-num">Step 01</div><div class="how-title">Pay once</div><div class="how-body">$297. One time, no subscription, no recurring charge. You own your results.</div></div>
-        <div><div class="how-num">Step 02</div><div class="how-title">Complete the intake</div><div class="how-body">43 questions about your spend, cards, and travel patterns. Approximately 15 minutes. Your answers determine the accuracy of your output.</div></div>
-        <div><div class="how-num">Step 03</div><div class="how-title">Get your results</div><div class="how-body">Your complete routing analysis appears on screen immediately. Everything you need to fix your infrastructure is in the output.</div></div>
-      </div>
-    </div>
-  </section>
-
-  <section class="bot-cta">
-    <div style="max-width:520px;margin:0 auto">
-      <h2 class="bot-hl">Find out what your spend is <em>actually producing.</em></h2>
-      <p class="bot-sub">Your answer is in your inputs. The Architecture finds it.</p>
-      <div style="font-size:12px;color:var(--grey-mid);line-height:1.75;margin-bottom:28px;font-style:italic">Your investment is protected. If The Architecture can't produce a clear path forward for your situation, we return it.</div>
-      <button class="cta-btn" onclick="showIntake()">Begin The Architecture</button>
-    </div>
-  </section>
+<div class="mobile-menu" id="mobile-menu">
+  <a href="index.html">Home</a>
+  <a href="gap-index.html">Gap Index — Free</a>
+  <a href="contact.html">Contact</a>
+  <a href="#gate">Begin The Architecture — $297</a>
 </div>
 
-
-<!-- INTAKE -->
-<div id="intake" class="screen">
-  <div class="int-wrap">
-    <div class="int-intro">
-      <div class="int-ey">The Architecture · Intake</div>
-      <h2 class="int-hl">Your numbers.<br><em>Your result.</em></h2>
-      <p class="int-sub">Complete all 43 questions as accurately as possible. The specificity of your output depends entirely on the accuracy of your inputs. Approximate figures are fine where exact numbers aren't available.</p>
-    </div>
-
-    <div class="prog-wrap">
-      <div class="prog-track"><div class="prog-fill" id="prog-fill" style="width:0%"></div></div>
-      <div class="prog-txt"><span id="prog-text">Section 1 of 5</span><span id="prog-pct">0%</span></div>
-    </div>
-
-    <form id="arch-form" onsubmit="handleSubmit(event)">
-
-      <div class="sec-hd">
-        <div class="sec-hd-num">Section 01 of 05</div>
-        <div class="sec-hd-title">Baseline Snapshot</div>
-      </div>
-
-      <div class="field"><label class="field-lbl">Email address <span class="req">*</span></label><input type="email" name="email" required placeholder="you@example.com" oninput="updateProgress()"/></div>
-      <div class="field"><label class="field-lbl">Total annual household personal card spend — last 12 months <span class="req">*</span></label><div class="field-hint">Include all household spend that could run through cards.</div><input type="text" name="total_spend" required placeholder="e.g. 180000" oninput="updateProgress()"/></div>
-
-      <div class="field"><label class="field-lbl">Current credit score range <span class="req">*</span></label>
-        <div class="opts" data-name="credit_score" data-type="radio">
-          <div class="opt" data-value="800+"><div class="opt-ind circle"></div><div class="opt-txt">800+</div></div>
-          <div class="opt" data-value="760-799"><div class="opt-ind circle"></div><div class="opt-txt">760–799</div></div>
-          <div class="opt" data-value="720-759"><div class="opt-ind circle"></div><div class="opt-txt">720–759</div></div>
-          <div class="opt" data-value="680-719"><div class="opt-ind circle"></div><div class="opt-txt">680–719</div></div>
-          <div class="opt" data-value="Below 680"><div class="opt-ind circle"></div><div class="opt-txt">Below 680</div></div>
-        </div><input class="real-inp" type="text" name="credit_score" required/>
-      </div>
-
-      <div class="sec-hd">
-        <div class="sec-hd-num">Section 02 of 05</div>
-        <div class="sec-hd-title">Lifestyle</div>
-      </div>
-
-      <div class="field"><label class="field-lbl">Largest single discretionary purchase in the past 12 months <span class="req">*</span></label><div class="field-hint">Dollar amount only. Do not include primary residence or business purchases.</div><input type="text" name="largest_purchase" required placeholder="e.g. 25000" oninput="updateProgress()"/></div>
-      <div class="field"><label class="field-lbl">Luxury retail spend in the past 12 months <span class="req">*</span></label><div class="field-hint">Apparel, watches, leather goods, jewelry. Personal cards only.</div><input type="text" name="luxury_retail_spend" required placeholder="e.g. 12000" oninput="updateProgress()"/></div>
-
-      <div class="field"><label class="field-lbl">How are your luxury retail purchases typically made? <span class="req">*</span></label>
-        <div class="opts" data-name="luxury_retail_method" data-type="radio">
-          <div class="opt" data-value="Not engaged"><div class="opt-ind circle"></div><div class="opt-txt">I have not meaningfully engaged in luxury retail</div></div>
-          <div class="opt" data-value="Online"><div class="opt-ind circle"></div><div class="opt-txt">Online — brand website or third-party</div></div>
-          <div class="opt" data-value="In boutique without advisor"><div class="opt-ind circle"></div><div class="opt-txt">In boutique without a dedicated advisor</div></div>
-          <div class="opt" data-value="Through dedicated advisor"><div class="opt-ind circle"></div><div class="opt-txt">Through a dedicated client advisor</div></div>
-          <div class="opt" data-value="Mixed"><div class="opt-ind circle"></div><div class="opt-txt">Mixed</div></div>
-        </div><input class="real-inp" type="text" name="luxury_retail_method" required/>
-      </div>
-
-      <div class="sec-hd">
-        <div class="sec-hd-num">Section 03 of 05</div>
-        <div class="sec-hd-title">Travel</div>
-      </div>
-
-      <div class="field"><label class="field-lbl">What do you primarily use your credit card points for? <span class="req">*</span></label><div class="field-hint">Select all that apply.</div>
-        <div class="opts" data-name="points_use" data-type="checkbox">
-          <div class="opt" data-value="Main cabin economy"><div class="opt-ind square"></div><div class="opt-txt">Main cabin (economy)</div></div>
-          <div class="opt" data-value="Extra legroom economy"><div class="opt-ind square"></div><div class="opt-txt">Extra legroom economy</div></div>
-          <div class="opt" data-value="Premium economy"><div class="opt-ind square"></div><div class="opt-txt">Premium economy (international)</div></div>
-          <div class="opt" data-value="First Class domestic"><div class="opt-ind square"></div><div class="opt-txt">First Class (domestic)</div></div>
-          <div class="opt" data-value="Business/first international"><div class="opt-ind square"></div><div class="opt-txt">Business/first (international)</div></div>
-          <div class="opt" data-value="Hotel stays"><div class="opt-ind square"></div><div class="opt-txt">Hotel stays</div></div>
-          <div class="opt" data-value="Statement credits"><div class="opt-ind square"></div><div class="opt-txt">Statement credits / cash back</div></div>
-          <div class="opt" data-value="Not redeemed"><div class="opt-ind square"></div><div class="opt-txt">I have not redeemed points</div></div>
-        </div><input class="real-inp" type="text" name="points_use" required/>
-      </div>
-
-      <div class="field"><label class="field-lbl">How often are you in first or business class? <span class="req">*</span></label>
-        <div class="opts" data-name="premium_freq" data-type="radio">
-          <div class="opt" data-value="Always"><div class="opt-ind circle"></div><div class="opt-txt">Always</div></div>
-          <div class="opt" data-value="Often"><div class="opt-ind circle"></div><div class="opt-txt">Often</div></div>
-          <div class="opt" data-value="Occasionally"><div class="opt-ind circle"></div><div class="opt-txt">Occasionally</div></div>
-          <div class="opt" data-value="Rarely"><div class="opt-ind circle"></div><div class="opt-txt">Rarely</div></div>
-          <div class="opt" data-value="Never"><div class="opt-ind circle"></div><div class="opt-txt">Never</div></div>
-        </div><input class="real-inp" type="text" name="premium_freq" required/>
-      </div>
-
-      <div class="field"><label class="field-lbl">Household dining spend charged to personal cards <span class="req">*</span></label><div class="field-hint">Restaurants, bars, food delivery.</div><input type="text" name="dining_spend" required placeholder="e.g. 20000" oninput="updateProgress()"/></div>
-      <div class="field"><label class="field-lbl">Household grocery spend charged to personal cards <span class="req">*</span></label><input type="text" name="grocery_spend" required placeholder="e.g. 18000" oninput="updateProgress()"/></div>
-      <div class="field"><label class="field-lbl">Household general spend charged to personal cards <span class="req">*</span></label><div class="field-hint">Non-bonused spend — retail, insurance, utilities, miscellaneous.</div><input type="text" name="general_spend" required placeholder="e.g. 60000" oninput="updateProgress()"/></div>
-      <div class="field"><label class="field-lbl">What makes up most of your general spend? <span class="req">*</span></label><div class="field-hint">List up to three dominant categories.</div><textarea name="general_spend_cats" required placeholder="e.g. Online retail, Insurance, Luxury retail" oninput="updateProgress()"></textarea></div>
-      <div class="field"><label class="field-lbl">Primary home airport <span class="req">*</span></label><input type="text" name="home_airport" required placeholder="e.g. ATL, JFK, BNA" oninput="updateProgress()"/></div>
-      <div class="field"><label class="field-lbl">Which airports do you fly to most frequently? <span class="req">*</span></label><div class="field-hint">List up to five destinations.</div><textarea name="frequent_destinations" required placeholder="e.g. ATL, JFK, LAX, LAS" oninput="updateProgress()"></textarea></div>
-      <div class="field"><label class="field-lbl">Current primary airline and elite tier <span class="req">*</span></label><input type="text" name="primary_airline" required placeholder="e.g. Delta — Platinum Medallion, or None" oninput="updateProgress()"/></div>
-
-      <div class="field"><label class="field-lbl">In which quarter did you qualify for this tier last year? <span class="req">*</span></label>
-        <div class="opts" data-name="qual_quarter" data-type="radio">
-          <div class="opt" data-value="Q1"><div class="opt-ind circle"></div><div class="opt-txt">January–March</div></div>
-          <div class="opt" data-value="Q2"><div class="opt-ind circle"></div><div class="opt-txt">April–June</div></div>
-          <div class="opt" data-value="Q3"><div class="opt-ind circle"></div><div class="opt-txt">July–September</div></div>
-          <div class="opt" data-value="Q4"><div class="opt-ind circle"></div><div class="opt-txt">October–December</div></div>
-          <div class="opt" data-value="Did not qualify"><div class="opt-ind circle"></div><div class="opt-txt">Did not qualify</div></div>
-        </div><input class="real-inp" type="text" name="qual_quarter" required/>
-      </div>
-
-      <div class="field"><label class="field-lbl">Elite tier held on January 1 of this year <span class="req">*</span></label><input type="text" name="status_jan1" required placeholder="e.g. Delta Gold Medallion, or None" oninput="updateProgress()"/></div>
-
-      <div class="field"><label class="field-lbl">Consecutive years at this tier or higher <span class="req">*</span></label>
-        <div class="opts" data-name="consec_years" data-type="radio">
-          <div class="opt" data-value="1"><div class="opt-ind circle"></div><div class="opt-txt">1</div></div>
-          <div class="opt" data-value="2-3"><div class="opt-ind circle"></div><div class="opt-txt">2–3</div></div>
-          <div class="opt" data-value="4-6"><div class="opt-ind circle"></div><div class="opt-txt">4–6</div></div>
-          <div class="opt" data-value="7+"><div class="opt-ind circle"></div><div class="opt-txt">7 or more</div></div>
-        </div><input class="real-inp" type="text" name="consec_years" required/>
-      </div>
-
-      <div class="field"><label class="field-lbl">Annual airline companion certificate? <span class="req">*</span></label>
-        <div class="opts" data-name="companion_cert" data-type="radio">
-          <div class="opt" data-value="Yes used"><div class="opt-ind circle"></div><div class="opt-txt">Yes — I used it this year</div></div>
-          <div class="opt" data-value="Yes not used"><div class="opt-ind circle"></div><div class="opt-txt">Yes — I did not use it</div></div>
-          <div class="opt" data-value="No"><div class="opt-ind circle"></div><div class="opt-txt">No</div></div>
-          <div class="opt" data-value="Unsure"><div class="opt-ind circle"></div><div class="opt-txt">Unsure</div></div>
-        </div><input class="real-inp" type="text" name="companion_cert" required/>
-      </div>
-
-      <div class="field"><label class="field-lbl">Flights personally taken — past 12 months <span class="req">*</span></label>
-        <div class="opts" data-name="flights_taken" data-type="radio">
-          <div class="opt" data-value="1-5"><div class="opt-ind circle"></div><div class="opt-txt">1–5</div></div>
-          <div class="opt" data-value="6-10"><div class="opt-ind circle"></div><div class="opt-txt">6–10</div></div>
-          <div class="opt" data-value="11-20"><div class="opt-ind circle"></div><div class="opt-txt">11–20</div></div>
-          <div class="opt" data-value="21-40"><div class="opt-ind circle"></div><div class="opt-txt">21–40</div></div>
-          <div class="opt" data-value="40+"><div class="opt-ind circle"></div><div class="opt-txt">40+</div></div>
-        </div><input class="real-inp" type="text" name="flights_taken" required/>
-      </div>
-
-      <div class="field"><label class="field-lbl">Trip composition <span class="req">*</span></label><div class="field-hint">Select all that apply.</div>
-        <div class="opts" data-name="trip_comp" data-type="checkbox">
-          <div class="opt" data-value="Solo"><div class="opt-ind square"></div><div class="opt-txt">Solo</div></div>
-          <div class="opt" data-value="With one other"><div class="opt-ind square"></div><div class="opt-txt">With one other person</div></div>
-          <div class="opt" data-value="With 3-4"><div class="opt-ind square"></div><div class="opt-txt">With 3–4</div></div>
-          <div class="opt" data-value="With 5+"><div class="opt-ind square"></div><div class="opt-txt">With 5+</div></div>
-        </div><input class="real-inp" type="text" name="trip_comp" required/>
-      </div>
-
-      <div class="field"><label class="field-lbl">Who controls how your flights are booked? <span class="req">*</span></label>
-        <div class="opts" data-name="booking_control" data-type="radio">
-          <div class="opt" data-value="I do"><div class="opt-ind circle"></div><div class="opt-txt">I do</div></div>
-          <div class="opt" data-value="Shared"><div class="opt-ind circle"></div><div class="opt-txt">Shared</div></div>
-          <div class="opt" data-value="Someone else"><div class="opt-ind circle"></div><div class="opt-txt">Someone else — EA or travel manager</div></div>
-        </div><input class="real-inp" type="text" name="booking_control" required/>
-      </div>
-
-      <div class="field"><label class="field-lbl">When traveling with others, how are flights paid for? <span class="req">*</span></label>
-        <div class="opts" data-name="group_payment" data-type="radio">
-          <div class="opt" data-value="I pay all"><div class="opt-ind circle"></div><div class="opt-txt">I pay for all travelers</div></div>
-          <div class="opt" data-value="Mixed"><div class="opt-ind circle"></div><div class="opt-txt">Mixed — split or reimbursed</div></div>
-          <div class="opt" data-value="Each pays own"><div class="opt-ind circle"></div><div class="opt-txt">Each person pays for themselves</div></div>
-          <div class="opt" data-value="Mostly solo"><div class="opt-ind circle"></div><div class="opt-txt">Not applicable — mostly travel solo</div></div>
-        </div><input class="real-inp" type="text" name="group_payment" required/>
-      </div>
-
-      <div class="field"><label class="field-lbl">Percentage of household flights with primary airline <span class="req">*</span></label>
-        <div class="opts" data-name="airline_conc" data-type="radio">
-          <div class="opt" data-value="0-24%"><div class="opt-ind circle"></div><div class="opt-txt">0–24%</div></div>
-          <div class="opt" data-value="25-49%"><div class="opt-ind circle"></div><div class="opt-txt">25–49%</div></div>
-          <div class="opt" data-value="50-74%"><div class="opt-ind circle"></div><div class="opt-txt">50–74%</div></div>
-          <div class="opt" data-value="75-100%"><div class="opt-ind circle"></div><div class="opt-txt">75–100%</div></div>
-        </div><input class="real-inp" type="text" name="airline_conc" required/>
-      </div>
-
-      <div class="field"><label class="field-lbl">Household spend directly with primary airline — past 12 months <span class="req">*</span></label><div class="field-hint">Tickets, upgrades, fees paid directly — not through portals or points.</div>
-        <div class="opts" data-name="airline_spend" data-type="radio">
-          <div class="opt" data-value="Under $5k"><div class="opt-ind circle"></div><div class="opt-txt">Under $5,000</div></div>
-          <div class="opt" data-value="$5k-$10k"><div class="opt-ind circle"></div><div class="opt-txt">$5,000–$9,999</div></div>
-          <div class="opt" data-value="$10k-$20k"><div class="opt-ind circle"></div><div class="opt-txt">$10,000–$19,999</div></div>
-          <div class="opt" data-value="$20k+"><div class="opt-ind circle"></div><div class="opt-txt">$20,000 or more</div></div>
-          <div class="opt" data-value="Likely under $10k"><div class="opt-ind circle"></div><div class="opt-txt">Don't track — likely under $10,000</div></div>
-          <div class="opt" data-value="Likely over $10k"><div class="opt-ind circle"></div><div class="opt-txt">Don't track — likely over $10,000</div></div>
-        </div><input class="real-inp" type="text" name="airline_spend" required/>
-      </div>
-
-      <div class="field"><label class="field-lbl">Percentage of hotel stays with primary brand <span class="req">*</span></label>
-        <div class="opts" data-name="hotel_conc" data-type="radio">
-          <div class="opt" data-value="0-24%"><div class="opt-ind circle"></div><div class="opt-txt">0–24%</div></div>
-          <div class="opt" data-value="25-49%"><div class="opt-ind circle"></div><div class="opt-txt">25–49%</div></div>
-          <div class="opt" data-value="50-74%"><div class="opt-ind circle"></div><div class="opt-txt">50–74%</div></div>
-          <div class="opt" data-value="75-100%"><div class="opt-ind circle"></div><div class="opt-txt">75–100%</div></div>
-        </div><input class="real-inp" type="text" name="hotel_conc" required/>
-      </div>
-
-      <div class="field"><label class="field-lbl">Primary hotel brand and current status <span class="req">*</span></label><input type="text" name="primary_hotel" required placeholder="e.g. Hyatt — Globalist, or None" oninput="updateProgress()"/></div>
-
-      <div class="field"><label class="field-lbl">Total hotel nights last year — all brands <span class="req">*</span></label>
-        <div class="opts" data-name="hotel_nights" data-type="radio">
-          <div class="opt" data-value="1-5"><div class="opt-ind circle"></div><div class="opt-txt">1–5</div></div>
-          <div class="opt" data-value="6-10"><div class="opt-ind circle"></div><div class="opt-txt">6–10</div></div>
-          <div class="opt" data-value="11-20"><div class="opt-ind circle"></div><div class="opt-txt">11–20</div></div>
-          <div class="opt" data-value="21-39"><div class="opt-ind circle"></div><div class="opt-txt">21–39</div></div>
-          <div class="opt" data-value="40+"><div class="opt-ind circle"></div><div class="opt-txt">40+</div></div>
-        </div><input class="real-inp" type="text" name="hotel_nights" required/>
-      </div>
-
-      <div class="field"><label class="field-lbl">How do you typically book flights and hotels? <span class="req">*</span></label>
-        <div class="opts" data-name="booking_method" data-type="radio">
-          <div class="opt" data-value="Direct"><div class="opt-ind circle"></div><div class="opt-txt">Direct — airline or hotel website</div></div>
-          <div class="opt" data-value="Corporate portal"><div class="opt-ind circle"></div><div class="opt-txt">Corporate portal — Concur, Amex GBT, etc.</div></div>
-          <div class="opt" data-value="OTA"><div class="opt-ind circle"></div><div class="opt-txt">Online travel agency — Expedia, Booking, etc.</div></div>
-          <div class="opt" data-value="Mixed"><div class="opt-ind circle"></div><div class="opt-txt">Mixed</div></div>
-        </div><input class="real-inp" type="text" name="booking_method" required/>
-      </div>
-
-      <div class="field"><label class="field-lbl">Cabin typically booked for personal travel <span class="req">*</span></label>
-        <div class="opts" data-name="cabin_booked" data-type="radio">
-          <div class="opt" data-value="Economy"><div class="opt-ind circle"></div><div class="opt-txt">Economy</div></div>
-          <div class="opt" data-value="Extra legroom economy"><div class="opt-ind circle"></div><div class="opt-txt">Extra legroom economy</div></div>
-          <div class="opt" data-value="Premium economy"><div class="opt-ind circle"></div><div class="opt-txt">Premium Economy (international)</div></div>
-          <div class="opt" data-value="Business"><div class="opt-ind circle"></div><div class="opt-txt">Business</div></div>
-          <div class="opt" data-value="First"><div class="opt-ind circle"></div><div class="opt-txt">First</div></div>
-          <div class="opt" data-value="Mixed"><div class="opt-ind circle"></div><div class="opt-txt">Mixed depending on route</div></div>
-        </div><input class="real-inp" type="text" name="cabin_booked" required/>
-      </div>
-
-      <div class="field"><label class="field-lbl">Spend on seat upgrades or premium cabin buy-ups — past 12 months <span class="req">*</span></label>
-        <div class="opts" data-name="upgrade_spend" data-type="radio">
-          <div class="opt" data-value="Under $1k"><div class="opt-ind circle"></div><div class="opt-txt">Under $1,000</div></div>
-          <div class="opt" data-value="$1k-$3k"><div class="opt-ind circle"></div><div class="opt-txt">$1,000–$3,000</div></div>
-          <div class="opt" data-value="$3k-$7k"><div class="opt-ind circle"></div><div class="opt-txt">$3,000–$7,000</div></div>
-          <div class="opt" data-value="Over $7k"><div class="opt-ind circle"></div><div class="opt-txt">Over $7,000</div></div>
-        </div><input class="real-inp" type="text" name="upgrade_spend" required/>
-      </div>
-
-      <div class="field"><label class="field-lbl">Airline miles or transferable points redeemed — past 12 months <span class="req">*</span></label>
-        <div class="opts" data-name="pts_redeemed" data-type="radio">
-          <div class="opt" data-value="Under 25k"><div class="opt-ind circle"></div><div class="opt-txt">Under 25,000</div></div>
-          <div class="opt" data-value="25k-75k"><div class="opt-ind circle"></div><div class="opt-txt">25,000–75,000</div></div>
-          <div class="opt" data-value="75k-150k"><div class="opt-ind circle"></div><div class="opt-txt">75,000–150,000</div></div>
-          <div class="opt" data-value="Over 150k"><div class="opt-ind circle"></div><div class="opt-txt">Over 150,000</div></div>
-          <div class="opt" data-value="None"><div class="opt-ind circle"></div><div class="opt-txt">None</div></div>
-          <div class="opt" data-value="Unsure"><div class="opt-ind circle"></div><div class="opt-txt">Unsure</div></div>
-        </div><input class="real-inp" type="text" name="pts_redeemed" required/>
-      </div>
-
-      <div class="field"><label class="field-lbl">Do you actively monitor your points balances and status progress? <span class="req">*</span></label>
-        <div class="opts" data-name="monitors_pts" data-type="radio">
-          <div class="opt" data-value="Yes regularly"><div class="opt-ind circle"></div><div class="opt-txt">Yes — regularly</div></div>
-          <div class="opt" data-value="Occasionally"><div class="opt-ind circle"></div><div class="opt-txt">Occasionally</div></div>
-          <div class="opt" data-value="Rarely"><div class="opt-ind circle"></div><div class="opt-txt">Rarely</div></div>
-          <div class="opt" data-value="Not at all"><div class="opt-ind circle"></div><div class="opt-txt">Not at all</div></div>
-        </div><input class="real-inp" type="text" name="monitors_pts" required/>
-      </div>
-
-      <div class="field"><label class="field-lbl">Which outcomes would most improve your experience? <span class="req">*</span></label><div class="field-hint">Choose up to two.</div>
-        <div class="opts" data-name="desired_outcomes" data-type="checkbox" data-max="2">
-          <div class="opt" data-value="Earlier airline upgrades"><div class="opt-ind square"></div><div class="opt-txt">Earlier airline upgrades</div></div>
-          <div class="opt" data-value="Suite-level hotel upgrades"><div class="opt-ind square"></div><div class="opt-txt">Suite-level hotel upgrades</div></div>
-          <div class="opt" data-value="Airport experience"><div class="opt-ind square"></div><div class="opt-txt">Airport experience — priority lanes, lounges</div></div>
-          <div class="opt" data-value="Reduce paid premium seats"><div class="opt-ind square"></div><div class="opt-txt">Reduce need to purchase premium seats</div></div>
-          <div class="opt" data-value="Better points use"><div class="opt-ind square"></div><div class="opt-txt">Better use of points and miles</div></div>
-          <div class="opt" data-value="Operational reliability"><div class="opt-ind square"></div><div class="opt-txt">Operational reliability during disruptions</div></div>
-          <div class="opt" data-value="Consistent recognition"><div class="opt-ind square"></div><div class="opt-txt">More consistent recognition from airlines and hotels</div></div>
-        </div><input class="real-inp" type="text" name="desired_outcomes" required/>
-      </div>
-
-      <div class="sec-hd">
-        <div class="sec-hd-num">Section 04 of 05</div>
-        <div class="sec-hd-title">Card Infrastructure</div>
-      </div>
-
-      <div class="field"><label class="field-lbl">Primary cards currently used — full names required <span class="req">*</span></label><div class="field-hint">List the exact full card names you use most frequently.</div><textarea name="primary_cards" required placeholder="e.g. American Express Platinum Card, Delta SkyMiles Reserve American Express Card" oninput="updateProgress()"></textarea></div>
-      <div class="field"><label class="field-lbl">Airfare — which card do you primarily use? <span class="req">*</span></label><input type="text" name="card_airfare" required placeholder="e.g. Delta SkyMiles Reserve Amex" oninput="updateProgress()"/></div>
-      <div class="field"><label class="field-lbl">Hotels — which card do you primarily use? <span class="req">*</span></label><input type="text" name="card_hotels" required placeholder="e.g. Amex Platinum" oninput="updateProgress()"/></div>
-      <div class="field"><label class="field-lbl">Dining — which card do you primarily use? <span class="req">*</span></label><input type="text" name="card_dining" required placeholder="e.g. Amex Gold" oninput="updateProgress()"/></div>
-      <div class="field"><label class="field-lbl">Groceries — which card do you primarily use? <span class="req">*</span></label><input type="text" name="card_groceries" required placeholder="e.g. Amex Gold" oninput="updateProgress()"/></div>
-      <div class="field"><label class="field-lbl">General / non-bonused spend — which card do you primarily use? <span class="req">*</span></label><input type="text" name="card_general" required placeholder="e.g. Delta SkyMiles Reserve" oninput="updateProgress()"/></div>
-
-      <div class="sec-hd">
-        <div class="sec-hd-num">Section 05 of 05</div>
-        <div class="sec-hd-title">Experience Outcomes</div>
-        <div class="sec-hd-sub">These questions measure how your current setup translates into real-world treatment during travel.</div>
-      </div>
-
-      <div class="field"><label class="field-lbl">Do you consistently receive upgrades without checking or asking? <span class="req">*</span></label>
-        <div class="opts" data-name="upgrades_unasked" data-type="radio">
-          <div class="opt" data-value="Yes"><div class="opt-ind circle"></div><div class="opt-txt">Yes</div></div>
-          <div class="opt" data-value="No"><div class="opt-ind circle"></div><div class="opt-txt">No</div></div>
-        </div><input class="real-inp" type="text" name="upgrades_unasked" required/>
-      </div>
-
-      <div class="field"><label class="field-lbl">Travel disruption experienced in past 12 months? <span class="req">*</span></label>
-        <div class="opts" data-name="disruption" data-type="radio">
-          <div class="opt" data-value="Yes"><div class="opt-ind circle"></div><div class="opt-txt">Yes</div></div>
-          <div class="opt" data-value="No"><div class="opt-ind circle"></div><div class="opt-txt">No</div></div>
-        </div><input class="real-inp" type="text" name="disruption" required/>
-      </div>
-
-      <div class="field"><label class="field-lbl">When issues occur, are they resolved without escalation? <span class="req">*</span></label>
-        <div class="opts" data-name="issues_resolved" data-type="radio">
-          <div class="opt" data-value="Yes"><div class="opt-ind circle"></div><div class="opt-txt">Yes</div></div>
-          <div class="opt" data-value="No"><div class="opt-ind circle"></div><div class="opt-txt">No</div></div>
-        </div><input class="real-inp" type="text" name="issues_resolved" required/>
-      </div>
-
-      <div class="submit-s">
-        <p class="submit-note">Your results appear on screen immediately after you submit. Everything you enter is private and used solely to generate your analysis.</p>
-        <button type="submit" class="btn-submit">Generate My Architecture</button>
-      </div>
-
-    </form>
-  </div>
-</div>
-
-
-<!-- RESULTS -->
-<div id="results" class="screen">
-  <div class="res-wrap">
-
-    <div class="res-hd">
+<!-- HERO -->
+<section id="hero">
+  <div class="inner">
+    <div class="hero-grid">
       <div>
-        <div class="res-ey">The Architecture · Your Results</div>
-        <h2 class="res-hl">Your routing.<br><em>Your answer.</em></h2>
+        <div class="eyebrow">The Architecture · Quiet Premium</div>
+        <h1 class="h1">Your spend.<br>Your routing.<br><em>Your answer.</em></h1>
+        <p class="body" style="margin-top:24px;max-width:480px">A complete audit of your card stack, spend routing, airline concentration, hotel program, and lifestyle alignment. Your personalized plan on screen in 15 minutes. Not a generic recommendation — your inputs produce your result.</p>
       </div>
       <div>
-        <div class="res-client" id="r-client">—</div>
-        <div class="res-meta">Generated <span id="r-date"></span> · Quiet Premium · Confidential</div>
-      </div>
-    </div>
-
-    <div class="hs-grid">
-      <div class="hs-cell"><div class="hs-lbl">Potential Annual Leakage</div><div class="hs-val gold" id="r-leakage">$—</div><div class="hs-sub">Estimated value lost to misrouting annually</div></div>
-      <div class="hs-cell"><div class="hs-lbl">Gap Score</div><div class="hs-val gold" id="r-gap">—</div><div class="hs-sub">Out of 10 · Overall misalignment</div></div>
-      <div class="hs-cell"><div class="hs-lbl">Misaligned Spend</div><div class="hs-val amber" id="r-misaligned">—%</div><div class="hs-sub">Of annual spend on suboptimal cards</div></div>
-      <div class="hs-cell"><div class="hs-lbl">Potential Annual Value</div><div class="hs-val gold" id="r-value">$—</div><div class="hs-sub">Based on inputs · outcomes vary</div></div>
-    </div>
-
-    <div class="g2">
-      <div class="r-cell">
-        <div class="r-cell-lbl">Friction Dashboard</div>
-        <div class="fr-row"><div class="fr-num critical" id="fr-b">—</div><div class="fr-right"><div class="fr-title">Boarding Experience</div><div class="fr-track"><div class="fr-fill" id="fr-b-bar" style="background:#C0392B"></div></div><div class="fr-desc" id="fr-b-desc">—</div></div></div>
-        <div class="fr-row"><div class="fr-num critical" id="fr-u">—</div><div class="fr-right"><div class="fr-title">Upgrade Reliability</div><div class="fr-track"><div class="fr-fill" id="fr-u-bar" style="background:#C0392B"></div></div><div class="fr-desc" id="fr-u-desc">—</div></div></div>
-        <div class="fr-row"><div class="fr-num critical" id="fr-h">—</div><div class="fr-right"><div class="fr-title">Hotel Recognition</div><div class="fr-track"><div class="fr-fill" id="fr-h-bar" style="background:#C0392B"></div></div><div class="fr-desc" id="fr-h-desc">—</div></div></div>
-        <div class="fr-row"><div class="fr-num alert" id="fr-a">—</div><div class="fr-right"><div class="fr-title">Airport Experience</div><div class="fr-track"><div class="fr-fill" id="fr-a-bar" style="background:#E8A87C"></div></div><div class="fr-desc" id="fr-a-desc">—</div></div></div>
-        <div class="fr-row"><div class="fr-num alert" id="fr-d">—</div><div class="fr-right"><div class="fr-title">Disruption Recovery</div><div class="fr-track"><div class="fr-fill" id="fr-d-bar" style="background:#E8A87C"></div></div><div class="fr-desc" id="fr-d-desc">—</div></div></div>
-        <div class="fr-row"><div class="fr-num alert" id="fr-p">—</div><div class="fr-right"><div class="fr-title">Points & Value Capture</div><div class="fr-track"><div class="fr-fill" id="fr-p-bar" style="background:#E8A87C"></div></div><div class="fr-desc" id="fr-p-desc">—</div></div></div>
-      </div>
-
-      <div class="r-cell">
-        <div class="r-cell-lbl">Your Three Moves</div>
-        <div class="move-item"><div class="move-num">Move 01 · Highest Impact</div><div class="move-title" id="m1t">—</div><div class="move-impact" id="m1i">—</div><div class="move-body" id="m1b">—</div></div>
-        <div class="move-item"><div class="move-num">Move 02</div><div class="move-title" id="m2t">—</div><div class="move-impact" id="m2i">—</div><div class="move-body" id="m2b">—</div></div>
-        <div class="move-item"><div class="move-num">Move 03</div><div class="move-title" id="m3t">—</div><div class="move-impact" id="m3i">—</div><div class="move-body" id="m3b">—</div></div>
-      </div>
-    </div>
-
-    <div class="g2">
-      <div class="r-cell">
-        <div class="r-cell-lbl">Spend Routing — Current vs. Corrected</div>
-        <table class="sp-table">
-          <thead><tr><th>Category</th><th>Current Card</th><th>Gap</th><th>Correction</th></tr></thead>
-          <tbody id="sp-body"><tr><td colspan="4" style="color:var(--grey-mid);font-size:11px">Generating analysis...</td></tr></tbody>
-        </table>
-      </div>
-      <div class="r-cell">
-        <div class="r-cell-lbl">12-Month Status Path</div>
-        <div class="st-row"><div class="st-dot current"></div><div><div class="st-period">Now</div><div class="st-label" id="st0l">—</div><div class="st-note" id="st0n">—</div></div></div>
-        <div class="st-row"><div class="st-dot future"></div><div><div class="st-period" id="st1p">Months 1–3</div><div class="st-label" id="st1l">—</div><div class="st-note" id="st1n">—</div></div></div>
-        <div class="st-row"><div class="st-dot future"></div><div><div class="st-period" id="st2p">Months 4–6</div><div class="st-label" id="st2l">—</div><div class="st-note" id="st2n">—</div></div></div>
-        <div class="st-row"><div class="st-dot future"></div><div><div class="st-period" id="st3p">Months 7–12</div><div class="st-label" id="st3l">—</div><div class="st-note" id="st3n">—</div></div></div>
-      </div>
-    </div>
-
-    <div class="g2">
-      <div class="r-cell">
-        <div class="r-cell-lbl">Hotel Program Recommendation</div>
-        <div class="hotel-rec"><div class="hotel-rec-lbl">Recommended Program</div><div class="hotel-rec-name" id="hotel-name">—</div><div class="hotel-rec-body" id="hotel-body">—</div></div>
-        <div style="font-size:11px;color:var(--grey);line-height:1.7" id="hotel-detail">—</div>
-      </div>
-      <div class="r-cell">
-        <div class="r-cell-lbl">Potential Annual Value Breakdown</div>
-        <div class="vr-row"><div class="vr-label">Card routing corrections</div><div class="vr-val" id="vv1">—</div></div>
-        <div class="vr-row"><div class="vr-label">Upgrade cost reduction</div><div class="vr-val" id="vv2">—</div></div>
-        <div class="vr-row"><div class="vr-label">Hotel program benefits</div><div class="vr-val" id="vv3">—</div></div>
-        <div class="vr-row"><div class="vr-label">Amex Platinum FHR benefits</div><div class="vr-val" id="vv4">—</div></div>
-        <div class="vr-row"><div class="vr-label">Companion certificate value</div><div class="vr-val" id="vv5">—</div></div>
-        <div class="vr-total"><div class="vr-total-lbl">Potential Annual Value</div><div class="vr-total-val" id="vvt">$—</div></div>
-      </div>
-    </div>
-
-    <div class="res-actions">
-      <button class="btn-outline" onclick="window.print()">Save / Print Results</button>
-      <button class="btn-outline" onclick="showScreen('landing')">← Start Over</button>
-    </div>
-
-    <div style="margin-top:40px;padding-top:24px;border-top:1px solid #1a1a1a">
-      <p style="font-family:var(--mono);font-size:8px;letter-spacing:.08em;color:var(--grey-mid);line-height:1.8">Potential value estimates are based on your inputs and published program benefits as of 2025–2026. Actual outcomes vary by redemption choices, program availability, and issuer terms. Status benefits are subject to airline and hotel program policies and may change. Quiet Premium is not affiliated with any airline, hotel, or card issuer mentioned in this analysis.</p>
-    </div>
-  </div>
-
-  <div class="upsell">
-    <div class="upsell-inner">
-      <div>
-        <div class="upsell-ey">Need direct consultation?</div>
-        <h3 class="upsell-hl">The same analysis.<br><em>Plus the conversation.</em></h3>
-        <p class="upsell-body">The Architecture delivers everything most clients need. For situations that fall outside the standard QP system — unusual travel patterns, complex household setups, credit constraints — a private consultation is available. Your investment is protected either way.</p>
-      </div>
-      <div>
-        <div class="upsell-price">$1,500</div>
-        <div class="upsell-price-lbl">Private Consultation · 60 Minutes</div>
-        <div>
-          <div class="upsell-feat">Direct access to Quiet Premium</div>
-          <div class="upsell-feat">Judgment applied to edge cases the analysis flags</div>
-          <div class="upsell-feat">Complex household and travel situations</div>
-          <div class="upsell-feat">Investment protected if the system can't serve you</div>
+        <div class="price-block">
+          <div class="price-lbl">The Architecture</div>
+          <div class="price-val">$297</div>
+          <div class="price-note">One time · No subscription · Results immediately</div>
+          <a href="#gate" class="price-cta">Begin The Architecture</a>
+          <div class="price-guarantee">Your investment is protected. If The Architecture can't produce a clear path forward for your situation, we return it. That's not a policy — it's how this works.</div>
         </div>
-        <a href="https://buy.quietpremium.com/b/cNibJ184x6p97OK1oPffy00" class="cta-btn">Book Consultation — $1,500</a>
+        <div style="margin-top:16px;padding:16px 20px;border:1px solid #1a1a1a">
+          <div style="font-family:var(--mono);font-size:7.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--grey-mid);margin-bottom:4px">Not sure if this is right for you?</div>
+          <a href="gap-index.html" style="font-family:var(--mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);text-decoration:none">Take The Gap Index first — Free →</a>
+        </div>
       </div>
+    </div>
+  </div>
+</section>
+
+<!-- ANCHOR BAR -->
+<div class="anchor-bar">
+  <div class="anchor-inner">
+    <div class="anchor-stat">
+      <div class="anchor-val" style="color:var(--gold)">$8–14K</div>
+      <div class="anchor-lbl">Typical annual value · $150K+ spend</div>
+    </div>
+    <div class="anchor-div"></div>
+    <div class="anchor-stat">
+      <div class="anchor-val" style="color:var(--white)">27–47×</div>
+      <div class="anchor-lbl">Return on the $297 investment</div>
+    </div>
+    <div class="anchor-div"></div>
+    <div class="anchor-stat">
+      <div class="anchor-val" style="color:var(--white)">15 min</div>
+      <div class="anchor-lbl">To complete · Results on screen immediately</div>
+    </div>
+    <div class="anchor-div"></div>
+    <div class="anchor-stat">
+      <div class="anchor-val" style="color:var(--white)">$0</div>
+      <div class="anchor-lbl">If The Architecture can't serve your profile</div>
     </div>
   </div>
 </div>
 
-<!-- QUALIFICATION SCREEN -->
-<div id="qualify" class="screen">
-  <div style="max-width:560px;margin:0 auto;padding:120px 40px 80px;background:#0A0A0A;min-height:100vh">
-    <div style="font-family:var(--mono);font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin-bottom:20px">The Architecture · Quick Check</div>
-    <h2 style="font-family:var(--serif);font-size:clamp(28px,4vw,40px);font-weight:300;line-height:1.1;margin-bottom:12px">Three questions<br>before you begin.</h2>
-    <p style="font-size:13px;color:var(--grey);line-height:1.8;margin-bottom:44px">The Architecture produces its most complete output for a specific profile. These questions take thirty seconds and make sure your time and investment are well spent.</p>
-
-    <div style="margin-bottom:28px">
-      <div style="font-size:13px;font-weight:400;color:var(--white);margin-bottom:8px">Approximate annual household spend routable through premium cards</div>
-      <div class="opts" data-name="q_spend" data-type="radio">
-        <div class="opt" data-value="under75"><div class="opt-ind circle"></div><div class="opt-txt">Under $75,000</div></div>
-        <div class="opt" data-value="75to100"><div class="opt-ind circle"></div><div class="opt-txt">$75,000–$99,999</div></div>
-        <div class="opt" data-value="100to150"><div class="opt-ind circle"></div><div class="opt-txt">$100,000–$149,999</div></div>
-        <div class="opt" data-value="150to300"><div class="opt-ind circle"></div><div class="opt-txt">$150,000–$299,999</div></div>
-        <div class="opt" data-value="over300"><div class="opt-ind circle"></div><div class="opt-txt">$300,000+</div></div>
-      </div>
-      <input class="real-inp" type="text" id="q-spend-val" name="q_spend"/>
-    </div>
-
-    <div style="margin-bottom:28px">
-      <div style="font-size:13px;font-weight:400;color:var(--white);margin-bottom:8px">Current credit score range</div>
-      <div class="opts" data-name="q_credit" data-type="radio">
-        <div class="opt" data-value="below680"><div class="opt-ind circle"></div><div class="opt-txt">Below 680</div></div>
-        <div class="opt" data-value="680to719"><div class="opt-ind circle"></div><div class="opt-txt">680–719</div></div>
-        <div class="opt" data-value="720to759"><div class="opt-ind circle"></div><div class="opt-txt">720–759</div></div>
-        <div class="opt" data-value="760to799"><div class="opt-ind circle"></div><div class="opt-txt">760–799</div></div>
-        <div class="opt" data-value="800plus"><div class="opt-ind circle"></div><div class="opt-txt">800+</div></div>
-      </div>
-      <input class="real-inp" type="text" id="q-credit-val" name="q_credit"/>
-    </div>
-
-    <div style="margin-bottom:40px">
-      <div style="font-size:13px;font-weight:400;color:var(--white);margin-bottom:8px">Personal trips per year</div>
-      <div class="opts" data-name="q_trips" data-type="radio">
-        <div class="opt" data-value="under4"><div class="opt-ind circle"></div><div class="opt-txt">Fewer than 4</div></div>
-        <div class="opt" data-value="4to8"><div class="opt-ind circle"></div><div class="opt-txt">4–8</div></div>
-        <div class="opt" data-value="9to15"><div class="opt-ind circle"></div><div class="opt-txt">9–15</div></div>
-        <div class="opt" data-value="over15"><div class="opt-ind circle"></div><div class="opt-txt">15+</div></div>
-      </div>
-      <input class="real-inp" type="text" id="q-trips-val" name="q_trips"/>
-    </div>
-
-    <button class="cta-btn" id="q-continue-btn" onclick="evaluateQualification()" style="width:100%;text-align:center">Continue</button>
-
-      <div id="q-message" style="display:none;margin-top:32px;padding:24px;border:1px solid var(--grey-dk);background:#0F0F0F">
-        <div style="font-family:var(--mono);font-size:8px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold-dk);margin-bottom:10px">Before You Proceed</div>
-        <p style="font-size:13px;color:var(--white);line-height:1.8;margin-bottom:10px">The Architecture is built for households routing $100,000 or more annually through premium cards, with a 720+ credit profile and four or more personal trips per year.</p>
-        <p style="font-size:12px;color:var(--grey);line-height:1.8;margin-bottom:20px">Based on your inputs, some recommendations may not produce their full value for your current setup. The analysis will be honest about where the system applies and where it doesn't. You're welcome to proceed — or revisit when your situation changes.</p>
-        <div style="display:flex;flex-direction:column;gap:10px">
-          <a href="https://buy.quietpremium.com/b/8x2cN570t28T7OKgjJffy03" class="cta-btn" style="width:100%;text-align:center;display:block">Proceed Anyway — $297</a>
-          <button class="btn-outline" onclick="showNotRightNow()" style="width:100%;text-align:center">Not Right Now</button>
+<!-- WHAT IT DELIVERS -->
+<section style="background:#0A0A0A">
+  <div class="inner">
+    <div class="two-col">
+      <div>
+        <div class="eyebrow">What The Architecture delivers</div>
+        <h2 class="h2" style="margin-bottom:32px">Six outputs.<br><em>Your situation specifically.</em></h2>
+        <div class="deliv-list">
+          <div class="deliv-item">
+            <div class="deliv-num">01</div>
+            <div>
+              <div class="deliv-title">Your exact leakage number</div>
+              <div class="deliv-body">Not a range. The precise annual dollar amount leaving your setup due to misrouted spend — calculated from your actual inputs across every category.</div>
+            </div>
+          </div>
+          <div class="deliv-item">
+            <div class="deliv-num">02</div>
+            <div>
+              <div class="deliv-title">Complete spend routing audit</div>
+              <div class="deliv-body">Every spend category analyzed against the optimal card for your ecosystem. Where your current infrastructure is working and where it's costing you — line by line.</div>
+            </div>
+          </div>
+          <div class="deliv-item">
+            <div class="deliv-num">03</div>
+            <div>
+              <div class="deliv-title">Your three highest-impact corrections</div>
+              <div class="deliv-body">The conclusions of the full audit in order of impact, with the annual value each one recovers. Not a list of tips — the specific moves for your specific setup.</div>
+            </div>
+          </div>
+          <div class="deliv-item">
+            <div class="deliv-num">04</div>
+            <div>
+              <div class="deliv-title">12-month status path</div>
+              <div class="deliv-body">Which airline to concentrate with, what status tier you can reach, and at what pace — based on your actual flight volume, home airport, and spend profile.</div>
+            </div>
+          </div>
+          <div class="deliv-item">
+            <div class="deliv-num">05</div>
+            <div>
+              <div class="deliv-title">Hotel program recommendation</div>
+              <div class="deliv-body">Which program, what recognition tier is achievable within 12 months, and what that change means at check-in, checkout, and every night between.</div>
+            </div>
+          </div>
+          <div class="deliv-item">
+            <div class="deliv-num">06</div>
+            <div>
+              <div class="deliv-title">Before and after travel life</div>
+              <div class="deliv-body">What the experience looks like now versus after the corrections are in place — boarding, upgrades, lounge access, hotel recognition, disruption recovery.</div>
+            </div>
+          </div>
         </div>
       </div>
 
-      <div id="q-notnow" style="display:none;margin-top:32px;padding:24px;border:1px solid var(--grey-dk);background:#0F0F0F;text-align:center">
-        <div style="font-family:var(--serif);font-size:20px;font-weight:300;color:var(--white);margin-bottom:10px">No problem.</div>
-        <p style="font-size:12px;color:var(--grey);line-height:1.8;margin-bottom:20px">The Architecture will be here when the timing is right. Follow Quiet Premium on LinkedIn for content in the meantime.</p>
-        <a href="https://www.linkedin.com/in/paul-hicks-3049063a7" class="btn-outline" style="display:inline-block;text-decoration:none">Follow on LinkedIn</a>
+      <!-- SAMPLE OUTPUT -->
+      <div>
+        <div class="eyebrow-sm" style="margin-bottom:12px">Sample Output</div>
+        <div class="sample-wrap">
+          <div class="sample-hd">
+            <div class="sample-hd-lbl">The Architecture · Results</div>
+            <div class="sample-hd-note">Illustrative · based on sample inputs</div>
+          </div>
+          <div class="sample-body">
+            <div class="sample-dash">
+              <div class="sample-cell">
+                <div class="sample-cell-lbl">Potential Annual Value</div>
+                <div class="sample-cell-val" style="color:var(--gold)">$11,400</div>
+              </div>
+              <div class="sample-cell">
+                <div class="sample-cell-lbl">Gap Score</div>
+                <div class="sample-cell-val" style="color:var(--gold)">8.2</div>
+              </div>
+              <div class="sample-cell">
+                <div class="sample-cell-lbl">Spend Misrouted</div>
+                <div class="sample-cell-val" style="color:#E8A87C">74%</div>
+              </div>
+            </div>
+            <div class="sample-corr">
+              <div class="sample-corr-hd">Three highest-impact corrections</div>
+              <div class="sample-corr-item">
+                <strong>01 · Move all Delta airfare to Delta Reserve</strong><br>
+                $4,200 recovered annually + MQD accumulation toward Medallion status begins immediately
+              </div>
+              <div class="sample-corr-item">
+                <strong>02 · Move dining and groceries to Amex Gold</strong><br>
+                $1,680 recovered annually on $28,000 in combined spend currently earning 3x instead of 4x
+              </div>
+              <div class="sample-corr-item">
+                <strong>03 · Book all hotels through Amex Travel</strong><br>
+                $800 in Fine Hotels + Resorts benefits per eligible stay — currently unclaimed on every trip
+              </div>
+            </div>
+            <div class="sample-note">Your output is generated from your inputs — not a template.</div>
+          </div>
+        </div>
       </div>
+    </div>
   </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section style="background:#0F0F0F">
+  <div class="inner">
+    <div class="eyebrow">How it works</div>
+    <div class="steps">
+      <div>
+        <div class="step-num">Step 01 · Pay once</div>
+        <div class="step-title">$297. One time.</div>
+        <div class="step-body">No subscription. No recurring charge. You own your results. The investment is protected — if The Architecture can't produce a clear path forward for your situation, it's returned.</div>
+      </div>
+      <div>
+        <div class="step-num">Step 02 · Complete the audit</div>
+        <div class="step-title">15 minutes. Your inputs.</div>
+        <div class="step-body">A deep audit across five dimensions — spend, cards, travel, experience, and outcomes. Approximately 15 minutes to complete. The accuracy of your inputs determines the specificity of your output.</div>
+      </div>
+      <div>
+        <div class="step-num">Step 03 · Get your results</div>
+        <div class="step-title">On screen. Immediately.</div>
+        <div class="step-body">Your complete routing analysis appears the moment you submit. Every correction, the annual value it recovers, your status path, and your hotel program recommendation — specific to you.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- GATE -->
+<section id="gate" style="background:#0A0A0A">
+  <div class="inner">
+    <div class="gate-wrap">
+      <div class="eyebrow">Three questions before you begin</div>
+      <h2 class="h2" style="margin-bottom:8px">The Architecture is built for<br><em>a specific profile.</em></h2>
+      <p class="body" style="margin-bottom:36px;max-width:480px">These take thirty seconds and confirm your situation is one The Architecture is built to serve.</p>
+
+      <div class="gate-q" id="gq1">
+        <div class="gate-q-txt">Approximate annual household spend routable through premium cards</div>
+        <div class="gate-opts">
+          <div class="gate-opt" data-q="1" data-val="300k+"><div class="gate-opt-ind"></div><div class="gate-opt-lbl">$300,000 or more</div></div>
+          <div class="gate-opt" data-q="1" data-val="150k+"><div class="gate-opt-ind"></div><div class="gate-opt-lbl">$150,000–$299,999</div></div>
+          <div class="gate-opt" data-q="1" data-val="100k+"><div class="gate-opt-ind"></div><div class="gate-opt-lbl">$100,000–$149,999</div></div>
+          <div class="gate-opt" data-q="1" data-val="75k+"><div class="gate-opt-ind"></div><div class="gate-opt-lbl">$75,000–$99,999</div></div>
+          <div class="gate-opt" data-q="1" data-val="under75k"><div class="gate-opt-ind"></div><div class="gate-opt-lbl">Under $75,000</div></div>
+        </div>
+      </div>
+
+      <div class="gate-q" id="gq2">
+        <div class="gate-q-txt">Current credit score range</div>
+        <div class="gate-opts">
+          <div class="gate-opt" data-q="2" data-val="800+"><div class="gate-opt-ind"></div><div class="gate-opt-lbl">800 or above</div></div>
+          <div class="gate-opt" data-q="2" data-val="760+"><div class="gate-opt-ind"></div><div class="gate-opt-lbl">760–799</div></div>
+          <div class="gate-opt" data-q="2" data-val="720+"><div class="gate-opt-ind"></div><div class="gate-opt-lbl">720–759</div></div>
+          <div class="gate-opt" data-q="2" data-val="680+"><div class="gate-opt-ind"></div><div class="gate-opt-lbl">680–719</div></div>
+          <div class="gate-opt" data-q="2" data-val="below680"><div class="gate-opt-ind"></div><div class="gate-opt-lbl">Below 680</div></div>
+        </div>
+      </div>
+
+      <div class="gate-q" id="gq3">
+        <div class="gate-q-txt">Personal trips per year</div>
+        <div class="gate-opts">
+          <div class="gate-opt" data-q="3" data-val="15+"><div class="gate-opt-ind"></div><div class="gate-opt-lbl">15 or more</div></div>
+          <div class="gate-opt" data-q="3" data-val="9-14"><div class="gate-opt-ind"></div><div class="gate-opt-lbl">9–14</div></div>
+          <div class="gate-opt" data-q="3" data-val="4-8"><div class="gate-opt-ind"></div><div class="gate-opt-lbl">4–8</div></div>
+          <div class="gate-opt" data-q="3" data-val="fewer4"><div class="gate-opt-ind"></div><div class="gate-opt-lbl">Fewer than 4</div></div>
+        </div>
+      </div>
+
+      <div class="gate-cta">
+        <a id="gate-btn" href="https://buy.quietpremium.com/b/8x2cN570t28T7OKgjJffy03" onclick="return handleGate(event)">Begin The Architecture — $297</a>
+        <span class="gate-note">Investment protected · Results on screen immediately after payment</span>
+      </div>
+
+      <div id="redirect-msg">
+        <p>The Architecture is built for households routing $100,000 or more annually through premium cards, with a 720+ credit profile and four or more personal trips per year. Based on your inputs, some recommendations may not produce their full value for your current setup. You're welcome to proceed — or revisit when your situation changes.</p>
+        <div style="display:flex;gap:12px;flex-wrap:wrap">
+          <a href="https://buy.quietpremium.com/b/8x2cN570t28T7OKgjJffy03" class="btn-gold" style="font-size:9px;padding:13px 24px">Proceed Anyway — $297</a>
+          <a href="https://www.linkedin.com/in/paul-hicks-3049063a7" target="_blank" class="btn-outline" style="font-size:9px;padding:12px 20px">Follow on LinkedIn</a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-left">
+    © 2026 Quiet Premium · editor@quietpremium.com<br>
+    Same spend. Different outcome.
+  </div>
+  <div class="footer-links">
+    <a href="index.html" class="footer-link">Home</a>
+    <a href="gap-index.html" class="footer-link">Gap Index</a>
+    <a href="contact.html" class="footer-link">Contact</a>
+  </div>
+</footer>
+
+<div class="disclaimer">
+  Potential value estimates are based on published program benefits as of 2025–2026. Actual outcomes vary by redemption choices, program availability, and issuer terms. Status benefits are subject to airline and hotel program policies and may change. Quiet Premium is not affiliated with any airline, hotel, or card issuer mentioned.
 </div>
 
 <script>
-function showScreen(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');window.scrollTo({top:0,behavior:'smooth'})}
-function showIntake(){showScreen('qualify')}
+const gateAnswers = {};
 
-function showNotRightNow(){
-  document.getElementById('q-message').style.display='none';
-  document.getElementById('q-notnow').style.display='block';
-  window.scrollTo({top:document.getElementById('q-notnow').offsetTop-40,behavior:'smooth'});
-}
-
-function evaluateQualification(){
-  const spend=document.getElementById('q-spend-val').value;
-  const credit=document.getElementById('q-credit-val').value;
-  const trips=document.getElementById('q-trips-val').value;
-
-  if(!spend||!credit||!trips){
-    alert('Please answer all three questions to continue.');
-    return;
-  }
-
-  const spendOk=['100to150','150to300','over300'].includes(spend);
-  const creditOk=['720to759','760to799','800plus'].includes(credit);
-  const tripsOk=['4to8','9to15','over15'].includes(trips);
-  const fullyQualified=spendOk&&creditOk&&tripsOk;
-
-  if(fullyQualified){
-    window.location.href='https://buy.quietpremium.com/b/8x2cN570t28T7OKgjJffy03';
-  } else {
-    document.getElementById('q-continue-btn').style.display='none';
-    document.getElementById('q-message').style.display='block';
-    window.scrollTo({top:document.getElementById('q-message').offsetTop-40,behavior:'smooth'});
-  }
-}
-
-document.querySelectorAll('.opts[data-name]').forEach(group=>{
-  const type=group.dataset.type,name=group.dataset.name,max=group.dataset.max?parseInt(group.dataset.max):null;
-  const ri=document.querySelector('input[name="'+name+'"]');
-  group.querySelectorAll('.opt').forEach(opt=>{
-    opt.addEventListener('click',()=>{
-      if(type==='radio'){group.querySelectorAll('.opt').forEach(o=>o.classList.remove('selected'));opt.classList.add('selected');if(ri)ri.value=opt.dataset.value}
-      else{const sel=group.querySelectorAll('.opt.selected');if(opt.classList.contains('selected')){opt.classList.remove('selected')}else{if(max&&sel.length>=max)return;opt.classList.add('selected')}const vals=Array.from(group.querySelectorAll('.opt.selected')).map(o=>o.dataset.value);if(ri)ri.value=vals.join('; ')}
-      updateProgress();
-    });
+document.querySelectorAll('.gate-opt').forEach(opt => {
+  opt.addEventListener('click', () => {
+    const q = opt.dataset.q;
+    document.querySelectorAll(`.gate-opt[data-q="${q}"]`).forEach(o => o.classList.remove('selected'));
+    opt.classList.add('selected');
+    gateAnswers[q] = opt.dataset.val;
   });
 });
 
-function updateProgress(){
-  const form=document.getElementById('arch-form');
-  const all=form.querySelectorAll('[required]');
-  const filled=Array.from(all).filter(i=>i.value&&i.value.trim()!=='').length;
-  const pct=Math.round(filled/all.length*100);
-  document.getElementById('prog-fill').style.width=pct+'%';
-  document.getElementById('prog-pct').textContent=pct+'%';
-  const si=pct<20?0:pct<40?1:pct<60?2:pct<80?3:4;
-  document.getElementById('prog-text').textContent='Section '+(si+1)+' of 5';
+function handleGate(e){
+  const spend = gateAnswers['1'];
+  const credit = gateAnswers['2'];
+  const trips = gateAnswers['3'];
+
+  // If nothing answered, let them through
+  if(!spend && !credit && !trips) return true;
+
+  const spendFail = spend === 'under75k';
+  const creditFail = credit === 'below680';
+  const tripsFail = trips === 'fewer4';
+
+  if(spendFail || creditFail || tripsFail){
+    e.preventDefault();
+    document.getElementById('redirect-msg').style.display = 'block';
+    document.getElementById('redirect-msg').scrollIntoView({behavior:'smooth', block:'center'});
+    return false;
+  }
+  return true;
 }
 
-function handleSubmit(e){
-  e.preventDefault();
-  const d=Object.fromEntries(new FormData(e.target).entries());
-  generateResults(d);
-  showScreen('results');
-}
-
-function fmt(n){return'$'+Math.round(n/100)*100>0?'$'+Math.round(n/100).toLocaleString()*100:'$0'}
-function fmtD(n){return'$'+Math.round(n/100*100).toLocaleString()}
-
-function generateResults(d){
-  const spend=parseFloat((d.total_spend||'0').replace(/,/g,''))||0;
-  const dining=parseFloat((d.dining_spend||'0').replace(/,/g,''))||0;
-  const grocery=parseFloat((d.grocery_spend||'0').replace(/,/g,''))||0;
-  const general=parseFloat((d.general_spend||'0').replace(/,/g,''))||0;
-
-  const cardAirfare=(d.card_airfare||'').toLowerCase();
-  const cardDining=(d.card_dining||'').toLowerCase();
-  const cardGrocery=(d.card_groceries||'').toLowerCase();
-  const cardHotels=(d.card_hotels||'').toLowerCase();
-  const cardGeneral=(d.card_general||'').toLowerCase();
-
-  const isGoldDining=cardDining.includes('gold');
-  const isGoldGrocery=cardGrocery.includes('gold');
-  const isDeltaReserveAirfare=cardAirfare.includes('reserve')&&cardAirfare.includes('delta');
-  const isPlatHotel=cardHotels.includes('platinum');
-  const isDirectBooking=d.booking_method==='Direct';
-  const hasStatus=d.primary_airline&&!d.primary_airline.toLowerCase().includes('none')&&d.primary_airline.trim()!=='';
-  const hasHotelStatus=['50-74%','75-100%'].includes(d.hotel_conc);
-  const hasUpgrades=d.upgrades_unasked==='Yes';
-  const noRedeem=d.pts_redeemed==='None'||d.pts_redeemed==='Unsure';
-  const disrupted=d.disruption==='Yes';
-  const hotelFragmented=['0-24%','25-49%'].includes(d.hotel_conc);
-
-  let cardLeak=0;
-  if(!isGoldDining&&dining>0)cardLeak+=dining*0.01;
-  if(!isGoldGrocery&&grocery>0)cardLeak+=grocery*0.01;
-  if(!isDeltaReserveAirfare)cardLeak+=spend*0.015;
-  if(!isPlatHotel||!isDirectBooking)cardLeak+=spend*0.008;
-  if(!cardGeneral.includes('reserve')&&general>0)cardLeak+=general*0.005;
-
-  const upgVal=d.upgrade_spend==='Over $7k'?5000:d.upgrade_spend==='$3k-$7k'?2500:d.upgrade_spend==='$1k-$3k'?1000:400;
-  const hotelLeak=hotelFragmented?spend*0.02:spend*0.004;
-  const fhrVal=isPlatHotel&&isDirectBooking?0:spend>100000?1200:600;
-  const ptsLeak=noRedeem?spend*0.005:0;
-  const compVal=isDeltaReserveAirfare?0:spend>150000?800:400;
-
-  const totalLeak=Math.round((cardLeak+upgVal+hotelLeak+fhrVal+ptsLeak)/100)*100;
-  const totalVal=Math.round((cardLeak*0.9+upgVal*0.7+hotelLeak*0.5+fhrVal+compVal)/100)*100;
-
-  let miscount=0;
-  if(!isGoldDining)miscount++;if(!isGoldGrocery)miscount++;if(!isDeltaReserveAirfare)miscount++;if(!isPlatHotel)miscount++;if(!cardGeneral.includes('reserve'))miscount++;
-  const misPct=Math.round(miscount/5*100);
-
-  let gap=5;
-  if(!hasStatus)gap+=1.5;if(!hasHotelStatus)gap+=1;if(!hasUpgrades)gap+=1;if(misPct>60)gap+=0.5;
-  gap=Math.min(9.9,Math.max(4,gap)).toFixed(1);
-
-  document.getElementById('r-client').textContent=d.email||'Your Results';
-  document.getElementById('r-date').textContent=new Date().toLocaleDateString('en-US',{month:'long',year:'numeric'});
-  document.getElementById('r-leakage').textContent='$'+totalLeak.toLocaleString();
-  document.getElementById('r-gap').textContent=gap;
-  document.getElementById('r-misaligned').textContent=misPct+'%';
-  document.getElementById('r-value').textContent='$'+totalVal.toLocaleString();
-
-  function setFr(id,score,desc){
-    const el=document.getElementById('fr-'+id);
-    const bar=document.getElementById('fr-'+id+'-bar');
-    const de=document.getElementById('fr-'+id+'-desc');
-    if(el){el.textContent=score;el.className='fr-num';if(score>=7)el.classList.add('critical');else if(score>=5)el.classList.add('alert');else el.classList.add('ok')}
-    if(bar)bar.style.width=(score*10)+'%';
-    if(de)de.textContent=desc;
-  }
-  setFr('b',hasStatus?4:8,hasStatus?'Status typically includes priority boarding on primary airline, subject to program terms.':'No status means general boarding — group 4 or 5 on most departures.');
-  setFr('u',hasUpgrades?3:9,hasUpgrades?'Upgrades arriving without asking — system is working in this area.':'No complimentary upgrade eligibility without status. Economy is the default, not a choice.');
-  setFr('h',hasHotelStatus?3:8,hasHotelStatus?'Hotel concentration producing recognition at primary brand.':'No hotel status means most stays begin without recognition — no upgrade probability, standard checkout.');
-  setFr('a',6,'Lounge access partially available through card benefits. Sky Club access requires Delta status or Reserve card.');
-  setFr('d',disrupted?7:4,disrupted?'Disruption experienced — without status, recovery relies on standard queue and general service channels.':'No disruptions reported. Status would provide priority recovery when they occur.');
-  setFr('p',noRedeem?8:4,noRedeem?'Points accumulated but not deployed. Your spend is earning — the redemption architecture is not working.':'Points being redeemed. Routing corrections will increase earning rate significantly.');
-
-  const moves=[];
-  if(!isDeltaReserveAirfare){const imp=Math.round(spend*0.015/100)*100;moves.push({t:'Move airfare spend to Delta SkyMiles Reserve Amex',i:'+$'+imp.toLocaleString()+'/yr + MQM status acceleration',b:'Your current airfare card earns minimal Delta miles and zero MQM credit toward Medallion status. Delta Reserve earns 3x on Delta purchases, accelerates status through card spend MQMs, and activates Sky Club access on first use.'})}
-  if(!isGoldDining&&dining>0){const imp=Math.round(dining*0.01/100)*100;moves.push({t:'Move dining spend to Amex Gold',i:'+$'+imp.toLocaleString()+'/yr from category correction alone',b:'Amex Gold earns 4x at restaurants worldwide. At $'+dining.toLocaleString()+' in annual dining spend this is a straightforward correction — same spend, higher return, immediate impact.'})}
-  if(hotelFragmented){const imp=Math.round(hotelLeak*0.5/100)*100;moves.push({t:'Concentrate hotel stays in World of Hyatt',i:'Globalist reachable within 12 months + $'+imp.toLocaleString()+'/yr in recognition value',b:'Splitting stays across multiple brands means every hotel treats you as a first-time guest. Concentrating in Hyatt at your current volume produces Globalist — suite upgrades, breakfast, 4pm checkout — within one calendar year.'})}
-  if(!isPlatHotel||!isDirectBooking)moves.push({t:'Activate Amex Platinum Fine Hotels & Resorts',i:'$'+fhrVal.toLocaleString()+'/yr in unused benefits currently on the table',b:'Your Amex Platinum includes FHR benefits — room upgrades, daily breakfast for two, $100+ property credits, 4pm late checkout — on every eligible stay. These require booking through Amex Travel rather than direct or OTA.'});
-
-  for(let i=0;i<3;i++){
-    const m=moves[i]||{t:'Additional routing optimization identified',i:'Impact varies by specific inputs',b:'Further analysis of your card assignments and spend categories reveals additional high-leverage corrections in your routing architecture.'};
-    document.getElementById('m'+(i+1)+'t').textContent=m.t;
-    document.getElementById('m'+(i+1)+'i').textContent=m.i;
-    document.getElementById('m'+(i+1)+'b').textContent=m.b;
-  }
-
-  const cats=[
-    {cat:'Airfare',card:d.card_airfare||'—',ok:isDeltaReserveAirfare,fix:'Delta SkyMiles Reserve',gap:!isDeltaReserveAirfare?'+$'+Math.round(spend*0.015/100)*100:'$0'},
-    {cat:'Dining ($'+dining.toLocaleString()+')',card:d.card_dining||'—',ok:isGoldDining,fix:'Amex Gold (4x)',gap:!isGoldDining?'+$'+Math.round(dining*0.01/100)*100:'$0'},
-    {cat:'Groceries ($'+grocery.toLocaleString()+')',card:d.card_groceries||'—',ok:isGoldGrocery,fix:'Amex Gold (4x)',gap:!isGoldGrocery?'+$'+Math.round(grocery*0.01/100)*100:'$0'},
-    {cat:'Hotels',card:d.card_hotels||'—',ok:isPlatHotel&&isDirectBooking,fix:'Amex Platinum via Amex Travel',gap:!isPlatHotel?'FHR unused':'Booking method'},
-    {cat:'General ($'+general.toLocaleString()+')',card:d.card_general||'—',ok:cardGeneral.includes('reserve'),fix:'Delta Reserve (1.5x)',gap:!cardGeneral.includes('reserve')?'+$'+Math.round(general*0.005/100)*100:'$0'},
-  ];
-  document.getElementById('sp-body').innerHTML=cats.map(c=>'<tr><td>'+c.cat+'</td><td style="color:'+(c.ok?'var(--gold)':'var(--grey)')+'">'+c.card+'</td><td class="'+(c.ok?'fix':'leak')+'">'+(c.ok?'✓ Correct':c.gap)+'</td><td style="color:'+(c.ok?'var(--grey-dk)':'var(--gold)')+';font-size:10px;font-family:var(--mono)">'+(c.ok?'—':c.fix)+'</td></tr>').join('');
-
-  const nights=d.hotel_nights==='40+'?40:d.hotel_nights==='21-39'?30:d.hotel_nights==='11-20'?15:d.hotel_nights==='6-10'?8:4;
-  const globFeasible=nights>=30;
-  const flights=d.flights_taken==='40+'?40:d.flights_taken==='21-40'?30:d.flights_taken==='11-20'?15:d.flights_taken==='6-10'?8:4;
-  const canSilver=flights>=15;const canPlat=flights>=38;
-
-  document.getElementById('st0l').textContent='Current: '+(d.primary_airline||'No status');
-  document.getElementById('st0n').textContent='Baseline. Architecture correction begins month one.';
-  document.getElementById('st1l').textContent='Delta Reserve applied · Full stack corrected';
-  document.getElementById('st1n').textContent='All spend categories correctly routed. MQM earning begins on card spend. Hotel concentration initiated in Hyatt.';
-  document.getElementById('st2l').textContent=canSilver?'Delta Silver Medallion target':'Status accumulation building';
-  document.getElementById('st2n').textContent=canSilver?'Priority boarding and upgrade eligibility begin on Delta flights. Hyatt Discoverist reached at 10 nights.':'MQM accumulation continuing. First recognition tier approaching.';
-  document.getElementById('st3l').textContent=canPlat?'Delta Platinum · Hyatt Globalist':canSilver?'Delta Silver · Hyatt Explorist':'Status building · Hyatt Discoverist';
-  document.getElementById('st3n').textContent=canPlat?'Complimentary upgrade priority. Suite upgrade eligibility at Globalist. Premium treatment becomes structural.':'Meaningful status reached. Recognition begins changing materially across both airline and hotel.';
-
-  document.getElementById('hotel-name').textContent='World of Hyatt · '+(globFeasible?'Globalist':'Explorist Path');
-  document.getElementById('hotel-body').textContent=globFeasible?'At '+nights+'+ hotel nights per year, Hyatt Globalist (60 qualifying nights) may be achievable within 12 months with concentration. Globalist members may receive suite upgrades when available, complimentary breakfast, club lounge access, and late checkout — subject to Hyatt program terms.':'At your current hotel volume, Hyatt Explorist (30 nights) is a realistic year-one target. Explorist members may receive upgrade consideration and late checkout. Globalist becomes the year-two goal.';
-  document.getElementById('hotel-detail').textContent='Booking discipline: all Hyatt stays booked direct or via Amex Travel — never OTA. OTA bookings strip status credit and FHR eligibility simultaneously. This single change produces the status accumulation.';
-
-  const v1=Math.round(cardLeak*0.9/100)*100;
-  const v2=Math.round(upgVal*0.7/100)*100;
-  const v3=Math.round(hotelLeak*0.5/100)*100;
-  const v4=fhrVal;
-  const v5=compVal;
-  const vt=v1+v2+v3+v4+v5;
-  document.getElementById('vv1').textContent='$'+v1.toLocaleString();
-  document.getElementById('vv2').textContent='$'+v2.toLocaleString();
-  document.getElementById('vv3').textContent='$'+v3.toLocaleString();
-  document.getElementById('vv4').textContent='$'+v4.toLocaleString();
-  document.getElementById('vv5').textContent='$'+v5.toLocaleString();
-  document.getElementById('vvt').textContent='$'+vt.toLocaleString();
-  document.getElementById('r-value').textContent='$'+vt.toLocaleString();
+function toggleMenu(){
+  document.getElementById('mobile-menu').classList.toggle('open');
 }
 </script>
 </body>
