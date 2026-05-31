@@ -127,6 +127,8 @@ footer{background:#0A0A0A;border-top:1px solid var(--grey-dk);padding:32px 48px;
 @media(max-width:900px){
   nav{padding:16px 24px}
   .nav-links .nav-link:not(.primary){display:none}
+  .nav-links .primary{display:none}
+  #hamburger{display:flex!important}
   section,#hero,#bottom-cta{padding-left:24px;padding-right:24px}
   .hero-grid{grid-template-columns:1fr;gap:48px}
   .hero-cta-row{flex-direction:column}
@@ -138,6 +140,13 @@ footer{background:#0A0A0A;border-top:1px solid var(--grey-dk);padding:32px 48px;
   .footer-links{justify-content:center}
   .disclaimer{padding:0 24px 40px}
 }
+</style>
+<script>
+function toggleMenu(){
+  const m = document.getElementById('mobile-menu');
+  m.style.display = m.style.display === 'flex' ? 'none' : 'flex';
+}
+</script>
 </style>
 </head>
 <body>
@@ -153,7 +162,17 @@ footer{background:#0A0A0A;border-top:1px solid var(--grey-dk);padding:32px 48px;
     <a href="contact.html" class="nav-link">Contact</a>
     <a href="architecture.html" class="nav-link primary">The Architecture — $297</a>
   </div>
+  <div class="hamburger" id="hamburger" onclick="toggleMenu()" style="display:none;flex-direction:column;gap:5px;cursor:pointer;padding:4px">
+    <span style="width:20px;height:1px;background:var(--grey);display:block"></span>
+    <span style="width:20px;height:1px;background:var(--grey);display:block"></span>
+    <span style="width:20px;height:1px;background:var(--grey);display:block"></span>
+  </div>
 </nav>
+<div id="mobile-menu" style="display:none;position:fixed;top:69px;left:0;right:0;background:#0A0A0A;border-bottom:1px solid var(--grey-dk);padding:20px 24px;z-index:99;flex-direction:column;gap:0">
+  <a href="gap-index.html" style="font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--grey);text-decoration:none;padding:14px 0;border-bottom:1px solid #1a1a1a;display:block">Gap Index — Free</a>
+  <a href="contact.html" style="font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--grey);text-decoration:none;padding:14px 0;border-bottom:1px solid #1a1a1a;display:block">Contact</a>
+  <a href="architecture.html" style="font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);text-decoration:none;padding:14px 0;display:block">The Architecture — $297</a>
+</div>
 
 <!-- HERO -->
 <section id="hero">
@@ -395,7 +414,8 @@ footer{background:#0A0A0A;border-top:1px solid var(--grey-dk);padding:32px 48px;
   <div class="inner-sm" style="max-width:640px">
     <div class="sec-ey">Why this exists</div>
     <p style="font-family:var(--serif);font-size:clamp(18px,2.5vw,24px);font-weight:300;color:var(--white);line-height:1.6;margin-bottom:20px">Most people assume premium travel requires dramatically more spending. Usually the spend is already there. The structure underneath it isn't.</p>
-    <p style="font-size:14px;color:var(--grey);line-height:1.85">When the routing is correct, money that used to disappear into paid upgrades and misallocated spend starts appearing elsewhere — in better hotel rooms, in experiences that felt just out of reach, in the simple reality of a trip that starts differently than it used to. The spend doesn't change. The outcome does.</p>
+    <p style="font-size:14px;color:var(--grey);line-height:1.85;margin-bottom:20px">When the routing is correct, money that used to disappear into paid upgrades and misallocated spend starts appearing elsewhere — in better hotel rooms, in experiences that felt just out of reach, in the simple reality of a trip that starts differently than it used to. The spend doesn't change. The outcome does.</p>
+    <p style="font-family:var(--mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--grey-mid)">— Paul H., Founder · Quiet Premium</p>
   </div>
 </section>
 
