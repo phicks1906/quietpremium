@@ -1,796 +1,490 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>The Gap Index — Quiet Premium</title>
-  <meta name="description" content="Six questions. Two minutes. Find out what your existing spend is actually capable of producing in premium travel outcomes." />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=DM+Mono:wght@300;400;500&family=Inter:wght@300;400;500&display=swap" rel="stylesheet" />
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>The Gap Index — Quiet Premium</title>
+<meta name="description" content="Six questions. Two minutes. Find out what your existing spend is actually capable of producing in premium travel outcomes."/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=DM+Mono:wght@300;400;500&family=Inter:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --black:#0A0A0A;--gold:#B08D57;--gold-lt:#C9A96E;--gold-dk:#8B6D3F;
+  --gold-pale:rgba(176,141,87,0.08);--white:#F5F2EC;--grey:#9A9590;
+  --grey-dk:#3A3530;--grey-mid:#6A6560;--red:#C0392B;--amber:#E8A87C;
+  --serif:'Cormorant Garamond',Georgia,serif;
+  --mono:'DM Mono',monospace;--sans:'Inter',sans-serif;
+}
+html,body{background:#0A0A0A;color:#F5F2EC;font-family:var(--sans);font-weight:300;-webkit-font-smoothing:antialiased;min-height:100vh}
 
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+nav{position:fixed;top:0;left:0;right:0;z-index:50;padding:20px 48px;display:flex;align-items:center;justify-content:space-between;background:rgba(10,10,10,1.0);border-bottom:1px solid rgba(58,53,48,.4)}
+.nb{width:28px;height:28px;border-radius:50%;border:1px solid var(--gold);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1.5px}
+.nb span{font-family:var(--mono);font-size:5px;letter-spacing:.14em;color:var(--gold);line-height:1}
+.nb .nbr{width:12px;height:.5px;background:var(--gold-dk)}
+.nav-wm{font-family:var(--mono);font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin-left:10px}
+.nav-r{font-family:var(--mono);font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--grey-mid);text-decoration:none}
+.nav-r:hover{color:var(--gold)}
 
-    :root {
-      --black:   #0A0A0A;
-      --gold:    #B08D57;
-      --gold-lt: #C9A96E;
-      --gold-dk: #8B6D3F;
-      --white:   #F5F2EC;
-      --grey:    #9A9590;
-      --grey-dk: #3A3530;
-      --serif:   'Cormorant Garamond', Georgia, serif;
-      --mono:    'DM Mono', monospace;
-      --sans:    'Inter', sans-serif;
-    }
+.page{padding-top:80px;min-height:100vh}
+.wrap{max-width:660px;margin:0 auto;padding:72px 40px 100px}
 
-    html {
-      scroll-behavior: smooth;
-      background-color: #0A0A0A;
-    }
+.eyebrow{font-family:var(--mono);font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin-bottom:14px}
+.headline{font-family:var(--serif);font-size:clamp(32px,5vw,52px);font-weight:300;line-height:1.08;margin-bottom:14px}
+.headline em{font-style:italic;color:var(--gold)}
+.subtext{font-size:13px;color:var(--grey);line-height:1.85;margin-bottom:44px;max-width:500px}
 
-    body {
-      background-color: #0A0A0A;
-      background: #0A0A0A;
-      color: #F5F2EC;
-      font-family: var(--sans);
-      font-weight: 300;
-      font-size: 16px;
-      line-height: 1.7;
-      -webkit-font-smoothing: antialiased;
-      min-height: 100vh;
-    }
+/* PROGRESS */
+.prog-wrap{margin-bottom:44px}
+.prog-track{height:1px;background:var(--grey-dk);position:relative;margin-bottom:8px}
+.prog-fill{height:1px;background:var(--gold);position:absolute;top:0;left:0;transition:width .5s ease}
+.prog-label{display:flex;justify-content:space-between;font-family:var(--mono);font-size:8px;letter-spacing:.1em;text-transform:uppercase;color:var(--grey)}
 
-    /* ── NAV ────────────────────────────────── */
-    nav {
-      padding: 28px 48px;
-      display: flex; align-items: center; justify-content: space-between;
-      border-bottom: 1px solid var(--grey-dk);
-    }
-    .nav-logo { text-decoration: none; display: flex; align-items: center; gap: 10px; }
-    .nav-logo-badge {
-      width: 32px; height: 32px; border-radius: 50%;
-      border: 1px solid var(--gold);
-      display: flex; align-items: center; justify-content: center;
-      flex-direction: column; gap: 2px;
-    }
-    .nav-logo-badge span { font-family: var(--mono); font-size: 6px; letter-spacing: 0.15em; color: var(--gold); line-height: 1; }
-    .nav-logo-badge .dl { width: 16px; height: 1px; background: var(--gold-dk); }
-    .nav-back {
-      font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em;
-      color: var(--grey); text-decoration: none; text-transform: uppercase;
-    }
-    .nav-back:hover { color: var(--gold); }
+/* QUESTION */
+.question{display:none;animation:fadeUp .35s ease}
+.question.active{display:block}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.q-num{font-family:var(--mono);font-size:8px;letter-spacing:.16em;text-transform:uppercase;color:var(--gold-dk);margin-bottom:10px}
+.q-text{font-family:var(--serif);font-size:clamp(20px,3vw,28px);font-weight:300;line-height:1.2;margin-bottom:8px}
+.q-hint{font-size:12px;color:var(--grey-mid);margin-bottom:24px;line-height:1.6}
 
-    /* ── MAIN WRAP ──────────────────────────── */
-    .wrap {
-      max-width: 680px; margin: 0 auto;
-      padding: 80px 40px 120px;
-    }
+/* OPTIONS */
+.opts{display:flex;flex-direction:column;gap:8px}
+.opt{display:flex;align-items:flex-start;gap:12px;padding:13px 16px;border:1px solid var(--grey-dk);cursor:pointer;transition:all .2s ease;user-select:none;background:#0A0A0A;-webkit-tap-highlight-color:transparent}
+.opt:hover{border-color:var(--gold-dk);background:var(--gold-pale)}
+.opt.selected{border-color:var(--gold);background:var(--gold-pale)}
+.opt-ind{width:14px;height:14px;flex-shrink:0;margin-top:1px;border:1px solid var(--grey-dk);display:flex;align-items:center;justify-content:center;transition:all .2s}
+.opt-ind.circle{border-radius:50%}
+.opt.selected .opt-ind{border-color:var(--gold);background:var(--gold)}
+.opt.selected .opt-ind.circle::after{content:'';width:5px;height:5px;background:#0A0A0A;border-radius:50%;display:block}
+.opt.selected .opt-ind.square::after{content:'';width:7px;height:4px;border-left:1.5px solid #0A0A0A;border-bottom:1.5px solid #0A0A0A;transform:rotate(-45deg) translateY(-1px);display:block}
+.opt-label{font-size:13px;color:var(--white);line-height:1.5}
 
-    /* ── INTRO ──────────────────────────────── */
-    .intro { margin-bottom: 72px; }
-    .intro-eyebrow {
-      font-family: var(--mono); font-size: 10px; letter-spacing: 0.2em;
-      text-transform: uppercase; color: var(--gold); margin-bottom: 20px;
-    }
-    .intro-headline {
-      font-family: var(--serif); font-size: clamp(36px, 5vw, 54px);
-      font-weight: 300; line-height: 1.1; margin-bottom: 16px;
-    }
-    .intro-headline em { font-style: italic; color: var(--gold); }
-    .intro-sub { font-size: 15px; color: var(--grey); line-height: 1.8; max-width: 520px; }
+/* BUTTONS */
+.btn-row{display:flex;gap:12px;margin-top:28px;align-items:center}
+.btn-next{background:var(--gold);color:#0A0A0A;font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;border:none;cursor:pointer;padding:14px 28px;transition:background .3s}
+.btn-next:hover{background:var(--gold-lt)}
+.btn-next:disabled{background:var(--grey-dk);cursor:not-allowed}
+.btn-back{background:none;border:1px solid var(--grey-dk);color:var(--grey);font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;cursor:pointer;padding:13px 20px;transition:all .2s}
+.btn-back:hover{border-color:var(--grey-mid);color:var(--white)}
 
-    /* ── PROGRESS ───────────────────────────── */
-    .progress-wrap { margin-bottom: 56px; }
-    .progress-bar-track {
-      height: 1px; background: var(--grey-dk); margin-bottom: 12px; position: relative;
-    }
-    .progress-bar-fill {
-      height: 1px; background: var(--gold);
-      position: absolute; top: 0; left: 0;
-      transition: width 0.5s ease;
-    }
-    .progress-label {
-      font-family: var(--mono); font-size: 9px; letter-spacing: 0.14em;
-      color: var(--grey-dk); text-transform: uppercase;
-    }
+/* RESULTS */
+#results{display:none;animation:fadeUp .5s ease}
+.r-ey{font-family:var(--mono);font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin-bottom:10px}
+.r-hl{font-family:var(--serif);font-size:clamp(28px,4vw,42px);font-weight:300;line-height:1.1;margin-bottom:24px}
+.r-hl em{font-style:italic;color:var(--gold)}
 
-    /* ── QUESTION ───────────────────────────── */
-    .question-block { display: none; }
-    .question-block.active { display: block; animation: fadeUp 0.4s ease; }
+.r-range{border:1px solid var(--gold-dk);background:var(--gold-pale);padding:28px 32px;margin-bottom:32px}
+.r-range-lbl{font-family:var(--mono);font-size:8px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold-dk);margin-bottom:8px}
+.r-range-val{font-family:var(--serif);font-size:clamp(36px,5vw,56px);font-weight:300;color:var(--gold);line-height:1}
+.r-range-sub{font-family:var(--mono);font-size:8px;letter-spacing:.08em;text-transform:uppercase;color:var(--grey-mid);margin-top:6px}
 
-    @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(16px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
+.r-gaps{margin-bottom:32px}
+.r-gap-item{padding:14px 0;border-bottom:1px solid #1a1a1a;display:flex;gap:14px;align-items:flex-start}
+.r-gap-item:last-child{border-bottom:none}
+.r-gap-dot{width:5px;height:5px;border-radius:50%;background:var(--amber);flex-shrink:0;margin-top:7px}
+.r-gap-txt{font-size:13px;color:var(--white);line-height:1.6}
+.r-gap-sub{font-size:11px;color:var(--grey);line-height:1.6;margin-top:2px}
 
-    .q-number {
-      font-family: var(--mono); font-size: 9px; letter-spacing: 0.16em;
-      text-transform: uppercase; color: var(--gold-dk); margin-bottom: 16px;
-    }
-    .q-text {
-      font-family: var(--serif); font-size: clamp(22px, 3vw, 30px);
-      font-weight: 300; line-height: 1.25; margin-bottom: 36px; color: var(--white);
-    }
-    .q-sub { font-size: 13px; color: var(--grey); margin-top: 8px; font-family: var(--sans); }
+.r-divider{height:1px;background:var(--grey-dk);margin:32px 0}
 
-    /* ── OPTIONS ────────────────────────────── */
-    .options { display: flex; flex-direction: column; gap: 12px; }
-    .option {
-      border: 1px solid var(--grey-dk);
-      padding: 18px 24px;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      display: flex; align-items: center; gap: 16px;
-      user-select: none;
-    }
-    .option:hover { border-color: var(--gold-dk); background: rgba(176,141,87,0.04); }
-    .option.selected { border-color: var(--gold); background: rgba(176,141,87,0.08); }
+/* EMAIL CAPTURE */
+.capture-wrap{margin-bottom:32px}
+.capture-lbl{font-size:13px;color:var(--white);font-weight:400;margin-bottom:6px}
+.capture-hint{font-size:11px;color:var(--grey);margin-bottom:12px;line-height:1.6}
+.capture-row{display:flex;gap:10px}
+.capture-input{flex:1;background:#111;border:1px solid var(--grey-dk);color:var(--white);font-family:var(--sans);font-size:13px;font-weight:300;padding:12px 15px;outline:none;transition:border-color .2s;border-radius:0}
+.capture-input:focus{border-color:var(--gold)}
+.capture-input::placeholder{color:var(--grey-dk)}
+.btn-capture{background:var(--gold);color:#0A0A0A;font-family:var(--mono);font-size:9px;letter-spacing:.14em;text-transform:uppercase;border:none;cursor:pointer;padding:12px 20px;transition:background .3s;white-space:nowrap}
+.btn-capture:hover{background:var(--gold-lt)}
+.capture-sent{display:none;font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);padding:12px 0}
 
-    /* Radio bullet (single-select) */
-    .option-bullet {
-      width: 20px; height: 20px; border: 1px solid var(--grey-dk);
-      border-radius: 50%; flex-shrink: 0; display: flex;
-      align-items: center; justify-content: center;
-      transition: all 0.2s ease;
-    }
-    .option.selected .option-bullet {
-      border-color: var(--gold); background: var(--gold);
-    }
-    .option.selected .option-bullet::after {
-      content: ''; width: 6px; height: 6px;
-      background: var(--black); border-radius: 50%;
-    }
+.r-cta-wrap{display:flex;flex-direction:column;gap:10px}
+.btn-arch{display:block;background:var(--gold);color:#0A0A0A;font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;border:none;cursor:pointer;padding:16px 28px;transition:background .3s;text-decoration:none;text-align:center}
+.btn-arch:hover{background:var(--gold-lt)}
+.r-note{font-size:11px;color:var(--grey);line-height:1.7;text-align:center}
 
-    /* Checkbox (multi-select) */
-    .option-checkbox {
-      width: 20px; height: 20px; border: 1px solid var(--grey-dk);
-      border-radius: 3px; flex-shrink: 0; display: flex;
-      align-items: center; justify-content: center;
-      transition: all 0.2s ease;
-    }
-    .option.selected .option-checkbox {
-      border-color: var(--gold); background: var(--gold);
-    }
-    .option.selected .option-checkbox::after {
-      content: '';
-      width: 10px; height: 6px;
-      border-left: 1.5px solid var(--black);
-      border-bottom: 1.5px solid var(--black);
-      transform: rotate(-45deg) translateY(-1px);
-      display: block;
-    }
+/* NOT QUALIFIED */
+#not-qualified{display:none;animation:fadeUp .4s ease}
+.nq-box{border:1px solid var(--grey-dk);padding:28px 32px;margin-bottom:24px}
 
-    .option-label { font-size: 14px; color: var(--white); line-height: 1.5; }
-    .option.selected .option-label { color: var(--white); }
-    .multi-hint {
-      font-family: var(--mono); font-size: 9px; letter-spacing: 0.12em;
-      text-transform: uppercase; color: var(--grey-dk); margin-bottom: 16px;
-    }
-
-    /* ── NEXT BUTTON ────────────────────────── */
-    .q-nav { margin-top: 40px; display: flex; align-items: center; gap: 24px; }
-    .btn-next {
-      background: var(--gold); color: var(--black);
-      font-family: var(--mono); font-size: 10px; letter-spacing: 0.14em;
-      text-transform: uppercase; border: none; cursor: pointer;
-      padding: 14px 32px; transition: background 0.3s ease;
-      opacity: 0.4; pointer-events: none;
-    }
-    .btn-next.ready { opacity: 1; pointer-events: auto; }
-    .btn-next.ready:hover { background: var(--gold-lt); }
-    .btn-back {
-      font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em;
-      color: var(--grey); text-transform: uppercase; border: none;
-      background: none; cursor: pointer; padding: 0;
-    }
-    .btn-back:hover { color: var(--white); }
-
-    /* ── RESULTS ────────────────────────────── */
-    #results { display: none; animation: fadeUp 0.5s ease; }
-    #results.active { display: block; }
-
-    .result-eyebrow {
-      font-family: var(--mono); font-size: 10px; letter-spacing: 0.2em;
-      text-transform: uppercase; color: var(--gold); margin-bottom: 20px;
-    }
-    .result-headline {
-      font-family: var(--serif); font-size: clamp(32px, 4.5vw, 48px);
-      font-weight: 300; line-height: 1.1; margin-bottom: 20px;
-    }
-    .result-headline em { font-style: italic; color: var(--gold); }
-    .result-body { font-size: 15px; color: var(--grey); line-height: 1.85; margin-bottom: 40px; }
-
-    .result-roi-block {
-      border: 1px solid var(--gold-dk); padding: 36px 40px; margin-bottom: 40px;
-    }
-    .result-roi-label {
-      font-family: var(--mono); font-size: 9px; letter-spacing: 0.16em;
-      text-transform: uppercase; color: var(--gold-dk); margin-bottom: 12px;
-    }
-    .result-roi-number {
-      font-family: var(--serif); font-size: clamp(44px, 6vw, 68px);
-      font-weight: 300; color: var(--gold); line-height: 1; margin-bottom: 8px;
-    }
-    .result-roi-sub {
-      font-size: 13px; color: var(--grey); line-height: 1.6;
-    }
-
-    .result-findings { margin-bottom: 40px; }
-    .result-findings-label {
-      font-family: var(--mono); font-size: 9px; letter-spacing: 0.16em;
-      text-transform: uppercase; color: var(--grey-dk); margin-bottom: 16px;
-    }
-    .finding {
-      border-left: 1px solid var(--gold-dk); padding: 16px 20px; margin-bottom: 12px;
-      font-size: 13px; color: var(--grey); line-height: 1.7;
-    }
-
-    .result-cta-block { display: flex; flex-direction: column; gap: 16px; }
-    .btn-result-primary {
-      display: inline-block; text-align: center;
-      background: var(--gold); color: var(--black);
-      font-family: var(--mono); font-size: 11px; letter-spacing: 0.14em;
-      text-transform: uppercase; text-decoration: none;
-      padding: 16px 32px; transition: background 0.3s ease;
-    }
-    .btn-result-primary:hover { background: var(--gold-lt); }
-    .btn-result-secondary {
-      display: inline-block; text-align: center;
-      border: 1px solid var(--gold-dk); color: var(--gold);
-      font-family: var(--mono); font-size: 10px; letter-spacing: 0.14em;
-      text-transform: uppercase; text-decoration: none;
-      padding: 14px 28px; transition: all 0.3s ease;
-    }
-    .btn-result-secondary:hover { border-color: var(--gold); background: rgba(176,141,87,0.06); }
-
-    .result-disclaimer {
-      margin-top: 32px; font-family: var(--mono); font-size: 9px;
-      letter-spacing: 0.1em; color: var(--grey-dk); line-height: 1.6;
-    }
-
-    /* ── REDIRECT (below threshold) ─────────── */
-    .result-redirect-block {
-      border: 1px solid var(--grey-dk); padding: 36px 40px; margin-bottom: 32px;
-    }
-
-    @media (max-width: 600px) {
-      nav { padding: 20px 24px; }
-      .wrap { padding: 56px 24px 80px; }
-      .result-roi-block { padding: 28px 24px; }
-    }
-  </style>
+@media(max-width:600px){
+  nav{padding:16px 20px}
+  .wrap{padding:56px 20px 80px}
+  .capture-row{flex-direction:column}
+}
+</style>
 </head>
 <body>
 
-  <nav>
-    <a href="index.html" class="nav-logo">
-      <div class="nav-logo-badge">
-        <span>QUIET</span>
-        <div class="dl"></div>
-        <span>PREM</span>
-      </div>
-    </a>
-    <a href="index.html" class="nav-back">← quietpremium.com</a>
-  </nav>
+<nav>
+  <div style="display:flex;align-items:center;gap:10px">
+    <div class="nb"><span>QUIET</span><div class="nbr"></div><span>PREM</span></div>
+    <span class="nav-wm">Quiet Premium</span>
+  </div>
+  <a href="index.html" class="nav-r">← quietpremium.com</a>
+</nav>
 
-  <div class="wrap">
+<div class="page">
+<div class="wrap">
 
-    <!-- INTRO (shown before Q1) -->
-    <div id="intro-block" class="intro">
-      <p class="intro-eyebrow">The Gap Index</p>
-      <h1 class="intro-headline">
-        Find out what your spend<br>is <em>actually producing.</em>
-      </h1>
-      <p class="intro-sub">
-        Six questions. Two minutes. No email required to see your results. The Gap Index maps your current setup against the qualifying profile and shows you the estimated annual value sitting in your existing spend.
-      </p>
+  <div class="eyebrow">The Gap Index</div>
+  <h1 class="headline">Find out what your spend<br>is <em>actually producing.</em></h1>
+  <p class="subtext">Six questions. Two minutes. The Gap Index maps your current setup and shows you the estimated annual value sitting in your existing spend.</p>
+
+  <div class="prog-wrap">
+    <div class="prog-track"><div class="prog-fill" id="prog" style="width:0%"></div></div>
+    <div class="prog-label"><span id="prog-label">Question 1 of 6</span><span id="prog-pct">0%</span></div>
+  </div>
+
+  <!-- Q1: Cards -->
+  <div class="question active" id="q1">
+    <div class="q-num">01 / 06</div>
+    <div class="q-text">Which premium cards do you currently hold?</div>
+    <div class="q-hint">Select all that apply.</div>
+    <div class="opts" id="q1-opts">
+      <div class="opt" data-val="amex-plat"><div class="opt-ind square"></div><div class="opt-label">Amex Platinum</div></div>
+      <div class="opt" data-val="amex-gold"><div class="opt-ind square"></div><div class="opt-label">Amex Gold</div></div>
+      <div class="opt" data-val="amex-centurion"><div class="opt-ind square"></div><div class="opt-label">Amex Centurion (Black Card)</div></div>
+      <div class="opt" data-val="delta-reserve"><div class="opt-ind square"></div><div class="opt-label">Delta SkyMiles® Reserve American Express</div></div>
+      <div class="opt" data-val="united-infinite"><div class="opt-ind square"></div><div class="opt-label">United Club Infinite</div></div>
+      <div class="opt" data-val="citi-aa-exec"><div class="opt-ind square"></div><div class="opt-label">Citi AAdvantage Executive</div></div>
+      <div class="opt" data-val="csr"><div class="opt-ind square"></div><div class="opt-label">Chase Sapphire Reserve</div></div>
+      <div class="opt" data-val="csp"><div class="opt-ind square"></div><div class="opt-label">Chase Sapphire Preferred</div></div>
+      <div class="opt" data-val="c1vx"><div class="opt-ind square"></div><div class="opt-label">Capital One Venture X</div></div>
+      <div class="opt" data-val="none"><div class="opt-ind square"></div><div class="opt-label">None — I don't currently hold premium cards</div></div>
+    </div>
+    <div class="btn-row">
+      <button class="btn-next" id="btn1" onclick="next(1)">Continue</button>
+    </div>
+  </div>
+
+  <!-- Q2: Credit score -->
+  <div class="question" id="q2">
+    <div class="q-num">02 / 06</div>
+    <div class="q-text">What is your approximate credit score?</div>
+    <div class="q-hint">The card approval path requires a minimum of 720. This is a mechanical gate, not a judgment.</div>
+    <div class="opts" id="q2-opts">
+      <div class="opt" data-val="800+"><div class="opt-ind circle"></div><div class="opt-label">800 or above</div></div>
+      <div class="opt" data-val="760-799"><div class="opt-ind circle"></div><div class="opt-label">760–799</div></div>
+      <div class="opt" data-val="720-759"><div class="opt-ind circle"></div><div class="opt-label">720–759</div></div>
+      <div class="opt" data-val="680-719"><div class="opt-ind circle"></div><div class="opt-label">680–719</div></div>
+      <div class="opt" data-val="below-680"><div class="opt-ind circle"></div><div class="opt-label">Below 680</div></div>
+    </div>
+    <div class="btn-row">
+      <button class="btn-back" onclick="back(2)">Back</button>
+      <button class="btn-next" id="btn2" onclick="next(2)">Continue</button>
+    </div>
+  </div>
+
+  <!-- Q3: Spend -->
+  <div class="question" id="q3">
+    <div class="q-num">03 / 06</div>
+    <div class="q-text">How much could your household route through premium cards annually?</div>
+    <div class="q-hint">Include spend currently paid by check, bank transfer, or cash that could go on a card.</div>
+    <div class="opts" id="q3-opts">
+      <div class="opt" data-val="300k+"><div class="opt-ind circle"></div><div class="opt-label">$300,000 or more</div></div>
+      <div class="opt" data-val="150k-299k"><div class="opt-ind circle"></div><div class="opt-label">$150,000–$299,999</div></div>
+      <div class="opt" data-val="100k-149k"><div class="opt-ind circle"></div><div class="opt-label">$100,000–$149,999</div></div>
+      <div class="opt" data-val="75k-99k"><div class="opt-ind circle"></div><div class="opt-label">$75,000–$99,999</div></div>
+      <div class="opt" data-val="under75k"><div class="opt-ind circle"></div><div class="opt-label">Under $75,000</div></div>
+    </div>
+    <div class="btn-row">
+      <button class="btn-back" onclick="back(3)">Back</button>
+      <button class="btn-next" id="btn3" onclick="next(3)">Continue</button>
+    </div>
+  </div>
+
+  <!-- Q4: Trips -->
+  <div class="question" id="q4">
+    <div class="q-num">04 / 06</div>
+    <div class="q-text">How many personal trips do you take per year?</div>
+    <div class="opts" id="q4-opts">
+      <div class="opt" data-val="15+"><div class="opt-ind circle"></div><div class="opt-label">15 or more</div></div>
+      <div class="opt" data-val="9-14"><div class="opt-ind circle"></div><div class="opt-label">9–14</div></div>
+      <div class="opt" data-val="4-8"><div class="opt-ind circle"></div><div class="opt-label">4–8</div></div>
+      <div class="opt" data-val="fewer-4"><div class="opt-ind circle"></div><div class="opt-label">Fewer than 4</div></div>
+    </div>
+    <div class="btn-row">
+      <button class="btn-back" onclick="back(4)">Back</button>
+      <button class="btn-next" id="btn4" onclick="next(4)">Continue</button>
+    </div>
+  </div>
+
+  <!-- Q5: Cabin -->
+  <div class="question" id="q5">
+    <div class="q-num">05 / 06</div>
+    <div class="q-text">What cabin do you typically fly?</div>
+    <div class="opts" id="q5-opts">
+      <div class="opt" data-val="economy-always"><div class="opt-ind circle"></div><div class="opt-label">Economy — always or almost always</div></div>
+      <div class="opt" data-val="economy-upgrades"><div class="opt-ind circle"></div><div class="opt-label">Economy, but I pay cash for upgrades occasionally</div></div>
+      <div class="opt" data-val="mixed"><div class="opt-ind circle"></div><div class="opt-label">Business class on longer routes, economy on shorter ones</div></div>
+      <div class="opt" data-val="business-always"><div class="opt-ind circle"></div><div class="opt-label">Business or first on most flights</div></div>
+    </div>
+    <div class="btn-row">
+      <button class="btn-back" onclick="back(5)">Back</button>
+      <button class="btn-next" id="btn5" onclick="next(5)">Continue</button>
+    </div>
+  </div>
+
+  <!-- Q6: Experience -->
+  <div class="question" id="q6">
+    <div class="q-num">06 / 06</div>
+    <div class="q-text">Which best describes your current travel experience?</div>
+    <div class="opts" id="q6-opts">
+      <div class="opt" data-val="no-system"><div class="opt-ind circle"></div><div class="opt-label">Boarding group 4 or 5 on every flight — I'm not in any system</div></div>
+      <div class="opt" data-val="occasional"><div class="opt-ind circle"></div><div class="opt-label">Occasional unpredictable upgrades — nothing I can count on</div></div>
+      <div class="opt" data-val="some-status"><div class="opt-ind circle"></div><div class="opt-label">I have some status but hotel treatment hasn't changed at all</div></div>
+      <div class="opt" data-val="working"><div class="opt-ind circle"></div><div class="opt-label">Consistent upgrades and recognized at hotels — the system works</div></div>
+    </div>
+    <div class="btn-row">
+      <button class="btn-back" onclick="back(6)">Back</button>
+      <button class="btn-next" id="btn6" onclick="showResults()">See My Results</button>
+    </div>
+  </div>
+
+  <!-- RESULTS -->
+  <div id="results">
+    <div class="r-ey">Your Gap Index</div>
+    <h2 class="r-hl">Here's what your<br>spend is <em>leaving behind.</em></h2>
+
+    <div class="r-range">
+      <div class="r-range-lbl">Estimated Annual Value in Your Current Spend</div>
+      <div class="r-range-val" id="r-val">$—</div>
+      <div class="r-range-sub">Based on your inputs · same spend · correct routing · outcomes vary</div>
     </div>
 
-    <!-- PROGRESS -->
-    <div class="progress-wrap" id="progress-wrap" style="display:none;">
-      <div class="progress-bar-track">
-        <div class="progress-bar-fill" id="progress-fill" style="width:0%"></div>
+    <div class="r-gaps" id="r-gaps"></div>
+
+    <div class="r-divider"></div>
+
+    <!-- EMAIL CAPTURE -->
+    <div class="capture-wrap">
+      <div class="capture-lbl">Send me these results</div>
+      <div class="capture-hint">Optional. Enter your email and we'll send your Gap Index results along with what The Architecture would show you in detail.</div>
+      <div class="capture-row">
+        <input type="email" class="capture-input" id="capture-email" placeholder="you@example.com"/>
+        <button class="btn-capture" onclick="sendResults()">Send</button>
       </div>
-      <div class="progress-label" id="progress-label">Question 1 of 5</div>
+      <div class="capture-sent" id="capture-sent">✓ Results sent — check your inbox.</div>
     </div>
 
-    <!-- QUESTIONS -->
-    <div id="questions-wrap">
+    <div class="r-divider"></div>
 
-      <!-- Q1 — multi-select cards -->
-      <div class="question-block active" id="q1">
-        <div class="q-number">01 / 06</div>
-        <div class="q-text">
-          Which premium cards do you currently hold?
-          <div class="q-sub">Select all that apply.</div>
-        </div>
-        <p class="multi-hint">Select all that apply — then continue</p>
-        <div class="options multi" data-q="1">
-          <div class="option" data-card="amex-platinum">
-            <div class="option-checkbox"></div>
-            <div class="option-label">Amex Platinum</div>
-          </div>
-          <div class="option" data-card="amex-centurion">
-            <div class="option-checkbox"></div>
-            <div class="option-label">Amex Centurion (Black Card)</div>
-          </div>
-          <div class="option" data-card="amex-gold">
-            <div class="option-checkbox"></div>
-            <div class="option-label">Amex Gold</div>
-          </div>
-          <div class="option" data-card="delta-reserve">
-            <div class="option-checkbox"></div>
-            <div class="option-label">Delta SkyMiles® Reserve American Express</div>
-          </div>
-          <div class="option" data-card="chase-reserve">
-            <div class="option-checkbox"></div>
-            <div class="option-label">Chase Sapphire Reserve</div>
-          </div>
-          <div class="option" data-card="chase-preferred">
-            <div class="option-checkbox"></div>
-            <div class="option-label">Chase Sapphire Preferred</div>
-          </div>
-          <div class="option" data-card="cap1-venturex">
-            <div class="option-checkbox"></div>
-            <div class="option-label">Capital One Venture X</div>
-          </div>
-          <div class="option" data-card="cap1-venture">
-            <div class="option-checkbox"></div>
-            <div class="option-label">Capital One Venture</div>
-          </div>
-          <div class="option" data-card="none">
-            <div class="option-checkbox"></div>
-            <div class="option-label">None — I don't currently hold premium cards</div>
-          </div>
-        </div>
-        <div class="q-nav">
-          <button class="btn-next ready" id="next-1" onclick="nextQ(1)">Continue</button>
-        </div>
-      </div>
-
-      <!-- Q2 — credit score (NEW — hard disqualifier below 720) -->
-      <div class="question-block" id="q2">
-        <div class="q-number">02 / 06</div>
-        <div class="q-text">
-          What is your approximate credit score?
-          <div class="q-sub">The card approval path requires a minimum of 720. This is a mechanical gate, not a judgment.</div>
-        </div>
-        <div class="options" data-q="2">
-          <div class="option" data-value="3" data-score="3">
-            <div class="option-bullet"></div>
-            <div class="option-label">800 or above</div>
-          </div>
-          <div class="option" data-value="2" data-score="2">
-            <div class="option-bullet"></div>
-            <div class="option-label">760–799</div>
-          </div>
-          <div class="option" data-value="1" data-score="1">
-            <div class="option-bullet"></div>
-            <div class="option-label">720–759</div>
-          </div>
-          <div class="option" data-value="0" data-score="0">
-            <div class="option-bullet"></div>
-            <div class="option-label">680–719</div>
-          </div>
-          <div class="option" data-value="-1" data-score="-99">
-            <div class="option-bullet"></div>
-            <div class="option-label">Below 680</div>
-          </div>
-        </div>
-        <div class="q-nav">
-          <button class="btn-next" id="next-2" onclick="nextQ(2)">Continue</button>
-          <button class="btn-back" onclick="backQ(2)">Back</button>
-        </div>
-      </div>
-
-      <!-- Q3 — spend -->
-      <div class="question-block" id="q3">
-        <div class="q-number">03 / 06</div>
-        <div class="q-text">
-          How much could your household route through premium cards annually?
-          <div class="q-sub">Include spend currently paid by check, bank transfer, or cash that could go on a card.</div>
-        </div>
-        <div class="options" data-q="3">
-          <div class="option" data-value="4" data-score="4">
-            <div class="option-bullet"></div>
-            <div class="option-label">$300,000 or more</div>
-          </div>
-          <div class="option" data-value="3" data-score="3">
-            <div class="option-bullet"></div>
-            <div class="option-label">$150,000–$299,999</div>
-          </div>
-          <div class="option" data-value="2" data-score="2">
-            <div class="option-bullet"></div>
-            <div class="option-label">$100,000–$149,999</div>
-          </div>
-          <div class="option" data-value="1" data-score="1">
-            <div class="option-bullet"></div>
-            <div class="option-label">$75,000–$99,999</div>
-          </div>
-          <div class="option" data-value="0" data-score="0">
-            <div class="option-bullet"></div>
-            <div class="option-label">Under $75,000</div>
-          </div>
-        </div>
-        <div class="q-nav">
-          <button class="btn-next" id="next-3" onclick="nextQ(3)">Continue</button>
-          <button class="btn-back" onclick="backQ(3)">Back</button>
-        </div>
-      </div>
-
-      <!-- Q4 — trips -->
-      <div class="question-block" id="q4">
-        <div class="q-number">04 / 06</div>
-        <div class="q-text">How many personal trips do you take per year?</div>
-        <div class="options" data-q="4">
-          <div class="option" data-value="3" data-score="3">
-            <div class="option-bullet"></div>
-            <div class="option-label">15 or more</div>
-          </div>
-          <div class="option" data-value="2" data-score="2">
-            <div class="option-bullet"></div>
-            <div class="option-label">9–14</div>
-          </div>
-          <div class="option" data-value="2" data-score="2">
-            <div class="option-bullet"></div>
-            <div class="option-label">4–8</div>
-          </div>
-          <div class="option" data-value="0" data-score="0">
-            <div class="option-bullet"></div>
-            <div class="option-label">Fewer than 4</div>
-          </div>
-        </div>
-        <div class="q-nav">
-          <button class="btn-next" id="next-4" onclick="nextQ(4)">Continue</button>
-          <button class="btn-back" onclick="backQ(4)">Back</button>
-        </div>
-      </div>
-
-      <!-- Q5 — cabin -->
-      <div class="question-block" id="q5">
-        <div class="q-number">05 / 06</div>
-        <div class="q-text">What cabin do you typically fly?</div>
-        <div class="options" data-q="5">
-          <div class="option" data-value="0" data-score="0">
-            <div class="option-bullet"></div>
-            <div class="option-label">Economy — always or almost always</div>
-          </div>
-          <div class="option" data-value="1" data-score="1">
-            <div class="option-bullet"></div>
-            <div class="option-label">Economy, but I pay cash for upgrades occasionally</div>
-          </div>
-          <div class="option" data-value="2" data-score="2">
-            <div class="option-bullet"></div>
-            <div class="option-label">Business class on longer routes, economy on shorter ones</div>
-          </div>
-          <div class="option" data-value="3" data-score="3">
-            <div class="option-bullet"></div>
-            <div class="option-label">Business or first on most flights</div>
-          </div>
-        </div>
-        <div class="q-nav">
-          <button class="btn-next" id="next-5" onclick="nextQ(5)">Continue</button>
-          <button class="btn-back" onclick="backQ(5)">Back</button>
-        </div>
-      </div>
-
-      <!-- Q6 — experience -->
-      <div class="question-block" id="q6">
-        <div class="q-number">06 / 06</div>
-        <div class="q-text">Which best describes your current travel experience?</div>
-        <div class="options" data-q="6">
-          <div class="option" data-value="0" data-score="0">
-            <div class="option-bullet"></div>
-            <div class="option-label">Boarding group 4 or 5 on every flight — I'm not in any system</div>
-          </div>
-          <div class="option" data-value="1" data-score="1">
-            <div class="option-bullet"></div>
-            <div class="option-label">Occasional unpredictable upgrades — nothing I can count on</div>
-          </div>
-          <div class="option" data-value="2" data-score="2">
-            <div class="option-bullet"></div>
-            <div class="option-label">I have some status but hotel treatment hasn't changed at all</div>
-          </div>
-          <div class="option" data-value="3" data-score="3">
-            <div class="option-bullet"></div>
-            <div class="option-label">Consistent upgrades and recognized at hotels — the system works</div>
-          </div>
-        </div>
-        <div class="q-nav">
-          <button class="btn-next" id="next-6" onclick="showResults()">See My Results</button>
-          <button class="btn-back" onclick="backQ(6)">Back</button>
-        </div>
-      </div>
-
-    </div><!-- /questions-wrap -->
-
-    <!-- RESULTS -->
-    <div id="results">
-      <!-- populated by JS -->
+    <div style="margin-bottom:20px">
+      <div style="font-family:var(--mono);font-size:8px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold-dk);margin-bottom:8px">The next step</div>
+      <p style="font-size:13px;color:var(--grey);line-height:1.8;margin-bottom:20px">The Gap Index shows you the range. The Architecture shows you the exact number — every dollar, every correction, your specific routing plan. Delivered on screen in 15 minutes.</p>
     </div>
+    <div class="r-cta-wrap">
+      <a href="architecture.html" class="btn-arch">Begin The Architecture — $297</a>
+      <div class="r-note">Investment protected · If The Architecture can't produce a clear path forward, we return it.</div>
+    </div>
+  </div>
 
-  </div><!-- /wrap -->
+  <!-- NOT QUALIFIED -->
+  <div id="not-qualified">
+    <div class="r-ey">Gap Index Complete</div>
+    <h2 class="r-hl" style="font-size:clamp(24px,3.5vw,36px);margin-bottom:20px">The Architecture is built for a<br><em>specific profile.</em></h2>
+    <div class="nq-box">
+      <p style="font-size:13px;color:var(--grey);line-height:1.85">The Architecture is built for households routing $100,000 or more annually through premium cards, with a 720+ credit profile and four or more personal trips per year. Based on your inputs, some recommendations may not produce their full value for your current setup.</p>
+      <p style="font-size:13px;color:var(--grey);line-height:1.85;margin-top:12px">You're welcome to proceed — or revisit when your situation changes.</p>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <a href="architecture.html" style="display:inline-block;border:1px solid var(--grey-dk);color:var(--grey);font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;background:none;cursor:pointer;padding:14px 24px;text-decoration:none;text-align:center">Proceed Anyway — $297</a>
+      <a href="https://www.linkedin.com/in/paul-hicks-3049063a7" target="_blank" style="font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--grey-mid);text-decoration:none;text-align:center;padding:8px 0">Follow on LinkedIn · Revisit when ready</a>
+    </div>
+  </div>
 
-  <script>
-    // ── STATE ──────────────────────────────────────────────────────
-    // Q1 is multi-select — stored as Set of card slugs
-    const selectedCards = new Set();
-    // Q2–Q6 single-select
-    const answers = { 2: null, 3: null, 4: null, 5: null, 6: null };
-    const scores  = { 2: 0,    3: 0,    4: 0,    5: 0,    6: 0    };
+</div>
+</div>
 
-    // ── Q1 MULTI-SELECT ────────────────────────────────────────────
-    document.querySelectorAll('#q1 .option').forEach(opt => {
-      opt.addEventListener('click', () => {
-        const card = opt.dataset.card;
-        if (card === 'none') {
-          // "None" clears all others
-          if (selectedCards.has('none')) {
-            selectedCards.delete('none');
-            opt.classList.remove('selected');
-          } else {
-            selectedCards.clear();
-            document.querySelectorAll('#q1 .option').forEach(o => o.classList.remove('selected'));
-            selectedCards.add('none');
-            opt.classList.add('selected');
-          }
+<script>
+const answers = {};
+let current = 1;
+const total = 6;
+
+// Wire checkbox/radio options
+document.querySelectorAll('.opts').forEach(group => {
+  const qid = group.id;
+  const isMulti = qid === 'q1-opts';
+  group.querySelectorAll('.opt').forEach(opt => {
+    opt.addEventListener('click', () => {
+      if(isMulti){
+        // Handle "None" mutual exclusivity
+        if(opt.dataset.val === 'none'){
+          group.querySelectorAll('.opt').forEach(o => o.classList.remove('selected'));
         } else {
-          // Selecting a real card removes "none"
-          if (selectedCards.has('none')) {
-            selectedCards.delete('none');
-            document.querySelector('#q1 .option[data-card="none"]').classList.remove('selected');
-          }
-          if (selectedCards.has(card)) {
-            selectedCards.delete(card);
-            opt.classList.remove('selected');
-          } else {
-            selectedCards.add(card);
-            opt.classList.add('selected');
-          }
+          group.querySelectorAll('.opt[data-val="none"]').forEach(o => o.classList.remove('selected'));
         }
-        // Q1 continue button is always ready (zero selection = no cards = valid answer)
-        document.getElementById('next-1').classList.add('ready');
-      });
-    });
-
-    // ── Q2–Q6 SINGLE SELECT ────────────────────────────────────────
-    document.querySelectorAll('.options:not(.multi)').forEach(group => {
-      group.querySelectorAll('.option').forEach(opt => {
-        opt.addEventListener('click', () => {
-          group.querySelectorAll('.option').forEach(o => o.classList.remove('selected'));
-          opt.classList.add('selected');
-          const q = parseInt(group.dataset.q);
-          answers[q] = opt.dataset.value;
-          scores[q]  = parseInt(opt.dataset.score);
-          const btn = document.getElementById('next-' + q);
-          if (btn) btn.classList.add('ready');
-        });
-      });
-    });
-
-    // ── CARD SCORING ───────────────────────────────────────────────
-    // Full ideal QP stack = Amex Platinum + Chase Reserve + Cap1 Venture X
-    // Having all three but still in economy = misrouting → strong gap
-    // Having none = unconverted spender → strong gap
-    // Having some = partial → moderate signal
-    function getCardScore() {
-      if (selectedCards.has('none') || selectedCards.size === 0) return 0; // unconverted
-      const ideal = ['amex-platinum', 'chase-reserve', 'cap1-venturex'];
-      const hasIdeal = ideal.filter(c => selectedCards.has(c)).length;
-      if (hasIdeal === 3) return 3; // full stack — gap is routing not cards
-      if (hasIdeal >= 1) return 2;
-      return 1;
-    }
-
-    function hasFullStack() {
-      return selectedCards.has('amex-platinum') &&
-             selectedCards.has('chase-reserve') &&
-             selectedCards.has('cap1-venturex');
-    }
-
-    // ── NAVIGATION ─────────────────────────────────────────────────
-    function showQ(n) {
-      document.querySelectorAll('.question-block').forEach(b => b.classList.remove('active'));
-      document.getElementById('q' + n).classList.add('active');
-      document.getElementById('progress-wrap').style.display = 'block';
-      document.getElementById('intro-block').style.display   = 'none';
-      document.getElementById('progress-fill').style.width   = ((n - 1) / 6 * 100) + '%';
-      document.getElementById('progress-label').textContent  = 'Question ' + n + ' of 6';
-    }
-
-    function nextQ(current) {
-      if (current === 1) { showQ(2); return; }
-      if (!answers[current]) return;
-      if (current < 6) showQ(current + 1);
-    }
-
-    function backQ(current) {
-      if (current === 2) {
-        document.querySelectorAll('.question-block').forEach(b => b.classList.remove('active'));
-        document.getElementById('q1').classList.add('active');
-        document.getElementById('progress-fill').style.width  = '0%';
-        document.getElementById('progress-label').textContent = 'Question 1 of 6';
-        return;
-      }
-      showQ(current - 1);
-    }
-
-    // ── RESULTS ────────────────────────────────────────────────────
-    function showResults() {
-      if (!answers[6]) return;
-
-      document.getElementById('questions-wrap').style.display = 'none';
-      document.getElementById('progress-wrap').style.display  = 'none';
-
-      const creditVal = parseInt(answers[2]); // -99 = hard disqualify, 0 = 680-719, 1-3 = qualifying
-      const spendVal  = parseInt(answers[3]); // 0–4
-      const tripsVal  = parseInt(answers[4]); // 0–3
-      const expVal    = parseInt(answers[6]); // 0–3
-      const cardScore = getCardScore();
-      const fullStack = hasFullStack();
-
-      const totalScore = creditVal + spendVal + tripsVal + scores[5] + scores[6] + cardScore;
-
-      // ── HARD DISQUALIFIERS ─────────────────────────────────────
-      const creditDisqualified = creditVal < 0 || creditVal === 0; // below 720
-      const belowSpend    = spendVal === 0;
-      const lowTrips      = tripsVal === 0 && spendVal <= 1;
-      const alreadyWorking = expVal === 3; // system is already working — no gap to close
-
-      let bucket;
-      if (alreadyWorking) {
-        bucket = 'already';
-      } else if (creditDisqualified || belowSpend || lowTrips) {
-        bucket = 'redirect';
-      } else if (totalScore >= 10) {
-        bucket = 'strong';
-      } else if (totalScore >= 5) {
-        bucket = 'moderate';
+        opt.classList.toggle('selected');
       } else {
-        bucket = 'redirect';
+        group.querySelectorAll('.opt').forEach(o => o.classList.remove('selected'));
+        opt.classList.add('selected');
       }
+      const qNum = parseInt(qid.replace('q','').replace('-opts',''));
+      const sel = Array.from(group.querySelectorAll('.opt.selected')).map(o => o.dataset.val);
+      answers[qNum] = isMulti ? sel : sel[0];
+      updateProgress();
+    });
+  });
+});
 
-      // ── ROI RANGE ─────────────────────────────────────────────
-      const roiRanges = { 4: '$12,000–$20,000', 3: '$8,000–$14,000', 2: '$4,000–$8,000', 1: null, 0: null };
-      const roiRange = roiRanges[spendVal];
+function updateProgress(){
+  const pct = Math.round((current - 1) / total * 100);
+  document.getElementById('prog').style.width = pct + '%';
+  document.getElementById('prog-pct').textContent = pct + '%';
+  document.getElementById('prog-label').textContent = 'Question ' + current + ' of ' + total;
+}
 
-      // ── FINDINGS ──────────────────────────────────────────────
-      const findings = [];
+function next(q){
+  if(!answers[q] || (Array.isArray(answers[q]) && answers[q].length === 0)) return;
+  document.getElementById('q' + q).classList.remove('active');
+  current = q + 1;
+  if(current <= total){
+    document.getElementById('q' + current).classList.add('active');
+    updateProgress();
+    window.scrollTo({top:0,behavior:'smooth'});
+  }
+}
 
-      if (selectedCards.size === 0 || selectedCards.has('none')) {
-        findings.push('You have no premium card infrastructure in place. At your spend level, this is the highest-leverage change available — the entire system starts with the right cards.');
-      } else if (fullStack && expVal <= 1) {
-        findings.push('You have the right cards but the experience data suggests spend isn\'t being routed correctly across them. The architecture exists — the assignment is off.');
-      } else if (!fullStack) {
-        findings.push('Your card setup is partial. The QP architecture uses three specific cards working together — missing one breaks the concentration strategy.');
-      }
+function back(q){
+  document.getElementById('q' + q).classList.remove('active');
+  current = q - 1;
+  document.getElementById('q' + current).classList.add('active');
+  updateProgress();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
 
-      if (spendVal >= 2) {
-        findings.push('Your spend capacity is at or above the threshold where restructuring produces material annual returns — the arithmetic works in your favor.');
-      }
+function showResults(){
+  if(!answers[6]) return;
 
-      if (tripsVal >= 1 && expVal <= 1) {
-        findings.push('Your travel frequency is high enough to reach meaningful status, but the experience data suggests the routing infrastructure isn\'t there yet.');
-      }
+  // Qualification check
+  const credit = answers[2];
+  const spend = answers[3];
+  const trips = answers[4];
+  const creditFail = credit === '680-719' || credit === 'below-680';
+  const spendFail = spend === 'under75k';
+  const tripsFail = trips === 'fewer-4';
 
-      if (expVal === 0 && spendVal >= 2) {
-        findings.push('Boarding group 4 or 5 at your spend level is a clear indicator of a structural routing problem — not a budget problem.');
-      }
+  document.getElementById('q6').classList.remove('active');
 
-      // ── BUILD HTML ────────────────────────────────────────────
-      let html = '';
+  if((creditFail || spendFail) && tripsFail){
+    document.getElementById('not-qualified').style.display = 'block';
+    window.scrollTo({top:0,behavior:'smooth'});
+    return;
+  }
 
-      if (bucket === 'already') {
-        html = `
-          <p class="result-eyebrow">Your Gap Index Result</p>
-          <h2 class="result-headline">The system is <em>already working.</em></h2>
-          <p class="result-body">
-            Based on your answers, you're getting consistent upgrades and hotel recognition — which means the architecture underneath your spending is doing its job. There's no gap to close here. The Quiet Premium diagnostic is designed for people who aren't getting these outcomes yet.
-          </p>
-          <div class="result-redirect-block">
-            <div class="result-roi-label">What this means</div>
-            <div class="finding">You're already at or near the outcome floor QP is built to reach — priority boarding, upgrade eligibility, hotel recognition.</div>
-            <div class="finding">The diagnostic would confirm your setup is correct. That's not a useful way to spend $1,500.</div>
-            <div class="finding">If something changes — you switch airlines, lose status, or want a second opinion on your card architecture — come back.</div>
-          </div>
-          <p class="result-body" style="margin-bottom: 32px;">
-            Follow Quiet Premium for content on maintaining and extending what's already working.
-          </p>
-          <div class="result-cta-block">
-            <a href="https://www.linkedin.com/in/paul-hicks-3049063a7" class="btn-result-primary" target="_blank" rel="noopener">Follow on LinkedIn</a>
-            <a href="index.html" class="btn-result-secondary">Back to quietpremium.com</a>
-          </div>
-        `;
+  // Calculate range
+  const spendMap = {'300k+':320000,'150k-299k':200000,'100k-149k':125000,'75k-99k':87000,'under75k':60000};
+  const spendAmt = spendMap[spend] || 125000;
 
-      } else if (bucket === 'strong') {
-        html = `
-          <p class="result-eyebrow">Your Gap Index Result</p>
-          <h2 class="result-headline">The gap is <em>significant.</em></h2>
-          <p class="result-body">
-            Based on your answers, your current setup has a meaningful misalignment between what your spend is capable of producing and what it's actually delivering. The routing infrastructure isn't matching the spend capacity. That's the gap — and it's addressable.
-          </p>
-          ${roiRange ? `
-          <div class="result-roi-block">
-            <div class="result-roi-label">Estimated annual value in your current spend</div>
-            <div class="result-roi-number">${roiRange}</div>
-            <div class="result-roi-sub">Estimated range based on your spend bracket. Actual value identified in the full diagnostic. Outcomes vary by status tier, route, and program — nothing is guaranteed.</div>
-          </div>` : ''}
-          ${findings.length ? `
-          <div class="result-findings">
-            <div class="result-findings-label">What we're seeing</div>
-            ${findings.map(f => `<div class="finding">${f}</div>`).join('')}
-          </div>` : ''}
-          <p class="result-body" style="margin-bottom: 32px;">
-            The Spend Alignment Briefing maps this precisely — 43-question diagnostic, 12-page private briefing, exact dollar figure identified. The $1,500 diagnostic fee is a fraction of what the gap costs you annually in unrealized value.
-          </p>
-          <div class="result-cta-block">
-            <a href="https://buy.quietpremium.com/b/cNibJ184x6p97OK1oPffy00" class="btn-result-primary">Begin the Diagnostic — $1,500</a>
-            <a href="index.html" class="btn-result-secondary">Learn more about the process first</a>
-          </div>
-          <p class="result-disclaimer">Value estimates are based on spend bracket modeling for a typical household. Actual outcomes depend on status tier, route, program, and individual travel patterns. Upgrade frequency, lounge access, and hotel treatment vary. Nothing in these results constitutes a guarantee of specific benefits.</p>
-        `;
-      } else if (bucket === 'moderate') {
-        html = `
-          <p class="result-eyebrow">Your Gap Index Result</p>
-          <h2 class="result-headline">There's a gap here. <em>Worth closing.</em></h2>
-          <p class="result-body">
-            Your setup shows partial misalignment — either the spend is there but the routing isn't optimized, or the travel frequency means status accumulates slowly. Either way, there's annual value sitting in your current spend that isn't being captured.
-          </p>
-          ${roiRange ? `
-          <div class="result-roi-block">
-            <div class="result-roi-label">Estimated annual value in your current spend</div>
-            <div class="result-roi-number">${roiRange}</div>
-            <div class="result-roi-sub">Estimated range based on your spend bracket. The full diagnostic identifies the exact figure. Outcomes vary by status tier, route, and program.</div>
-          </div>` : ''}
-          ${findings.length ? `
-          <div class="result-findings">
-            <div class="result-findings-label">What we're seeing</div>
-            ${findings.map(f => `<div class="finding">${f}</div>`).join('')}
-          </div>` : ''}
-          <p class="result-body" style="margin-bottom: 32px;">
-            The diagnostic maps your exact situation. If the opportunity isn't there, the briefing will say so clearly — and you'll have a precise picture of what it would take to change that.
-          </p>
-          <div class="result-cta-block">
-            <a href="https://buy.quietpremium.com/b/cNibJ184x6p97OK1oPffy00" class="btn-result-primary">Begin the Diagnostic — $1,500</a>
-            <a href="index.html" class="btn-result-secondary">Learn more about the process first</a>
-          </div>
-          <p class="result-disclaimer">Value estimates are based on spend bracket modeling for a typical household. Actual outcomes depend on status tier, route, program, and individual travel patterns. Nothing in these results constitutes a guarantee of specific benefits.</p>
-        `;
-      } else {
-        // Tailor redirect message for credit disqualification specifically
-        const creditMsg = creditDisqualified
-          ? 'Your credit score is below the 720 minimum the card approval path requires. The architecture depends on approval for three specific premium cards — below 720, that path becomes uncertain before the work can start.'
-          : 'The Quiet Premium diagnostic isn\'t the right investment at this stage. The architecture requires a spend floor and travel frequency where the math produces a return that justifies the work. You\'re not there yet — but that\'s a timeline, not a ceiling.';
+  let lo, hi;
+  if(spendAmt >= 300000){ lo=12000; hi=20000; }
+  else if(spendAmt >= 150000){ lo=8000; hi=14000; }
+  else if(spendAmt >= 100000){ lo=3000; hi=6000; }
+  else { lo=1000; hi=3000; }
 
-        html = `
-          <p class="result-eyebrow">Your Gap Index Result</p>
-          <h2 class="result-headline">Not the right fit <em>right now.</em></h2>
-          <p class="result-body">${creditMsg}</p>
-          <div class="result-redirect-block">
-            <div class="result-roi-label">What changes the picture</div>
-            <div class="finding">Credit score of 720 or above — the card approval path requires it</div>
-            <div class="finding">Household routable spend reaching $100,000 or more annually</div>
-            <div class="finding">Personal travel frequency of four or more trips per year</div>
-          </div>
-          <p class="result-body" style="margin-bottom: 32px;">
-            Follow Quiet Premium on LinkedIn or subscribe to the newsletter. When your situation shifts, the diagnostic will be here.
-          </p>
-          <div class="result-cta-block">
-            <a href="https://www.linkedin.com/in/paul-hicks-3049063a7" class="btn-result-primary" target="_blank" rel="noopener">Follow on LinkedIn</a>
-            <a href="index.html" class="btn-result-secondary">Back to quietpremium.com</a>
-          </div>
-        `;
-      }
+  // Adjust for cards already held
+  const cards = answers[1] || [];
+  const hasPlat = cards.includes('amex-plat');
+  const hasGold = cards.includes('amex-gold');
+  const hasReserve = cards.includes('delta-reserve') || cards.includes('united-infinite') || cards.includes('citi-aa-exec');
+  if(hasPlat && hasGold && hasReserve){ lo = Math.round(lo * 0.4); hi = Math.round(hi * 0.4); }
+  else if(hasPlat || hasGold){ lo = Math.round(lo * 0.7); hi = Math.round(hi * 0.7); }
 
-      const resultsEl = document.getElementById('results');
-      resultsEl.innerHTML = html;
-      resultsEl.classList.add('active');
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-  </script>
+  document.getElementById('r-val').textContent = '$' + lo.toLocaleString() + '–$' + hi.toLocaleString();
 
+  // Build gap items
+  const gaps = [];
+  const exp = answers[6];
+  const cabin = answers[5];
+
+  if(!hasReserve){
+    gaps.push({
+      txt: 'No airline co-brand card. Zero status credit accumulating from card spend.',
+      sub: 'At your spend level, the right airline card alone generates $2,500+ in MQD Headstart plus status acceleration before a single flight.'
+    });
+  }
+  if(!hasGold){
+    gaps.push({
+      txt: 'Dining and grocery spend earning below 4x.',
+      sub: 'Amex Gold earns 4x at restaurants and US supermarkets. At $20,000 in annual combined spend, that gap is $600+ annually.'
+    });
+  }
+  if(!hasPlat){
+    gaps.push({
+      txt: 'No Fine Hotels + Resorts access. Hotel benefits unclaimed.',
+      sub: 'Amex Platinum includes room upgrades, daily breakfast for two, and property credits on every eligible stay booked through Amex Travel.'
+    });
+  }
+  if(exp === 'no-system' || exp === 'occasional'){
+    gaps.push({
+      txt: 'No elite status. Boarding in the general queue on every departure.',
+      sub: 'At Gold or above, the trip starts differently — priority boarding, consistent Comfort+ upgrades, and access to a dedicated rebooking path when things go wrong.'
+    });
+  }
+  if(cabin === 'economy-upgrades'){
+    gaps.push({
+      txt: 'Paying for upgrades that status should produce automatically.',
+      sub: 'At the correct status tier, Comfort+ and First Class upgrade eligibility activates without out-of-pocket cost on eligible fares.'
+    });
+  }
+  if(gaps.length === 0){
+    gaps.push({
+      txt: 'Your infrastructure is reasonably aligned.',
+      sub: 'The Architecture would identify the remaining incremental opportunities in your specific spend routing and status path.'
+    });
+  }
+
+  const gapsEl = document.getElementById('r-gaps');
+  gapsEl.innerHTML = gaps.map(g => `
+    <div class="r-gap-item">
+      <div class="r-gap-dot"></div>
+      <div>
+        <div class="r-gap-txt">${g.txt}</div>
+        <div class="r-gap-sub">${g.sub}</div>
+      </div>
+    </div>`).join('');
+
+  // Store for email send
+  window._gapResults = {
+    range: '$' + lo.toLocaleString() + '–$' + hi.toLocaleString(),
+    spend: spend,
+    gaps: gaps.map(g => g.txt).join(' | ')
+  };
+
+  document.getElementById('results').style.display = 'block';
+  document.getElementById('prog').style.width = '100%';
+  document.getElementById('prog-pct').textContent = '100%';
+  document.getElementById('prog-label').textContent = 'Complete';
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function sendResults(){
+  const email = document.getElementById('capture-email').value;
+  if(!email || !email.includes('@')) return;
+  const r = window._gapResults || {};
+  fetch('https://formspree.io/f/mnjrvbpn', {
+    method:'POST',
+    headers:{'Content-Type':'application/json','Accept':'application/json'},
+    body: JSON.stringify({
+      email: email,
+      source: 'Gap Index — Send Results',
+      estimated_range: r.range || '—',
+      spend_band: r.spend || '—',
+      gaps_identified: r.gaps || '—',
+      _subject: 'Gap Index Results — ' + email
+    })
+  }).then(() => {
+    document.querySelector('.capture-row').style.display = 'none';
+    document.getElementById('capture-sent').style.display = 'block';
+  }).catch(() => {
+    document.getElementById('capture-sent').textContent = 'Something went wrong. Try emailing editor@quietpremium.com directly.';
+    document.getElementById('capture-sent').style.display = 'block';
+  });
+}
+</script>
 </body>
 </html>
