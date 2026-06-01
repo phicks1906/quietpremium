@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-2R14ZESQ0R"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-2R14ZESQ0R');
+</script>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Founding Client Feedback — Quiet Premium</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=DM+Mono:wght@300;400;500&family=Inter:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --black:#0A0A0A;--gold:#B08D57;--gold-lt:#C9A96E;--gold-dk:#8B6D3F;
+  --gold-pale:rgba(176,141,87,0.08);--white:#F5F2EC;--grey:#9A9590;
+  --grey-dk:#3A3530;--grey-mid:#6A6560;
+  --serif:'Cormorant Garamond',Georgia,serif;
+  --mono:'DM Mono',monospace;--sans:'Inter',sans-serif;
+}
+html,body{background:#0A0A0A;color:#F5F2EC;font-family:var(--sans);font-weight:300;-webkit-font-smoothing:antialiased;min-height:100vh}
+nav{position:fixed;top:0;left:0;right:0;z-index:50;padding:20px 48px;display:flex;align-items:center;justify-content:space-between;background:rgba(10,10,10,1.0);border-bottom:1px solid rgba(58,53,48,.4)}
+.nb{width:28px;height:28px;border-radius:50%;border:1px solid var(--gold);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1.5px}
+.nb span{font-family:var(--mono);font-size:5px;letter-spacing:.14em;color:var(--gold);line-height:1}
+.nb .nbr{width:12px;height:.5px;background:var(--gold-dk)}
+.nav-wm{font-family:var(--mono);font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin-left:10px}
+.page{padding-top:80px;min-height:100vh}
+.wrap{max-width:640px;margin:0 auto;padding:72px 40px 100px}
+.eyebrow{font-family:var(--mono);font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin-bottom:14px}
+.headline{font-family:var(--serif);font-size:clamp(28px,4vw,42px);font-weight:300;line-height:1.1;margin-bottom:14px}
+.headline em{font-style:italic;color:var(--gold)}
+.subtext{font-size:13px;color:var(--grey);line-height:1.85;margin-bottom:48px;padding-bottom:36px;border-bottom:1px solid var(--grey-dk)}
+.q-block{margin-bottom:36px}
+.q-num{font-family:var(--mono);font-size:8px;letter-spacing:.16em;text-transform:uppercase;color:var(--gold-dk);margin-bottom:6px}
+.q-label{font-size:14px;font-weight:400;color:var(--white);margin-bottom:4px;line-height:1.5}
+.q-hint{font-size:11px;color:var(--grey-mid);margin-bottom:10px;line-height:1.6}
+textarea{width:100%;background:#111;border:1px solid var(--grey-dk);color:var(--white);font-family:var(--sans);font-size:13px;font-weight:300;padding:13px 16px;outline:none;transition:border-color .2s;border-radius:0;resize:vertical;min-height:100px;line-height:1.7}
+textarea:focus{border-color:var(--gold)}
+textarea::placeholder{color:var(--grey-dk)}
+input[type=text],input[type=email]{width:100%;background:#111;border:1px solid var(--grey-dk);color:var(--white);font-family:var(--sans);font-size:13px;font-weight:300;padding:13px 16px;outline:none;transition:border-color .2s;border-radius:0}
+input:focus{border-color:var(--gold)}
+input::placeholder{color:var(--grey-dk)}
+.opts{display:flex;flex-direction:column;gap:7px}
+.opt{display:flex;align-items:center;gap:11px;padding:11px 14px;border:1px solid var(--grey-dk);cursor:pointer;transition:all .2s;user-select:none;-webkit-tap-highlight-color:transparent}
+.opt:hover{border-color:var(--gold-dk);background:var(--gold-pale)}
+.opt.selected{border-color:var(--gold);background:var(--gold-pale)}
+.opt-ind{width:13px;height:13px;border:1px solid var(--grey-dk);border-radius:50%;flex-shrink:0;transition:all .2s;display:flex;align-items:center;justify-content:center}
+.opt.selected .opt-ind{border-color:var(--gold);background:var(--gold)}
+.opt.selected .opt-ind::after{content:'';width:5px;height:5px;background:#0A0A0A;border-radius:50%;display:block}
+.opt-lbl{font-size:13px;color:var(--white)}
+.divider{height:1px;background:var(--grey-dk);margin:36px 0}
+.consent-block{padding:20px 24px;border:1px solid var(--grey-dk);background:#0F0F0F;margin-bottom:28px}
+.consent-lbl{font-size:12px;color:var(--grey);line-height:1.75}
+.consent-check{display:flex;gap:12px;align-items:flex-start;margin-top:12px;cursor:pointer;user-select:none;-webkit-tap-highlight-color:transparent}
+.consent-box{width:14px;height:14px;border:1px solid var(--grey-dk);flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.consent-check.checked .consent-box{border-color:var(--gold);background:var(--gold)}
+.consent-check.checked .consent-box::after{content:'';width:7px;height:4px;border-left:1.5px solid #0A0A0A;border-bottom:1.5px solid #0A0A0A;transform:rotate(-45deg) translateY(-1px);display:block}
+.consent-txt{font-size:12px;color:var(--grey);line-height:1.6}
+.btn-submit{background:var(--gold);color:#0A0A0A;font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;border:none;cursor:pointer;padding:15px 36px;transition:background .3s}
+.btn-submit:hover{background:var(--gold-lt)}
+.btn-submit:disabled{background:var(--grey-dk);cursor:not-allowed}
+.submit-note{font-size:11px;color:var(--grey);line-height:1.7;margin-bottom:16px}
+.success{display:none;padding:28px 32px;border:1px solid var(--gold-dk);background:var(--gold-pale)}
+.success-ey{font-family:var(--mono);font-size:8px;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);margin-bottom:8px}
+.success-hl{font-family:var(--serif);font-size:22px;font-weight:300;color:var(--white);margin-bottom:8px}
+.success-body{font-size:12px;color:var(--grey);line-height:1.8}
+.field-error{color:#C0392B;font-family:var(--mono);font-size:8px;letter-spacing:.1em;text-transform:uppercase;margin-top:5px}
+@media(max-width:600px){
+  nav{padding:16px 20px}
+  .wrap{padding:56px 20px 80px}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div style="display:flex;align-items:center;gap:10px">
+    <div class="nb"><span>QUIET</span><div class="nbr"></div><span>PREM</span></div>
+    <span class="nav-wm">Quiet Premium</span>
+  </div>
+</nav>
+
+<div class="page">
+<div class="wrap">
+
+  <div class="eyebrow">Founding Client · Feedback</div>
+  <h1 class="headline">Four questions.<br><em>That's it.</em></h1>
+  <p class="subtext">Your feedback shapes how The Architecture develops. There are no right answers — honest is the only useful kind. Takes about five minutes.</p>
+
+  <form id="feedback-form">
+
+    <div class="q-block">
+      <div class="q-num">Your information</div>
+      <div class="q-label" style="margin-bottom:10px">Name and email</div>
+      <input type="text" name="name" placeholder="Full name" required style="margin-bottom:10px"/>
+      <input type="email" name="email" placeholder="Email address" required/>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="q-block">
+      <div class="q-num">Question 01 of 04</div>
+      <div class="q-label">What did The Architecture identify that you weren't already aware of?</div>
+      <div class="q-hint">Specific is more useful than general. If nothing was new, say that.</div>
+      <textarea name="q1" placeholder="Your answer..." required></textarea>
+    </div>
+
+    <div class="q-block">
+      <div class="q-num">Question 02 of 04</div>
+      <div class="q-label">Was the output specific enough to act on — or did it feel generic?</div>
+      <div class="q-hint">Did it feel like it was written for your situation, or like a template with your numbers filled in?</div>
+      <textarea name="q2" placeholder="Your answer..." required></textarea>
+    </div>
+
+    <div class="q-block">
+      <div class="q-num">Question 03 of 04</div>
+      <div class="q-label">Have you implemented any of the corrections? If so, which ones?</div>
+      <div class="q-hint">If it's too early to say, note that. If something was a barrier, that's useful too.</div>
+      <textarea name="q3" placeholder="Your answer..." required></textarea>
+    </div>
+
+    <div class="q-block">
+      <div class="q-num">Question 04 of 04</div>
+      <div class="q-label">What would make this more useful — either the output itself or how it was delivered?</div>
+      <div class="q-hint">No diplomatic softening needed. If something was unclear, missing, or wrong, say it directly.</div>
+      <textarea name="q4" placeholder="Your answer..." required></textarea>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="q-block">
+      <div class="q-num">Optional</div>
+      <div class="q-label">One sentence we could use</div>
+      <div class="q-hint">If The Architecture produced a clear outcome for you, a single sentence we could reference anonymously — e.g. "Identified $9,200 in annual leakage I wasn't tracking." Completely optional. Skip if nothing comes to mind.</div>
+      <textarea name="quote" placeholder="Optional — skip if nothing feels right..." style="min-height:70px"></textarea>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="consent-block">
+      <div class="consent-lbl">Permission to use your feedback anonymously in Quiet Premium materials — no name, no employer, no identifying details. Your outcome only.</div>
+      <div class="consent-check" id="consent-toggle" onclick="toggleConsent()">
+        <div class="consent-box"></div>
+        <div class="consent-txt">Yes — you may reference my outcome anonymously.</div>
+      </div>
+      <input type="hidden" name="consent" id="consent-val" value="No"/>
+    </div>
+
+    <p class="submit-note">Your responses go directly to the Quiet Premium team. Nothing is shared publicly without your permission.</p>
+    <button type="submit" class="btn-submit" id="submit-btn">Submit Feedback</button>
+
+    <div class="success" id="success-box" style="margin-top:24px">
+      <div class="success-ey">Feedback received</div>
+      <div class="success-hl">Thank you — genuinely.</div>
+      <div class="success-body">This goes directly into how The Architecture develops. If anything in your results needs a follow-up, reply to editor@quietpremium.com and we'll make it right.</div>
+    </div>
+
+  </form>
+
+</div>
+</div>
+
+<script>
+let consentGiven = false;
+function toggleConsent(){
+  consentGiven = !consentGiven;
+  const toggle = document.getElementById('consent-toggle');
+  toggle.classList.toggle('checked', consentGiven);
+  document.getElementById('consent-val').value = consentGiven ? 'Yes — anonymous use permitted' : 'No';
+}
+
+document.getElementById('feedback-form').addEventListener('submit', async function(e){
+  e.preventDefault();
+  document.querySelectorAll('.field-error').forEach(el => el.remove());
+  const btn = document.getElementById('submit-btn');
+  const form = e.target;
+  let valid = true;
+  ['name','email','q1','q2','q3','q4'].forEach(n => {
+    const el = form.querySelector(`[name="${n}"]`);
+    if(!el.value.trim()){
+      valid = false;
+      const err = document.createElement('div');
+      err.className = 'field-error';
+      err.textContent = 'Required';
+      el.parentElement.appendChild(err);
+    }
+  });
+  if(!valid) return;
+  btn.disabled = true;
+  btn.textContent = 'Submitting...';
+  const data = {
+    name: form.name.value,
+    email: form.email.value,
+    q1_new_insight: form.q1.value,
+    q2_specificity: form.q2.value,
+    q3_implementation: form.q3.value,
+    q4_improvements: form.q4.value,
+    optional_quote: form.quote.value || '(none provided)',
+    anonymous_consent: form.consent.value,
+    _subject: 'Founding Client Feedback — ' + form.name.value
+  };
+  try {
+    const res = await fetch('https://formspree.io/f/mnjrvbpn', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json','Accept':'application/json'},
+      body: JSON.stringify(data)
+    });
+    if(res.ok){
+      form.querySelectorAll('input,textarea,button,.consent-block,.submit-note').forEach(el => el.style.display = 'none');
+      document.querySelectorAll('.q-block,.divider').forEach(el => el.style.display = 'none');
+      document.getElementById('success-box').style.display = 'block';
+    } else {
+      btn.disabled = false;
+      btn.textContent = 'Submit Feedback';
+      alert('Something went wrong. Please email your responses to editor@quietpremium.com directly.');
+    }
+  } catch(err){
+    btn.disabled = false;
+    btn.textContent = 'Submit Feedback';
+    alert('Something went wrong. Please email your responses to editor@quietpremium.com directly.');
+  }
+});
+</script>
+</body>
+</html>
