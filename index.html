@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Quiet Premium · index.html · build v1.1.1 · 2026-06-13 · homepage recompose, gap-index-collapse, single-front-door, 720→680, no-income-language, two-example-block, contrast-fix-grey-mid -->
+<!-- Quiet Premium · index.html · build v1.2.0 · 2026-06-13 · AESOP-redesign: centered hero, breather sections, signature shift motif, distilled copy, generous spacing, dropped section numbering, scroll-reveal · content+CTAs+SEO preserved -->
 <html lang="en">
 <head>
 <!-- Google tag (gtag.js) -->
@@ -41,442 +41,403 @@
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --black:#0A0A0A;--black2:#0F0F0F;--gold:#B08D57;--gold-lt:#C9A96E;
+  --black:#0A0A0A;--black2:#0D0D0C;--gold:#B08D57;--gold-lt:#C9A96E;
   --gold-dk:#8B6D3F;--gold-pale:rgba(176,141,87,0.07);--white:#F5F2EC;
   --grey:#9A9590;--grey-dk:#3A3530;--grey-mid:#857F79;
   --serif:'Cormorant Garamond',Georgia,serif;
   --mono:'DM Mono',monospace;--sans:'Inter',sans-serif;
 }
-html{background:#0A0A0A}
-body{background:#0A0A0A;color:#F5F2EC;font-family:var(--sans);font-weight:300;-webkit-font-smoothing:antialiased}
+html{background:#0A0A0A;scroll-behavior:smooth}
+body{background:#0A0A0A;color:#F5F2EC;font-family:var(--sans);font-weight:300;-webkit-font-smoothing:antialiased;line-height:1.6}
+::selection{background:var(--gold);color:var(--black)}
 
 /* NAV */
-nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:20px 48px;display:flex;align-items:center;justify-content:space-between;background:rgba(10,10,10,0.97);border-bottom:1px solid rgba(58,53,48,0.4)}
+nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:22px 56px;display:flex;align-items:center;justify-content:space-between;background:rgba(10,10,10,0.85);backdrop-filter:blur(12px);border-bottom:1px solid rgba(58,53,48,0.25)}
 .nb{width:28px;height:28px;border-radius:50%;border:1px solid var(--gold);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1.5px;flex-shrink:0}
 .nb span{font-family:var(--mono);font-size:5px;letter-spacing:.14em;color:var(--gold);line-height:1}
 .nb .nbr{width:12px;height:.5px;background:var(--gold-dk)}
-.nav-wm{font-family:var(--mono);font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin-left:10px}
-.nav-links{display:flex;gap:28px;align-items:center}
-.nav-link{font-family:var(--mono);font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--grey);text-decoration:none;transition:color .2s}
+.nav-wm{font-family:var(--mono);font-size:9px;letter-spacing:.24em;text-transform:uppercase;color:var(--white);margin-left:12px}
+.nav-links{display:flex;gap:30px;align-items:center}
+.nav-link{font-family:var(--mono);font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:var(--grey);text-decoration:none;transition:color .3s}
 .nav-link:hover{color:var(--gold)}
-.nav-link.primary{color:var(--gold);border:1px solid var(--gold-dk);padding:8px 16px}
-.nav-link.primary:hover{background:var(--gold-pale)}
+.nav-link.primary{color:var(--gold)}
+.hamburger{display:none;flex-direction:column;gap:5px;cursor:pointer;padding:4px}
+.hamburger span{width:20px;height:1px;background:var(--grey);display:block;transition:.3s}
+.mobile-menu{display:none;position:fixed;top:71px;left:0;right:0;background:var(--black);border-bottom:1px solid var(--grey-dk);padding:24px 56px;z-index:99;flex-direction:column;gap:0}
+.mobile-menu a{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--grey);text-decoration:none;padding:16px 0;border-bottom:1px solid #1a1a1a}
+.mobile-menu a:last-child{border-bottom:none;color:var(--gold)}
 
-/* SECTIONS */
-section{padding:100px 48px;border-top:1px solid var(--grey-dk)}
-section:first-of-type{border-top:none}
-.inner{max-width:1100px;margin:0 auto}
-.inner-sm{max-width:760px;margin:0 auto}
+/* RHYTHM — generous, varied vertical space is the core of the redesign */
+section{padding:150px 56px;position:relative}
+.inner{max-width:1080px;margin:0 auto}
+.measure{max-width:600px}
+.measure-narrow{max-width:480px}
 
-/* LABELS */
-.sec-ey{font-family:var(--mono);font-size:9px;letter-spacing:.22em;text-transform:uppercase;color:var(--gold);margin-bottom:44px}
-.sec-ey-sm{font-family:var(--mono);font-size:8px;letter-spacing:.16em;text-transform:uppercase;color:var(--gold-dk);margin-bottom:14px}
+/* EYEBROW — no numbers; editorial, sparing */
+.eyebrow{font-family:var(--mono);font-size:9px;letter-spacing:.28em;text-transform:uppercase;color:var(--gold);margin-bottom:40px;display:block}
+.eyebrow-quiet{font-family:var(--mono);font-size:8px;letter-spacing:.2em;text-transform:uppercase;color:var(--grey-mid);margin-bottom:16px;display:block}
 
-/* TYPOGRAPHY */
-.h1{font-family:var(--serif);font-size:clamp(48px,6.5vw,88px);font-weight:300;line-height:1.0;letter-spacing:-.01em}
-.h1 em{font-style:italic;color:var(--gold)}
-.h2{font-family:var(--serif);font-size:clamp(32px,4vw,52px);font-weight:300;line-height:1.05}
+/* TYPE SCALE — bigger display, distilled body */
+.display{font-family:var(--serif);font-size:clamp(52px,8vw,104px);font-weight:300;line-height:0.98;letter-spacing:-.015em}
+.display em{font-style:italic;color:var(--gold)}
+.h2{font-family:var(--serif);font-size:clamp(36px,5vw,64px);font-weight:300;line-height:1.04;letter-spacing:-.01em}
 .h2 em{font-style:italic;color:var(--gold)}
-.h3{font-family:var(--serif);font-size:clamp(22px,2.5vw,30px);font-weight:300;line-height:1.1}
-.body-lg{font-size:15px;color:var(--grey);line-height:1.9;max-width:560px}
-.body-md{font-size:13px;color:var(--grey);line-height:1.85}
-.rule{height:1px;background:var(--grey-dk);margin:32px 0}
+.h3{font-family:var(--serif);font-size:clamp(26px,3vw,38px);font-weight:300;line-height:1.1}
+.h3 em{font-style:italic;color:var(--gold)}
+.lead{font-size:17px;color:var(--grey);line-height:1.85;font-weight:300}
+.body{font-size:14px;color:var(--grey);line-height:1.85}
+.body-sm{font-size:12.5px;color:var(--grey);line-height:1.8}
 
-/* BUTTONS */
-.btn-gold{display:inline-block;background:var(--gold);color:var(--black);font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;border:none;cursor:pointer;padding:15px 32px;transition:background .3s;text-decoration:none}
-.btn-gold:hover{background:var(--gold-lt)}
-.btn-outline{display:inline-block;border:1px solid var(--gold-dk);color:var(--gold);font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;background:none;cursor:pointer;padding:14px 32px;transition:all .3s;text-decoration:none}
-.btn-outline:hover{border-color:var(--gold);background:var(--gold-pale)}
-.btn-note{font-family:var(--mono);font-size:8px;letter-spacing:.1em;text-transform:uppercase;color:var(--grey);margin-top:10px;display:block}
+/* THE SIGNATURE — the "routed differently" line: two states, a shift between */
+.shift{display:flex;align-items:baseline;gap:18px;flex-wrap:wrap;font-family:var(--serif);font-weight:300;line-height:1.1}
+.shift .from{color:var(--grey-mid);font-size:clamp(22px,3vw,32px)}
+.shift .arrow{color:var(--gold);font-family:var(--sans);font-size:18px;font-weight:300}
+.shift .to{color:var(--white);font-size:clamp(22px,3vw,32px)}
+.shift .to em{font-style:italic;color:var(--gold)}
 
-/* HERO */
-#hero{padding:160px 48px 100px;background:#0A0A0A;border-top:none}
-.hero-grid{display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:center}
-.hero-ctas{display:flex;flex-direction:column;gap:12px;margin-top:44px;max-width:440px}
-.hero-cta-row{display:flex;gap:12px;align-items:stretch}
+/* BUTTONS — restrained */
+.btn{display:inline-block;background:var(--gold);color:var(--black);font-family:var(--mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;border:none;cursor:pointer;padding:18px 40px;transition:background .3s;text-decoration:none}
+.btn:hover{background:var(--gold-lt)}
+.btn-note{font-family:var(--mono);font-size:8px;letter-spacing:.12em;text-transform:uppercase;color:var(--grey-mid);margin-top:16px;display:block}
+.link-quiet{font-family:var(--mono);font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--grey);text-decoration:none;transition:color .3s;display:inline-block}
+.link-quiet:hover{color:var(--gold)}
 
-.stat-block{border-left:2px solid var(--gold-dk);padding-left:20px;margin-bottom:32px}
-.stat-num{font-family:var(--serif);font-size:44px;font-weight:300;color:var(--gold);line-height:1}
-.stat-lbl{font-family:var(--mono);font-size:8px;letter-spacing:.1em;text-transform:uppercase;color:var(--grey);margin-top:4px}
+/* HERO — centered, spare, confident */
+#hero{min-height:92vh;display:flex;flex-direction:column;justify-content:center;padding:140px 56px 90px;text-align:center}
+.hero-inner{max-width:900px;margin:0 auto}
+.hero-sub{font-size:17px;color:var(--grey);line-height:1.8;max-width:480px;margin:36px auto 0}
+.hero-cta{margin-top:52px}
 
-/* THREE COLUMNS */
-.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--grey-dk)}
-.g3-cell{background:#0A0A0A;padding:32px 28px}
-.g3-num{font-family:var(--mono);font-size:8px;letter-spacing:.14em;color:var(--gold-dk);margin-bottom:14px}
-.g3-title{font-family:var(--serif);font-size:20px;font-weight:300;margin-bottom:10px}
-.g3-body{font-size:12px;color:var(--grey);line-height:1.85}
+/* DIVIDER moments — a single statement alone in space (the breather) */
+.breather{text-align:center;padding:170px 56px}
+.breather .h2{max-width:840px;margin:0 auto}
 
-/* TWO COLUMNS */
-.g2{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--grey-dk)}
-.g2-cell{background:#0A0A0A;padding:32px 28px}
+/* WHAT CHANGES — list with rhythm, not a dense grid */
+.change-row{display:grid;grid-template-columns:160px 1fr;gap:48px;padding:38px 0;border-top:1px solid var(--grey-dk);align-items:baseline}
+.change-row:last-child{border-bottom:1px solid var(--grey-dk)}
+.change-cat{font-family:var(--mono);font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--gold)}
+.change-head{font-family:var(--serif);font-size:clamp(22px,2.6vw,30px);font-weight:300;line-height:1.2;color:var(--white);margin-bottom:10px}
+.change-body{font-size:13.5px;color:var(--grey);line-height:1.8;max-width:560px}
 
-/* OUTCOME ITEMS */
-.outcome-item{padding:18px 0;border-bottom:1px solid #1a1a1a;display:flex;gap:16px;align-items:flex-start}
-.outcome-item:last-child{border-bottom:none}
-.outcome-dot{width:4px;height:4px;border-radius:50%;background:var(--gold);flex-shrink:0;margin-top:8px}
-.outcome-title{font-size:13px;font-weight:400;color:var(--white);margin-bottom:3px}
-.outcome-body{font-size:12px;color:var(--grey);line-height:1.7}
+/* PROCESS — three steps, spare */
+.step{display:grid;grid-template-columns:48px 1fr;gap:32px;padding:40px 0;border-top:1px solid var(--grey-dk);align-items:start}
+.step-n{font-family:var(--serif);font-size:32px;font-weight:300;color:var(--gold-dk);line-height:1}
+.step-head{font-family:var(--serif);font-size:clamp(24px,2.8vw,32px);font-weight:300;color:var(--white);margin-bottom:12px;line-height:1.15}
+.step-body{font-size:13.5px;color:var(--grey);line-height:1.8;max-width:560px}
 
-/* NOT FOR */
-.not-item{padding:10px 0;border-bottom:1px solid #1a1a1a;display:flex;gap:12px;align-items:flex-start;font-size:12px;color:var(--grey-mid)}
-.not-item:last-child{border-bottom:none}
-.not-item::before{content:'—';color:var(--grey-dk);font-family:var(--mono);font-size:10px;flex-shrink:0;margin-top:1px}
+/* PROOF — two example cards, the one place sell is explicit */
+.proof-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:56px}
+.proof-card{border:1px solid var(--grey-dk);padding:40px 36px;background:var(--black2)}
+.proof-card.lift{border-color:var(--gold-dk)}
+.proof-tier{font-family:var(--serif);font-size:clamp(28px,3.2vw,38px);font-weight:300;color:var(--white);line-height:1.1;margin-bottom:14px}
+.proof-tier em{font-style:italic;color:var(--gold)}
+.proof-spend{font-family:var(--mono);font-size:8px;letter-spacing:.14em;text-transform:uppercase;color:var(--grey-mid);margin-bottom:22px;display:block}
+.proof-body{font-size:13px;color:var(--grey);line-height:1.8;margin-bottom:28px}
+.proof-val{display:flex;align-items:baseline;gap:10px;padding-top:20px;border-top:1px solid var(--grey-dk)}
+.proof-val .num{font-family:var(--serif);font-size:30px;font-weight:300;color:var(--gold);line-height:1}
+.proof-val .cap{font-family:var(--mono);font-size:7px;letter-spacing:.1em;text-transform:uppercase;color:var(--grey-mid)}
 
-/* TIER CARDS */
-.tier-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--grey-dk)}
-.tier-card{background:#0A0A0A;padding:40px 36px}
-.tier-label{font-family:var(--mono);font-size:8px;letter-spacing:.16em;text-transform:uppercase;color:var(--gold-dk);margin-bottom:10px}
-.tier-name{font-family:var(--serif);font-size:26px;font-weight:300;margin-bottom:6px}
-.tier-price{font-family:var(--serif);font-size:44px;font-weight:300;color:var(--gold);line-height:1;margin:16px 0 4px}
-.tier-price-note{font-family:var(--mono);font-size:8px;letter-spacing:.1em;text-transform:uppercase;color:var(--grey);margin-bottom:24px}
-.tier-feature{display:flex;gap:10px;margin-bottom:9px;font-size:12px;color:var(--grey);line-height:1.6}
-.tier-feature::before{content:'→';color:var(--gold-dk);font-family:var(--mono);font-size:8px;flex-shrink:0;margin-top:2px}
-.tier-desc{font-size:12px;color:var(--grey);line-height:1.8;margin-bottom:28px;padding-bottom:24px;border-bottom:1px solid var(--grey-dk)}
+/* FIT — two columns, calm */
+.fit-grid{display:grid;grid-template-columns:1fr 1fr;gap:72px;margin-top:8px}
+.fit-h{font-family:var(--mono);font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);margin-bottom:28px;padding-bottom:14px;border-bottom:1px solid var(--grey-dk)}
+.fit-item{padding:16px 0;font-size:14px;color:var(--grey);line-height:1.7;border-bottom:1px solid #161514}
+.fit-item:last-child{border-bottom:none}
+.fit-item strong{color:var(--white);font-weight:400;display:block;margin-bottom:4px;font-size:14px}
+.fit-note{margin-top:34px;padding:26px 28px;border:1px solid var(--grey-dk);background:var(--black2)}
 
-/* HOW STEPS */
-.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:44px}
-.step-num{font-family:var(--mono);font-size:9px;letter-spacing:.14em;color:var(--gold-dk);margin-bottom:12px}
-.step-title{font-family:var(--serif);font-size:20px;font-weight:300;margin-bottom:8px}
-.step-body{font-size:12px;color:var(--grey);line-height:1.85}
+/* MANIFESTO — the founder's voice, set apart */
+.manifesto{max-width:680px;margin:0 auto;text-align:center}
+.manifesto .h3{margin-bottom:36px}
+.manifesto p{font-size:16px;color:var(--grey);line-height:1.95;margin-bottom:24px}
+.manifesto .sig{font-family:var(--mono);font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);margin-top:40px}
 
-/* BOTTOM CTA */
-#bottom-cta{background:#0F0F0F;text-align:center;padding:100px 48px}
+/* CLOSE */
+.close{text-align:center}
+.close .h2{max-width:760px;margin:0 auto 24px}
+.close .lead{max-width:540px;margin:0 auto 44px}
 
 /* FOOTER */
-footer{background:#0A0A0A;border-top:1px solid var(--grey-dk);padding:32px 48px;display:flex;justify-content:space-between;align-items:center}
-.footer-left{font-family:var(--mono);font-size:8px;letter-spacing:.1em;text-transform:uppercase;color:var(--grey-mid);line-height:1.8}
-.footer-links{display:flex;gap:24px}
-.footer-link{font-family:var(--mono);font-size:8px;letter-spacing:.1em;text-transform:uppercase;color:var(--grey-mid);text-decoration:none}
+footer{padding:72px 56px;border-top:1px solid var(--grey-dk);display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:32px}
+.footer-left{font-family:var(--mono);font-size:8px;letter-spacing:.12em;text-transform:uppercase;color:var(--grey-mid);line-height:2}
+.footer-links{display:flex;gap:28px}
+.footer-link{font-family:var(--mono);font-size:8px;letter-spacing:.12em;text-transform:uppercase;color:var(--grey-mid);text-decoration:none;transition:color .3s}
 .footer-link:hover{color:var(--gold)}
+.disclaimer{font-family:var(--mono);font-size:8px;letter-spacing:.05em;color:var(--grey-mid);line-height:1.9;max-width:880px;margin:0 auto;text-align:center;padding:0 56px 64px}
 
-/* DISCLAIMER */
-.disclaimer{font-family:var(--mono);font-size:8px;letter-spacing:.06em;color:var(--grey-mid);line-height:1.8;max-width:900px;margin:0 auto;text-align:center;padding:0 48px 48px}
+/* MOTION — restrained scroll reveal */
+.reveal{opacity:0;transform:translateY(16px);transition:opacity .9s ease,transform .9s ease}
+.reveal.in{opacity:1;transform:none}
+@media(prefers-reduced-motion:reduce){.reveal{opacity:1;transform:none;transition:none}html{scroll-behavior:auto}}
 
 /* RESPONSIVE */
-@media(max-width:900px){
-  nav{padding:16px 24px}
-  .nav-links .nav-link:not(.primary){display:none}
-  .nav-links .primary{display:none}
-  #hamburger{display:flex!important}
-  section,#hero,#bottom-cta{padding-left:24px;padding-right:24px}
-  .hero-grid{grid-template-columns:1fr;gap:48px}
-  .hero-cta-row{flex-direction:column}
-  .g3{grid-template-columns:1fr}
-  .g2{grid-template-columns:1fr}
-  .tier-grid{grid-template-columns:1fr}
-  .steps{grid-template-columns:1fr;gap:28px}
-  footer{flex-direction:column;gap:16px;text-align:center}
-  .footer-links{justify-content:center}
-  .disclaimer{padding:0 24px 40px}
+@media(max-width:880px){
+  nav{padding:20px 28px}
+  .nav-links{display:none}
+  .hamburger{display:flex}
+  section{padding:100px 28px}
+  #hero{padding:120px 28px 80px;min-height:88vh}
+  .breather{padding:110px 28px}
+  .change-row{grid-template-columns:1fr;gap:12px;padding:30px 0}
+  .proof-grid{grid-template-columns:1fr;gap:18px}
+  .fit-grid{grid-template-columns:1fr;gap:48px}
+  .step{grid-template-columns:36px 1fr;gap:20px}
 }
-</style>
-<script>
-function toggleMenu(){
-  const m = document.getElementById('mobile-menu');
-  m.style.display = m.style.display === 'flex' ? 'none' : 'flex';
-}
-</script>
 </style>
 </head>
 <body>
 
-<!-- NAV -->
 <nav>
-  <div style="display:flex;align-items:center;gap:10px">
+  <div style="display:flex;align-items:center">
     <div class="nb"><span>QUIET</span><div class="nbr"></div><span>PREM</span></div>
     <span class="nav-wm">Quiet Premium</span>
   </div>
   <div class="nav-links">
     <a href="contact.html" class="nav-link">Contact</a>
-    <a href="architecture.html" class="nav-link primary">The Architecture</a>
+    <a href="architecture.html" class="nav-link primary">The Architecture →</a>
   </div>
-  <div class="hamburger" id="hamburger" onclick="toggleMenu()" style="display:none;flex-direction:column;gap:5px;cursor:pointer;padding:4px">
-    <span style="width:20px;height:1px;background:var(--grey);display:block"></span>
-    <span style="width:20px;height:1px;background:var(--grey);display:block"></span>
-    <span style="width:20px;height:1px;background:var(--grey);display:block"></span>
-  </div>
+  <div class="hamburger" onclick="toggleMenu()"><span></span><span></span><span></span></div>
 </nav>
-<div id="mobile-menu" style="display:none;position:fixed;top:69px;left:0;right:0;background:#0A0A0A;border-bottom:1px solid var(--grey-dk);padding:20px 24px;z-index:99;flex-direction:column;gap:0">
-  <a href="contact.html" style="font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--grey);text-decoration:none;padding:14px 0;border-bottom:1px solid #1a1a1a;display:block">Contact</a>
-  <a href="architecture.html" style="font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);text-decoration:none;padding:14px 0;display:block">The Architecture</a>
+<div class="mobile-menu" id="mobile-menu">
+  <a href="contact.html">Contact</a>
+  <a href="architecture.html">The Architecture</a>
 </div>
 
-<!-- HERO -->
+<!-- HERO — centered, spare -->
 <section id="hero">
-  <div class="inner">
-    <div class="hero-grid">
-      <div>
-        <div class="sec-ey">Quiet Premium · Private Lifestyle Advisory</div>
-        <h1 class="h1">Same spend.<br><em>Different outcome.</em></h1>
-        <p class="body-lg" style="margin-top:24px">A lot of households are already spending enough for a materially better travel life. The money isn't the problem. The infrastructure underneath it is wrong — fragmented across the wrong cards, spread across too many programs, invisible to the institutions that decide who gets upgraded, who boards first, and who gets called when a flight cancels.</p>
-        <div class="hero-ctas">
-          <div class="hero-cta-row">
-            <a href="architecture.html" class="btn-gold" style="flex:1;text-align:center">Begin The Architecture</a>
-          </div>
-          <span class="btn-note" style="text-align:center">Founding access · Complete routing plan on screen in fifteen minutes</span>
-          <a href="gap-index.html" style="font-family:var(--mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--grey);text-decoration:none;text-align:center;margin-top:14px;display:block">Not ready? See the two-minute version first →</a>
-        </div>
-      </div>
-
-      <div>
-        <div class="stat-block">
-          <div class="stat-num">Your number</div>
-          <div class="stat-lbl">Specific to your inputs — not a range, not a template</div>
-        </div>
-        <div class="stat-block">
-          <div class="stat-num">15 min</div>
-          <div class="stat-lbl">Deep audit. Your inputs. Your result. Not a generic recommendation.</div>
-        </div>
-        <div style="padding:24px 28px;border:1px solid var(--grey-dk);background:#0F0F0F">
-          <div class="sec-ey-sm">Founding Access</div>
-          <p style="font-size:12px;color:var(--grey);line-height:1.75">Founding access is complimentary during our launch period. In exchange, we ask for honest written feedback once you've seen your results — and permission to reference your outcome anonymously.</p>
-        </div>
-      </div>
+  <div class="hero-inner">
+    <span class="eyebrow">Private Lifestyle Advisory</span>
+    <h1 class="display">Same spend.<br><em>Different outcome.</em></h1>
+    <p class="hero-sub">The money for a materially better travel life is usually already there. What's missing is the structure underneath it.</p>
+    <div class="hero-cta">
+      <a href="architecture.html" class="btn">Begin The Architecture</a>
+      <span class="btn-note">Founding access · Your plan on screen in fifteen minutes</span>
     </div>
   </div>
 </section>
 
-<!-- THE GAP -->
-<section style="background:#0A0A0A">
+<!-- BREATHER — single statement alone -->
+<section class="breather reveal">
+  <h2 class="h2">Your spend is already there.<br><em>Your routing isn't.</em></h2>
+</section>
+
+<!-- THE PROBLEM -->
+<section class="reveal">
   <div class="inner">
-    <div class="sec-ey">01 · The Problem</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:start" class="prob-grid">
+    <span class="eyebrow">The Problem</span>
+    <div style="max-width:560px;margin-bottom:80px">
+      <p class="lead">The institutions that decide who boards first, who gets upgraded, and who gets called when a flight cancels see a small slice of you — not the full picture of a premium client. The spend isn't missing. It's misdirected.</p>
+    </div>
+    <div class="change-row" style="border-top:1px solid var(--grey-dk)">
+      <div class="change-cat">Fragmented</div>
       <div>
-        <h2 class="h2">Your spend is already there.<br><em>Your routing isn't.</em></h2>
-        <p class="body-lg" style="margin-top:20px">When your household already runs real spend through cards, the premium outcomes you're not experiencing are not beyond your reach — they're being misdirected. The institutions that control treatment see a small slice of you, not the full picture of a premium client.</p>
+        <div class="change-head">The right spend, on the wrong cards.</div>
+        <div class="change-body">Airfare on a general card. Dining on a travel card. Hotels through OTAs that strip status credit. Every misrouted dollar is a signal the institutions never receive.</div>
       </div>
+    </div>
+    <div class="change-row">
+      <div class="change-cat">Scattered</div>
       <div>
-        <div class="outcome-item">
-          <div class="outcome-dot"></div>
-          <div>
-            <div class="outcome-title">The spend is fragmented</div>
-            <div class="outcome-body">Wrong cards capturing wrong categories. Airfare on a general card. Dining on a travel card. Hotels booked through OTAs that strip status credit. Every misrouted dollar is a missed signal to the institutions that decide your treatment.</div>
-          </div>
-        </div>
-        <div class="outcome-item">
-          <div class="outcome-dot"></div>
-          <div>
-            <div class="outcome-title">No concentration strategy</div>
-            <div class="outcome-body">Flights split across three airlines means meaningful status on none. Hotels spread across six brands means recognition at zero. Volume that could produce elite treatment is invisible because it's divided.</div>
-          </div>
-        </div>
-        <div class="outcome-item">
-          <div class="outcome-dot"></div>
-          <div>
-            <div class="outcome-title">Same income. Wrong infrastructure.</div>
-            <div class="outcome-body">The fix is not spending more. It's restructuring where the same spend goes. Same cards, corrected. Same flights, concentrated. Same hotels, consolidated. The outcomes change without the budget changing.</div>
-          </div>
-        </div>
+        <div class="change-head">Volume divided into invisibility.</div>
+        <div class="change-body">Flights split across three airlines means meaningful status on none. Hotels across six brands means recognition at zero. The volume that could earn elite treatment is there — it's just divided.</div>
+      </div>
+    </div>
+    <div class="change-row">
+      <div class="change-cat">Correctable</div>
+      <div>
+        <div class="change-head">Same income. Wrong infrastructure.</div>
+        <div class="change-body">The fix isn't spending more. Same cards, corrected. Same flights, concentrated. Same hotels, consolidated. The outcomes change without the budget moving.</div>
       </div>
     </div>
   </div>
 </section>
 
 <!-- WHAT CHANGES -->
-<section style="background:#0F0F0F">
+<section class="reveal" style="background:var(--black2)">
   <div class="inner">
-    <div class="sec-ey">02 · What Changes</div>
-    <h2 class="h2" style="margin-bottom:48px">The experience stops feeling<br><em>negotiated.</em></h2>
-    <div class="g3">
-      <div class="g3-cell">
-        <div class="g3-num">Flight</div>
-        <div class="g3-title">Priority boarding, typically every flight</div>
-        <div class="g3-body">Zone 1 or 2 at Gold and above on primary airline. Overhead bin space is rarely a concern. Gate checks disappear. The trip starts differently before it starts.</div>
+    <span class="eyebrow">What Changes</span>
+    <h2 class="h2" style="max-width:680px;margin-bottom:72px">The experience stops feeling <em>negotiated.</em></h2>
+    <div class="change-row" style="border-top:1px solid var(--grey-dk)">
+      <div class="change-cat">In the air</div>
+      <div>
+        <div class="change-head">You board early. You sit forward.</div>
+        <div class="change-body">Priority boarding on your primary airline at Gold and above. Upgrade eligibility on every eligible flight, clearing by status and route. Economy becomes optional rather than default.</div>
       </div>
-      <div class="g3-cell">
-        <div class="g3-num">Upgrade</div>
-        <div class="g3-title">Upgrade eligibility on every eligible flight</div>
-        <div class="g3-body">Clearing rate varies by status tier and route. Economy becomes optional rather than default on routes where premium inventory exists. You stop paying for what status should produce.</div>
+    </div>
+    <div class="change-row">
+      <div class="change-cat">On the ground</div>
+      <div>
+        <div class="change-head">The airport stops being something to endure.</div>
+        <div class="change-body">Centurion Lounge, airline club, and the Priority Pass network on departure days — a different start to the trip, on every trip, not occasionally.</div>
       </div>
-      <div class="g3-cell">
-        <div class="g3-num">Airport</div>
-        <div class="g3-title">Lounge access on departure days</div>
-        <div class="g3-body">Centurion Lounge, airline club access, and Priority Pass network. A different airport experience before the gate — on every trip, not occasionally.</div>
+    </div>
+    <div class="change-row">
+      <div class="change-cat">At the hotel</div>
+      <div>
+        <div class="change-head">Recognition as a benefit, not luck.</div>
+        <div class="change-body">Room upgrades, late checkout, and check-in recognition as published elite benefits — when inventory permits, per program terms. Consistent, rather than left to chance.</div>
       </div>
-      <div class="g3-cell">
-        <div class="g3-num">Hotel</div>
-        <div class="g3-title">Recognition as a program benefit</div>
-        <div class="g3-body">Room upgrades, late checkout, and check-in recognition as published elite benefits — available when inventory permits, per program terms. Treatment becomes consistent, not luck-dependent.</div>
+    </div>
+    <div class="change-row">
+      <div class="change-cat">When it breaks</div>
+      <div>
+        <div class="change-head">Priority when things go wrong.</div>
+        <div class="change-body">Improved rebooking position and direct service access. The difference between a two-hour resolution and a six-hour ordeal — which, across a year of travel, compounds.</div>
       </div>
-      <div class="g3-cell">
-        <div class="g3-num">Disruption</div>
-        <div class="g3-title">Priority recovery when things go wrong</div>
-        <div class="g3-body">Improved rebooking position and direct customer service access. The difference between a two-hour resolution and a six-hour ordeal — on 50+ flights a year, this compounds.</div>
+    </div>
+    <div class="change-row">
+      <div class="change-cat">In the budget</div>
+      <div>
+        <div class="change-head">Cash redirected, not increased.</div>
+        <div class="change-body">Money that used to fund upgrades and buy-ups becomes available to redirect. No increase in household spend. The same budget, finally working correctly.</div>
       </div>
-      <div class="g3-cell">
-        <div class="g3-num">Financial</div>
-        <div class="g3-title">Cash redirected, not increased</div>
-        <div class="g3-body">Money currently going toward upgrades and buy-ups becomes available to redirect. No increase in total household spend required. The same budget, finally working correctly.</div>
+    </div>
+  </div>
+</section>
+
+<!-- BREATHER 2 — the signature shift motif -->
+<section class="breather reveal">
+  <div style="max-width:760px;margin:0 auto">
+    <span class="eyebrow-quiet">The whole idea, in one line</span>
+    <div class="shift" style="justify-content:center">
+      <span class="from">The same trip</span>
+      <span class="arrow">→</span>
+      <span class="to">a <em>different</em> experience</span>
+    </div>
+  </div>
+</section>
+
+<!-- THE ARCHITECTURE + PROOF -->
+<section class="reveal">
+  <div class="inner">
+    <span class="eyebrow">The Architecture</span>
+    <h2 class="h2" style="max-width:620px;margin-bottom:28px">Your numbers. <em>Your answer.</em></h2>
+    <p class="lead measure" style="margin-bottom:0">A fifteen-minute deep audit of your spend, cards, and travel. A complete routing plan on screen the moment you finish — no call, no wait. Your inputs determine your output.</p>
+
+    <div class="proof-grid">
+      <div class="proof-card">
+        <span class="proof-spend">A household routing ~$75,000 a year</span>
+        <div class="proof-tier">Delta Gold <em>within reach.</em></div>
+        <div class="proof-body">Priority boarding, consistent Comfort+ upgrades, lounge access, and guaranteed hotel benefits on eligible stays — recognition the airline and hotels weren't extending before.</div>
+        <div class="proof-val"><span class="num">~$3,500</span><span class="cap">potential annual value · outcomes vary</span></div>
       </div>
+      <div class="proof-card lift">
+        <span class="proof-spend">A household routing ~$150,000 a year</span>
+        <div class="proof-tier">Delta Platinum <em>within reach.</em></div>
+        <div class="proof-body">Everything Gold delivers, plus upgrade priority ahead of the field, four First Class upgrade certificates a year, and a tier where the airline treats the trip differently from the start.</div>
+        <div class="proof-val"><span class="num">~$6,700</span><span class="cap">potential annual value · outcomes vary</span></div>
+      </div>
+    </div>
+    <p class="body-sm" style="margin-top:24px;font-style:italic;color:var(--grey-mid);max-width:560px">These are illustrations, not the ceiling. Your number depends on your spend, your travel, and the cards you already hold — which is exactly what The Architecture maps.</p>
+
+    <div style="margin-top:56px">
+      <a href="architecture.html" class="btn">Begin The Architecture</a>
+      <span class="btn-note">Founding access · Complimentary while we build</span>
     </div>
   </div>
 </section>
 
 <!-- HOW IT WORKS -->
-<section style="background:#0A0A0A">
+<section class="reveal" style="background:var(--black2)">
   <div class="inner">
-    <div class="sec-ey">03 · How It Works</div>
-    <div class="steps">
+    <span class="eyebrow">How It Works</span>
+    <div class="step" style="border-top:1px solid var(--grey-dk)">
+      <div class="step-n">1</div>
       <div>
-        <div class="step-num">Step 01 — Founding Access</div>
-        <div class="step-title">Begin The Architecture</div>
-        <div class="step-body">A 15-minute deep audit. The Architecture runs a complete analysis of your card stack, spend routing, airline concentration, hotel program, and lifestyle alignment — no call, no wait, nothing to schedule.</div>
-        <a href="architecture.html" class="btn-gold" style="margin-top:20px;display:inline-block">Begin The Architecture</a>
-      </div>
-      <div>
-        <div class="step-num">Step 02 — Immediate</div>
-        <div class="step-title">See your routing plan</div>
-        <div class="step-body">Your complete plan renders on screen the moment you finish — every correction, in priority order, with what each one is worth annually. The estimated value sitting in your existing spend, made specific.</div>
-      </div>
-      <div>
-        <div class="step-num">Step 03 — Implement</div>
-        <div class="step-title">Fix the infrastructure</div>
-        <div class="step-body">Your results show exactly what to change, in what order, and what each correction is worth annually. Implement yourself. Or if your situation is complex enough to warrant a private conversation, that option exists.</div>
+        <div class="step-head">Begin The Architecture.</div>
+        <div class="step-body">A fifteen-minute audit of your card stack, spend routing, airline concentration, hotel program, and lifestyle alignment. Nothing to schedule.</div>
       </div>
     </div>
-  </div>
-</section>
-
-<!-- THE ARCHITECTURE PRODUCT -->
-<section style="background:#0F0F0F">
-  <div class="inner">
-    <div class="sec-ey">04 · The Architecture</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:start" class="arch-grid">
+    <div class="step">
+      <div class="step-n">2</div>
       <div>
-        <h2 class="h2">Your numbers.<br><em>Your answer.</em></h2>
-        <p class="body-lg" style="margin-top:20px;margin-bottom:32px">Complete a 15-minute deep audit about your actual spend, cards, and travel patterns. The Architecture analyzes everything and delivers a personalized routing plan — not a generic recommendation. Your inputs determine your output.</p>
-        <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:32px">
-          <div class="tier-feature">Your exact leakage number — not a range, your figure from your inputs</div>
-          <div class="tier-feature">Complete spend routing audit — every category against the optimal card</div>
-          <div class="tier-feature">Six friction scores across your actual travel experience</div>
-          <div class="tier-feature">12-month status path — airline and hotel, based on your volume</div>
-          <div class="tier-feature">Hotel program recommendation — which program, what tier, what changes</div>
-          <div class="tier-feature">The specific corrections — conclusions of the full audit, in order of impact</div>
-        </div>
-        <div style="padding:20px 24px;border:1px solid var(--grey-dk)">
-          <div class="sec-ey-sm" style="margin-bottom:6px">The Standard</div>
-          <p style="font-size:12px;color:var(--grey);line-height:1.75">Founding access is complimentary during our launch period. In exchange, we ask for honest written feedback once you've seen your results — and permission to reference your outcome anonymously.</p>
-        </div>
+        <div class="step-head">See your routing plan.</div>
+        <div class="step-body">Your complete plan renders on screen the moment you finish — every correction in priority order, with what each is worth annually.</div>
       </div>
+    </div>
+    <div class="step">
+      <div class="step-n">3</div>
       <div>
-        <div style="font-family:var(--mono);font-size:8px;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);margin-bottom:16px">Two sample outcomes</div>
-
-        <div style="border:1px solid var(--grey-dk);background:#0A0A0A;padding:26px 28px;margin-bottom:14px">
-          <div style="font-family:var(--mono);font-size:7px;letter-spacing:.1em;text-transform:uppercase;color:var(--grey-mid);margin-bottom:10px">A household routing around $75,000 a year</div>
-          <div style="font-family:var(--serif);font-size:24px;font-weight:300;color:var(--white);line-height:1.15;margin-bottom:6px">Delta Gold within reach.</div>
-          <p style="font-size:11.5px;color:var(--grey);line-height:1.7;margin-bottom:14px">Priority boarding, consistent Comfort+ upgrades, lounge access, and guaranteed hotel benefits on eligible stays — recognition the airline and hotels weren't extending before.</p>
-          <div style="display:flex;align-items:baseline;gap:8px;padding-top:12px;border-top:1px solid #1a1a1a">
-            <span style="font-family:var(--serif);font-size:26px;font-weight:300;color:var(--gold);line-height:1">~$3,500</span>
-            <span style="font-family:var(--mono);font-size:7px;letter-spacing:.08em;text-transform:uppercase;color:var(--grey-mid)">potential annual value · outcomes vary</span>
-          </div>
-        </div>
-
-        <div style="border:1px solid var(--gold-dk);background:#0A0A0A;padding:26px 28px;margin-bottom:18px">
-          <div style="font-family:var(--mono);font-size:7px;letter-spacing:.1em;text-transform:uppercase;color:var(--grey-mid);margin-bottom:10px">A household routing around $150,000 a year</div>
-          <div style="font-family:var(--serif);font-size:24px;font-weight:300;color:var(--white);line-height:1.15;margin-bottom:6px">Delta Platinum within reach.</div>
-          <p style="font-size:11.5px;color:var(--grey);line-height:1.7;margin-bottom:14px">Everything Gold delivers, plus upgrade priority ahead of the field, four First Class upgrade certificates a year, and a status tier where the airline treats the trip differently from the start.</p>
-          <div style="display:flex;align-items:baseline;gap:8px;padding-top:12px;border-top:1px solid #1a1a1a">
-            <span style="font-family:var(--serif);font-size:26px;font-weight:300;color:var(--gold);line-height:1">~$6,700</span>
-            <span style="font-family:var(--mono);font-size:7px;letter-spacing:.08em;text-transform:uppercase;color:var(--grey-mid)">potential annual value · outcomes vary</span>
-          </div>
-        </div>
-
-        <p style="font-size:10px;color:var(--grey-mid);line-height:1.6;margin-bottom:18px;font-style:italic">These are illustrations, not the ceiling. Your number depends on your spend, your travel, and the cards you already hold — which is exactly what The Architecture maps.</p>
-
-        <a href="architecture.html" class="btn-gold" style="width:100%;text-align:center;display:block">Begin The Architecture</a>
+        <div class="step-head">Fix the infrastructure.</div>
+        <div class="step-body">Implement yourself, at your pace. Or, if your situation warrants a private conversation, that option exists.</div>
       </div>
     </div>
   </div>
 </section>
 
 <!-- WHO THIS IS FOR -->
-<section style="background:#0A0A0A">
+<section class="reveal">
   <div class="inner">
-    <div class="sec-ey">05 · Who This Is For</div>
-    <div class="g2">
-      <div class="g2-cell">
-        <div style="font-family:var(--mono);font-size:8px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);margin-bottom:20px;padding-bottom:12px;border-bottom:1px solid var(--grey-dk)">The QP Profile</div>
-        <div class="outcome-item" style="padding:12px 0">
-          <div class="outcome-dot"></div>
-          <div><div class="outcome-title">Real household spending capacity</div><div class="outcome-body">Enough everyday spend — across dining, travel, and household — to route through premium cards and produce meaningful status on a single airline and hotel program within 12 months.</div></div>
-        </div>
-        <div class="outcome-item" style="padding:12px 0">
-          <div class="outcome-dot"></div>
-          <div><div class="outcome-title">680+ credit score</div><div class="outcome-body">The card approval path requires at least three specific premium cards. Below roughly 680 the approval path becomes uncertain and the architecture breaks before it starts.</div></div>
-        </div>
-        <div class="outcome-item" style="padding:12px 0">
-          <div class="outcome-dot"></div>
-          <div><div class="outcome-title">Travel that recurs through the year</div><div class="outcome-body">Whether business or personal, enough trips that better boarding, upgrades, and recognition compound into a materially different experience.</div></div>
-        </div>
-        <div class="outcome-item" style="padding:12px 0;border-bottom:none">
-          <div class="outcome-dot"></div>
-          <div><div class="outcome-title">Domestic-primary travel</div><div class="outcome-body">The QP system is built around domestic airline ecosystems and premium hotel programs. International-primary travelers or those on routes with limited coverage may see reduced output.</div></div>
-        </div>
+    <span class="eyebrow">Who This Is For</span>
+    <div class="fit-grid">
+      <div>
+        <div class="fit-h">The profile</div>
+        <div class="fit-item"><strong>Real household spending capacity</strong>Enough everyday spend — dining, travel, household — to route through premium cards and build meaningful status within a year.</div>
+        <div class="fit-item"><strong>A credit profile in the strong range</strong>The approach relies on premium cards, which generally call for roughly 680 and up to be approved.</div>
+        <div class="fit-item"><strong>Travel that recurs through the year</strong>Business or personal — enough trips that better boarding, upgrades, and recognition compound into something you feel.</div>
+        <div class="fit-item"><strong>Domestic-primary travel</strong>Built around domestic airline ecosystems and premium hotel programs.</div>
       </div>
-      <div class="g2-cell">
-        <div style="font-family:var(--mono);font-size:8px;letter-spacing:.14em;text-transform:uppercase;color:var(--grey-mid);margin-bottom:20px;padding-bottom:12px;border-bottom:1px solid var(--grey-dk)">Not The Right Fit</div>
-        <div class="not-item">Points optimizers managing fifteen cards and four transfer partners</div>
-        <div class="not-item">Travel hackers looking to maximize redemption math</div>
-        <div class="not-item">Households without enough routable spend to build status on a single program</div>
-        <div class="not-item">Credit scores below 680 — the approval path breaks before the architecture works</div>
-        <div class="not-item">International-primary travelers where primary carriers don't serve key routes</div>
-        <div class="not-item">Aspiration buyers — the spend needs to already be there</div>
-        <div style="margin-top:28px;padding:20px 24px;border:1px solid var(--grey-dk);background:#0F0F0F">
-          <div class="sec-ey-sm" style="margin-bottom:6px">Not sure where you fall?</div>
-          <p style="font-size:12px;color:var(--grey);line-height:1.75;margin-bottom:16px">There's a two-minute version. It maps your current setup against the qualifying profile and gives you an estimated value range before you commit to the full audit.</p>
-          <a href="gap-index.html" class="btn-outline" style="display:inline-block">See the two-minute version</a>
+      <div>
+        <div class="fit-h">Not the right fit</div>
+        <div class="fit-item">Points optimizers managing fifteen cards and four transfer partners.</div>
+        <div class="fit-item">Travel hackers chasing redemption math.</div>
+        <div class="fit-item">Households without the spend to build status on a single program.</div>
+        <div class="fit-item">International-primary travelers where primary carriers don't serve key routes.</div>
+        <div class="fit-item">Aspiration buyers — the spend needs to already be there.</div>
+        <div class="fit-note">
+          <span class="eyebrow-quiet">Not sure where you fall?</span>
+          <p class="body-sm" style="margin-bottom:18px">There's a two-minute version that maps your setup against the profile and gives an estimated value range.</p>
+          <a href="gap-index.html" class="link-quiet">See how it works →</a>
         </div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- WHY THIS EXISTS -->
-<section style="background:#0A0A0A;border-top:1px solid var(--grey-dk)">
-  <div class="inner-sm" style="max-width:640px">
-    <div class="sec-ey">Why this exists</div>
-    <p style="font-family:var(--serif);font-size:clamp(18px,2.5vw,24px);font-weight:300;color:var(--white);line-height:1.6;margin-bottom:20px">Premium travel is usually assumed to require dramatically more spending. Most of the time the spend is already there. The structure underneath it isn't.</p>
-    <p style="font-size:14px;color:var(--grey);line-height:1.85;margin-bottom:20px">When the routing is correct, money that used to disappear into paid upgrades and misallocated spend starts appearing elsewhere — in better hotel rooms, in experiences that felt just out of reach, in the simple reality of a trip that starts differently than it used to. The spend doesn't change. The outcome does.</p>
-    <p style="font-family:var(--mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--grey-mid)">— Paul H., Founder · Quiet Premium</p>
+<!-- MANIFESTO -->
+<section class="reveal" style="background:var(--black2)">
+  <div class="manifesto">
+    <span class="eyebrow" style="display:block;margin-bottom:32px">Why this exists</span>
+    <h3 class="h3">Premium travel is assumed to require dramatically more spending. Usually the spend is already there. The structure underneath it isn't.</h3>
+    <p>When the routing is correct, money that used to disappear into paid upgrades and misallocated spend starts appearing elsewhere — in better rooms, in experiences that felt just out of reach, in a trip that simply starts differently than it used to.</p>
+    <p style="color:var(--white)">The spend doesn't change. The outcome does.</p>
+    <div class="sig">— Paul H., Founder</div>
   </div>
 </section>
 
-<!-- BOTTOM CTA -->
-<section id="bottom-cta" style="background:#0F0F0F">
-  <div class="inner-sm" style="text-align:center">
-    <div class="sec-ey" style="text-align:center">Find out what your spend is actually producing</div>
-    <h2 class="h2" style="margin-bottom:16px">Your number is<br><em>fifteen minutes away.</em></h2>
-    <p style="font-size:14px;color:var(--grey);line-height:1.85;max-width:520px;margin:0 auto 44px">The Architecture runs a complete personalized routing analysis and delivers your plan on screen — every correction, what each is worth, the order to make them. No call, no wait.</p>
-    <div style="display:flex;justify-content:center">
-      <a href="architecture.html" class="btn-gold">Begin The Architecture</a>
-    </div>
-    <span class="btn-note">Founding access · Complimentary while we build</span>
-    <a href="gap-index.html" style="font-family:var(--mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--grey);text-decoration:none;text-align:center;margin-top:18px;display:block">Want a quick read first? See the two-minute version →</a>
-  </div>
+<!-- CLOSE -->
+<section class="reveal close">
+  <span class="eyebrow" style="display:block">Find out what your spend is producing</span>
+  <h2 class="h2">Your number is <em>fifteen minutes away.</em></h2>
+  <p class="lead">A complete personalized routing analysis, delivered on screen — every correction, what each is worth, the order to make them.</p>
+  <a href="architecture.html" class="btn">Begin The Architecture</a>
+  <span class="btn-note">Founding access · Complimentary while we build</span>
+  <div style="margin-top:28px"><a href="gap-index.html" class="link-quiet">Want a quick read first? See how it works →</a></div>
 </section>
 
-<!-- FOOTER -->
 <footer>
   <div class="footer-left">
     © 2026 Quiet Premium · editor@quietpremium.com<br>
     Same spend. Different outcome.<br>
-    <span style="color:var(--grey-dk)">v1.1.1</span>
+    <span style="color:var(--grey-dk)">v1.2.0</span>
   </div>
   <div class="footer-links">
-    <a href="gap-index.html" class="footer-link">Gap Index</a>
     <a href="architecture.html" class="footer-link">The Architecture</a>
+    <a href="gap-index.html" class="footer-link">How It Works</a>
     <a href="contact.html" class="footer-link">Contact</a>
   </div>
 </footer>
+<p class="disclaimer">Potential value estimates are based on published program benefits as of 2025–2026. Actual outcomes vary by redemption choices, program availability, and issuer terms. Status benefits are subject to airline and hotel program policies and may change. Quiet Premium is not affiliated with any airline, hotel, or card issuer mentioned.</p>
 
-<div class="disclaimer">
-  Potential value estimates are based on published program benefits as of 2025–2026. Actual outcomes vary by redemption choices, program availability, and issuer terms. Status benefits are subject to airline and hotel program policies and may change. Quiet Premium is not affiliated with any airline, hotel, or card issuer mentioned.
-</div>
-
-<style>
-@media(max-width:900px){
-  .prob-grid,.arch-grid{grid-template-columns:1fr!important;gap:44px!important}
+<script>
+function toggleMenu(){
+  const m=document.getElementById('mobile-menu');
+  m.style.display=m.style.display==='flex'?'none':'flex';
 }
-</style>
+// Restrained scroll reveal
+const io=new IntersectionObserver((entries)=>{
+  entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}});
+},{threshold:0.12,rootMargin:'0px 0px -8% 0px'});
+document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+</script>
 </body>
 </html>
