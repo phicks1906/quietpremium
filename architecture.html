@@ -410,13 +410,13 @@ footer{background:#0A0A0A;border-top:1px solid var(--grey-dk);padding:32px 48px;
       <p class="body" style="margin-bottom:36px;max-width:480px">These take thirty seconds and confirm your situation is one The Architecture is built to serve.</p>
 
       <div class="gate-q" id="gq1">
-        <div class="gate-q-txt">Roughly how much of your household spend runs through your cards each month — dining, travel, groceries, insurance, everyday expenses</div>
+        <div class="gate-q-txt">Roughly what could your household run through cards in a year — not what you route today, but what you could, including spend currently paid by check, transfer, or cash</div>
         <div class="gate-opts">
-          <div class="gate-opt" data-q="1" data-val="300k+"><div class="gate-opt-ind"></div><div class="gate-opt-lbl">$25,000 or more a month</div></div>
-          <div class="gate-opt" data-q="1" data-val="150k+"><div class="gate-opt-ind"></div><div class="gate-opt-lbl">$12,000–$25,000 a month</div></div>
-          <div class="gate-opt" data-q="1" data-val="100k+"><div class="gate-opt-ind"></div><div class="gate-opt-lbl">$8,000–$12,000 a month</div></div>
-          <div class="gate-opt" data-q="1" data-val="75k+"><div class="gate-opt-ind"></div><div class="gate-opt-lbl">$6,000–$8,000 a month</div></div>
-          <div class="gate-opt" data-q="1" data-val="under75k"><div class="gate-opt-ind"></div><div class="gate-opt-lbl">Under $6,000 a month</div></div>
+          <div class="gate-opt" data-q="1" data-val="300k+"><div class="gate-opt-ind"></div><div class="gate-opt-lbl">$300,000 or more</div></div>
+          <div class="gate-opt" data-q="1" data-val="150k+"><div class="gate-opt-ind"></div><div class="gate-opt-lbl">$150,000–$300,000</div></div>
+          <div class="gate-opt" data-q="1" data-val="100k+"><div class="gate-opt-ind"></div><div class="gate-opt-lbl">$100,000–$150,000</div></div>
+          <div class="gate-opt" data-q="1" data-val="75k+"><div class="gate-opt-ind"></div><div class="gate-opt-lbl">$75,000–$100,000</div></div>
+          <div class="gate-opt" data-q="1" data-val="under75k"><div class="gate-opt-ind"></div><div class="gate-opt-lbl">Under $75,000</div></div>
         </div>
       </div>
 
@@ -447,9 +447,9 @@ footer{background:#0A0A0A;border-top:1px solid var(--grey-dk);padding:32px 48px;
       </div>
 
       <div id="redirect-msg">
-        <p>The Architecture is built for households routing their premium spend — dining, travel, insurance, and everyday expenses — through their cards, with a strong credit profile and several personal trips a year. Based on your inputs, some recommendations may not produce their full value for your current setup. You're welcome to proceed — or revisit when your situation changes.</p>
+        <p>The structure behind The Architecture relies on premium cards, and those generally call for a credit profile in the strong range — roughly 680 and up — to be approved. Based on your inputs, the approvals it depends on may not come through cleanly right now, which means the plan couldn't be put to work the way it should. This is a question of timing, not fit. As your credit profile strengthens, the full approach opens up — and you're welcome to come back then.</p>
         <div style="display:flex;gap:12px;flex-wrap:wrap">
-          <a href="diagnostic.html" class="btn-gold" style="font-size:9px;padding:13px 24px">Proceed Anyway</a>
+          <a href="diagnostic.html" class="btn-gold" style="font-size:9px;padding:13px 24px">Look Anyway</a>
           <a href="gap-index.html" class="btn-outline" style="font-size:9px;padding:12px 20px">Take The Gap Index First</a>
         </div>
       </div>
@@ -488,18 +488,13 @@ document.querySelectorAll('.gate-opt').forEach(opt => {
 });
 
 function handleGate(e){
-  const spend = gateAnswers['1'];
   const credit = gateAnswers['2'];
-  const trips = gateAnswers['3'];
 
-  // If nothing answered, let them through
-  if(!spend && !credit && !trips) return true;
+  // Credit is the only hard gate. Premium card approval generally needs ~680+;
+  // below that the routing plan isn't executable. Spend and trips never disqualify.
+  if(!credit) return true;
 
-  const spendFail = spend === 'under75k';
-  const creditFail = credit === 'below680';
-  const tripsFail = trips === 'fewer4';
-
-  if(spendFail || creditFail || tripsFail){
+  if(credit === 'below680'){
     e.preventDefault();
     document.getElementById('redirect-msg').style.display = 'block';
     document.getElementById('redirect-msg').scrollIntoView({behavior:'smooth', block:'center'});
