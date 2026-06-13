@@ -191,7 +191,7 @@ nav{position:fixed;top:0;left:0;right:0;z-index:50;padding:20px 48px;display:fle
   <div class="question" id="q2">
     <div class="q-num">02 / 06</div>
     <div class="q-text">What is your approximate credit score?</div>
-    <div class="q-hint">The card approval path requires a minimum of 720. This is a mechanical gate, not a judgment.</div>
+    <div class="q-hint">Premium cards generally call for a profile in the strong range — roughly 680 and up. This is a mechanical gate, not a judgment.</div>
     <div class="opts" id="q2-opts">
       <div class="opt" data-val="800+"><div class="opt-ind circle"></div><div class="opt-label">800 or above</div></div>
       <div class="opt" data-val="760-799"><div class="opt-ind circle"></div><div class="opt-label">760–799</div></div>
@@ -208,13 +208,13 @@ nav{position:fixed;top:0;left:0;right:0;z-index:50;padding:20px 48px;display:fle
   <!-- Q3: Spend -->
   <div class="question" id="q3">
     <div class="q-num">03 / 06</div>
-    <div class="q-text">How much could your household route through premium cards annually?</div>
-    <div class="q-hint">Include spend currently paid by check, bank transfer, or cash that could go on a card.</div>
+    <div class="q-text">Roughly what could your household run through cards in a year?</div>
+    <div class="q-hint">Not what you route today — what you could. Everything from groceries, dining, and travel to insurance, utilities, and big purchases, including anything currently paid by check, transfer, or cash.</div>
     <div class="opts" id="q3-opts">
       <div class="opt" data-val="300k+"><div class="opt-ind circle"></div><div class="opt-label">$300,000 or more</div></div>
-      <div class="opt" data-val="150k-299k"><div class="opt-ind circle"></div><div class="opt-label">$150,000–$299,999</div></div>
-      <div class="opt" data-val="100k-149k"><div class="opt-ind circle"></div><div class="opt-label">$100,000–$149,999</div></div>
-      <div class="opt" data-val="75k-99k"><div class="opt-ind circle"></div><div class="opt-label">$75,000–$99,999</div></div>
+      <div class="opt" data-val="150k-299k"><div class="opt-ind circle"></div><div class="opt-label">$150,000–$300,000</div></div>
+      <div class="opt" data-val="100k-149k"><div class="opt-ind circle"></div><div class="opt-label">$100,000–$150,000</div></div>
+      <div class="opt" data-val="75k-99k"><div class="opt-ind circle"></div><div class="opt-label">$75,000–$100,000</div></div>
       <div class="opt" data-val="under75k"><div class="opt-ind circle"></div><div class="opt-label">Under $75,000</div></div>
     </div>
     <div class="btn-row">
@@ -286,9 +286,20 @@ nav{position:fixed;top:0;left:0;right:0;z-index:50;padding:20px 48px;display:fle
 
     <div class="r-divider"></div>
 
+    <div style="margin-bottom:20px">
+      <div style="font-family:var(--mono);font-size:8px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold-dk);margin-bottom:8px">The next step</div>
+      <p style="font-size:13px;color:var(--grey);line-height:1.8;margin-bottom:20px">The Gap Index shows you the range. The Architecture shows you the exact number — every dollar, every correction, and the specific routing plan to close the gap. It's the difference between knowing something is off and knowing precisely what to change. On screen in 15 minutes.</p>
+    </div>
+    <div class="r-cta-wrap">
+      <a href="architecture.html" class="btn-arch">Begin The Architecture</a>
+      <div class="r-note">Founding access · Complimentary while we build · Results on screen immediately</div>
+    </div>
+
+    <div class="r-divider"></div>
+
     <!-- EMAIL CAPTURE -->
     <div class="capture-wrap">
-      <div class="capture-lbl">Send me these results</div>
+      <div class="capture-lbl">Prefer your results by email?</div>
       <div class="capture-hint">Optional. Enter your email and we'll send your Gap Index results along with what The Architecture would show you in detail.</div>
       <div class="capture-row">
         <input type="email" class="capture-input" id="capture-email" placeholder="you@example.com"/>
@@ -296,30 +307,18 @@ nav{position:fixed;top:0;left:0;right:0;z-index:50;padding:20px 48px;display:fle
       </div>
       <div class="capture-sent" id="capture-sent">✓ Results sent — check your inbox.</div>
     </div>
-
-    <div class="r-divider"></div>
-
-    <div style="margin-bottom:20px">
-      <div style="font-family:var(--mono);font-size:8px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold-dk);margin-bottom:8px">The next step</div>
-      <p style="font-size:13px;color:var(--grey);line-height:1.8;margin-bottom:20px">The Gap Index shows you the range. The Architecture shows you the exact number — every dollar, every correction, your specific routing plan. Delivered on screen in 15 minutes.</p>
-    </div>
-    <div class="r-cta-wrap">
-      <a href="architecture.html" class="btn-arch">Begin The Architecture — $297</a>
-      <div class="r-note">Investment protected · If The Architecture can't produce a clear path forward, we return it.</div>
-    </div>
   </div>
 
   <!-- NOT QUALIFIED -->
   <div id="not-qualified">
     <div class="r-ey">Gap Index Complete</div>
-    <h2 class="r-hl" style="font-size:clamp(24px,3.5vw,36px);margin-bottom:20px">The Architecture is built for a<br><em>specific profile.</em></h2>
+    <h2 class="r-hl" style="font-size:clamp(24px,3.5vw,36px);margin-bottom:20px">The timing isn't<br><em>quite right yet.</em></h2>
     <div class="nq-box">
-      <p style="font-size:13px;color:var(--grey);line-height:1.85">The Architecture is built for households routing $100,000 or more annually through premium cards, with a 720+ credit profile and four or more personal trips per year. Based on your inputs, some recommendations may not produce their full value for your current setup.</p>
-      <p style="font-size:13px;color:var(--grey);line-height:1.85;margin-top:12px">You're welcome to proceed — or revisit when your situation changes.</p>
+      <p style="font-size:13px;color:var(--grey);line-height:1.85">The structure behind The Architecture relies on premium cards, and those generally call for a credit profile in the strong range to be approved. Based on your inputs, the approvals it depends on may not come through cleanly right now — which means the plan couldn't be put to work the way it should.</p>
+      <p style="font-size:13px;color:var(--grey);line-height:1.85;margin-top:12px">This is a question of timing, not fit. As your credit profile strengthens, the full approach opens up — and you're welcome to come back then. If you'd like to look anyway, you can.</p>
     </div>
     <div style="display:flex;flex-direction:column;gap:10px">
-      <a href="architecture.html" style="display:inline-block;border:1px solid var(--grey-dk);color:var(--grey);font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;background:none;cursor:pointer;padding:14px 24px;text-decoration:none;text-align:center">Proceed Anyway — $297</a>
-      <a href="https://www.linkedin.com/in/paul-hicks-3049063a7" target="_blank" style="font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--grey-mid);text-decoration:none;text-align:center;padding:8px 0">Follow on LinkedIn · Revisit when ready</a>
+      <a href="architecture.html" style="display:inline-block;border:1px solid var(--grey-dk);color:var(--grey);font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;background:none;cursor:pointer;padding:14px 24px;text-decoration:none;text-align:center">Look Anyway</a>
     </div>
   </div>
 
@@ -386,31 +385,31 @@ function back(q){
 function showResults(){
   if(!answers[6]) return;
 
-  // Qualification check
+  // Qualification check — credit is the only hard gate.
+  // Premium card approval generally requires ~680+; below that the routing plan isn't executable.
+  // Spend and trips never disqualify — the value number itself tells the story.
   const credit = answers[2];
-  const spend = answers[3];
-  const trips = answers[4];
-  const creditFail = credit === '680-719' || credit === 'below-680';
-  const spendFail = spend === 'under75k';
-  const tripsFail = trips === 'fewer-4';
+  const creditFail = credit === 'below-680';
 
   document.getElementById('q6').classList.remove('active');
 
-  if((creditFail || spendFail) && tripsFail){
+  if(creditFail){
     document.getElementById('not-qualified').style.display = 'block';
     window.scrollTo({top:0,behavior:'smooth'});
     return;
   }
 
   // Calculate range
+  const spend = answers[3];
   const spendMap = {'300k+':320000,'150k-299k':200000,'100k-149k':125000,'75k-99k':87000,'under75k':60000};
   const spendAmt = spendMap[spend] || 125000;
 
   let lo, hi;
-  if(spendAmt >= 300000){ lo=12000; hi=20000; }
-  else if(spendAmt >= 150000){ lo=8000; hi=14000; }
-  else if(spendAmt >= 100000){ lo=3000; hi=6000; }
-  else { lo=1000; hi=3000; }
+  if(spendAmt >= 300000){ lo=8000; hi=12000; }
+  else if(spendAmt >= 150000){ lo=5000; hi=8000; }
+  else if(spendAmt >= 100000){ lo=3500; hi=6000; }
+  else if(spendAmt >= 75000){ lo=2500; hi=4500; }
+  else { lo=1500; hi=3000; }
 
   // Adjust for cards already held
   const cards = answers[1] || [];
@@ -429,20 +428,20 @@ function showResults(){
 
   if(!hasReserve){
     gaps.push({
-      txt: 'No airline co-brand card. Zero status credit accumulating from card spend.',
-      sub: 'At your spend level, the right airline card alone generates $2,500+ in MQD Headstart plus status acceleration before a single flight.'
+      txt: 'No status accumulating from your card spend.',
+      sub: 'At your spend level, the right card structure builds airline status from everyday spending — a running head start toward elite tiers before a single flight.'
     });
   }
   if(!hasGold){
     gaps.push({
-      txt: 'Dining and grocery spend earning below 4x.',
-      sub: 'Amex Gold earns 4x at restaurants and US supermarkets. At $20,000 in annual combined spend, that gap is $600+ annually.'
+      txt: 'Dining and grocery spend earning below its potential.',
+      sub: 'The right card structure earns materially more on everyday dining and grocery spend than most setups capture — the gap compounds every month.'
     });
   }
   if(!hasPlat){
     gaps.push({
-      txt: 'No Fine Hotels + Resorts access. Hotel benefits unclaimed.',
-      sub: 'Amex Platinum includes room upgrades, daily breakfast for two, and property credits on every eligible stay booked through Amex Travel.'
+      txt: 'Guaranteed hotel benefits unclaimed on every stay.',
+      sub: 'The right setup unlocks confirmed room upgrades, daily breakfast for two, and property credits — benefits that require no hotel status and go unclaimed on most bookings.'
     });
   }
   if(exp === 'no-system' || exp === 'occasional'){
