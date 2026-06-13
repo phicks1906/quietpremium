@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Quiet Premium · index.html · build v1.2.0 · 2026-06-13 · AESOP-redesign: centered hero, breather sections, signature shift motif, distilled copy, generous spacing, dropped section numbering, scroll-reveal · content+CTAs+SEO preserved -->
+<!-- Quiet Premium · index.html · build v1.2.1 · 2026-06-13 · AESOP-redesign tuned: voids removed (breathers folded into content), hero right-sized, eyebrow tightened, 'Premium Travel Architecture' label · content+CTAs+SEO preserved -->
 <html lang="en">
 <head>
 <!-- Google tag (gtag.js) -->
@@ -68,13 +68,13 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:22px 56px;display:fl
 .mobile-menu a:last-child{border-bottom:none;color:var(--gold)}
 
 /* RHYTHM — generous, varied vertical space is the core of the redesign */
-section{padding:150px 56px;position:relative}
+section{padding:100px 56px;position:relative}
 .inner{max-width:1080px;margin:0 auto}
 .measure{max-width:600px}
 .measure-narrow{max-width:480px}
 
 /* EYEBROW — no numbers; editorial, sparing */
-.eyebrow{font-family:var(--mono);font-size:9px;letter-spacing:.28em;text-transform:uppercase;color:var(--gold);margin-bottom:40px;display:block}
+.eyebrow{font-family:var(--mono);font-size:9px;letter-spacing:.28em;text-transform:uppercase;color:var(--gold);margin-bottom:24px;display:block}
 .eyebrow-quiet{font-family:var(--mono);font-size:8px;letter-spacing:.2em;text-transform:uppercase;color:var(--grey-mid);margin-bottom:16px;display:block}
 
 /* TYPE SCALE — bigger display, distilled body */
@@ -103,14 +103,11 @@ section{padding:150px 56px;position:relative}
 .link-quiet:hover{color:var(--gold)}
 
 /* HERO — centered, spare, confident */
-#hero{min-height:92vh;display:flex;flex-direction:column;justify-content:center;padding:140px 56px 90px;text-align:center}
+#hero{min-height:auto;display:flex;flex-direction:column;justify-content:center;padding:130px 56px 100px;text-align:center}
 .hero-inner{max-width:900px;margin:0 auto}
 .hero-sub{font-size:17px;color:var(--grey);line-height:1.8;max-width:480px;margin:36px auto 0}
 .hero-cta{margin-top:52px}
 
-/* DIVIDER moments — a single statement alone in space (the breather) */
-.breather{text-align:center;padding:170px 56px}
-.breather .h2{max-width:840px;margin:0 auto}
 
 /* WHAT CHANGES — list with rhythm, not a dense grid */
 .change-row{display:grid;grid-template-columns:160px 1fr;gap:48px;padding:38px 0;border-top:1px solid var(--grey-dk);align-items:baseline}
@@ -176,7 +173,6 @@ footer{padding:72px 56px;border-top:1px solid var(--grey-dk);display:flex;justif
   .hamburger{display:flex}
   section{padding:100px 28px}
   #hero{padding:120px 28px 80px;min-height:88vh}
-  .breather{padding:110px 28px}
   .change-row{grid-template-columns:1fr;gap:12px;padding:30px 0}
   .proof-grid{grid-template-columns:1fr;gap:18px}
   .fit-grid{grid-template-columns:1fr;gap:48px}
@@ -205,7 +201,7 @@ footer{padding:72px 56px;border-top:1px solid var(--grey-dk);display:flex;justif
 <!-- HERO — centered, spare -->
 <section id="hero">
   <div class="hero-inner">
-    <span class="eyebrow">Private Lifestyle Advisory</span>
+    <span class="eyebrow">Premium Travel Architecture</span>
     <h1 class="display">Same spend.<br><em>Different outcome.</em></h1>
     <p class="hero-sub">The money for a materially better travel life is usually already there. What's missing is the structure underneath it.</p>
     <div class="hero-cta">
@@ -215,16 +211,12 @@ footer{padding:72px 56px;border-top:1px solid var(--grey-dk);display:flex;justif
   </div>
 </section>
 
-<!-- BREATHER — single statement alone -->
-<section class="breather reveal">
-  <h2 class="h2">Your spend is already there.<br><em>Your routing isn't.</em></h2>
-</section>
-
 <!-- THE PROBLEM -->
 <section class="reveal">
   <div class="inner">
     <span class="eyebrow">The Problem</span>
-    <div style="max-width:560px;margin-bottom:80px">
+    <h2 class="h2" style="max-width:680px;margin-bottom:32px">Your spend is already there.<br><em>Your routing isn't.</em></h2>
+    <div style="max-width:560px;margin-bottom:56px">
       <p class="lead">The institutions that decide who boards first, who gets upgraded, and who gets called when a flight cancels see a small slice of you — not the full picture of a premium client. The spend isn't missing. It's misdirected.</p>
     </div>
     <div class="change-row" style="border-top:1px solid var(--grey-dk)">
@@ -255,7 +247,7 @@ footer{padding:72px 56px;border-top:1px solid var(--grey-dk);display:flex;justif
 <section class="reveal" style="background:var(--black2)">
   <div class="inner">
     <span class="eyebrow">What Changes</span>
-    <h2 class="h2" style="max-width:680px;margin-bottom:72px">The experience stops feeling <em>negotiated.</em></h2>
+    <h2 class="h2" style="max-width:680px;margin-bottom:48px">The experience stops feeling <em>negotiated.</em></h2>
     <div class="change-row" style="border-top:1px solid var(--grey-dk)">
       <div class="change-cat">In the air</div>
       <div>
@@ -294,8 +286,8 @@ footer{padding:72px 56px;border-top:1px solid var(--grey-dk);display:flex;justif
   </div>
 </section>
 
-<!-- BREATHER 2 — the signature shift motif -->
-<section class="breather reveal">
+<!-- THE SHIFT — signature motif, normal rhythm not a void -->
+<section class="reveal" style="text-align:center">
   <div style="max-width:760px;margin:0 auto">
     <span class="eyebrow-quiet">The whole idea, in one line</span>
     <div class="shift" style="justify-content:center">
@@ -418,7 +410,7 @@ footer{padding:72px 56px;border-top:1px solid var(--grey-dk);display:flex;justif
   <div class="footer-left">
     © 2026 Quiet Premium · editor@quietpremium.com<br>
     Same spend. Different outcome.<br>
-    <span style="color:var(--grey-dk)">v1.2.0</span>
+    <span style="color:var(--grey-dk)">v1.2.1</span>
   </div>
   <div class="footer-links">
     <a href="architecture.html" class="footer-link">The Architecture</a>
