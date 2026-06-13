@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<!-- Quiet Premium · diagnostic.html · build v1.1.0 · 2026-06-13 · parser-fix, status-title-fix, cert-language-accuracy, household-flights, version-stamp -->
 <html lang="en">
 <head>
 <!-- Google tag (gtag.js) -->
@@ -304,7 +305,7 @@ textarea{resize:vertical;min-height:80px}
 
       <div class="field"><label class="field-lbl">Current elite tier with that airline <span class="req">*</span></label><input type="text" name="primary_airline" required placeholder="e.g. Delta Gold Medallion, United Silver, or None" oninput="updateProgress()"/></div>
 
-      <div class="field"><label class="field-lbl">Flights personally taken — past 12 months <span class="req">*</span></label>
+      <div class="field"><label class="field-lbl">Household flights in the past 12 months <span class="req">*</span></label>
         <div class="opts" data-name="flights_taken" data-type="radio">
           <div class="opt" data-value="1-5"><div class="opt-ind circle"></div><div class="opt-txt">1–5</div></div>
           <div class="opt" data-value="6-10"><div class="opt-ind circle"></div><div class="opt-txt">6–10</div></div>
@@ -594,6 +595,7 @@ textarea{resize:vertical;min-height:80px}
     </div>;align-items:center;flex-wrap:wrap;gap:12px">
       <p style="font-family:var(--mono);font-size:7.5px;letter-spacing:.06em;color:var(--grey-dk);line-height:1.8;max-width:700px">Potential value estimates are based on your inputs and published program benefits as of 2025–2026. Actual outcomes vary by redemption choices, program availability, and issuer terms. Status benefits are subject to airline and hotel program policies and may change. Quiet Premium is not affiliated with any airline, hotel, or card issuer mentioned.</p>
       <p style="font-family:var(--mono);font-size:8px;letter-spacing:.1em;text-transform:uppercase;color:var(--grey-mid);white-space:nowrap">Know someone this applies to? <a href="https://quietpremium.com" style="color:var(--gold);text-decoration:none">quietpremium.com</a></p>
+      <p style="font-family:var(--mono);font-size:7px;letter-spacing:.08em;color:var(--grey-dk);margin-top:14px">v1.1.0</p>
     </div>
   </div>
 
@@ -721,11 +723,21 @@ function fmtD(n){const r=Math.round(n/100)*100;return'$'+r.toLocaleString();}
 function firstName(fullName){return(fullName||'').split(' ')[0]||'You';}
 
 // ── RESULTS ENGINE ────────────────────────────────────
+function parseMoney(v){
+  if(v==null) return 0;
+  let s=String(v).trim().toLowerCase().replace(/[$,\s]/g,'');
+  if(s==='') return 0;
+  let mult=1;
+  if(s.endsWith('k')){ mult=1000; s=s.slice(0,-1); }
+  else if(s.endsWith('m')){ mult=1000000; s=s.slice(0,-1); }
+  const n=parseFloat(s);
+  return isNaN(n)?0:n*mult;
+}
 function generateResults(d){
-  const spend=parseFloat((d.total_spend||'0').replace(/[,$]/g,''))||0;
-  const dining=parseFloat((d.dining_spend||'0').replace(/[,$]/g,''))||0;
-  const grocery=parseFloat((d.grocery_spend||'0').replace(/[,$]/g,''))||0;
-  const general=parseFloat((d.general_spend||'0').replace(/[,$]/g,''))||0;
+  const spend=parseMoney(d.total_spend);
+  const dining=parseMoney(d.dining_spend);
+  const grocery=parseMoney(d.grocery_spend);
+  const general=parseMoney(d.general_spend);
   const fname=firstName(d.full_name);
 
   const cardAirfare=(d.card_airfare||'').toLowerCase();
@@ -957,7 +969,7 @@ function generateResults(d){
       beforeItems.push({txt:'Dining and grocery spend earning 2x — half of what it should.',note:'The Southwest Priority card earns 2x at restaurants. Amex Gold earns 4x worldwide with no cap. On combined dining and grocery spend, that difference compounds every month into value that is currently not arriving.'});
       afterItems.push({txt:'A parallel premium airline relationship — built from existing spend.',note:'The Delta Reserve routes everyday spend toward MQD accumulation. The $2,500 Headstart activates on the first billing cycle. Southwest routes stay exactly as they are. What changes is that every dollar spent outside of Southwest is now building toward a relationship that has an upgrade path, a lounge network, and a first class cabin.'});
       afterItems.push({txt:'Lounge access on every departure — including Southwest travel days.',note:'Centurion Lounge via Amex Platinum. Sky Club via Delta Reserve. Priority Pass Select via Platinum covers additional networks globally. None of these require flying Delta to access. A Southwest departure from any covered airport now begins differently.'});
-      afterItems.push({txt:'A first class cabin that actually upgrades.',note:'Delta Platinum Medallion delivers four Regional Upgrade Certificates annually — confirmed First Class when inventory is open. First Class on Delta is a different seat, a different start to the trip. Southwest has no equivalent and cannot offer one regardless of status or spend.'});
+      afterItems.push({txt:'A first class cabin that actually upgrades.',note:'Delta Platinum Medallion includes four First Class upgrade certificates a year as a Choice Benefit — confirmed First Class when inventory is open, high-priority waitlist when it is not. First Class on Delta is a different seat, a different start to the trip. Southwest has no equivalent and cannot offer one regardless of status or spend.'});
     } else {
       if(!isAtPlatinumOrAbove){
         beforeItems.push({txt:'Boards with the general cabin.',note:'Without Platinum status, every US departure starts the same way — group 4 or 5, bins filling, the trip beginning compressed. No recognition. No priority. No difference from any other traveler at that gate.'});
@@ -965,10 +977,10 @@ function generateResults(d){
       }
       if(!isAtGoldOrAbove){
         beforeItems.push({txt:'No upgrade eligibility on US flights.',note:'Without Gold status or above, there is no complimentary upgrade path on Delta. Comfort+ and First Class are purchased when wanted. Every premium seat costs money every time.'});
-        afterItems.push({txt:'Upgrade eligibility begins at Gold. It is supercharged at Platinum.',note:'Gold Medallion delivers complimentary upgrade eligibility on the waitlist. Platinum moves that priority ahead of every Gold member on the same flight — and adds four Regional Upgrade Certificates for confirmed domestic First Class. The path from no status to Gold to Platinum is a single year with the correct infrastructure in place.'});
+        afterItems.push({txt:'Upgrade eligibility begins at Gold. It is supercharged at Platinum.',note:'Gold Medallion delivers complimentary upgrade eligibility on the waitlist. Platinum moves that priority ahead of every Gold member on the same flight — and adds four First Class upgrade certificates a year, confirmed when inventory is open and high-priority waitlist when it is not. The path from no status to Gold to Platinum is a single year with the correct infrastructure in place.'});
       } else if(!isAtPlatinumOrAbove){
-        beforeItems.push({txt:'Gold upgrade eligibility — but no confirmed RUCs.',note:'Gold delivers upgrade priority and waitlist eligibility. Comfort+ is consistent. First Class clears when available. But the four confirmed Regional Upgrade Certificates belong to Platinum, not Gold. That gap is the next target — and the architecture gets there faster.'});
-        afterItems.push({txt:'Platinum adds what Gold does not have.',note:'Four Regional Upgrade Certificates for confirmed domestic First Class — not waitlisted, confirmed, four times per year. Upgrade priority that moves ahead of every Gold member on the same flight. The difference between Gold and Platinum is not incremental. It is the difference between eligibility and confirmation.'});
+        beforeItems.push({txt:'Gold upgrade eligibility — but without the Platinum certificates.',note:'Gold delivers upgrade priority and waitlist eligibility. Comfort+ is consistent. First Class clears when available. But the four First Class upgrade certificates belong to Platinum, not Gold. That gap is the next target — and the architecture gets there faster.'});
+        afterItems.push({txt:'Platinum adds what Gold does not have.',note:'Four First Class upgrade certificates a year — confirmed when upgrade inventory is open, high-priority waitlist ahead of standard requests when it is not. Upgrade priority that moves ahead of every Gold member on the same flight. The difference between Gold and Platinum is not incremental. It is the difference between eligibility and priority.'});
       }
     }
   } else if(isUnitedEco){
@@ -1094,17 +1106,17 @@ function generateResults(d){
     :'AAdvantage Gold delivers Group 4 boarding, complimentary upgrade eligibility, and first checked bag free for you and up to eight companions. The foundation of consistent American recognition.';
 
   const statusRows=isDeltaEco?[
-    {period:'Now',dot:'now',title:hasAirlineStatus?d.primary_airline:'No US airline status',body:isSouthwestEco?fname+' flies Southwest. Southwest has no lounge network, no premium cabin, and no card co-brand that produces a materially different travel experience from spend. The architecture builds a parallel Delta relationship from spend that is already happening — so the travel calendar that currently runs entirely through one product ceiling now has access to one that doesn\'t have it.':hasDeltaStatus?fname+' has existing Delta status. The architecture accelerates what\'s already accumulating — Reserve card MQD Boost adds to flight MQDs already building toward the next tier.':fname+' is currently invisible to the programs that decide who boards first and who gets upgraded. The card architecture changes that — the $2,500 MQD Headstart activates from the first billing cycle.'},
+    {period:'Now',dot:'now',title:hasAirlineStatus?'Current standing':'No US airline status',body:isSouthwestEco?fname+' flies Southwest. Southwest has no lounge network, no premium cabin, and no card co-brand that produces a materially different travel experience from spend. The architecture builds a parallel Delta relationship from spend that is already happening — so the travel calendar that currently runs entirely through one product ceiling now has access to one that doesn\'t have it.':hasDeltaStatus?fname+' has existing Delta status. The architecture accelerates what\'s already accumulating — Reserve card MQD Boost adds to flight MQDs already building toward the next tier.':fname+' is currently invisible to the programs that decide who boards first and who gets upgraded. The card architecture changes that — the $2,500 MQD Headstart activates from the first billing cycle.'},
     {period:'Month 1',dot:'future',title:isSouthwestEco?'Delta Reserve + Amex Gold added. Delta relationship begins.':'Full architecture deployed',body:isSouthwestEco?'Delta Reserve and Amex Gold added alongside existing Southwest travel. All non-Southwest spend correctly routed from day one. $2,500 MQD Headstart activates on first billing cycle — status accumulation begins before a single Delta flight. FHR benefits live on the next hotel stay booked through Amex Travel.':'Delta Reserve and Amex Gold added. All spend correctly routed from day one. $2,500 MQD Headstart activates on first billing cycle. FHR benefits live on the next hotel stay booked through Amex Travel.'},
-    {period:'Months 2–6',dot:'future',title:'MQDs building · Recognition begins',body:isAtGoldOrAboveForPath?'Already at Gold. Platinum gap closes as Reserve card spend compounds the MQD Boost alongside flight MQDs. RUCs arrive at Platinum.':'Reserve card MQD Boost earning daily. Combined with flight MQDs, the first status tier comes into range.'},
+    {period:'Months 2–6',dot:'future',title:'MQDs building · Recognition begins',body:isAtGoldOrAboveForPath?'Already at Gold. Platinum gap closes as Reserve card spend compounds the MQD Boost alongside flight MQDs. The Platinum upgrade certificates arrive at that tier.':'Reserve card MQD Boost earning daily. Combined with flight MQDs, the first status tier comes into range.'},
     {period:'Year end',dot:'target',title:nextTierLabel+' — the target',body:nextTierDesc},
   ]:isUnitedEco?[
-    {period:'Now',dot:'now',title:hasAirlineStatus?d.primary_airline:'No United status',body:fname+' is currently earning miles without building Premier status efficiently. United Club Infinite adds up to 28,000 PQP per year from card spend — status accelerates from everyday purchases, not just flights.'},
+    {period:'Now',dot:'now',title:hasAirlineStatus?'Current standing':'No United status',body:fname+' is currently earning miles without building Premier status efficiently. United Club Infinite adds up to 28,000 PQP per year from card spend — status accelerates from everyday purchases, not just flights.'},
     {period:'Month 1',dot:'future',title:'United Club Infinite + Amex Gold added',body:'United Club lounge access activates on day one. 1,500 PQP card bonus posts within weeks. All United airfare earns 11x miles. Amex Gold routes dining and grocery to 4x. FHR activates on next hotel stay via Amex Travel.'},
     {period:'Months 2–6',dot:'future',title:'PQPs accumulating · Lounge access active',body:'Projected ~'+fmtD(pqpCard+pqpBonus)+' PQP from card spend alone by year end before a single flight. United Club access active on every United departure immediately.'},
     {period:'Year end',dot:'target',title:unitedStatusTarget+' — projected',body:unitedNextDesc},
   ]:[
-    {period:'Now',dot:'now',title:hasAirlineStatus?d.primary_airline:'No AAdvantage status',body:fname+' is currently flying American without building AAdvantage status efficiently. The Citi AAdvantage Executive card earns Loyalty Points on every dollar of card spend — accelerating status from everyday purchases alongside flights.'},
+    {period:'Now',dot:'now',title:hasAirlineStatus?'Current standing':'No AAdvantage status',body:fname+' is currently flying American without building AAdvantage status efficiently. The Citi AAdvantage Executive card earns Loyalty Points on every dollar of card spend — accelerating status from everyday purchases alongside flights.'},
     {period:'Month 1',dot:'future',title:'Citi AAdvantage Executive + Amex Gold added',body:'Admirals Club membership activates on day one — extending to travel companions. First checked bag free immediately. Every purchase earns Loyalty Points. FHR activates on next hotel stay via Amex Travel.'},
     {period:'Months 2–6',dot:'future',title:'Loyalty Points building · Admirals Club active',body:'Projected ~'+fmtD(lpCard)+' LP from card spend alone before a single flight. Admirals Club access active on every American departure immediately.'},
     {period:'Year end',dot:'target',title:aaStatusTarget+' — projected',body:aaNextDesc},
@@ -1161,7 +1173,7 @@ function generateResults(d){
     {lbl:'Points deployment',sub:'Conservative estimate of first-year redemption value from points currently sitting idle across existing card accounts.',amt:v4},
     {lbl:'Amex Gold card credits',sub:'$120 dining credit and $84 Dunkin credit annually — partially offsetting the Gold card annual fee.',amt:v5},
     {lbl:'Annual companion certificate',sub:'Delta Reserve annual companion certificate — one round-trip companion fare after year one of card hold.',amt:v6},
-    {lbl:"Regional Upgrade Certificates (×4)",sub:"Four First Class upgrade certificates annually as a Platinum Medallion Choice Benefit. When upgrade inventory is open, confirmed immediately. When it is not, first in line ahead of every standard upgrade request on that flight. $200 per certificate estimated value. Subject to availability per program terms.",amt:v7},
+    {lbl:"First Class upgrade certificates (×4)",sub:"Four First Class upgrade certificates annually as a Platinum Medallion Choice Benefit. When upgrade inventory is open, confirmed immediately. When it is not, first in line ahead of every standard upgrade request on that flight. $200 per certificate estimated value. Subject to availability per program terms.",amt:v7},
     {lbl:isUnitedEco?"Bag savings — United Club Infinite":isAmericanEco?"Bag savings — Citi AAdvantage Executive":"",sub:isUnitedEco?"First and second checked bags free for cardholder and companion on every United flight.":isAmericanEco?"First checked bag free for cardholder and up to eight companions on every American itinerary.":"",amt:v8},
   ].filter(r=>r.amt>0);
 
