@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Quiet Premium · index.html · build v1.2.1 · 2026-06-13 · AESOP-redesign tuned: voids removed (breathers folded into content), hero right-sized, eyebrow tightened, 'Premium Travel Architecture' label · content+CTAs+SEO preserved -->
+<!-- Quiet Premium · index.html · build v1.3.0 · 2026-06-13 · hero image (Stocksy 291825 / hero.jpg), full-bleed treatment, gradient overlay, image-ready bands added -->
 <html lang="en">
 <head>
 <!-- Google tag (gtag.js) -->
@@ -78,7 +78,7 @@ section{padding:100px 56px;position:relative}
 .eyebrow-quiet{font-family:var(--mono);font-size:8px;letter-spacing:.2em;text-transform:uppercase;color:var(--grey-mid);margin-bottom:16px;display:block}
 
 /* TYPE SCALE — bigger display, distilled body */
-.display{font-family:var(--serif);font-size:clamp(52px,8vw,104px);font-weight:300;line-height:0.98;letter-spacing:-.015em}
+.display{font-family:var(--serif);font-size:clamp(52px,8vw,104px);font-weight:300;line-height:0.98;letter-spacing:-.015em;text-shadow:0 2px 32px rgba(0,0,0,0.4)}
 .display em{font-style:italic;color:var(--gold)}
 .h2{font-family:var(--serif);font-size:clamp(36px,5vw,64px);font-weight:300;line-height:1.04;letter-spacing:-.01em}
 .h2 em{font-style:italic;color:var(--gold)}
@@ -98,14 +98,31 @@ section{padding:100px 56px;position:relative}
 /* BUTTONS — restrained */
 .btn{display:inline-block;background:var(--gold);color:var(--black);font-family:var(--mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;border:none;cursor:pointer;padding:18px 40px;transition:background .3s;text-decoration:none}
 .btn:hover{background:var(--gold-lt)}
-.btn-note{font-family:var(--mono);font-size:8px;letter-spacing:.12em;text-transform:uppercase;color:var(--grey-mid);margin-top:16px;display:block}
+.btn-note{font-family:var(--mono);font-size:8px;letter-spacing:.12em;text-transform:uppercase;color:rgba(245,242,236,0.6);margin-top:16px;display:block}
 .link-quiet{font-family:var(--mono);font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--grey);text-decoration:none;transition:color .3s;display:inline-block}
 .link-quiet:hover{color:var(--gold)}
 
 /* HERO — centered, spare, confident */
-#hero{min-height:auto;display:flex;flex-direction:column;justify-content:center;padding:130px 56px 100px;text-align:center}
+#hero{
+  position:relative;min-height:90vh;display:flex;flex-direction:column;
+  justify-content:center;padding:130px 56px 100px;text-align:center;
+  background:url('hero.jpg') center center/cover no-repeat;
+  overflow:hidden;
+}
+#hero::before{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(
+    to bottom,
+    rgba(10,10,10,0.45) 0%,
+    rgba(10,10,10,0.30) 35%,
+    rgba(10,10,10,0.55) 70%,
+    rgba(10,10,10,0.88) 100%
+  );
+  z-index:1;
+}
+#hero>*{position:relative;z-index:2}
 .hero-inner{max-width:900px;margin:0 auto}
-.hero-sub{font-size:17px;color:var(--grey);line-height:1.8;max-width:480px;margin:36px auto 0}
+.hero-sub{font-size:17px;color:rgba(245,242,236,0.82);line-height:1.8;max-width:480px;margin:36px auto 0}
 .hero-cta{margin-top:52px}
 
 
@@ -161,6 +178,22 @@ footer{padding:72px 56px;border-top:1px solid var(--grey-dk);display:flex;justif
 .footer-link:hover{color:var(--gold)}
 .disclaimer{font-family:var(--mono);font-size:8px;letter-spacing:.05em;color:var(--grey-mid);line-height:1.9;max-width:880px;margin:0 auto;text-align:center;padding:0 56px 64px}
 
+
+/* IMAGE BAND — secondary image treatment for What Changes */
+.img-band{
+  position:relative;
+  background:url('hotel.jpg') center 30%/cover no-repeat var(--black2);
+}
+.img-band-overlay{
+  position:absolute;inset:0;
+  background:linear-gradient(
+    to bottom,
+    rgba(10,10,10,0.78) 0%,
+    rgba(10,10,10,0.72) 50%,
+    rgba(10,10,10,0.85) 100%
+  );
+  z-index:1;
+}
 /* MOTION — restrained scroll reveal */
 .reveal{opacity:0;transform:translateY(16px);transition:opacity .9s ease,transform .9s ease}
 .reveal.in{opacity:1;transform:none}
@@ -172,7 +205,7 @@ footer{padding:72px 56px;border-top:1px solid var(--grey-dk);display:flex;justif
   .nav-links{display:none}
   .hamburger{display:flex}
   section{padding:100px 28px}
-  #hero{padding:120px 28px 80px;min-height:88vh}
+  #hero{padding:110px 28px 90px;min-height:85vh}
   .change-row{grid-template-columns:1fr;gap:12px;padding:30px 0}
   .proof-grid{grid-template-columns:1fr;gap:18px}
   .fit-grid{grid-template-columns:1fr;gap:48px}
@@ -201,7 +234,7 @@ footer{padding:72px 56px;border-top:1px solid var(--grey-dk);display:flex;justif
 <!-- HERO — centered, spare -->
 <section id="hero">
   <div class="hero-inner">
-    <span class="eyebrow">Premium Travel Architecture</span>
+    <span class="eyebrow" style="opacity:0.85">Premium Travel Architecture</span>
     <h1 class="display">Same spend.<br><em>Different outcome.</em></h1>
     <p class="hero-sub">The money for a materially better travel life is usually already there. What's missing is the structure underneath it.</p>
     <div class="hero-cta">
@@ -244,8 +277,9 @@ footer{padding:72px 56px;border-top:1px solid var(--grey-dk);display:flex;justif
 </section>
 
 <!-- WHAT CHANGES -->
-<section class="reveal" style="background:var(--black2)">
-  <div class="inner">
+<section class="reveal img-band">
+  <div class="img-band-overlay"></div>
+  <div class="inner" style="position:relative;z-index:2">
     <span class="eyebrow">What Changes</span>
     <h2 class="h2" style="max-width:680px;margin-bottom:48px">The experience stops feeling <em>negotiated.</em></h2>
     <div class="change-row" style="border-top:1px solid var(--grey-dk)">
@@ -410,7 +444,7 @@ footer{padding:72px 56px;border-top:1px solid var(--grey-dk);display:flex;justif
   <div class="footer-left">
     © 2026 Quiet Premium · editor@quietpremium.com<br>
     Same spend. Different outcome.<br>
-    <span style="color:var(--grey-dk)">v1.2.1</span>
+    <span style="color:var(--grey-dk)">v1.3.0</span>
   </div>
   <div class="footer-links">
     <a href="architecture.html" class="footer-link">The Architecture</a>
