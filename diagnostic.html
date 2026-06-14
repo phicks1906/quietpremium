@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Quiet Premium · diagnostic.html · build v1.2.0 · 2026-06-13 · stepped-intake-wizard, save-resume, a11y, results-feedback-cta, footer-div-fix, parser-fix, status-title-fix, cert-language-accuracy, household-flights, version-stamp, contrast-fix-grey-mid -->
+<!-- Quiet Premium · diagnostic.html · build v1.2.1 · 2026-06-13 · stepped-intake-wizard, save-resume, a11y, results-feedback-cta, footer-div-fix, parser-fix, status-title-fix, cert-language-accuracy, household-flights, version-stamp, contrast-fix-grey-mid, intake-placeholder-leak-fix (neutralized 6 stack-revealing placeholders) -->
 <html lang="en">
 <head>
 <!-- Google tag (gtag.js) -->
@@ -320,12 +320,12 @@ textarea{resize:vertical;min-height:80px}
         <div class="sec-hd-title">Card Infrastructure</div>
       </div>
 
-      <div class="field"><label class="field-lbl">Primary cards currently used — full names required <span class="req">*</span></label><div class="field-hint">List the exact full card names you use most frequently.</div><textarea name="primary_cards" required placeholder="e.g. American Express Platinum Card, Delta SkyMiles Reserve American Express Card" oninput="updateProgress()"></textarea></div>
-      <div class="field"><label class="field-lbl">Airfare — which card do you primarily use? <span class="req">*</span></label><input type="text" name="card_airfare" required placeholder="e.g. Amex Platinum" oninput="updateProgress()"/></div>
-      <div class="field"><label class="field-lbl">Hotels — which card do you primarily use? <span class="req">*</span></label><input type="text" name="card_hotels" required placeholder="e.g. Amex Platinum" oninput="updateProgress()"/></div>
-      <div class="field"><label class="field-lbl">Dining — which card do you primarily use? <span class="req">*</span></label><input type="text" name="card_dining" required placeholder="e.g. Amex Gold" oninput="updateProgress()"/></div>
-      <div class="field"><label class="field-lbl">Groceries — which card do you primarily use? <span class="req">*</span></label><input type="text" name="card_groceries" required placeholder="e.g. Amex Gold" oninput="updateProgress()"/></div>
-      <div class="field"><label class="field-lbl">General / non-bonused spend — which card do you primarily use? <span class="req">*</span></label><input type="text" name="card_general" required placeholder="e.g. Delta SkyMiles Reserve" oninput="updateProgress()"/></div>
+      <div class="field"><label class="field-lbl">Primary cards currently used — full names required <span class="req">*</span></label><div class="field-hint">List the exact full card names you use most frequently.</div><textarea name="primary_cards" required placeholder="Full card names, separated by commas" oninput="updateProgress()"></textarea></div>
+      <div class="field"><label class="field-lbl">Airfare — which card do you primarily use? <span class="req">*</span></label><input type="text" name="card_airfare" required placeholder="Card name" oninput="updateProgress()"/></div>
+      <div class="field"><label class="field-lbl">Hotels — which card do you primarily use? <span class="req">*</span></label><input type="text" name="card_hotels" required placeholder="Card name" oninput="updateProgress()"/></div>
+      <div class="field"><label class="field-lbl">Dining — which card do you primarily use? <span class="req">*</span></label><input type="text" name="card_dining" required placeholder="Card name" oninput="updateProgress()"/></div>
+      <div class="field"><label class="field-lbl">Groceries — which card do you primarily use? <span class="req">*</span></label><input type="text" name="card_groceries" required placeholder="Card name" oninput="updateProgress()"/></div>
+      <div class="field"><label class="field-lbl">General / non-bonused spend — which card do you primarily use? <span class="req">*</span></label><input type="text" name="card_general" required placeholder="Card name" oninput="updateProgress()"/></div>
 
       <div class="field"><label class="field-lbl">Have you activated TSA PreCheck and CLEAR through your current card benefits? <span class="req">*</span></label>
         <div class="opts" data-name="tsa_clear_activated" data-type="radio">
@@ -670,7 +670,7 @@ textarea{resize:vertical;min-height:80px}
     <div style="display:flex;align-items:center;flex-wrap:wrap;gap:12px">
       <p style="font-family:var(--mono);font-size:7.5px;letter-spacing:.06em;color:var(--grey-dk);line-height:1.8;max-width:700px">Potential value estimates are based on your inputs and published program benefits as of 2025–2026. Actual outcomes vary by redemption choices, program availability, and issuer terms. Status benefits are subject to airline and hotel program policies and may change. Quiet Premium is not affiliated with any airline, hotel, or card issuer mentioned.</p>
       <p style="font-family:var(--mono);font-size:8px;letter-spacing:.1em;text-transform:uppercase;color:var(--grey-mid);white-space:nowrap">Know someone this applies to? <a href="https://quietpremium.com" style="color:var(--gold);text-decoration:none">quietpremium.com</a></p>
-      <p style="font-family:var(--mono);font-size:7px;letter-spacing:.08em;color:var(--grey-dk);margin-top:14px">v1.2.0</p>
+      <p style="font-family:var(--mono);font-size:7px;letter-spacing:.08em;color:var(--grey-dk);margin-top:14px">v1.2.1</p>
     </div>
   </div>
 
