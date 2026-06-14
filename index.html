@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Quiet Premium · index.html · build v1.5.0 · 2026-06-14 · COSMETIC PASS: new hero (dusk business cabin) replaces flat hero2; two full-bleed photo bands (band-air after The Problem, band-hotel after What Changes) break the text-on-black scroll; "whole idea" one-liner rebuilt onto band-lounge image instead of floating in a black void; What Changes returned to clean text (img-band bg removed). Assets: /hero-cabin.jpeg /band-air.jpeg /band-hotel.jpeg /band-lounge.jpeg. Positioning/copy unchanged. -->
+<!-- Quiet Premium · index.html · build v1.5.1 · 2026-06-14 · COSMETIC PASS: new hero (dusk business cabin) replaces flat hero2; two full-bleed photo bands (band-air after The Problem, band-hotel after What Changes) break the text-on-black scroll; "whole idea" one-liner rebuilt onto band-lounge image instead of floating in a black void; What Changes returned to clean text (img-band bg removed). Assets: /hero-cabin.jpeg /band-air.jpeg /band-hotel.jpeg /band-lounge.jpeg. v1.5.1: close anchored on /hero.jpeg so the final CTA lands on an image not black. Positioning/copy unchanged. -->
 <html lang="en">
 <head>
 <!-- Google tag (gtag.js) -->
@@ -202,6 +202,18 @@ footer{padding:72px 56px;border-top:1px solid var(--grey-dk);display:flex;justif
   background:linear-gradient(to bottom,rgba(10,10,10,0.86) 0%,rgba(10,10,10,0.80) 50%,rgba(10,10,10,0.90) 100%);
 }
 .shift-band>*{position:relative;z-index:2}
+
+/* CLOSE BAND — final CTA lands on an image (arrival), not black */
+.close-band{
+  position:relative;
+  background:url('/hero.jpeg') center 50%/cover no-repeat #0a0a0a;
+  padding:132px 56px;
+}
+.close-band::before{
+  content:'';position:absolute;inset:0;z-index:1;
+  background:linear-gradient(to bottom,rgba(10,10,10,0.74) 0%,rgba(10,10,10,0.80) 55%,rgba(10,10,10,0.92) 100%);
+}
+.close-band>*{position:relative;z-index:2}
 /* MOTION — restrained scroll reveal */
 .reveal{opacity:0;transform:translateY(16px);transition:opacity .9s ease,transform .9s ease}
 .reveal.in{opacity:1;transform:none}
@@ -221,6 +233,7 @@ footer{padding:72px 56px;border-top:1px solid var(--grey-dk);display:flex;justif
   .photo-band{height:38vh;min-height:240px}
   .photo-band .cap{padding:0 24px 22px}
   .shift-band{padding:80px 24px}
+  .close-band{padding:90px 24px}
 }
 </style>
 </head>
@@ -441,7 +454,7 @@ footer{padding:72px 56px;border-top:1px solid var(--grey-dk);display:flex;justif
 </section>
 
 <!-- CLOSE -->
-<section class="reveal close">
+<section class="reveal close close-band">
   <span class="eyebrow" style="display:block">Find out what your spend is producing</span>
   <h2 class="h2">Your number is <em>fifteen minutes away.</em></h2>
   <a href="diagnostic.html" class="btn">Begin The Architecture</a>
