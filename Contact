@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<!-- Quiet Premium · contact.html · build v1.1.0 · 2026-06-14 · removed stale "Gap Index"/"no email required" references (meta description + form success message) after gap-index retirement; success message now points to architecture.html. Form/Formspree logic unchanged. -->
 <html lang="en">
 <head>
 <!-- Google tag (gtag.js) -->
@@ -12,14 +13,14 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
 <title>Contact — Quiet Premium</title>
-<meta name="description" content="Questions about The Architecture or The Gap Index? Send a note. Every message goes directly to the team."/>
+<meta name="description" content="Questions about The Architecture? Send a note. Every message goes directly to the team."/>
 <meta name="keywords" content="quiet premium contact, travel advisory contact"/>
 <meta property="og:title" content="Contact Quiet Premium"/>
-<meta property="og:description" content="Questions before purchasing? Send a note. Every message goes directly to the team."/>
+<meta property="og:description" content="Questions before getting started? Send a note. Every message goes directly to the team."/>
 <meta property="og:type" content="website"/>
 <meta name="twitter:card" content="summary_large_image"/>
 <meta name="twitter:title" content="Contact Quiet Premium"/>
-<meta name="twitter:description" content="Questions before purchasing? Send a note. Every message goes directly to the team."/>
+<meta name="twitter:description" content="Questions before getting started? Send a note. Every message goes directly to the team."/>
 <link rel="canonical" href="https://quietpremium.com/contact.html"/>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
@@ -110,7 +111,7 @@ nav{position:fixed;top:0;left:0;right:0;z-index:50;padding:20px 48px;display:fle
 
     <div class="eyebrow">Get in touch</div>
     <h1 class="headline">A question worth<br><em>asking.</em></h1>
-    <p class="subtext">If you're not sure whether The Architecture is right for your situation, or if you have a question before committing, send a note. Every message goes directly to the team.</p>
+    <p class="subtext">If you're not sure whether The Architecture is right for your situation, or if you have a question before getting started, send a note. Every message goes directly to the team.</p>
 
     <form id="contact-form">
 
@@ -128,8 +129,8 @@ nav{position:fixed;top:0;left:0;right:0;z-index:50;padding:20px 48px;display:fle
         <label for="reason">What's this about?</label>
         <select id="reason" name="reason" required>
           <option value="" disabled selected>Select one</option>
-          <option value="Question before purchasing">Question before purchasing</option>
-          <option value="Already purchased — need support">Already purchased — need support</option>
+          <option value="Question before getting started">Question before getting started</option>
+          <option value="Already completed — need support">Already completed — need support</option>
           <option value="Not sure if it's right for me">Not sure if it's right for me</option>
           <option value="Something else">Something else</option>
         </select>
@@ -148,7 +149,7 @@ nav{position:fixed;top:0;left:0;right:0;z-index:50;padding:20px 48px;display:fle
       <div class="success" id="success-box">
         <div class="success-ey">Message received</div>
         <div class="success-hl">You'll hear back within one business day.</div>
-        <div class="success-body">In the meantime, if you haven't taken the Gap Index, it takes two minutes and shows you exactly where the leak is — no email required. <a href="/gap-index.html" style="color:var(--gold);text-decoration:none">quietpremium.com/gap-index.html</a></div>
+        <div class="success-body">In the meantime, if you haven't seen it yet, The Architecture maps exactly where your spend is leaking and the plan to fix it — about fifteen minutes, complimentary during our founding period. <a href="/architecture.html" style="color:var(--gold);text-decoration:none">See The Architecture →</a></div>
       </div>
 
     </form>
