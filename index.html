@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Quiet Premium · index.html · build v1.5.2 · 2026-06-14 · COSMETIC PASS: new hero (dusk business cabin) replaces flat hero2; two full-bleed photo bands (band-air after The Problem, band-hotel after What Changes) break the text-on-black scroll; "whole idea" one-liner rebuilt onto band-lounge image instead of floating in a black void; What Changes returned to clean text (img-band bg removed). Assets: /hero-cabin.jpeg /band-air.jpeg /band-hotel.jpeg /band-lounge.jpeg. v1.5.1: close anchored on /hero.jpeg so the final CTA lands on an image not black. v1.5.2: removed redundant Process section (restated The Architecture; private-conversation line folded into Architecture); tightened mobile hero bottom gap. End now reads Proof -> Who This Is For -> Close. -->
+<!-- Quiet Premium · index.html · build v1.5.3 · 2026-06-14 · COSMETIC PASS: new hero (dusk business cabin) replaces flat hero2; two full-bleed photo bands (band-air after The Problem, band-hotel after What Changes) break the text-on-black scroll; "whole idea" one-liner rebuilt onto band-lounge image instead of floating in a black void; What Changes returned to clean text (img-band bg removed). Assets: /hero-cabin.jpeg /band-air.jpeg /band-hotel.jpeg /band-lounge.jpeg. v1.5.1: close anchored on /hero.jpeg so the final CTA lands on an image not black. v1.5.2: removed redundant Process section (restated The Architecture; private-conversation line folded into Architecture); tightened mobile hero bottom gap. End now reads Proof -> Who This Is For -> Close. v1.5.3: hero framing raised (center 40%) and bottom gradient lightened (0.88->0.74) to remove the black-void feel under the CTA; mobile hero bottom padding trimmed. Footer label synced. -->
 <html lang="en">
 <head>
 <!-- Google tag (gtag.js) -->
@@ -106,17 +106,17 @@ section{padding:100px 56px;position:relative}
 #hero{
   position:relative;min-height:84vh;display:flex;flex-direction:column;
   justify-content:center;padding:110px 56px 60px;text-align:center;
-  background:url('/hero-cabin.jpeg') center 55%/cover no-repeat #0a0a0a;
+  background:url('/hero-cabin.jpeg') center 40%/cover no-repeat #0a0a0a;
   overflow:hidden;
 }
 #hero::before{
   content:'';position:absolute;inset:0;
   background:linear-gradient(
     to bottom,
-    rgba(10,10,10,0.66) 0%,
-    rgba(10,10,10,0.52) 38%,
-    rgba(10,10,10,0.58) 68%,
-    rgba(10,10,10,0.88) 100%
+    rgba(10,10,10,0.64) 0%,
+    rgba(10,10,10,0.50) 38%,
+    rgba(10,10,10,0.54) 68%,
+    rgba(10,10,10,0.74) 100%
   );
   z-index:1;
 }
@@ -225,7 +225,7 @@ footer{padding:72px 56px;border-top:1px solid var(--grey-dk);display:flex;justif
   .nav-links{display:none}
   .hamburger{display:flex}
   section{padding:56px 24px}
-  #hero{padding:92px 24px 18px;min-height:auto}
+  #hero{padding:92px 24px 10px;min-height:auto}
   .change-row{grid-template-columns:1fr;gap:12px;padding:30px 0}
   .proof-grid{grid-template-columns:1fr;gap:18px}
   .fit-grid{grid-template-columns:1fr;gap:36px}
@@ -440,7 +440,7 @@ footer{padding:72px 56px;border-top:1px solid var(--grey-dk);display:flex;justif
   <div class="footer-left">
     © 2026 Quiet Premium · editor@quietpremium.com<br>
     Same spend. Different outcome.<br>
-    <span style="color:var(--grey-dk)">v1.5.2</span>
+    <span style="color:var(--grey-dk)">v1.5.3</span>
   </div>
   <div class="footer-links">
     <a href="architecture.html" class="footer-link">The Architecture</a>
