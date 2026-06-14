@@ -242,6 +242,17 @@ textarea{resize:vertical;min-height:80px}
 @media(prefers-reduced-motion:reduce){
   *{animation-duration:.001ms!important;transition-duration:.001ms!important;scroll-behavior:auto!important}
 }
+/* ── ONE-TAP REACTION ── */
+.reaction{padding:24px 0 8px;border-bottom:1px solid var(--grey-dk);margin-bottom:4px}
+.reaction-q{font-family:var(--serif);font-size:18px;font-weight:300;color:var(--white);margin-bottom:16px}
+.reaction-pills{display:flex;gap:10px;flex-wrap:wrap}
+.reaction-pill{font-family:var(--mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--grey);background:none;border:1px solid var(--grey-dk);cursor:pointer;padding:11px 22px;transition:border-color .25s ease,color .25s ease,background .25s ease,opacity .25s ease}
+.reaction-pill:hover{border-color:var(--gold-dk);color:var(--white)}
+.reaction-pill.selected{border-color:var(--gold);background:rgba(176,141,87,.08);color:var(--gold)}
+.reaction-pill.dim{opacity:.35}
+.reaction-thanks{display:none;font-family:var(--mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold-dk)}
+.reaction.done .reaction-pills{display:none}
+.reaction.done .reaction-thanks{display:block}
 </style>
 </head>
 <body>
@@ -565,6 +576,17 @@ textarea{resize:vertical;min-height:80px}
       </div>
     </div>
 
+    <!-- ONE-TAP REACTION -->
+    <div class="reaction" id="reaction-band">
+      <div class="reaction-q">Was that higher or lower than you expected?</div>
+      <div class="reaction-pills" id="reaction-pills">
+        <button type="button" class="reaction-pill" data-reaction="Higher">Higher</button>
+        <button type="button" class="reaction-pill" data-reaction="About right">About right</button>
+        <button type="button" class="reaction-pill" data-reaction="Lower">Lower</button>
+      </div>
+      <div class="reaction-thanks" id="reaction-thanks">Noted — thank you.</div>
+    </div>
+
     <!-- SECTION 2 — THREE CORRECTIONS -->
     <div class="res-section">
       <div class="res-sec-lbl">Where the money is going</div>
@@ -813,6 +835,34 @@ function qpInitWizard(){
 // ── PROGRESS ──
 function updateProgress(){qpSave();}
 
+// ── ONE-TAP REACTION ──
+function qpInitReaction(){
+  var band=document.getElementById('reaction-band');
+  if(!band)return;
+  var pills=band.querySelectorAll('.reaction-pill');
+  var done=false;
+  for(var i=0;i<pills.length;i++){
+    pills[i].addEventListener('click',function(){
+      if(done)return; done=true;
+      var picked=this;
+      for(var j=0;j<pills.length;j++){
+        pills[j].disabled=true;
+        if(pills[j]===picked){pills[j].classList.add('selected');}else{pills[j].classList.add('dim');}
+      }
+      qpReactionSend(picked.getAttribute('data-reaction'));
+      setTimeout(function(){band.classList.add('done');},700);
+    });
+  }
+}
+function qpReactionSend(val){
+  try{if(typeof gtag==='function'){gtag('event','reaction_tap',{reaction:val});}}catch(e){}
+  if(new URLSearchParams(window.location.search).get('test')==='true')return;
+  var sub=window.QP_LAST||{};
+  var v=document.getElementById('r-value'), g=document.getElementById('r-gap'), m=document.getElementById('r-misaligned');
+  var payload={_subject:'Reaction — '+(sub.full_name||'')+' ('+val+')',reaction:val,name:sub.full_name||'',email:sub.email||'',potential_value:v?v.textContent:'',gap_score:g?g.textContent:'',spend_misrouted:m?m.textContent:'',total_spend:sub.total_spend||''};
+  try{fetch('https://formspree.io/f/mnjrvbpn',{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json'},body:JSON.stringify(payload)}).catch(function(e){});}catch(e){}
+}
+
 // ── VALIDATION ────────────────────────────────────────
 function validateForm(){
   const form=document.getElementById('arch-form');
@@ -845,6 +895,7 @@ function handleSubmit(e){
   if(!validateForm())return;
   qpClear();
   const d=Object.fromEntries(new FormData(e.target).entries());
+  window.QP_LAST=d;
   const isTest=new URLSearchParams(window.location.search).get('test')==='true';
   if(!isTest){
     fetch('https://formspree.io/f/mnjrvbpn',{
@@ -1355,6 +1406,7 @@ function generateResults(d){
 }
 
 qpInitWizard();
+qpInitReaction();
 </script>
 </body>
 </html>
