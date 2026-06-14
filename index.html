@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Quiet Premium · index.html · build v1.4.8 · 2026-06-14 · footer link relabeled How It Works→Why This Works (avoids on-page How It Works collision; no coined product name); points to converted gap-index explainer. Positioning copy unchanged. · v1.4.10: explainer links given real affordance — gold + underline, no longer hover-dependent. -->
+<!-- Quiet Premium · index.html · build v1.5.0 · 2026-06-14 · COSMETIC PASS: new hero (dusk business cabin) replaces flat hero2; two full-bleed photo bands (band-air after The Problem, band-hotel after What Changes) break the text-on-black scroll; "whole idea" one-liner rebuilt onto band-lounge image instead of floating in a black void; What Changes returned to clean text (img-band bg removed). Assets: /hero-cabin.jpg /band-air.jpg /band-hotel.jpg /band-lounge.jpg. Positioning/copy unchanged. -->
 <html lang="en">
 <head>
 <!-- Google tag (gtag.js) -->
@@ -104,19 +104,19 @@ section{padding:100px 56px;position:relative}
 
 /* HERO — centered, spare, confident */
 #hero{
-  position:relative;min-height:auto;display:flex;flex-direction:column;
+  position:relative;min-height:84vh;display:flex;flex-direction:column;
   justify-content:center;padding:110px 56px 60px;text-align:center;
-  background:url('/hero2.jpeg') center center/cover no-repeat;
+  background:url('/hero-cabin.jpg') center 55%/cover no-repeat #0a0a0a;
   overflow:hidden;
 }
 #hero::before{
   content:'';position:absolute;inset:0;
   background:linear-gradient(
     to bottom,
-    rgba(10,10,10,0.60) 0%,
-    rgba(10,10,10,0.45) 40%,
-    rgba(10,10,10,0.50) 70%,
-    rgba(10,10,10,0.85) 100%
+    rgba(10,10,10,0.66) 0%,
+    rgba(10,10,10,0.52) 38%,
+    rgba(10,10,10,0.58) 68%,
+    rgba(10,10,10,0.88) 100%
   );
   z-index:1;
 }
@@ -173,21 +173,35 @@ footer{padding:72px 56px;border-top:1px solid var(--grey-dk);display:flex;justif
 .disclaimer{font-family:var(--mono);font-size:8px;letter-spacing:.05em;color:var(--grey-mid);line-height:1.9;max-width:880px;margin:0 auto;text-align:center;padding:0 56px 64px}
 
 
-/* IMAGE BAND — secondary image treatment for What Changes */
-.img-band{
-  position:relative;
-  background:url('/Hero.jpg') center 35%/cover no-repeat var(--black2);
+/* FULL-BLEED PHOTO BANDS — visual rest between text sections */
+.photo-band{
+  position:relative;height:56vh;min-height:360px;max-height:560px;
+  background-size:cover;background-position:center;
+  display:flex;align-items:flex-end;
 }
-.img-band-overlay{
-  position:absolute;inset:0;
-  background:linear-gradient(
-    to bottom,
-    rgba(10,10,10,0.78) 0%,
-    rgba(10,10,10,0.72) 50%,
-    rgba(10,10,10,0.85) 100%
-  );
-  z-index:1;
+.photo-band::after{
+  content:'';position:absolute;inset:0;z-index:1;
+  background:linear-gradient(to bottom,rgba(10,10,10,0.20) 0%,rgba(10,10,10,0.10) 45%,rgba(10,10,10,0.55) 100%);
 }
+.photo-band .cap{
+  position:relative;z-index:2;padding:0 56px 34px;
+  font-family:var(--mono);font-size:9px;letter-spacing:.22em;text-transform:uppercase;
+  color:rgba(245,242,236,0.92);
+}
+.band-air{background-image:url('/band-air.jpg');background-position:center 42%}
+.band-hotel{background-image:url('/band-hotel.jpg');background-position:center 55%}
+
+/* THE SHIFT — one-liner now sits on an image, not in a void */
+.shift-band{
+  position:relative;text-align:center;
+  background:url('/band-lounge.jpg') center 45%/cover no-repeat #0a0a0a;
+  padding:120px 56px;
+}
+.shift-band::before{
+  content:'';position:absolute;inset:0;z-index:1;
+  background:linear-gradient(to bottom,rgba(10,10,10,0.86) 0%,rgba(10,10,10,0.80) 50%,rgba(10,10,10,0.90) 100%);
+}
+.shift-band>*{position:relative;z-index:2}
 /* MOTION — restrained scroll reveal */
 .reveal{opacity:0;transform:translateY(16px);transition:opacity .9s ease,transform .9s ease}
 .reveal.in{opacity:1;transform:none}
@@ -204,6 +218,9 @@ footer{padding:72px 56px;border-top:1px solid var(--grey-dk);display:flex;justif
   .proof-grid{grid-template-columns:1fr;gap:18px}
   .fit-grid{grid-template-columns:1fr;gap:36px}
   .step{grid-template-columns:36px 1fr;gap:20px}
+  .photo-band{height:38vh;min-height:240px}
+  .photo-band .cap{padding:0 24px 22px}
+  .shift-band{padding:80px 24px}
 }
 </style>
 </head>
@@ -271,10 +288,14 @@ footer{padding:72px 56px;border-top:1px solid var(--grey-dk);display:flex;justif
   </div>
 </section>
 
+<!-- PHOTO BAND — in the air -->
+<section class="photo-band band-air reveal" aria-hidden="true">
+  <span class="cap">In the air</span>
+</section>
+
 <!-- WHAT CHANGES -->
-<section class="reveal img-band">
-  <div class="img-band-overlay"></div>
-  <div class="inner" style="position:relative;z-index:2">
+<section class="reveal">
+  <div class="inner">
     <span class="eyebrow">What Changes</span>
     <h2 class="h2" style="max-width:680px;margin-bottom:48px">The experience stops feeling <em>negotiated.</em></h2>
     <div class="change-row" style="border-top:1px solid var(--grey-dk)">
@@ -315,8 +336,13 @@ footer{padding:72px 56px;border-top:1px solid var(--grey-dk);display:flex;justif
   </div>
 </section>
 
-<!-- THE SHIFT — signature motif, normal rhythm not a void -->
-<section class="reveal" style="text-align:center">
+<!-- PHOTO BAND — at the hotel -->
+<section class="photo-band band-hotel reveal" aria-hidden="true">
+  <span class="cap">At the hotel</span>
+</section>
+
+<!-- THE SHIFT — one-liner on an image, not a void -->
+<section class="shift-band reveal">
   <div style="max-width:760px;margin:0 auto">
     <span class="eyebrow-quiet">The whole idea, in one line</span>
     <div class="shift" style="justify-content:center">
