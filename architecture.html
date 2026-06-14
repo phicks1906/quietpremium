@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Quiet Premium · architecture.html · build v1.1.1 · 2026-06-13 · gate-removed, credit-line, gap-index-collapse, soft-link-visibility, contrast-fix-grey-mid -->
+<!-- Quiet Premium · architecture.html · build v1.2.0 · 2026-06-14 · COSMETIC: hero given subdued background image (/hero2.jpeg, dawn cabin) behind heavy scrim to break the text-on-black opening; matches homepage image treatment. Copy/pricing unchanged (already free-model). Footer label synced. -->
 <html lang="en">
 <head>
 <!-- Google tag (gtag.js) -->
@@ -70,7 +70,9 @@ section:first-of-type{border-top:none}
 .btn-outline:hover{border-color:var(--gold);background:var(--gold-pale)}
 
 /* HERO */
-#hero{padding:148px 48px 88px}
+#hero{position:relative;padding:148px 48px 88px;background:url('/hero2.jpeg') center 38%/cover no-repeat #0A0A0A;overflow:hidden}
+#hero::before{content:'';position:absolute;inset:0;z-index:0;background:linear-gradient(to bottom,rgba(10,10,10,0.84) 0%,rgba(10,10,10,0.74) 50%,rgba(10,10,10,0.90) 100%)}
+#hero>*{position:relative;z-index:1}
 .hero-grid{display:grid;grid-template-columns:1fr 1fr;gap:72px;align-items:center}
 .price-block{padding:28px 32px;border:1px solid var(--gold-dk);background:#0F0F0F;margin-top:36px}
 .price-lbl{font-family:var(--mono);font-size:8px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold-dk);margin-bottom:10px}
@@ -420,7 +422,7 @@ footer{background:#0A0A0A;border-top:1px solid var(--grey-dk);padding:32px 48px;
   <div class="footer-left">
     © 2026 Quiet Premium · editor@quietpremium.com<br>
     Same spend. Different outcome.<br>
-    <span style="color:var(--grey-dk)">v1.1.1</span>
+    <span style="color:var(--grey-dk)">v1.2.0</span>
   </div>
   <div class="footer-links">
     <a href="index.html" class="footer-link">Home</a>
