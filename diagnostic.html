@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Quiet Premium · diagnostic.html · build v1.2.1 · 2026-06-13 · stepped-intake-wizard, save-resume, a11y, results-feedback-cta, footer-div-fix, parser-fix, status-title-fix, cert-language-accuracy, household-flights, version-stamp, contrast-fix-grey-mid, intake-placeholder-leak-fix (neutralized 6 stack-revealing placeholders) -->
+<!-- Quiet Premium · diagnostic.html · build v1.2.2 · 2026-06-13 · stepped-intake-wizard, save-resume, a11y, results-feedback-cta, footer-div-fix, parser-fix, status-title-fix, cert-language-accuracy, household-flights, version-stamp, contrast-fix-grey-mid, intake-placeholder-leak-fix (neutralized 6 stack-revealing placeholders), dollar-examples-anchored-to-75k-floor -->
 <html lang="en">
 <head>
 <!-- Google tag (gtag.js) -->
@@ -295,7 +295,7 @@ textarea{resize:vertical;min-height:80px}
 
       <div class="field"><label class="field-lbl">Full name <span class="req">*</span></label><input type="text" name="full_name" required placeholder="Your full name" oninput="updateProgress()"/></div>
       <div class="field"><label class="field-lbl">Email address <span class="req">*</span></label><input type="email" name="email" required placeholder="you@example.com" oninput="updateProgress()"/></div>
-      <div class="field"><label class="field-lbl">Total annual household personal card spend — last 12 months <span class="req">*</span></label><div class="field-hint">Include all household spend that could run through cards.</div><input type="text" name="total_spend" required placeholder="e.g. 180000" oninput="updateProgress()"/></div>
+      <div class="field"><label class="field-lbl">Total annual household personal card spend — last 12 months <span class="req">*</span></label><div class="field-hint">Include all household spend that could run through cards.</div><input type="text" name="total_spend" required placeholder="e.g. 75000" oninput="updateProgress()"/></div>
 
       <div class="field"><label class="field-lbl">Current credit score range <span class="req">*</span></label>
         <div class="opts" data-name="credit_score" data-type="radio">
@@ -307,10 +307,10 @@ textarea{resize:vertical;min-height:80px}
         </div><input class="real-inp" type="text" name="credit_score" required/>
       </div>
 
-      <div class="field"><label class="field-lbl">Household dining spend charged to personal cards <span class="req">*</span></label><div class="field-hint">Restaurants, bars, food delivery.</div><input type="text" name="dining_spend" required placeholder="e.g. 20000" oninput="updateProgress()"/></div>
-      <div class="field"><label class="field-lbl">Household grocery spend charged to personal cards <span class="req">*</span></label><input type="text" name="grocery_spend" required placeholder="e.g. 18000" oninput="updateProgress()"/></div>
-      <div class="field"><label class="field-lbl">Household general spend charged to personal cards <span class="req">*</span></label><div class="field-hint">Non-bonused spend — retail, insurance, utilities, miscellaneous.</div><input type="text" name="general_spend" required placeholder="e.g. 60000" oninput="updateProgress()"/></div>
-      <div class="field"><label class="field-lbl">Largest single discretionary purchase — past 12 months <span class="req">*</span></label><div class="field-hint">Dollar amount. Exclude primary residence and business purchases.</div><input type="text" name="largest_purchase" required placeholder="e.g. 25000" oninput="updateProgress()"/></div>
+      <div class="field"><label class="field-lbl">Household dining spend charged to personal cards <span class="req">*</span></label><div class="field-hint">Restaurants, bars, food delivery.</div><input type="text" name="dining_spend" required placeholder="e.g. 12000" oninput="updateProgress()"/></div>
+      <div class="field"><label class="field-lbl">Household grocery spend charged to personal cards <span class="req">*</span></label><input type="text" name="grocery_spend" required placeholder="e.g. 12000" oninput="updateProgress()"/></div>
+      <div class="field"><label class="field-lbl">Household general spend charged to personal cards <span class="req">*</span></label><div class="field-hint">Non-bonused spend — retail, insurance, utilities, miscellaneous.</div><input type="text" name="general_spend" required placeholder="e.g. 30000" oninput="updateProgress()"/></div>
+      <div class="field"><label class="field-lbl">Largest single discretionary purchase — past 12 months <span class="req">*</span></label><div class="field-hint">Dollar amount. Exclude primary residence and business purchases.</div><input type="text" name="largest_purchase" required placeholder="e.g. 10000" oninput="updateProgress()"/></div>
         <div class="step-nav"><button type="button" class="btn-next" data-next>Continue</button></div>
 
       </div>
@@ -670,7 +670,7 @@ textarea{resize:vertical;min-height:80px}
     <div style="display:flex;align-items:center;flex-wrap:wrap;gap:12px">
       <p style="font-family:var(--mono);font-size:7.5px;letter-spacing:.06em;color:var(--grey-dk);line-height:1.8;max-width:700px">Potential value estimates are based on your inputs and published program benefits as of 2025–2026. Actual outcomes vary by redemption choices, program availability, and issuer terms. Status benefits are subject to airline and hotel program policies and may change. Quiet Premium is not affiliated with any airline, hotel, or card issuer mentioned.</p>
       <p style="font-family:var(--mono);font-size:8px;letter-spacing:.1em;text-transform:uppercase;color:var(--grey-mid);white-space:nowrap">Know someone this applies to? <a href="https://quietpremium.com" style="color:var(--gold);text-decoration:none">quietpremium.com</a></p>
-      <p style="font-family:var(--mono);font-size:7px;letter-spacing:.08em;color:var(--grey-dk);margin-top:14px">v1.2.1</p>
+      <p style="font-family:var(--mono);font-size:7px;letter-spacing:.08em;color:var(--grey-dk);margin-top:14px">v1.2.2</p>
     </div>
   </div>
 
