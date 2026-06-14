@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<!-- Quiet Premium · founding-feedback.html · build v1.1.0 · 2026-06-14 · added optional "what would you have paid" price-band question (single-select, ungated, grouped with the optional quote) to inform the post-founding pricing reintro. Four core questions unchanged. Formspree payload gains price_would_pay. -->
 <html lang="en">
 <head>
 <!-- Google tag (gtag.js) -->
@@ -150,6 +151,20 @@ input::placeholder{color:var(--grey-dk)}
       <textarea name="quote" placeholder="Optional — skip if nothing feels right..." style="min-height:70px"></textarea>
     </div>
 
+    <div class="q-block">
+      <div class="q-num">Optional</div>
+      <div class="q-label">If this hadn't been complimentary, what would you have paid for it?</div>
+      <div class="q-hint">Founding access is at no cost. This only helps us understand what the work is worth. No wrong answer — and skipping it is fine.</div>
+      <div class="opts" id="price-opts">
+        <div class="opt" onclick="selectPrice(this,'Nothing')"><div class="opt-ind"></div><div class="opt-lbl">Nothing</div></div>
+        <div class="opt" onclick="selectPrice(this,'Under $50')"><div class="opt-ind"></div><div class="opt-lbl">Under $50</div></div>
+        <div class="opt" onclick="selectPrice(this,'$50–150')"><div class="opt-ind"></div><div class="opt-lbl">$50–150</div></div>
+        <div class="opt" onclick="selectPrice(this,'$150–300')"><div class="opt-ind"></div><div class="opt-lbl">$150–300</div></div>
+        <div class="opt" onclick="selectPrice(this,'$300 or more')"><div class="opt-ind"></div><div class="opt-lbl">$300 or more</div></div>
+      </div>
+      <input type="hidden" name="price" id="price-val" value="(not answered)"/>
+    </div>
+
     <div class="divider"></div>
 
     <div class="consent-block">
@@ -184,6 +199,12 @@ function toggleConsent(){
   document.getElementById('consent-val').value = consentGiven ? 'Yes — anonymous use permitted' : 'No';
 }
 
+function selectPrice(el, val){
+  document.querySelectorAll('#price-opts .opt').forEach(o => o.classList.remove('selected'));
+  el.classList.add('selected');
+  document.getElementById('price-val').value = val;
+}
+
 document.getElementById('feedback-form').addEventListener('submit', async function(e){
   e.preventDefault();
   document.querySelectorAll('.field-error').forEach(el => el.remove());
@@ -211,6 +232,7 @@ document.getElementById('feedback-form').addEventListener('submit', async functi
     q3_implementation: form.q3.value,
     q4_improvements: form.q4.value,
     optional_quote: form.quote.value || '(none provided)',
+    price_would_pay: form.price.value,
     anonymous_consent: form.consent.value,
     _subject: 'Founding Client Feedback — ' + form.name.value
   };
