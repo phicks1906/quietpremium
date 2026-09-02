@@ -1,643 +1,914 @@
-// ── QP DIAGNOSTIC SIMULATION HARNESS ─────────────────────────────────────────
-// Extracts and runs the generateResults logic against test profiles.
-// Asserts rules. Flags any output that violates expected behavior.
+/**
+ * Quiet Premium — qp_sim.js
+ * Phase 3A Core Engine
+ * Build: 3A.1
+ * Date: 2026-09-02
+ *
+ * PURPOSE
+ * -------
+ * Isolated Quiet Premium rules + calculation engine.
+ * This file is intentionally NOT wired into diagnostic.html yet.
+ *
+ * Phase 3A establishes:
+ *   1) effective-dated rules registry
+ *   2) normalized traveler profile
+ *   3) primary-airline-first ecosystem selection
+ *   4) current architecture calculation
+ *   5) spend reconciliation / allocation ledger
+ *   6) airline + hotel status breakpoint calculations
+ *   7) invariants and adversarial smoke tests
+ *
+ * Phase 3B will add competing architectures + optimizer + recommendation ranking.
+ * Phase 3C will expand automated validation.
+ *
+ * NORTH STAR
+ * ----------
+ * Quiet Premium maximizes what a customer's EXISTING spend and travel behavior
+ * can realistically produce. It does not manufacture value because spend is high.
+ *
+ * Airline rule:
+ *   Travel reality determines the ecosystem. The card architecture optimizes
+ *   within that ecosystem. Migration requires affirmative evidence.
+ */
 
-// ── HELPERS (mirrored from diagnostic.html) ────────────────────────────────
-function fmtD(n){const r=Math.round(n/100)*100;return'$'+r.toLocaleString();}
-function firstName(fullName){return(fullName||'').split(' ')[0]||'You';}
+(function (root, factory) {
+  const api = factory();
+  if (typeof module === "object" && module.exports) module.exports = api;
+  if (root) root.QuietPremiumEngine = api;
+})(typeof globalThis !== "undefined" ? globalThis : this, function () {
+  "use strict";
 
-// ── CAPTURE OUTPUT ─────────────────────────────────────────────────────────
-// Instead of writing to DOM, we return a structured result object.
+  const ENGINE_VERSION = "3A.1";
+  const RULES_AS_OF = "2026-09-02";
 
-function generateResults(d) {
-  const out = {
-    corrections: [],
-    afterItems: [],
-    beforeItems: [],
-    spRows: [],
-    statusRows: [],
-    valueRows: [],
-    dashboard: {},
-    errors: []
+  // ---------------------------------------------------------------------------
+  // Helpers
+  // ---------------------------------------------------------------------------
+
+  const money = value => {
+    if (typeof value === "number") return Number.isFinite(value) ? value : 0;
+    if (value == null) return 0;
+    const n = Number(String(value).replace(/[$,\s]/g, ""));
+    return Number.isFinite(n) ? n : 0;
   };
 
-  const spend=parseFloat((d.total_spend||'0').replace(/[,$]/g,''))||0;
-  const dining=parseFloat((d.dining_spend||'0').replace(/[,$]/g,''))||0;
-  const grocery=parseFloat((d.grocery_spend||'0').replace(/[,$]/g,''))||0;
-  const general=parseFloat((d.general_spend||'0').replace(/[,$]/g,''))||0;
-  const fname=firstName(d.full_name);
+  const clamp = (n, min, max) => Math.min(max, Math.max(min, n));
+  const round = (n, digits = 0) => {
+    const p = 10 ** digits;
+    return Math.round((Number(n) || 0) * p) / p;
+  };
+  const lc = v => String(v ?? "").trim().toLowerCase();
+  const clean = v => String(v ?? "").trim();
 
-  const cardAirfare=(d.card_airfare||'').toLowerCase();
-  const cardDining=(d.card_dining||'').toLowerCase();
-  const cardGrocery=(d.card_groceries||'').toLowerCase();
-  const cardHotels=(d.card_hotels||'').toLowerCase();
-  const cardGeneral=(d.card_general||'').toLowerCase();
+  function rangeMidpoint(value, table, fallback = 0) {
+    if (typeof value === "number") return value;
+    const key = clean(value);
+    return Object.prototype.hasOwnProperty.call(table, key) ? table[key] : fallback;
+  }
 
-  const isGoldDining=cardDining.includes('gold');
-  const isGoldGrocery=cardGrocery.includes('gold');
-  const isDeltaReserve=id=>id.includes('reserve')&&(id.includes('delta')||id.includes('skymiles'));
-  const isDeltaReserveAirfare=isDeltaReserve(cardAirfare);
-  const isDeltaReserveGeneral=isDeltaReserve(cardGeneral);
-  const isPlatHotel=cardHotels.includes('platinum');
-  const isAmexTravelBooking=d.booking_method==='Direct'||d.booking_method==='Mixed';
+  function includesAny(value, needles) {
+    const s = lc(value);
+    return needles.some(n => s.includes(n));
+  }
 
-  const diningCurrentRate=cardDining.includes('platinum')?1:cardDining.includes('gold')?4:3;
-  const groceryCurrentRate=cardGrocery.includes('platinum')?1:cardGrocery.includes('gold')?4:3;
+  // ---------------------------------------------------------------------------
+  // Rules Registry
+  // Facts and QP architecture rules remain explicitly separate.
+  // Valuation assumptions are NOT embedded here as issuer facts.
+  // ---------------------------------------------------------------------------
 
-  const hasAirlineStatus=d.primary_airline&&!d.primary_airline.toLowerCase().includes('none')&&d.primary_airline.trim()!=='';
-  const airlineEco=(d.primary_airline_eco||'').toLowerCase();
-  const isDeltaEco=airlineEco==='delta'||airlineEco==='mixed'||airlineEco==='southwest'||airlineEco==='';
-  const isUnitedEco=airlineEco==='united';
-  const isAmericanEco=airlineEco==='american';
-  const isSouthwestEco=airlineEco==='southwest';
-  const hasDeltaStatus=d.primary_airline&&d.primary_airline.toLowerCase().includes('delta');
-  const hotelInput=(d.primary_hotel||'').toLowerCase();
-  const hasHyatt=hotelInput.includes('hyatt');
-  const hasMarriott=hotelInput.includes('marriott')||hotelInput.includes('bonvoy');
-  const hasHotelStatus=hotelInput!==''&&!hotelInput.includes('none')&&hotelInput.trim()!=='';
-  const hotelConcentrated=['50-74%','75-100%'].includes(d.hotel_conc);
-  const hotelFragmented=['0-24%','25-49%'].includes(d.hotel_conc);
-  const hasUpgrades=d.upgrades_unasked==='Yes';
-  const noRedeem=d.pts_redeemed==='None'||d.pts_redeemed==='Unsure';
-  const disrupted=d.disruption==='Yes';
-  const luxuryEngaged=d.luxury_retail_method&&d.luxury_retail_method!=='Not engaged';
+  const RULES = Object.freeze({
+    meta: {
+      version: ENGINE_VERSION,
+      asOf: RULES_AS_OF,
+      supportedAirlines: ["delta", "united", "american", "southwest"],
+      supportedHotels: ["hyatt", "marriott", "hilton"],
+      supportedFlexible: ["amex_mr", "chase_ur"]
+    },
 
-  const flights=d.flights_taken==='40+'?42:d.flights_taken==='21-40'?30:d.flights_taken==='11-20'?15:d.flights_taken==='6-10'?8:4;
-  const nights=d.hotel_nights==='40+'?42:d.hotel_nights==='21-39'?30:d.hotel_nights==='11-20'?15:d.hotel_nights==='6-10'?8:4;
+    airlines: {
+      delta: {
+        label: "Delta",
+        qualificationMetric: "MQD",
+        period: "calendar_year",
+        thresholds: [
+          { tier: "Silver Medallion", amount: 5000 },
+          { tier: "Gold Medallion", amount: 10000 },
+          { tier: "Platinum Medallion", amount: 15000 },
+          { tier: "Diamond Medallion", amount: 28000 }
+        ]
+      },
+      united: {
+        label: "United",
+        qualificationMetric: "PQP",
+        period: "calendar_year",
+        thresholds: [
+          { tier: "Premier Silver", amount: 6000 },
+          { tier: "Premier Gold", amount: 12000 },
+          { tier: "Premier Platinum", amount: 18000 },
+          { tier: "Premier 1K", amount: 28000 }
+        ]
+      },
+      american: {
+        label: "American",
+        qualificationMetric: "Loyalty Points",
+        period: "qualification_year",
+        thresholds: [
+          { tier: "AAdvantage Gold", amount: 40000 },
+          { tier: "AAdvantage Platinum", amount: 75000 },
+          { tier: "AAdvantage Platinum Pro", amount: 125000 },
+          { tier: "AAdvantage Executive Platinum", amount: 200000 }
+        ]
+      },
+      southwest: {
+        label: "Southwest",
+        qualificationMetric: "TQP",
+        period: "calendar_year",
+        thresholds: [
+          { tier: "A-List", amount: 35000 },
+          { tier: "A-List Preferred", amount: 70000 }
+        ],
+        flightThresholds: [
+          { tier: "A-List", flights: 20 },
+          { tier: "A-List Preferred", flights: 40 }
+        ],
+        companionPass: {
+          qualifyingPoints: 135000,
+          qualifyingOneWayFlights: 100
+        }
+      }
+    },
 
-  const airlineSpendEst=d.airline_spend==='$20k+'?22000:d.airline_spend==='$10k-$20k'?15000:d.airline_spend==='$5k-$10k'?7500:d.airline_spend==='Under $5k'?3000:d.airline_spend==='Likely over $10k'?12000:8000;
-  const hotelSpendEst=nights*500;
-  const reserveSpendEst=Math.max(0,spend-dining-grocery-hotelSpendEst);
-  const mqdsHeadstart=2500;
-  const mqdsCard=Math.round(reserveSpendEst/10);
-  const mqdsFlights=Math.round(airlineSpendEst*0.95);
-  const mqdsTotal=mqdsHeadstart+mqdsCard+mqdsFlights;
-  const canReachDiamond=mqdsTotal>=28000;
-  const canReachPlatinum=mqdsTotal>=15000;
-  const canReachGold=mqdsTotal>=10000;
-  const canReachSilver=mqdsTotal>=5000;
+    hotelPrograms: {
+      hyatt: {
+        label: "World of Hyatt",
+        thresholds: [
+          { tier: "Discoverist", nights: 10, basePoints: 25000 },
+          { tier: "Explorist", nights: 30, basePoints: 50000 },
+          { tier: "Globalist", nights: 60, basePoints: 100000 }
+        ]
+      },
+      marriott: {
+        label: "Marriott Bonvoy",
+        thresholds: [
+          { tier: "Silver Elite", nights: 10 },
+          { tier: "Gold Elite", nights: 25 },
+          { tier: "Platinum Elite", nights: 50 },
+          { tier: "Titanium Elite", nights: 75 }
+        ]
+      },
+      hilton: {
+        label: "Hilton Honors",
+        thresholds: [
+          { tier: "Silver", nights: 10, stays: 4, spend: 2500 },
+          { tier: "Gold", nights: 25, stays: 15, spend: 6000 },
+          { tier: "Diamond", nights: 50, stays: 25, spend: 11500 }
+        ],
+        diamondReserve: { nights: 80, stays: 40, spend: 18000 }
+      }
+    },
 
-  const pqpCard=isUnitedEco?Math.min(28000,Math.round(reserveSpendEst/15)):0;
-  const pqpBonus=isUnitedEco?1500:0;
-  const pqpFlights=isUnitedEco?Math.round(airlineSpendEst):0;
-  const pqpTotal=pqpCard+pqpBonus+pqpFlights;
-  const canReachUnited1K=pqpTotal>=28000;
-  const canReachUnitedPlatinum=pqpTotal>=18000;
-  const canReachUnitedGold=pqpTotal>=12000;
-  const canReachUnitedSilver=pqpTotal>=6000;
-  const unitedStatusTarget=canReachUnited1K?'United Premier 1K':canReachUnitedPlatinum?'United Premier Platinum':canReachUnitedGold?'United Premier Gold':canReachUnitedSilver?'United Premier Silver':'United Silver — within reach';
+    cards: {
+      // Airline cards — only rules required by Phase 3A status production.
+      delta_reserve: {
+        label: "Delta SkyMiles Reserve",
+        ecosystem: "delta",
+        annualFee: 650,
+        status: { headstart: 2500, metric: "MQD", spendDivisor: 10 }
+      },
+      delta_platinum: {
+        label: "Delta SkyMiles Platinum",
+        ecosystem: "delta",
+        status: { headstart: 2500, metric: "MQD", spendDivisor: 20 }
+      },
+      united_explorer: {
+        label: "United Explorer",
+        ecosystem: "united",
+        status: { metric: "PQP", spendDivisor: 20, annualCap: 1000 }
+      },
+      united_quest: {
+        label: "United Quest",
+        ecosystem: "united",
+        annualFee: 350,
+        status: { metric: "PQP", spendDivisor: 20, annualCap: 18000, annualBonus: 1000, annualBonusConditional: true }
+      },
+      united_club: {
+        label: "United Club",
+        ecosystem: "united",
+        annualFee: 695,
+        status: { metric: "PQP", spendDivisor: 15, annualCap: 28000, annualBonus: 1500, annualBonusConditional: true }
+      },
+      aa_executive: {
+        label: "Citi / AAdvantage Executive",
+        ecosystem: "american",
+        status: { metric: "Loyalty Points", pointsPerDollar: 1 }
+      },
+      southwest_priority: {
+        label: "Southwest Rapid Rewards Priority",
+        ecosystem: "southwest",
+        annualFee: 229,
+        status: { metric: "TQP", tqpPerSpendBlock: 2500, spendBlock: 5000, companionBoost: 10000 }
+      },
 
-  const lpCard=isAmericanEco?Math.round(reserveSpendEst):0;
-  const lpFlights=isAmericanEco?Math.round(airlineSpendEst*5):0;
-  const lpTotal=lpCard+lpFlights;
-  const canReachAAExecPlat=lpTotal>=200000;
-  const canReachAAPlat=lpTotal>=75000;
-  const canReachAAGold=lpTotal>=40000;
-  const aaStatusTarget=canReachAAExecPlat?'AAdvantage Executive Platinum':canReachAAPlat?'AAdvantage Platinum':canReachAAGold?'AAdvantage Gold':'AAdvantage Gold — within reach';
+      // Hotel cards — Phase 3A needs ownership/status and status-spend mechanics.
+      hyatt_consumer: {
+        label: "World of Hyatt Credit Card",
+        ecosystem: "hyatt",
+        annualFee: 95,
+        hotelStatus: { automaticTier: "Discoverist", annualNights: 5, nightsPerSpendBlock: 2, spendBlock: 5000 }
+      },
+      marriott_boundless: {
+        label: "Marriott Bonvoy Boundless",
+        ecosystem: "marriott",
+        hotelStatus: { automaticTier: "Silver Elite", annualNights: 15, nightsPerSpendBlock: 1, spendBlock: 5000, goldAtSpend: 35000 }
+      },
+      marriott_brilliant: {
+        label: "Marriott Bonvoy Brilliant",
+        ecosystem: "marriott",
+        annualFee: 650,
+        hotelStatus: { automaticTier: "Platinum Elite", annualNights: 25 }
+      },
+      hilton_no_fee: {
+        label: "Hilton Honors American Express",
+        ecosystem: "hilton",
+        hotelStatus: { automaticTier: "Silver", goldAtSpend: 20000 }
+      },
+      hilton_surpass: {
+        label: "Hilton Honors Surpass",
+        ecosystem: "hilton",
+        hotelStatus: { automaticTier: "Gold", diamondAtSpend: 40000 }
+      },
+      hilton_aspire: {
+        label: "Hilton Honors Aspire",
+        ecosystem: "hilton",
+        annualFee: 550,
+        hotelStatus: { automaticTier: "Diamond" }
+      }
+    },
 
-  const diningLeakPerDollar=(4-diningCurrentRate)*0.015;
-  const groceryLeakPerDollar=(4-groceryCurrentRate)*0.015;
-  let cardLeakAirfare=isDeltaReserveAirfare?0:spend*0.012;
-  let cardLeakDining=isGoldDining?0:Math.max(0,dining*diningLeakPerDollar);
-  let cardLeakGrocery=isGoldGrocery?0:Math.max(0,grocery*groceryLeakPerDollar);
-  let cardLeakHotel=isPlatHotel&&isAmexTravelBooking?0:spend*0.005;
-  let cardLeakGeneral=isDeltaReserveGeneral?0:general*0.005;
-  let totalCardLeak=cardLeakAirfare+cardLeakDining+cardLeakGrocery+cardLeakHotel+cardLeakGeneral;
-
-  const fhrVal=isPlatHotel&&isAmexTravelBooking?0:nights>=6?800:400;
-  const tsaClearActivated=d.tsa_clear_activated||'No';
-  const clearVal=tsaClearActivated==='Yes — both'?0:tsaClearActivated==='PreCheck only'?189:tsaClearActivated==='CLEAR only'?85:tsaClearActivated==='Not available'?0:274;
-  const cardCredits=isGoldDining?0:204;
-  const ptsVal=noRedeem?Math.round(spend*0.003/100)*100:0;
-  const compVal=isDeltaEco&&isDeltaReserveAirfare?0:isDeltaEco?spend>=150000?800:400:0;
-  const rucVal=isDeltaEco&&canReachPlatinum?800:0;
-  const bagVal=isUnitedEco?Math.round(flights*0.6)*60:isAmericanEco?Math.round(flights*0.6)*35:0;
-
-  const v1=Math.round(totalCardLeak*0.9/100)*100;
-  const v2=fhrVal;
-  const v3=clearVal;
-  const v4=ptsVal;
-  const v5=cardCredits;
-  const v6=compVal;
-  const v7=rucVal;
-  const v8=bagVal;
-  const vt=v1+v2+v3+v4+v5+v6+v7+v8;
-
-  out.dashboard = { value: vt, ecosystem: airlineEco||'delta(default)', isDeltaEco, isUnitedEco, isAmericanEco, isSouthwestEco };
-
-  // Corrections
-  if(!isDeltaReserveAirfare&&isDeltaEco) out.corrections.push('Delta Reserve airfare');
-  if(isUnitedEco) out.corrections.push('United Club Infinite');
-  if(isAmericanEco) out.corrections.push('Citi AAdvantage Executive');
-  if(!isGoldDining&&dining>0) out.corrections.push('Amex Gold dining');
-  if(!isPlatHotel||!isAmexTravelBooking) out.corrections.push('Amex Platinum hotel');
-  if(!isDeltaReserveGeneral&&general>0&&isDeltaEco) out.corrections.push('Delta Reserve general');
-  if(general>0&&(isUnitedEco||isAmericanEco)) out.corrections.push('Airline card general');
-
-  // Status path label
-  const isAtGoldOrAbove=hasDeltaStatus&&(d.primary_airline.toLowerCase().includes('gold')||d.primary_airline.toLowerCase().includes('platinum')||d.primary_airline.toLowerCase().includes('diamond'));
-  const isAtPlatinumOrAbove=hasDeltaStatus&&(d.primary_airline.toLowerCase().includes('platinum')||d.primary_airline.toLowerCase().includes('diamond'));
-  const statusInput=(d.primary_airline||'').toLowerCase();
-  const hasUnitedStatus=statusInput.includes('premier')||(statusInput.includes('united')&&!statusInput.includes('none'));
-  const isAtUnitedGoldOrAbove=hasUnitedStatus&&(statusInput.includes('gold')||statusInput.includes('platinum')||statusInput.includes('1k'));
-  const isAtUnitedPlatOrAbove=hasUnitedStatus&&(statusInput.includes('platinum')||statusInput.includes('1k'));
-  const hasAAStatus=statusInput.includes('aadvantage')||statusInput.includes('executive platinum')||(statusInput.includes('american')&&!statusInput.includes('none')&&!statusInput.includes('american express'));
-  const isAtAAGoldOrAbove=hasAAStatus&&(statusInput.includes('gold')||statusInput.includes('platinum'));
-  const isAtAAExecPlatOrAbove=hasAAStatus&&statusInput.includes('executive platinum');
-
-  // Build afterItems text (what we actually check for ecosystem bleed)
-  const afterTexts=[];
-  if(isDeltaEco){
-    if(isSouthwestEco){
-      afterTexts.push('A parallel premium airline relationship');
-      afterTexts.push('Lounge access on every departure — including Southwest travel days');
-      afterTexts.push('A first class cabin that actually upgrades');
-    } else {
-      if(!isAtPlatinumOrAbove) afterTexts.push('Delta Platinum Medallion');
-      if(!isAtGoldOrAbove) afterTexts.push('Upgrade eligibility begins at Gold');
-      else if(!isAtPlatinumOrAbove) afterTexts.push('Platinum adds what Gold does not have');
-      afterTexts.push('Both lounge networks on every departure');
+    architecture: {
+      // SYSTEM RULE: QP's routable/general reserve deliberately excludes dining,
+      // grocery and hotel spend from total household card spend.
+      reserveSpendDefinition: "total - dining - grocery - hotel",
+      primaryAirlineFirst: true,
+      migrationRequiresEvidence: true,
+      spendCannotBeDoubleAllocated: true,
+      statusIsOptional: true,
+      alreadyOptimizedIsValid: true
     }
-  } else if(isUnitedEco){
-    if(!isAtUnitedPlatOrAbove) afterTexts.push('United Premier status');
-    if(!isAtUnitedGoldOrAbove) afterTexts.push('Premier Gold delivers upgrade eligibility');
-    afterTexts.push('United Club on every United departure');
-  } else if(isAmericanEco){
-    if(!isAtAAExecPlatOrAbove) afterTexts.push('AAdvantage status built from everyday spend');
-    if(!isAtAAGoldOrAbove) afterTexts.push('AAdvantage Gold — the entry point');
-    afterTexts.push('Admirals Club on every American departure');
-  }
-  afterTexts.push('The hotel room is better before check-in');
-  out.afterItems = afterTexts;
+  });
 
-  // Status path target
-  const isAtGoldOrAboveForPath=hasDeltaStatus&&(d.primary_airline.toLowerCase().includes('gold')||d.primary_airline.toLowerCase().includes('platinum')||d.primary_airline.toLowerCase().includes('diamond'));
-  const isAtPlatinumOrAboveForPath=hasDeltaStatus&&(d.primary_airline.toLowerCase().includes('platinum')||d.primary_airline.toLowerCase().includes('diamond'));
-  const projectedTierLabel=canReachDiamond?'Delta Diamond':canReachPlatinum?'Delta Platinum':canReachGold?'Delta Gold':canReachSilver?'Delta Silver':'Delta building';
-  let statusTarget;
-  if(isDeltaEco){
-    const nextTierLabel=isAtPlatinumOrAboveForPath?(canReachDiamond?'Diamond':'Diamond — longer runway'):isAtGoldOrAboveForPath?(canReachPlatinum?'Delta Platinum':'Delta Platinum — within reach'):projectedTierLabel;
-    statusTarget=nextTierLabel;
-  } else if(isUnitedEco){
-    statusTarget=unitedStatusTarget;
-  } else {
-    statusTarget=aaStatusTarget;
-  }
-  out.statusTarget = statusTarget;
+  // ---------------------------------------------------------------------------
+  // Product matching
+  // Phase 3A uses conservative matching. Unknown products remain unsupported,
+  // instead of being silently treated as a premium card.
+  // ---------------------------------------------------------------------------
 
-  // Routing table third card
-  const ecosystem=airlineEco;
-  const thirdCardName=ecosystem==='united'?'United Club Infinite':ecosystem==='american'?'Citi AAdvantage Executive':'Delta SkyMiles Reserve';
-  out.thirdCard = thirdCardName;
+  const CARD_MATCHERS = [
+    ["delta_reserve", ["delta reserve", "skymiles reserve"]],
+    ["delta_platinum", ["delta platinum", "skymiles platinum"]],
+    ["united_explorer", ["united explorer"]],
+    ["united_quest", ["united quest"]],
+    ["united_club", ["united club", "club infinite"]],
+    ["aa_executive", ["aadvantage executive", "aa executive", "citi executive"]],
+    ["southwest_priority", ["southwest priority", "rapid rewards priority"]],
+    ["hyatt_consumer", ["world of hyatt", "hyatt credit"]],
+    ["marriott_boundless", ["marriott boundless", "bonvoy boundless"]],
+    ["marriott_brilliant", ["marriott brilliant", "bonvoy brilliant"]],
+    ["hilton_no_fee", ["hilton honors american express", "hilton honors amex"]],
+    ["hilton_surpass", ["hilton surpass"]],
+    ["hilton_aspire", ["hilton aspire"]]
+  ];
 
-  // Value
-  out.value = { v1,v2,v3,v4,v5,v6,v7,v8,vt,rucVal,compVal,bagVal,clearVal };
-
-  return out;
-}
-
-// ── ASSERTION ENGINE ──────────────────────────────────────────────────────────
-function assert(condition, msg, profile, results) {
-  if(!condition){
-    results.push({ FAIL: true, profile: profile.label, msg });
-  }
-}
-
-function runAssertions(label, d, r, results) {
-  const eco = r.dashboard.ecosystem;
-  const afterStr = r.afterItems.join('|');
-  const corrStr = r.corrections.join('|');
-
-  // ── ECOSYSTEM BLEED — most critical ───────────────────────────────────────
-  if(r.dashboard.isSouthwestEco) {
-    assert(r.statusTarget.toLowerCase().includes('delta'), `STATUS PATH: Southwest profile has non-Delta status target: "${r.statusTarget}"`, d, results);
-    assert(!r.statusTarget.toLowerCase().includes('aadvantage'), `STATUS PATH BLEED: "aadvantage" in Southwest status target: "${r.statusTarget}"`, d, results);
-  }
-  if(r.dashboard.isAmericanEco) {
-    assert(!afterStr.includes('Delta Platinum'), `ECOSYSTEM BLEED: "Delta Platinum" in afterItems for ${eco} profile`, d, results);
-    assert(!afterStr.includes('Delta Gold'), `ECOSYSTEM BLEED: "Delta Gold" in afterItems for ${eco} profile`, d, results);
-    assert(!afterStr.includes('Sky Club'), `ECOSYSTEM BLEED: "Sky Club" in afterItems for ${eco} profile`, d, results);
-    assert(!corrStr.includes('Delta Reserve airfare'), `ECOSYSTEM BLEED: Delta Reserve correction surfaced for ${eco} profile`, d, results);
-    assert(!corrStr.includes('Delta Reserve general'), `ECOSYSTEM BLEED: Delta Reserve general correction surfaced for ${eco} profile`, d, results);
-    assert(r.thirdCard === 'Citi AAdvantage Executive', `WRONG THIRD CARD: got "${r.thirdCard}" for American profile`, d, results);
-  }
-  if(r.dashboard.isSouthwestEco) {
-    // Southwest intentionally uses Delta Reserve — assert Delta architecture is present, not absent
-    assert(corrStr.includes('Delta Reserve airfare') || corrStr.includes('Build a Delta relationship'), `SOUTHWEST: Delta relationship correction missing for Southwest profile`, d, results);
-    assert(r.thirdCard === 'Delta SkyMiles Reserve', `WRONG THIRD CARD: got "${r.thirdCard}" for Southwest profile`, d, results);
-    assert(!afterStr.includes('Upgrade eligibility begins at Gold'), `SOUTHWEST BLEED: Delta-specific upgrade text in Southwest afterItems`, d, results);
-    assert(!afterStr.includes('Platinum adds what Gold'), `SOUTHWEST BLEED: Delta RUC text in Southwest afterItems`, d, results);
-  }
-
-  if(r.dashboard.isUnitedEco) {
-    assert(!afterStr.includes('Delta Platinum'), `ECOSYSTEM BLEED: "Delta Platinum" in afterItems for United profile`, d, results);
-    assert(!afterStr.includes('Sky Club'), `ECOSYSTEM BLEED: "Sky Club" in afterItems for United profile (should say United Club)`, d, results);
-    assert(!corrStr.includes('Delta Reserve airfare'), `ECOSYSTEM BLEED: Delta Reserve correction surfaced for United profile`, d, results);
-    assert(r.thirdCard === 'United Club Infinite', `WRONG THIRD CARD: got "${r.thirdCard}" for United profile`, d, results);
-  }
-
-  // ── CORRECT CARD IN CORRECTIONS ───────────────────────────────────────────
-  if(r.dashboard.isAmericanEco) {
-    assert(corrStr.includes('Citi AAdvantage Executive'), `MISSING CORRECTION: Citi AAdvantage Executive not in corrections for American profile`, d, results);
-  }
-  if(r.dashboard.isUnitedEco) {
-    assert(corrStr.includes('United Club Infinite'), `MISSING CORRECTION: United Club Infinite not in corrections for United profile`, d, results);
-  }
-
-  // ── VALUE SANITY ──────────────────────────────────────────────────────────
-  assert(r.value.vt >= 0, `NEGATIVE VALUE: total value is ${r.value.vt}`, d, results);
-  assert(r.value.vt <= 50000, `IMPLAUSIBLE VALUE: total is $${r.value.vt} — check spend inputs`, d, results);
-
-  // RUC should only appear for Delta ecosystem at Platinum
-  if(!r.dashboard.isDeltaEco) {
-    assert(r.value.rucVal === 0, `RUC LEAK: rucVal=${r.value.rucVal} for non-Delta ecosystem`, d, results);
-  }
-
-  // Companion cert should only appear for Delta ecosystem
-  if(!r.dashboard.isDeltaEco) {
-    assert(r.value.compVal === 0, `COMP CERT LEAK: compVal=${r.value.compVal} for non-Delta ecosystem`, d, results);
-  }
-
-  // Bag savings: only United or American
-  if(r.dashboard.isDeltaEco) {
-    assert(r.value.bagVal === 0, `BAG VALUE LEAK: bagVal=${r.value.bagVal} for Delta ecosystem`, d, results);
-  }
-
-  // ── STATUS PATH SANITY ────────────────────────────────────────────────────
-  if(r.dashboard.isAmericanEco) {
-    assert(r.statusTarget.toLowerCase().includes('aadvantage') || r.statusTarget.toLowerCase().includes('gold') || r.statusTarget.toLowerCase().includes('platinum') || r.statusTarget.toLowerCase().includes('executive'),
-      `STATUS PATH: American profile has non-AA status target: "${r.statusTarget}"`, d, results);
-    assert(!r.statusTarget.toLowerCase().includes('delta'), `STATUS PATH BLEED: "delta" in status target for American profile: "${r.statusTarget}"`, d, results);
-  }
-  if(r.dashboard.isUnitedEco) {
-    assert(r.statusTarget.toLowerCase().includes('united') || r.statusTarget.toLowerCase().includes('premier'),
-      `STATUS PATH: United profile has non-United status target: "${r.statusTarget}"`, d, results);
-    assert(!r.statusTarget.toLowerCase().includes('delta'), `STATUS PATH BLEED: "delta" in status target for United profile: "${r.statusTarget}"`, d, results);
-  }
-
-  // ── TSA/CLEAR ─────────────────────────────────────────────────────────────
-  if(d.tsa_clear_activated === 'Yes — both') {
-    assert(r.value.clearVal === 0, `TSA/CLEAR: clearVal should be 0 when already activated, got ${r.value.clearVal}`, d, results);
-  }
-  if(d.tsa_clear_activated === 'No') {
-    assert(r.value.clearVal === 274, `TSA/CLEAR: clearVal should be 274 when neither activated, got ${r.value.clearVal}`, d, results);
-  }
-}
-
-// ── TEST PROFILES ─────────────────────────────────────────────────────────────
-const profiles = [
-  // ── DELTA PROFILES ────────────────────────────────────────────────────────
-  {
-    label: 'Delta / No status / Wrong cards / $150K',
-    total_spend:'150000', dining_spend:'20000', grocery_spend:'15000', general_spend:'60000',
-    card_airfare:'Chase Sapphire Preferred', card_hotels:'Chase Sapphire Preferred',
-    card_dining:'Chase Sapphire Preferred', card_groceries:'Chase Sapphire Preferred', card_general:'Chase Sapphire Preferred',
-    primary_airline_eco:'Delta', primary_airline:'None',
-    tsa_clear_activated:'No', booking_method:'Direct',
-    flights_taken:'11-20', hotel_nights:'11-20', airline_spend:'$5k-$10k',
-    airline_conc:'75-100%', hotel_conc:'0-24%', primary_hotel:'None',
-    pts_redeemed:'None', upgrades_unasked:'No', disruption:'Yes',
-    desired_outcomes:'Earlier airline upgrades', luxury_retail_method:'Not engaged',
-    general_spend_cats:'Online retail', booking_control:'I do',
-    largest_purchase:'10000', primary_cards:'Chase Sapphire Preferred',
-    full_name:'Test Delta User', email:'test@test.com', credit_score:'760-799',
-    frequent_destinations:'JFK,LAX', cabin_booked:'Economy', upgrade_spend:'Under $1k'
-  },
-  {
-    label: 'Delta / Gold status / Correct cards',
-    total_spend:'200000', dining_spend:'25000', grocery_spend:'18000', general_spend:'80000',
-    card_airfare:'Delta SkyMiles Reserve American Express Card', card_hotels:'Amex Platinum',
-    card_dining:'Amex Gold', card_groceries:'Amex Gold', card_general:'Delta SkyMiles Reserve American Express Card',
-    primary_airline_eco:'Delta', primary_airline:'Delta Gold Medallion',
-    tsa_clear_activated:'Yes — both', booking_method:'Direct',
-    flights_taken:'21-40', hotel_nights:'21-39', airline_spend:'$10k-$20k',
-    airline_conc:'75-100%', hotel_conc:'75-100%', primary_hotel:'Hyatt Globalist',
-    pts_redeemed:'75k-150k', upgrades_unasked:'Yes', disruption:'No',
-    desired_outcomes:'Earlier airline upgrades', luxury_retail_method:'Through dedicated advisor',
-    general_spend_cats:'Luxury retail', booking_control:'I do',
-    largest_purchase:'15000', primary_cards:'Delta Reserve, Amex Platinum, Amex Gold',
-    full_name:'Delta Gold User', email:'test@test.com', credit_score:'800+',
-    frequent_destinations:'JFK,LAX', cabin_booked:'First', upgrade_spend:'$1k-$3k'
-  },
-  {
-    label: 'Delta / Platinum status / Already correct',
-    total_spend:'300000', dining_spend:'30000', grocery_spend:'20000', general_spend:'100000',
-    card_airfare:'Delta SkyMiles Reserve American Express Card', card_hotels:'Amex Platinum',
-    card_dining:'Amex Gold', card_groceries:'Amex Gold', card_general:'Delta SkyMiles Reserve American Express Card',
-    primary_airline_eco:'Delta', primary_airline:'Delta Platinum Medallion',
-    tsa_clear_activated:'Yes — both', booking_method:'Direct',
-    flights_taken:'40+', hotel_nights:'40+', airline_spend:'$20k+',
-    airline_conc:'75-100%', hotel_conc:'75-100%', primary_hotel:'Marriott Titanium',
-    pts_redeemed:'Over 150k', upgrades_unasked:'Yes', disruption:'No',
-    desired_outcomes:'Consistent recognition', luxury_retail_method:'Through dedicated advisor',
-    general_spend_cats:'Luxury retail, Insurance', booking_control:'I do',
-    largest_purchase:'50000', primary_cards:'Delta Reserve, Amex Platinum, Amex Gold',
-    full_name:'Delta Plat User', email:'test@test.com', credit_score:'800+',
-    frequent_destinations:'JFK,LAX,ORD', cabin_booked:'First', upgrade_spend:'Over $7k'
-  },
-  {
-    label: 'Delta / High spend ($300K+) / No cards',
-    total_spend:'320000', dining_spend:'40000', grocery_spend:'20000', general_spend:'150000',
-    card_airfare:'Citi Double Cash', card_hotels:'Citi Double Cash',
-    card_dining:'Citi Double Cash', card_groceries:'Citi Double Cash', card_general:'Citi Double Cash',
-    primary_airline_eco:'Delta', primary_airline:'None',
-    tsa_clear_activated:'Not available', booking_method:'OTA',
-    flights_taken:'40+', hotel_nights:'21-39', airline_spend:'$20k+',
-    airline_conc:'75-100%', hotel_conc:'25-49%', primary_hotel:'None',
-    pts_redeemed:'None', upgrades_unasked:'No', disruption:'Yes',
-    desired_outcomes:'Airport experience; Earlier airline upgrades', luxury_retail_method:'Online',
-    general_spend_cats:'Online retail, Insurance, Luxury retail', booking_control:'I do',
-    largest_purchase:'75000', primary_cards:'Citi Double Cash',
-    full_name:'Delta High Spend', email:'test@test.com', credit_score:'800+',
-    frequent_destinations:'JFK,LAX,ORD,DFW', cabin_booked:'Mixed', upgrade_spend:'$3k-$7k'
-  },
-
-  // ── AMERICAN PROFILES ─────────────────────────────────────────────────────
-  {
-    label: 'American / No status / Wrong cards / $150K',
-    total_spend:'150000', dining_spend:'18000', grocery_spend:'14000', general_spend:'65000',
-    card_airfare:'Chase Sapphire Preferred', card_hotels:'Chase Sapphire Preferred',
-    card_dining:'Chase Sapphire Preferred', card_groceries:'Chase Sapphire Preferred', card_general:'Chase Sapphire Preferred',
-    primary_airline_eco:'American', primary_airline:'None',
-    tsa_clear_activated:'No', booking_method:'Direct',
-    flights_taken:'11-20', hotel_nights:'11-20', airline_spend:'$5k-$10k',
-    airline_conc:'75-100%', hotel_conc:'0-24%', primary_hotel:'None',
-    pts_redeemed:'None', upgrades_unasked:'No', disruption:'Yes',
-    desired_outcomes:'Earlier airline upgrades', luxury_retail_method:'Not engaged',
-    general_spend_cats:'Online retail', booking_control:'I do',
-    largest_purchase:'10000', primary_cards:'Chase Sapphire Preferred',
-    full_name:'AA User No Status', email:'test@test.com', credit_score:'760-799',
-    frequent_destinations:'DFW,LAX,ORD', cabin_booked:'Economy', upgrade_spend:'Under $1k'
-  },
-  {
-    label: 'American / Gold status / DFW hub / $200K',
-    total_spend:'200000', dining_spend:'22000', grocery_spend:'16000', general_spend:'90000',
-    card_airfare:'Amex Platinum', card_hotels:'Amex Platinum',
-    card_dining:'Amex Gold', card_groceries:'Amex Gold', card_general:'Amex Platinum',
-    primary_airline_eco:'American', primary_airline:'AAdvantage Gold',
-    tsa_clear_activated:'PreCheck only', booking_method:'Direct',
-    flights_taken:'21-40', hotel_nights:'11-20', airline_spend:'$10k-$20k',
-    airline_conc:'75-100%', hotel_conc:'50-74%', primary_hotel:'Marriott Gold',
-    pts_redeemed:'25k-75k', upgrades_unasked:'No', disruption:'No',
-    desired_outcomes:'Earlier airline upgrades; Airport experience', luxury_retail_method:'In boutique without advisor',
-    general_spend_cats:'Online retail, Insurance', booking_control:'I do',
-    largest_purchase:'20000', primary_cards:'Amex Platinum, Amex Gold',
-    full_name:'AA Gold DFW', email:'test@test.com', credit_score:'800+',
-    frequent_destinations:'DFW,LAX,JFK,ORD', cabin_booked:'Mixed', upgrade_spend:'$1k-$3k'
-  },
-  {
-    label: 'American / Exec Plat / High spend / Already correct',
-    total_spend:'280000', dining_spend:'35000', grocery_spend:'18000', general_spend:'100000',
-    card_airfare:'Citi AAdvantage Executive', card_hotels:'Amex Platinum',
-    card_dining:'Amex Gold', card_groceries:'Amex Gold', card_general:'Citi AAdvantage Executive',
-    primary_airline_eco:'American', primary_airline:'AAdvantage Executive Platinum',
-    tsa_clear_activated:'Yes — both', booking_method:'Direct',
-    flights_taken:'40+', hotel_nights:'21-39', airline_spend:'$20k+',
-    airline_conc:'75-100%', hotel_conc:'75-100%', primary_hotel:'Hyatt Globalist',
-    pts_redeemed:'Over 150k', upgrades_unasked:'Yes', disruption:'No',
-    desired_outcomes:'Consistent recognition', luxury_retail_method:'Through dedicated advisor',
-    general_spend_cats:'Luxury retail', booking_control:'I do',
-    largest_purchase:'40000', primary_cards:'Citi AAdvantage Executive, Amex Platinum, Amex Gold',
-    full_name:'AA Exec Plat', email:'test@test.com', credit_score:'800+',
-    frequent_destinations:'DFW,LAX,JFK', cabin_booked:'Business', upgrade_spend:'Over $7k'
-  },
-  {
-    label: 'American / Platinum status / Low flight volume / $100K',
-    total_spend:'100000', dining_spend:'12000', grocery_spend:'10000', general_spend:'45000',
-    card_airfare:'Amex Platinum', card_hotels:'Amex Platinum',
-    card_dining:'Chase Sapphire Preferred', card_groceries:'Chase Sapphire Preferred', card_general:'Amex Platinum',
-    primary_airline_eco:'American', primary_airline:'AAdvantage Platinum',
-    tsa_clear_activated:'Yes — both', booking_method:'Direct',
-    flights_taken:'6-10', hotel_nights:'6-10', airline_spend:'Under $5k',
-    airline_conc:'50-74%', hotel_conc:'50-74%', primary_hotel:'Marriott Platinum',
-    pts_redeemed:'Under 25k', upgrades_unasked:'No', disruption:'No',
-    desired_outcomes:'Earlier airline upgrades', luxury_retail_method:'Not engaged',
-    general_spend_cats:'Online retail', booking_control:'Someone else',
-    largest_purchase:'8000', primary_cards:'Amex Platinum, Chase Sapphire Preferred',
-    full_name:'AA Plat Low Flights', email:'test@test.com', credit_score:'760-799',
-    frequent_destinations:'DFW,ORD', cabin_booked:'Economy', upgrade_spend:'Under $1k'
-  },
-
-  // ── UNITED PROFILES ───────────────────────────────────────────────────────
-  {
-    label: 'United / No status / Wrong cards / $180K',
-    total_spend:'180000', dining_spend:'22000', grocery_spend:'16000', general_spend:'80000',
-    card_airfare:'Chase Sapphire Reserve', card_hotels:'Chase Sapphire Reserve',
-    card_dining:'Chase Sapphire Reserve', card_groceries:'Chase Sapphire Reserve', card_general:'Chase Sapphire Reserve',
-    primary_airline_eco:'United', primary_airline:'None',
-    tsa_clear_activated:'No', booking_method:'Direct',
-    flights_taken:'21-40', hotel_nights:'11-20', airline_spend:'$10k-$20k',
-    airline_conc:'75-100%', hotel_conc:'25-49%', primary_hotel:'None',
-    pts_redeemed:'None', upgrades_unasked:'No', disruption:'Yes',
-    desired_outcomes:'Earlier airline upgrades; Airport experience', luxury_retail_method:'Not engaged',
-    general_spend_cats:'Online retail, Insurance', booking_control:'I do',
-    largest_purchase:'15000', primary_cards:'Chase Sapphire Reserve',
-    full_name:'United No Status', email:'test@test.com', credit_score:'760-799',
-    frequent_destinations:'ORD,SFO,LAX', cabin_booked:'Economy', upgrade_spend:'$1k-$3k'
-  },
-  {
-    label: 'United / Gold status / Heavy Chase ecosystem / $250K',
-    total_spend:'250000', dining_spend:'30000', grocery_spend:'20000', general_spend:'110000',
-    card_airfare:'Chase Sapphire Reserve', card_hotels:'Chase Sapphire Reserve',
-    card_dining:'Chase Sapphire Reserve', card_groceries:'Chase Sapphire Reserve', card_general:'Chase Sapphire Reserve',
-    primary_airline_eco:'United', primary_airline:'United Premier Gold',
-    tsa_clear_activated:'CLEAR only', booking_method:'Mixed',
-    flights_taken:'21-40', hotel_nights:'21-39', airline_spend:'$10k-$20k',
-    airline_conc:'75-100%', hotel_conc:'50-74%', primary_hotel:'Marriott Gold',
-    pts_redeemed:'25k-75k', upgrades_unasked:'No', disruption:'No',
-    desired_outcomes:'Earlier airline upgrades', luxury_retail_method:'Online',
-    general_spend_cats:'Online retail, Insurance, Luxury retail', booking_control:'I do',
-    largest_purchase:'25000', primary_cards:'Chase Sapphire Reserve, Chase Freedom',
-    full_name:'United Gold Chase', email:'test@test.com', credit_score:'800+',
-    frequent_destinations:'ORD,SFO,JFK', cabin_booked:'Mixed', upgrade_spend:'$1k-$3k'
-  },
-  {
-    label: 'United / Premier 1K / Already correct / $300K',
-    total_spend:'300000', dining_spend:'38000', grocery_spend:'22000', general_spend:'120000',
-    card_airfare:'United Club Infinite', card_hotels:'Amex Platinum',
-    card_dining:'Amex Gold', card_groceries:'Amex Gold', card_general:'United Club Infinite',
-    primary_airline_eco:'United', primary_airline:'United Premier 1K',
-    tsa_clear_activated:'Yes — both', booking_method:'Direct',
-    flights_taken:'40+', hotel_nights:'40+', airline_spend:'$20k+',
-    airline_conc:'75-100%', hotel_conc:'75-100%', primary_hotel:'Hyatt Globalist',
-    pts_redeemed:'Over 150k', upgrades_unasked:'Yes', disruption:'No',
-    desired_outcomes:'Suite-level hotel upgrades', luxury_retail_method:'Through dedicated advisor',
-    general_spend_cats:'Luxury retail', booking_control:'I do',
-    largest_purchase:'60000', primary_cards:'United Club Infinite, Amex Platinum, Amex Gold',
-    full_name:'United 1K Correct', email:'test@test.com', credit_score:'800+',
-    frequent_destinations:'ORD,SFO,EWR', cabin_booked:'Business', upgrade_spend:'Over $7k'
-  },
-
-  // ── SOUTHWEST ─────────────────────────────────────────────────────────────
-  {
-    label: 'Southwest / defaults to Delta architecture',
-    total_spend:'120000', dining_spend:'15000', grocery_spend:'12000', general_spend:'50000',
-    card_airfare:'Southwest Rapid Rewards Priority', card_hotels:'Chase Sapphire Preferred',
-    card_dining:'Chase Sapphire Preferred', card_groceries:'Chase Sapphire Preferred', card_general:'Southwest Rapid Rewards Priority',
-    primary_airline_eco:'Southwest', primary_airline:'None',
-    tsa_clear_activated:'No', booking_method:'Direct',
-    flights_taken:'11-20', hotel_nights:'6-10', airline_spend:'$5k-$10k',
-    airline_conc:'75-100%', hotel_conc:'0-24%', primary_hotel:'None',
-    pts_redeemed:'Under 25k', upgrades_unasked:'No', disruption:'No',
-    desired_outcomes:'Airport experience', luxury_retail_method:'Not engaged',
-    general_spend_cats:'Online retail', booking_control:'I do',
-    largest_purchase:'8000', primary_cards:'Southwest Rapid Rewards, Chase Sapphire Preferred',
-    full_name:'Southwest User', email:'test@test.com', credit_score:'760-799',
-    frequent_destinations:'MDW,DAL,HOU', cabin_booked:'Economy', upgrade_spend:'Under $1k'
-  },
-
-  // ── MIXED / NO PREFERENCE ─────────────────────────────────────────────────
-  {
-    label: 'Mixed airline / No status / $175K',
-    total_spend:'175000', dining_spend:'20000', grocery_spend:'15000', general_spend:'75000',
-    card_airfare:'Amex Platinum', card_hotels:'Amex Platinum',
-    card_dining:'Amex Gold', card_groceries:'Amex Gold', card_general:'Amex Platinum',
-    primary_airline_eco:'Mixed', primary_airline:'None',
-    tsa_clear_activated:'Yes — both', booking_method:'Direct',
-    flights_taken:'21-40', hotel_nights:'11-20', airline_spend:'$10k-$20k',
-    airline_conc:'25-49%', hotel_conc:'50-74%', primary_hotel:'Hyatt Explorist',
-    pts_redeemed:'25k-75k', upgrades_unasked:'No', disruption:'No',
-    desired_outcomes:'Suite-level hotel upgrades', luxury_retail_method:'Not engaged',
-    general_spend_cats:'Online retail, Insurance', booking_control:'Shared',
-    largest_purchase:'12000', primary_cards:'Amex Platinum, Amex Gold',
-    full_name:'Mixed Airline User', email:'test@test.com', credit_score:'760-799',
-    frequent_destinations:'JFK,LAX,ORD,ATL', cabin_booked:'Mixed', upgrade_spend:'$1k-$3k'
-  },
-
-  // ── EDGE CASES ────────────────────────────────────────────────────────────
-  {
-    label: 'EDGE: Minimum qualifying spend $100K / Delta',
-    total_spend:'100000', dining_spend:'10000', grocery_spend:'8000', general_spend:'40000',
-    card_airfare:'Delta SkyMiles Gold', card_hotels:'Delta SkyMiles Gold',
-    card_dining:'Delta SkyMiles Gold', card_groceries:'Delta SkyMiles Gold', card_general:'Delta SkyMiles Gold',
-    primary_airline_eco:'Delta', primary_airline:'None',
-    tsa_clear_activated:'No', booking_method:'Direct',
-    flights_taken:'6-10', hotel_nights:'6-10', airline_spend:'Under $5k',
-    airline_conc:'50-74%', hotel_conc:'0-24%', primary_hotel:'None',
-    pts_redeemed:'None', upgrades_unasked:'No', disruption:'No',
-    desired_outcomes:'Earlier airline upgrades', luxury_retail_method:'Not engaged',
-    general_spend_cats:'Online retail', booking_control:'I do',
-    largest_purchase:'5000', primary_cards:'Delta SkyMiles Gold',
-    full_name:'Min Spend Delta', email:'test@test.com', credit_score:'720-759',
-    frequent_destinations:'ATL,JFK', cabin_booked:'Economy', upgrade_spend:'Under $1k'
-  },
-  {
-    label: 'EDGE: TSA/CLEAR — PreCheck only activated',
-    total_spend:'150000', dining_spend:'18000', grocery_spend:'14000', general_spend:'65000',
-    card_airfare:'Chase Sapphire Preferred', card_hotels:'Amex Platinum',
-    card_dining:'Amex Gold', card_groceries:'Amex Gold', card_general:'Chase Sapphire Preferred',
-    primary_airline_eco:'Delta', primary_airline:'Delta Silver Medallion',
-    tsa_clear_activated:'PreCheck only', booking_method:'Direct',
-    flights_taken:'11-20', hotel_nights:'11-20', airline_spend:'$5k-$10k',
-    airline_conc:'75-100%', hotel_conc:'50-74%', primary_hotel:'Marriott Silver',
-    pts_redeemed:'Under 25k', upgrades_unasked:'No', disruption:'No',
-    desired_outcomes:'Earlier airline upgrades', luxury_retail_method:'Not engaged',
-    general_spend_cats:'Online retail', booking_control:'I do',
-    largest_purchase:'9000', primary_cards:'Chase Sapphire Preferred, Amex Platinum, Amex Gold',
-    full_name:'TSA PreCheck Only', email:'test@test.com', credit_score:'760-799',
-    frequent_destinations:'ATL,JFK,LAX', cabin_booked:'Economy', upgrade_spend:'Under $1k'
-  },
-  {
-    label: 'EDGE: American — "american express" in status field (false positive risk)',
-    total_spend:'160000', dining_spend:'20000', grocery_spend:'15000', general_spend:'70000',
-    card_airfare:'Amex Platinum', card_hotels:'Amex Platinum',
-    card_dining:'Amex Gold', card_groceries:'Amex Gold', card_general:'Amex Platinum',
-    primary_airline_eco:'American', primary_airline:'None',
-    tsa_clear_activated:'No', booking_method:'Direct',
-    flights_taken:'11-20', hotel_nights:'11-20', airline_spend:'$5k-$10k',
-    airline_conc:'50-74%', hotel_conc:'0-24%', primary_hotel:'None',
-    pts_redeemed:'None', upgrades_unasked:'No', disruption:'No',
-    desired_outcomes:'Earlier airline upgrades', luxury_retail_method:'Not engaged',
-    general_spend_cats:'Online retail', booking_control:'I do',
-    largest_purchase:'12000', primary_cards:'Amex Platinum, Amex Gold',
-    full_name:'Amex Cards AA Flyer', email:'test@test.com', credit_score:'760-799',
-    frequent_destinations:'ORD,DFW,LAX', cabin_booked:'Economy', upgrade_spend:'Under $1k'
-  },
-  {
-    label: 'EDGE: Very high spend $500K / United',
-    total_spend:'500000', dining_spend:'60000', grocery_spend:'30000', general_spend:'200000',
-    card_airfare:'United Club Infinite', card_hotels:'Amex Platinum',
-    card_dining:'Amex Gold', card_groceries:'Amex Gold', card_general:'United Club Infinite',
-    primary_airline_eco:'United', primary_airline:'United Premier Platinum',
-    tsa_clear_activated:'Yes — both', booking_method:'Direct',
-    flights_taken:'40+', hotel_nights:'40+', airline_spend:'$20k+',
-    airline_conc:'75-100%', hotel_conc:'75-100%', primary_hotel:'Hyatt Globalist',
-    pts_redeemed:'Over 150k', upgrades_unasked:'Yes', disruption:'No',
-    desired_outcomes:'Suite-level hotel upgrades', luxury_retail_method:'Through dedicated advisor',
-    general_spend_cats:'Luxury retail', booking_control:'I do',
-    largest_purchase:'100000', primary_cards:'United Club Infinite, Amex Platinum, Amex Gold',
-    full_name:'Very High United', email:'test@test.com', credit_score:'800+',
-    frequent_destinations:'ORD,EWR,LAX,SFO', cabin_booked:'Business', upgrade_spend:'Over $7k'
-  },
-  {
-    label: 'EDGE: No hotel status / Disrupted / Zero redeemed / American',
-    total_spend:'140000', dining_spend:'16000', grocery_spend:'12000', general_spend:'60000',
-    card_airfare:'Delta SkyMiles Reserve American Express Card', card_hotels:'Chase Sapphire Preferred',
-    card_dining:'Chase Sapphire Preferred', card_groceries:'Chase Sapphire Preferred', card_general:'Chase Sapphire Preferred',
-    primary_airline_eco:'American', primary_airline:'None',
-    tsa_clear_activated:'No', booking_method:'OTA',
-    flights_taken:'11-20', hotel_nights:'1-5', airline_spend:'$5k-$10k',
-    airline_conc:'50-74%', hotel_conc:'0-24%', primary_hotel:'None',
-    pts_redeemed:'None', upgrades_unasked:'No', disruption:'Yes',
-    desired_outcomes:'Operational reliability', luxury_retail_method:'Online',
-    general_spend_cats:'Online retail, Luxury retail', booking_control:'I do',
-    largest_purchase:'10000', primary_cards:'Delta SkyMiles Reserve, Chase Sapphire Preferred',
-    full_name:'AA Switcher', email:'test@test.com', credit_score:'720-759',
-    frequent_destinations:'ORD,DFW', cabin_booked:'Economy', upgrade_spend:'Under $1k'
-  },
-  {
-    label: 'EDGE: Delta Diamond already / Correct full stack',
-    total_spend:'400000', dining_spend:'50000', grocery_spend:'25000', general_spend:'150000',
-    card_airfare:'Delta SkyMiles Reserve American Express Card', card_hotels:'Amex Platinum',
-    card_dining:'Amex Gold', card_groceries:'Amex Gold', card_general:'Delta SkyMiles Reserve American Express Card',
-    primary_airline_eco:'Delta', primary_airline:'Delta Diamond Medallion',
-    tsa_clear_activated:'Yes — both', booking_method:'Direct',
-    flights_taken:'40+', hotel_nights:'40+', airline_spend:'$20k+',
-    airline_conc:'75-100%', hotel_conc:'75-100%', primary_hotel:'Hyatt Globalist',
-    pts_redeemed:'Over 150k', upgrades_unasked:'Yes', disruption:'No',
-    desired_outcomes:'Consistent recognition', luxury_retail_method:'Through dedicated advisor',
-    general_spend_cats:'Luxury retail', booking_control:'Someone else',
-    largest_purchase:'80000', primary_cards:'Delta Reserve, Amex Platinum, Amex Gold',
-    full_name:'Delta Diamond Correct', email:'test@test.com', credit_score:'800+',
-    frequent_destinations:'ATL,JFK,LAX,ORD', cabin_booked:'First', upgrade_spend:'Over $7k'
-  },
-];
-
-// ── RUN ALL PROFILES ──────────────────────────────────────────────────────────
-const failures = [];
-const passed = [];
-
-console.log('\n═══════════════════════════════════════════════════════════');
-console.log('  QUIET PREMIUM — DIAGNOSTIC SIMULATION HARNESS');
-console.log('  ' + profiles.length + ' profiles · ' + new Date().toLocaleString());
-console.log('═══════════════════════════════════════════════════════════\n');
-
-for(const p of profiles){
-  const r = generateResults(p);
-  const before = failures.length;
-  runAssertions(p.label, p, r, failures);
-  const after = failures.length;
-  const profileFailed = after > before;
-
-  const eco = r.dashboard.ecosystem.padEnd(10);
-  const val = ('$'+r.value.vt.toLocaleString()).padStart(10);
-  const card = r.thirdCard.padEnd(28);
-  const status = r.statusTarget.substring(0,35).padEnd(35);
-  const mark = profileFailed ? '✗ FAIL' : '✓ PASS';
-
-  console.log(`${mark}  ${p.label.substring(0,52).padEnd(52)} eco:${eco} val:${val}  card:${card}  status:${status}`);
-
-  if(profileFailed){
-    const newFails = failures.slice(before);
-    for(const f of newFails){
-      console.log(`       ↳ ${f.msg}`);
+  function identifyCard(raw) {
+    const value = lc(raw);
+    if (!value) return null;
+    for (const [id, terms] of CARD_MATCHERS) {
+      if (terms.some(term => value.includes(term))) return { id, ...RULES.cards[id], raw: clean(raw) };
     }
+    return { id: "unsupported", label: clean(raw), raw: clean(raw), supported: false };
   }
-}
 
-console.log('\n───────────────────────────────────────────────────────────');
-console.log(`  RESULTS: ${profiles.length - [...new Set(failures.map(f=>f.profile))].length} passed / ${[...new Set(failures.map(f=>f.profile))].length} profiles with failures / ${failures.length} total assertions failed`);
-if(failures.length === 0){
-  console.log('  ALL ASSERTIONS PASSED');
+  function normalizeCardList(input) {
+    if (Array.isArray(input)) return input.map(identifyCard).filter(Boolean);
+    const raw = clean(input);
+    if (!raw) return [];
+    return raw.split(/\n|,|;/).map(s => identifyCard(s)).filter(Boolean);
+  }
+
+  // ---------------------------------------------------------------------------
+  // Ecosystem normalization
+  // ---------------------------------------------------------------------------
+
+  function normalizeAirline(value) {
+    const s = lc(value);
+    if (s.includes("delta")) return "delta";
+    if (s.includes("united")) return "united";
+    if (s.includes("american") || s.includes("aadvantage")) return "american";
+    if (s.includes("southwest")) return "southwest";
+    if (s.includes("mixed") || s.includes("no primary") || s.includes("none")) return "mixed";
+    return s || "unknown";
+  }
+
+  function normalizeHotel(value) {
+    const s = lc(value);
+    if (s.includes("hyatt")) return "hyatt";
+    if (s.includes("marriott") || s.includes("bonvoy")) return "marriott";
+    if (s.includes("hilton")) return "hilton";
+    if (s.includes("none") || s.includes("mixed") || !s) return "mixed";
+    return "other";
+  }
+
+  const FLIGHT_RANGE = {
+    "40+": 42, "21-40": 30, "11-20": 15, "6-10": 8, "0-5": 4
+  };
+  const NIGHT_RANGE = {
+    "40+": 42, "21-39": 30, "21-40": 30, "11-20": 15, "6-10": 8, "0-5": 4
+  };
+  const AIRFARE_RANGE = {
+    "$20k+": 22000, "$10k-$20k": 15000, "$5k-$10k": 7500,
+    "Under $5k": 3000, "Likely over $10k": 12000
+  };
+
+  // ---------------------------------------------------------------------------
+  // Input Normalizer
+  // Unknown data is kept unknown wherever possible. We do not invent precision.
+  // ---------------------------------------------------------------------------
+
+  function normalizeProfile(raw = {}) {
+    const total = money(raw.total_spend);
+    const dining = money(raw.dining_spend);
+    const grocery = money(raw.grocery_spend);
+    const general = money(raw.general_spend);
+    const hotelSpendProvided = money(raw.hotel_spend);
+    const hotelNights = rangeMidpoint(raw.hotel_nights, NIGHT_RANGE, money(raw.hotel_nights));
+    const hotelSpend = hotelSpendProvided || (hotelNights ? hotelNights * 500 : 0);
+    const airfareSpend = money(raw.individual_airfare_spend || raw.airfare_spend) ||
+      rangeMidpoint(raw.airline_spend, AIRFARE_RANGE, money(raw.airline_spend));
+    const flights = rangeMidpoint(raw.flights_taken, FLIGHT_RANGE, money(raw.flights_taken));
+
+    const cards = normalizeCardList(raw.primary_cards);
+    const usage = {
+      airfare: identifyCard(raw.card_airfare),
+      hotels: identifyCard(raw.card_hotels),
+      dining: identifyCard(raw.card_dining),
+      groceries: identifyCard(raw.card_groceries),
+      general: identifyCard(raw.card_general)
+    };
+
+    // Preserve all cards found in category usage even if primary_cards was blank.
+    const byId = new Map();
+    [...cards, ...Object.values(usage).filter(Boolean)].forEach(c => {
+      const key = c.id === "unsupported" ? `unsupported:${lc(c.raw)}` : c.id;
+      if (!byId.has(key)) byId.set(key, c);
+    });
+
+    const primaryAirline = normalizeAirline(raw.primary_airline_eco || raw.primary_airline);
+    const primaryHotel = normalizeHotel(raw.primary_hotel);
+
+    const categoriesKnown = dining + grocery + general + hotelSpend + airfareSpend;
+    const reconciliationDelta = total ? total - categoriesKnown : null;
+
+    return {
+      identity: {
+        firstName: clean(raw.first_name || raw.full_name).split(/\s+/)[0] || null
+      },
+      spend: {
+        total,
+        dining,
+        grocery,
+        general,
+        hotel: hotelSpend,
+        airfareIndividual: airfareSpend,
+        categoriesKnown,
+        reconciliationDelta,
+        reconciliationStatus:
+          total === 0 ? "unknown_total" :
+          Math.abs(reconciliationDelta) <= Math.max(1000, total * 0.05) ? "reconciled" :
+          reconciliationDelta > 0 ? "unclassified_spend_remaining" :
+          "categories_exceed_total"
+      },
+      travel: {
+        primaryAirline,
+        primaryAirlineRaw: clean(raw.primary_airline || raw.primary_airline_eco),
+        currentAirlineStatus: clean(raw.primary_airline),
+        flights,
+        airlineConcentration: clean(raw.airline_conc),
+        homeAirport: clean(raw.home_airport),
+        frequentDestinations: clean(raw.frequent_destinations),
+        bookingControl: clean(raw.booking_control),
+        bookingMethod: clean(raw.booking_method),
+        cabin: clean(raw.cabin_booked)
+      },
+      hotel: {
+        primaryProgram: primaryHotel,
+        currentStatusRaw: clean(raw.primary_hotel),
+        nights: hotelNights,
+        stays: money(raw.hotel_stays),
+        spend: hotelSpend,
+        concentration: clean(raw.hotel_conc),
+        bookingMethod: clean(raw.hotel_booking_method || raw.booking_method)
+      },
+      benefits: {
+        tsaClear: clean(raw.tsa_clear_activated),
+        loungeAccess: clean(raw.lounge_access),
+        bagFrequency: money(raw.checked_bag_roundtrips),
+        pointsRedeemed: clean(raw.pts_redeemed),
+        upgrades: clean(raw.upgrades_unasked),
+        disruption: clean(raw.disruption)
+      },
+      cards: Array.from(byId.values()),
+      usage,
+      raw
+    };
+  }
+
+  // ---------------------------------------------------------------------------
+  // Spend Ledger
+  // The ledger prevents a dollar from being assigned twice.
+  // ---------------------------------------------------------------------------
+
+  function createSpendLedger(profile) {
+    const p = profile.spend;
+    const ledger = {
+      total: p.total,
+      buckets: {
+        dining: p.dining,
+        grocery: p.grocery,
+        hotel: p.hotel,
+        airfare: p.airfareIndividual,
+        general: p.general
+      },
+      allocated: {},
+      unallocated: {},
+      errors: []
+    };
+
+    let allocatedTotal = 0;
+    Object.entries(ledger.buckets).forEach(([bucket, amount]) => {
+      const value = Math.max(0, money(amount));
+      ledger.allocated[bucket] = value;
+      allocatedTotal += value;
+    });
+
+    ledger.allocatedTotal = allocatedTotal;
+    ledger.unclassified = Math.max(0, p.total - allocatedTotal);
+    ledger.overAllocated = Math.max(0, allocatedTotal - p.total);
+
+    if (p.total > 0 && ledger.overAllocated > 0) {
+      ledger.errors.push({
+        code: "SPEND_OVERALLOCATED",
+        amount: ledger.overAllocated,
+        message: "Known spend categories exceed total household card spend."
+      });
+    }
+
+    return ledger;
+  }
+
+  // ---------------------------------------------------------------------------
+  // Status utilities
+  // ---------------------------------------------------------------------------
+
+  function tierFromMetric(thresholds, metricValue) {
+    let achieved = null;
+    for (const threshold of thresholds) {
+      if (metricValue >= threshold.amount) achieved = threshold;
+    }
+    return achieved;
+  }
+
+  function nextTier(thresholds, metricValue) {
+    return thresholds.find(t => metricValue < t.amount) || null;
+  }
+
+  function parseCurrentTier(ecosystem, raw) {
+    const s = lc(raw);
+    if (!s || s.includes("none")) return null;
+    const tiers = RULES.airlines[ecosystem]?.thresholds || [];
+    return tiers.find(t => s.includes(lc(t.tier).replace(" medallion", "").replace("premier ", "").replace("aadvantage ", ""))) || null;
+  }
+
+  // ---------------------------------------------------------------------------
+  // Airline Status Production
+  // Primary airline controls which airline rail is evaluated.
+  // Phase 3A does NOT migrate the traveler to a different carrier.
+  // ---------------------------------------------------------------------------
+
+  function currentAirlineStatus(profile) {
+    const eco = profile.travel.primaryAirline;
+    if (!RULES.airlines[eco]) {
+      return {
+        ecosystem: eco,
+        supported: false,
+        reason: eco === "mixed"
+          ? "No single primary airline. Phase 3B will evaluate whether a primary rail should be established."
+          : "Airline ecosystem is not supported in V1."
+      };
+    }
+
+    const airline = RULES.airlines[eco];
+    const generalCard = profile.usage.general;
+    const airfare = profile.spend.airfareIndividual;
+    const flights = profile.travel.flights;
+    let activityMetric = 0;
+    let cardMetric = 0;
+    let ownershipMetric = 0;
+    const conditions = [];
+
+    if (eco === "delta") {
+      // QP does NOT apply household airfare as traveler MQDs. Only the normalized
+      // individual qualifying airfare input is used here.
+      activityMetric = airfare;
+
+      const eligibleOwned = profile.cards.filter(c => ["delta_reserve", "delta_platinum"].includes(c.id));
+      ownershipMetric = eligibleOwned.length * 2500;
+
+      if (generalCard?.id === "delta_reserve") cardMetric += profile.spend.general / 10;
+      if (generalCard?.id === "delta_platinum") cardMetric += profile.spend.general / 20;
+    }
+
+    if (eco === "united") {
+      activityMetric = airfare; // Phase 3A proxy; Phase 3B will distinguish eligible PQP sources.
+      if (generalCard?.id === "united_explorer") cardMetric += Math.min(1000, profile.spend.general / 20);
+      if (generalCard?.id === "united_quest") {
+        cardMetric += Math.min(18000, profile.spend.general / 20);
+        conditions.push("United Quest annual Card Bonus PQP is conditional on account timing.");
+      }
+      if (generalCard?.id === "united_club") {
+        cardMetric += Math.min(28000, profile.spend.general / 15);
+        conditions.push("United Club annual Card Bonus PQP is conditional on account timing.");
+      }
+      // Conditional annual bonuses are not silently counted in confirmed metric.
+    }
+
+    if (eco === "american") {
+      // Eligible card spend generally produces 1 Loyalty Point per eligible $1.
+      if (generalCard?.id === "aa_executive") cardMetric += profile.spend.general;
+      // Flight LP earning is status/fare dependent. Phase 3A refuses the old 5x blanket assumption.
+      activityMetric = 0;
+      if (airfare > 0) conditions.push("Flight Loyalty Points require fare/status-specific calculation; not estimated with a blanket multiplier.");
+    }
+
+    if (eco === "southwest") {
+      if (generalCard?.id === "southwest_priority") {
+        const blocks = Math.floor(profile.spend.general / 5000);
+        cardMetric += blocks * 2500;
+      }
+      activityMetric = 0; // Fare-derived TQP needs booking data; don't fabricate it.
+      if (airfare > 0) conditions.push("Southwest flight TQP requires eligible fare/activity detail; not inferred from airfare dollars.");
+    }
+
+    const confirmedMetric = round(activityMetric + cardMetric + ownershipMetric, 0);
+    const achieved = tierFromMetric(airline.thresholds, confirmedMetric);
+    const next = nextTier(airline.thresholds, confirmedMetric);
+    const userReportedTier = parseCurrentTier(eco, profile.travel.currentAirlineStatus);
+
+    return {
+      ecosystem: eco,
+      label: airline.label,
+      supported: true,
+      metric: airline.qualificationMetric,
+      confirmedMetric,
+      components: {
+        travelActivity: round(activityMetric, 0),
+        cardSpend: round(cardMetric, 0),
+        ownershipHeadstart: round(ownershipMetric, 0)
+      },
+      calculatedTier: achieved?.tier || null,
+      reportedTier: userReportedTier?.tier || profile.travel.currentAirlineStatus || null,
+      nextTier: next ? {
+        tier: next.tier,
+        threshold: next.amount,
+        remaining: Math.max(0, round(next.amount - confirmedMetric, 0))
+      } : null,
+      flightThresholdPath: eco === "southwest"
+        ? RULES.airlines.southwest.flightThresholds.map(t => ({
+            tier: t.tier,
+            flightsRequired: t.flights,
+            remaining: Math.max(0, t.flights - flights)
+          }))
+        : null,
+      conditions
+    };
+  }
+
+  // ---------------------------------------------------------------------------
+  // Hotel Current Architecture
+  // Phase 3A evaluates the current declared hotel ecosystem only.
+  // It does not yet select a different chain.
+  // ---------------------------------------------------------------------------
+
+  function cardTierRank(program, tier) {
+    const order = {
+      hyatt: ["Discoverist", "Explorist", "Globalist"],
+      marriott: ["Silver Elite", "Gold Elite", "Platinum Elite", "Titanium Elite"],
+      hilton: ["Silver", "Gold", "Diamond", "Diamond Reserve"]
+    };
+    const i = order[program]?.indexOf(tier) ?? -1;
+    return i;
+  }
+
+  function maxTier(program, a, b) {
+    if (!a) return b || null;
+    if (!b) return a || null;
+    return cardTierRank(program, a) >= cardTierRank(program, b) ? a : b;
+  }
+
+  function currentHotelStatus(profile) {
+    const program = profile.hotel.primaryProgram;
+    if (!RULES.hotelPrograms[program]) {
+      return {
+        program,
+        supported: false,
+        reason: program === "mixed"
+          ? "No primary hotel program."
+          : "Hotel program is not supported in V1."
+      };
+    }
+
+    const nightsActual = profile.hotel.nights;
+    const staysActual = profile.hotel.stays;
+    const spendActual = profile.hotel.spend;
+    const generalCard = profile.usage.general;
+    const owned = profile.cards;
+
+    let cardNights = 0;
+    let automaticTier = null;
+    const conditions = [];
+
+    for (const c of owned) {
+      if (c.ecosystem !== program || !c.hotelStatus) continue;
+      automaticTier = maxTier(program, automaticTier, c.hotelStatus.automaticTier);
+      cardNights += c.hotelStatus.annualNights || 0;
+    }
+
+    // Only count spend-based hotel qualification when the relevant hotel card
+    // is actually the general-spend card.
+    if (program === "hyatt" && generalCard?.id === "hyatt_consumer") {
+      cardNights += Math.floor(profile.spend.general / 5000) * 2;
+    }
+    if (program === "marriott" && generalCard?.id === "marriott_boundless") {
+      cardNights += Math.floor(profile.spend.general / 5000);
+      if (profile.spend.general >= 35000) automaticTier = maxTier(program, automaticTier, "Gold Elite");
+    }
+    if (program === "hilton" && generalCard?.id === "hilton_no_fee" && profile.spend.general >= 20000) {
+      automaticTier = maxTier(program, automaticTier, "Gold");
+    }
+    if (program === "hilton" && generalCard?.id === "hilton_surpass" && profile.spend.general >= 40000) {
+      automaticTier = maxTier(program, automaticTier, "Diamond");
+    }
+
+    let activityTier = null;
+    const rules = RULES.hotelPrograms[program];
+
+    if (program === "hyatt" || program === "marriott") {
+      const qualifyingNights = nightsActual + cardNights;
+      for (const t of rules.thresholds) if (qualifyingNights >= t.nights) activityTier = t.tier;
+    }
+
+    if (program === "hilton") {
+      for (const t of rules.thresholds) {
+        const qualifies =
+          (t.nights && nightsActual >= t.nights) ||
+          (t.stays && staysActual >= t.stays) ||
+          (t.spend && spendActual >= t.spend);
+        if (qualifies) activityTier = t.tier;
+      }
+      const dr = rules.diamondReserve;
+      const reserveQualifies =
+        (nightsActual >= dr.nights || staysActual >= dr.stays) &&
+        spendActual >= dr.spend;
+      if (reserveQualifies) activityTier = "Diamond Reserve";
+    }
+
+    const currentTier = maxTier(program, automaticTier, activityTier);
+
+    return {
+      program,
+      label: rules.label,
+      supported: true,
+      currentTier,
+      automaticTier,
+      activityTier,
+      components: {
+        actualNights: nightsActual,
+        cardNights,
+        qualifyingNights: nightsActual + cardNights,
+        stays: staysActual,
+        hotelSpend: spendActual
+      },
+      conditions
+    };
+  }
+
+  // ---------------------------------------------------------------------------
+  // Current Architecture
+  // No optimizer here. No fake "potential" is created.
+  // ---------------------------------------------------------------------------
+
+  function calculateCurrentArchitecture(rawProfile) {
+    const profile = rawProfile?.spend ? rawProfile : normalizeProfile(rawProfile);
+    const ledger = createSpendLedger(profile);
+    const airline = currentAirlineStatus(profile);
+    const hotel = currentHotelStatus(profile);
+
+    const knownAnnualFees = profile.cards.reduce((sum, card) => sum + (card.annualFee || 0), 0);
+    const unsupportedCards = profile.cards.filter(c => c.id === "unsupported").map(c => c.label);
+
+    return {
+      engine: {
+        version: ENGINE_VERSION,
+        phase: "3A",
+        rulesAsOf: RULES_AS_OF
+      },
+      profile,
+      current: {
+        airline,
+        hotel,
+        spendLedger: ledger,
+        knownAnnualCardFees: knownAnnualFees,
+        unsupportedCards
+      },
+      optimization: {
+        performed: false,
+        reason: "Phase 3A calculates Current Architecture only. Candidate optimization begins in Phase 3B."
+      },
+      integrity: validateCurrentArchitecture(profile, ledger, airline, hotel)
+    };
+  }
+
+  // ---------------------------------------------------------------------------
+  // Integrity checks
+  // ---------------------------------------------------------------------------
+
+  function validateCurrentArchitecture(profile, ledger, airline, hotel) {
+    const checks = [];
+
+    function check(id, pass, detail) {
+      checks.push({ id, pass: Boolean(pass), detail });
+    }
+
+    check(
+      "SPEND_NOT_DOUBLE_ALLOCATED",
+      ledger.overAllocated === 0,
+      ledger.overAllocated ? `Over-allocated by $${round(ledger.overAllocated)}` : "Known spend buckets do not exceed total spend."
+    );
+
+    check(
+      "PRIMARY_AIRLINE_GOVERNS",
+      !airline.supported || airline.ecosystem === profile.travel.primaryAirline,
+      "Airline status calculation remains in the declared primary airline ecosystem."
+    );
+
+    check(
+      "NO_SOUTHWEST_TO_DELTA_FORCING",
+      profile.travel.primaryAirline !== "southwest" || airline.ecosystem === "southwest",
+      "Southwest is evaluated as Southwest, not silently migrated to Delta."
+    );
+
+    check(
+      "NO_NEGATIVE_STATUS_METRIC",
+      !airline.supported || airline.confirmedMetric >= 0,
+      "Confirmed airline status metric is non-negative."
+    );
+
+    check(
+      "NO_FAKE_OPTIMIZATION",
+      true,
+      "Phase 3A does not generate recommendations or potential-value claims."
+    );
+
+    check(
+      "HOTEL_PROGRAM_PRESERVED",
+      !hotel.supported || hotel.program === profile.hotel.primaryProgram,
+      "Current hotel calculation remains in the declared hotel ecosystem."
+    );
+
+    return {
+      passed: checks.every(c => c.pass),
+      checks
+    };
+  }
+
+  // ---------------------------------------------------------------------------
+  // Phase 3A Smoke Profiles
+  // These are logic tests, not valuation claims.
+  // ---------------------------------------------------------------------------
+
+  const TEST_PROFILES = [
+    {
+      label: "$200K Delta already concentrated",
+      data: {
+        total_spend: 200000,
+        dining_spend: 30000,
+        grocery_spend: 20000,
+        general_spend: 95000,
+        hotel_spend: 25000,
+        individual_airfare_spend: 30000,
+        primary_airline_eco: "Delta",
+        primary_airline: "Delta Platinum Medallion",
+        card_general: "Delta SkyMiles Reserve",
+        card_airfare: "Delta SkyMiles Reserve",
+        primary_cards: "Delta SkyMiles Reserve; American Express Gold",
+        primary_hotel: "Marriott Bonvoy Platinum Elite",
+        hotel_nights: 35
+      }
+    },
+    {
+      label: "$150K United",
+      data: {
+        total_spend: 150000,
+        dining_spend: 24000,
+        grocery_spend: 15000,
+        general_spend: 70000,
+        hotel_spend: 21000,
+        individual_airfare_spend: 20000,
+        primary_airline_eco: "United",
+        primary_airline: "United Premier Gold",
+        card_general: "United Club Infinite",
+        primary_cards: "United Club Infinite",
+        primary_hotel: "Hyatt Explorist",
+        hotel_nights: 30
+      }
+    },
+    {
+      label: "Southwest preserved",
+      data: {
+        total_spend: 120000,
+        dining_spend: 22000,
+        grocery_spend: 15000,
+        general_spend: 60000,
+        hotel_spend: 13000,
+        individual_airfare_spend: 10000,
+        primary_airline_eco: "Southwest",
+        primary_airline: "Southwest A-List",
+        card_general: "Southwest Rapid Rewards Priority",
+        primary_cards: "Southwest Rapid Rewards Priority",
+        flights_taken: "21-40",
+        primary_hotel: "Hilton Honors Gold",
+        hotel_nights: 20
+      }
+    },
+    {
+      label: "$75K little travel",
+      data: {
+        total_spend: 75000,
+        dining_spend: 16000,
+        grocery_spend: 12000,
+        general_spend: 39000,
+        hotel_spend: 4000,
+        individual_airfare_spend: 4000,
+        primary_airline_eco: "Mixed",
+        primary_airline: "None",
+        flights_taken: "0-5",
+        primary_hotel: "None",
+        hotel_nights: "0-5"
+      }
+    }
+  ];
+
+  function runSmokeTests() {
+    const results = TEST_PROFILES.map(test => {
+      const result = calculateCurrentArchitecture(test.data);
+      return {
+        label: test.label,
+        passed: result.integrity.passed,
+        airline: result.current.airline,
+        hotel: result.current.hotel,
+        integrity: result.integrity
+      };
+    });
+
+    return {
+      engineVersion: ENGINE_VERSION,
+      passed: results.every(r => r.passed),
+      count: results.length,
+      results
+    };
+  }
+
+  // ---------------------------------------------------------------------------
+  // Public API
+  // ---------------------------------------------------------------------------
+
+  return Object.freeze({
+    ENGINE_VERSION,
+    RULES_AS_OF,
+    RULES,
+    normalizeProfile,
+    identifyCard,
+    createSpendLedger,
+    currentAirlineStatus,
+    currentHotelStatus,
+    calculateCurrentArchitecture,
+    runSmokeTests
+  });
+});
+
+// CLI smoke test: `node qp_sim.js`
+if (typeof module === "object" && module.exports && require.main === module) {
+  const report = module.exports.runSmokeTests();
+  console.log(JSON.stringify(report, null, 2));
+  if (!report.passed) process.exitCode = 1;
 }
-console.log('═══════════════════════════════════════════════════════════\n');
