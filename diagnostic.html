@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Quiet Premium · diagnostic.html · Phase 10 Analytics & Funnel Measurement · build v2.4.0 · 2026-09-03
+<!-- Quiet Premium · diagnostic.html · Phase 11 QA & Launch Hardening · build v2.5.0 · 2026-09-03
      Customer-facing assessment rebuilt around the validated QP engine input contract.
      Requires qp_sim.js engine v4.1+ in the same GitHub directory. -->
 <html lang="en">
@@ -258,6 +258,23 @@ padding:34px 30px 30px;margin-bottom:22px}
 .private-note{font-size:10px;line-height:1.55;color:var(--muted2);margin-top:10px}
 @media(max-width:680px){.delivery-grid{grid-template-columns:1fr}.arch-id{align-items:flex-start;flex-direction:column}}
 
+
+/* Phase 11 — QA / launch hardening */
+.sr-only{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
+.btn:disabled,.feedback-reactions button:disabled{opacity:.45;cursor:not-allowed}
+
+@media(max-width:760px){.metrics{grid-template-columns:1fr 1fr}}
+@media(max-width:430px){.metrics{grid-template-columns:1fr}.metric{min-width:0}}
+#step-title[tabindex="-1"],#result-title[tabindex="-1"]{outline:none}
+button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,summary:focus-visible{
+  outline:2px solid var(--gold2);outline-offset:3px
+}
+.choice[aria-pressed="true"]{border-color:var(--gold);background:var(--goldwash);color:var(--gold2)}
+.control[aria-invalid="true"]{border-color:var(--danger)}
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+}
+
 @media print{
   nav,.result-actions{display:none!important}
   body,.results,.result-shell,.metric,.result-card{background:white!important;color:black!important}
@@ -293,7 +310,7 @@ padding:34px 30px 30px;margin-bottom:22px}
 
     <div class="progress">
       <div class="progress-head">
-        <div class="progress-title" id="step-title">How You Travel</div>
+        <div class="progress-title" id="step-title" tabindex="-1">How You Travel</div>
         <div class="progress-count" id="step-count">1 of 5</div>
       </div>
       <div class="track"><div class="fill" id="progress-fill"></div></div>
@@ -568,12 +585,12 @@ padding:34px 30px 30px;margin-bottom:22px}
           <div class="label">What would you most like your current spending to improve? <span class="req">*</span></div>
           <div class="hint">Choose up to two. These can break close calls; they do not override a large economic disadvantage.</div>
           <div class="choice-grid" id="outcomes" data-max="2">
-            <button type="button" class="choice" data-value="redemption">More premium travel from points</button>
-            <button type="button" class="choice" data-value="status">Useful airline status</button>
-            <button type="button" class="choice" data-value="upgrades">Better upgrade position</button>
-            <button type="button" class="choice" data-value="hotel recognition">Better hotel recognition</button>
-            <button type="button" class="choice" data-value="treatment">Better treatment when travel goes wrong</button>
-            <button type="button" class="choice" data-value="cash released">Less cash spent buying premium travel</button>
+            <button type="button" class="choice" aria-pressed="false" data-value="redemption">More premium travel from points</button>
+            <button type="button" class="choice" aria-pressed="false" data-value="status">Useful airline status</button>
+            <button type="button" class="choice" aria-pressed="false" data-value="upgrades">Better upgrade position</button>
+            <button type="button" class="choice" aria-pressed="false" data-value="hotel recognition">Better hotel recognition</button>
+            <button type="button" class="choice" aria-pressed="false" data-value="treatment">Better treatment when travel goes wrong</button>
+            <button type="button" class="choice" aria-pressed="false" data-value="cash released">Less cash spent buying premium travel</button>
           </div>
           <input type="hidden" id="desired_outcomes" name="desired_outcomes"/>
           <div class="validation">Choose at least one priority.</div>
@@ -607,7 +624,7 @@ padding:34px 30px 30px;margin-bottom:22px}
   </div>
 </main>
 
-<section class="loading" id="loading">
+<section class="loading" id="loading" role="status" aria-live="polite" aria-busy="true">
   <div class="loading-inner">
     <div class="loading-ring"></div>
     <h2>Building your Architecture.</h2>
@@ -682,19 +699,20 @@ padding:34px 30px 30px;margin-bottom:22px}
           <span>Architecture ID</span>
           <strong id="architecture-id">—</strong>
         </div>
-        <div class="saved-state" id="backend-state" style="margin:-4px 0 14px">Saving securely…</div>
+        <div class="saved-state" id="backend-state" aria-live="polite" style="margin:-4px 0 14px">Saving securely…</div>
 
         <div class="delivery-grid">
           <div class="delivery-card">
             <h3>Private retrieval link</h3>
             <p>Your result is stored in Quiet Premium's private data layer. The link contains an Architecture ID plus a high-entropy retrieval token. Anyone with the full link can read that one result.</p>
             <button type="button" class="btn btn-secondary" id="copy-private-link">Copy Private Link</button>
-            <div class="saved-state" id="link-state">Not generated yet.</div>
+            <div class="saved-state" id="link-state" aria-live="polite">Not generated yet.</div>
           </div>
 
           <div class="delivery-card">
             <h3>Email a copy</h3>
             <p>Your email is requested only here, after the result. If entered, it is saved with this Architecture when you choose Email / Share Result; your mail app then opens with the private link prepared.</p>
+            <label class="sr-only" for="result-email">Email address for this Architecture</label>
             <input class="control" id="result-email" type="email" autocomplete="email" placeholder="you@example.com"/>
             <button type="button" class="btn btn-secondary" id="email-result">Email / Share Result</button>
             <div class="private-note">Quiet Premium does not send this email address to Google Analytics.</div>
@@ -704,14 +722,14 @@ padding:34px 30px 30px;margin-bottom:22px}
             <h3>Save on this device</h3>
             <p>Stores the completed Architecture in this browser's IndexedDB. It is separate from the anonymous unfinished-draft storage.</p>
             <button type="button" class="btn btn-secondary" id="save-local-result">Save Private Copy</button>
-            <div class="saved-state" id="save-state">Not saved.</div>
+            <div class="saved-state" id="save-state" aria-live="polite">Not saved.</div>
           </div>
 
           <div class="delivery-card">
             <h3>PDF report</h3>
             <p>Creates a compact report containing your conclusion, metrics, recommended architecture, routing and corrections.</p>
             <button type="button" class="btn btn-secondary" id="download-pdf">Download PDF</button>
-            <div class="saved-state" id="pdf-state">Ready.</div>
+            <div class="saved-state" id="pdf-state" aria-live="polite">Ready.</div>
           </div>
         </div>
 
@@ -724,9 +742,10 @@ padding:34px 30px 30px;margin-bottom:22px}
             <button type="button" data-reaction="Somewhat useful">Somewhat useful</button>
             <button type="button" data-reaction="Not useful yet">Not useful yet</button>
           </div>
+          <label class="sr-only" for="feedback-text">Feedback about this Architecture</label>
           <textarea class="control" id="feedback-text" placeholder="What was clear, wrong, surprising, or missing?"></textarea>
           <button type="button" class="btn btn-secondary btn-full" id="send-feedback">Send Feedback</button>
-          <div class="saved-state" id="feedback-state"></div>
+          <div class="saved-state" id="feedback-state" aria-live="polite"></div>
         </div>
       </div>
 
@@ -803,6 +822,7 @@ padding:34px 30px 30px;margin-bottom:22px}
     $('progress-fill').style.width=`${((currentStep+1)/steps.length)*100}%`;
     if(fromNav){
       window.scrollTo({top:0,behavior:'smooth'});
+      requestAnimationFrame(()=>$('step-title')?.focus({preventScroll:true}));
       track(`assessment_section_${currentStep+1}_view`,{step:currentStep+1,section:titles[currentStep]});
     }
     updateConditionals();
@@ -826,6 +846,8 @@ padding:34px 30px 30px;margin-bottom:22px}
         valid=fieldValue(field)!=='';
       }
       field.classList.toggle('invalid',!valid);
+      const control=field.querySelector('input:not([type=hidden]),select,textarea');
+      if(control)control.setAttribute('aria-invalid',valid?'false':'true');
       if(!valid)ok=false;
     });
     if(!ok){
@@ -852,6 +874,7 @@ padding:34px 30px 30px;margin-bottom:22px}
     const selected=[...$('outcomes').querySelectorAll('.choice.selected')];
     if(!b.classList.contains('selected')&&selected.length>=2)return;
     b.classList.toggle('selected');
+    b.setAttribute('aria-pressed',b.classList.contains('selected')?'true':'false');
     const values=[...$('outcomes').querySelectorAll('.choice.selected')].map(x=>x.dataset.value);
     $('desired_outcomes').value=values.join(', ');
     b.closest('.field')?.classList.remove('invalid');
@@ -940,7 +963,10 @@ padding:34px 30px 30px;margin-bottom:22px}
       Object.entries(d.point_balances||{}).forEach(([c,v])=>{if(pointMap[c])$(pointMap[c]).value=v});
       const outcomes=String(d.desired_outcomes||'').split(',').map(x=>x.trim()).filter(Boolean);
       $('desired_outcomes').value=outcomes.join(', ');
-      [...$('outcomes').querySelectorAll('.choice')].forEach(b=>b.classList.toggle('selected',outcomes.includes(b.dataset.value)));
+      [...$('outcomes').querySelectorAll('.choice')].forEach(b=>{
+        const selected=outcomes.includes(b.dataset.value);
+        b.classList.toggle('selected',selected);b.setAttribute('aria-pressed',selected?'true':'false');
+      });
       showStep(Math.min(Number(saved.step)||0,4),false);
       updateReconciliation();
       return true;
@@ -949,6 +975,7 @@ padding:34px 30px 30px;margin-bottom:22px}
 
   form.addEventListener('input',e=>{
     e.target.closest('.field')?.classList.remove('invalid');
+    if(e.target.matches('input,select,textarea'))e.target.setAttribute('aria-invalid','false');
     updateReconciliation();updateConditionals();saveDraft();
   });
   form.addEventListener('change',()=>{updateReconciliation();updateConditionals();saveDraft();});
@@ -968,20 +995,33 @@ padding:34px 30px 30px;margin-bottom:22px}
   let activeArchitecture=null;
   let activePrivateLink=null;
   let activeReaction='';
+  let backendSavePending=false;
+
+  function setDeliveryPending(pending){
+    backendSavePending=Boolean(pending);
+    ['copy-private-link','email-result','send-feedback'].forEach(id=>{
+      const el=$(id);if(el){el.disabled=backendSavePending;el.setAttribute('aria-busy',backendSavePending?'true':'false');}
+    });
+  }
 
 
   async function qpRpc(name,payload){
-    const res=await fetch(`${QP_SUPABASE_URL}/rest/v1/rpc/${name}`,{
-      method:'POST',
-      headers:{'Content-Type':'application/json','apikey':QP_SUPABASE_KEY},
-      body:JSON.stringify(payload||{})
-    });
-    if(!res.ok){
-      const text=await res.text().catch(()=>'');
-      throw new Error(`QP backend ${name} failed (${res.status}) ${text.slice(0,180)}`);
-    }
-    const text=await res.text();
-    return text?JSON.parse(text):null;
+    const controller=new AbortController();
+    const timeout=setTimeout(()=>controller.abort(),8000);
+    try{
+      const res=await fetch(`${QP_SUPABASE_URL}/rest/v1/rpc/${name}`,{
+        method:'POST',
+        headers:{'Content-Type':'application/json','apikey':QP_SUPABASE_KEY},
+        body:JSON.stringify(payload||{}),
+        signal:controller.signal
+      });
+      if(!res.ok){
+        const text=await res.text().catch(()=>'');
+        throw new Error(`QP backend ${name} failed (${res.status}) ${text.slice(0,180)}`);
+      }
+      const text=await res.text();
+      return text?JSON.parse(text):null;
+    }finally{clearTimeout(timeout);}
   }
 
   function backendInputSnapshot(result){
@@ -1008,7 +1048,7 @@ padding:34px 30px 30px;margin-bottom:22px}
     const saved=await qpRpc('qp_save_architecture',{
       p_input:backendInputSnapshot(result),
       p_result:result,
-      p_source:{channel:'web',diagnostic_build:'2.4.0',backend_build:QP_BACKEND_BUILD,funnel_session:funnelSession}
+      p_source:{channel:'web',diagnostic_build:'2.5.0',backend_build:QP_BACKEND_BUILD,funnel_session:funnelSession}
     });
     if(!saved?.architecture_id||!saved?.retrieval_token)throw new Error('Backend did not return retrieval credentials');
     activeArchitecture={
@@ -1709,7 +1749,9 @@ padding:34px 30px 30px;margin-bottom:22px}
         activeArchitecture={id:makeArchitectureId(),createdAt:new Date().toISOString(),result,portable:false,serverStored:false};
         $('architecture-id').textContent=activeArchitecture.id;
         $('backend-state').textContent='Saving securely…';
+        setDeliveryPending(true);
         renderResult(result);
+        requestAnimationFrame(()=>$('result-title')?.focus({preventScroll:true}));
         try{localStorage.removeItem(DRAFT_KEY)}catch(_){}
 
         try{
@@ -1719,6 +1761,8 @@ padding:34px 30px 30px;margin-bottom:22px}
         }catch(err){
           console.warn('QP central save failed',err);
           $('backend-state').textContent='Result shown normally. Central saving is temporarily unavailable; Save Private Copy remains available on this device.';
+        }finally{
+          setDeliveryPending(false);
         }
 
         const gap=Number(result.opportunity?.gapScore);
@@ -1743,10 +1787,11 @@ padding:34px 30px 30px;margin-bottom:22px}
   $('start-over').addEventListener('click',()=>{
     try{localStorage.removeItem(DRAFT_KEY)}catch(_){}
     form.reset();
-    activeArchitecture=null;activePrivateLink=null;activeReaction='';$('backend-state').textContent='Saving securely…';
+    activeArchitecture=null;activePrivateLink=null;activeReaction='';setDeliveryPending(false);$('backend-state').textContent='Saving securely…';
+    form.querySelectorAll('[aria-invalid]').forEach(el=>el.setAttribute('aria-invalid','false'));
     history.replaceState(null,'',location.pathname+location.search);
     $('desired_outcomes').value='';
-    [...$('outcomes').querySelectorAll('.choice')].forEach(b=>b.classList.remove('selected'));
+    [...$('outcomes').querySelectorAll('.choice')].forEach(b=>{b.classList.remove('selected');b.setAttribute('aria-pressed','false');});
     $('results').classList.remove('active');
     document.querySelector('main').style.display='';
     showStep(0,false);updateReconciliation();window.scrollTo(0,0);
@@ -1762,7 +1807,7 @@ padding:34px 30px 30px;margin-bottom:22px}
     const resumed=loadDraft();
     updateConditionals();
     updateReconciliation();
-    track('assessment_start',{step:currentStep+1,section:titles[currentStep],page:'diagnostic',build:'2.4.0'});
+    track('assessment_start',{step:currentStep+1,section:titles[currentStep],page:'diagnostic',build:'2.5.0'});
     if(resumed)track('assessment_resume',{step:currentStep+1,section:titles[currentStep]});
     track(`assessment_section_${currentStep+1}_view`,{step:currentStep+1,section:titles[currentStep]});
   });
