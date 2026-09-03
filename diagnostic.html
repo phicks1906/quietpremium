@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Quiet Premium · diagnostic.html · Phase 6 Results Experience Rebuild · build v2.1.0 · 2026-09-03
+<!-- Quiet Premium · diagnostic.html · Phase 7 Product Infrastructure · build v2.2.0 · 2026-09-03
      Customer-facing assessment rebuilt around the validated QP engine input contract.
      Requires qp_sim.js engine v4.1+ in the same GitHub directory. -->
 <html lang="en">
@@ -232,6 +232,31 @@ padding:34px 30px 30px;margin-bottom:22px}
 .result-actions{position:sticky;bottom:0;z-index:20;background:linear-gradient(180deg,transparent,rgba(9,9,9,.96) 24%);padding-top:28px;padding-bottom:max(10px,env(safe-area-inset-bottom))}
 @media(max-width:720px){.answer-band{grid-template-columns:1fr}.before-after,.path-grid{grid-template-columns:1fr}}
 @media(max-width:620px){.section-heading{display:block}.section-heading p{text-align:left;margin-top:8px}.route-row{grid-template-columns:1fr auto;gap:6px 14px}.route-cat{grid-column:1/-1}.route-card{grid-column:1}.route-amount{grid-column:2;text-align:right}}
+
+
+/* Phase 7 — persistence / retrieval / delivery */
+.infrastructure{margin-top:38px;border-top:1px solid var(--line);padding-top:30px}
+.arch-id{
+  display:flex;justify-content:space-between;gap:16px;align-items:center;
+  border:1px solid var(--line);background:var(--panel);padding:15px 17px;margin-bottom:14px
+}
+.arch-id span:first-child{font:500 9px/1.3 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted2)}
+.arch-id strong{font:500 11px/1 var(--mono);letter-spacing:.05em;color:var(--gold2)}
+.delivery-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px}
+.delivery-card{border:1px solid var(--line);background:var(--panel);padding:18px}
+.delivery-card h3{font:400 21px/1.1 var(--serif);margin-bottom:7px}
+.delivery-card p{font-size:11px;line-height:1.6;color:var(--muted);margin-bottom:14px}
+.delivery-card .control{min-height:45px;margin-bottom:9px}
+.delivery-card .btn{width:100%;margin:0}
+.saved-state{font:400 10px/1.45 var(--mono);color:var(--muted2);margin-top:10px}
+.feedback-panel{border:1px solid var(--line);background:#0d0d0d;padding:20px;margin-top:14px}
+.feedback-panel h3{font:400 23px/1.1 var(--serif);margin-bottom:6px}
+.feedback-panel>p{font-size:11.5px;line-height:1.6;color:var(--muted)}
+.feedback-reactions{display:flex;gap:7px;flex-wrap:wrap;margin:15px 0}
+.feedback-reactions button{border:1px solid var(--line);background:#111;color:var(--muted);padding:9px 11px;cursor:pointer;font-size:11px}
+.feedback-reactions button.selected{border-color:var(--gold);color:var(--gold2);background:var(--goldwash)}
+.private-note{font-size:10px;line-height:1.55;color:var(--muted2);margin-top:10px}
+@media(max-width:680px){.delivery-grid{grid-template-columns:1fr}.arch-id{align-items:flex-start;flex-direction:column}}
 
 @media print{
   nav,.result-actions{display:none!important}
@@ -646,12 +671,71 @@ padding:34px 30px 30px;margin-bottom:22px}
 
       <div class="section-block" id="stored-points-section"><div class="section-heading"><h2>Existing redeemable value.</h2><p>Stored points are not counted as new annual production.</p></div><div class="value-table" id="stored-points-table"></div></div>
 
-      <div class="result-fineprint">Quiet Premium models maximum realistically attainable value using the inputs and supported program rules available to the engine. This is not a guarantee of card approval, upgrades, award availability, status treatment or redemption value.</div>
+      
+      <div class="infrastructure">
+        <div class="section-heading">
+          <h2>Keep this Architecture.</h2>
+          <p>Your completed result can be saved on this device, carried in a private link, emailed through your mail app, or exported as a PDF.</p>
+        </div>
+
+        <div class="arch-id">
+          <span>Architecture ID</span>
+          <strong id="architecture-id">—</strong>
+        </div>
+
+        <div class="delivery-grid">
+          <div class="delivery-card">
+            <h3>Private retrieval link</h3>
+            <p>The result snapshot is stored in the URL fragment, which is not sent to Quiet Premium's web server. Anyone with the full link can read the result.</p>
+            <button type="button" class="btn btn-secondary" id="copy-private-link">Copy Private Link</button>
+            <div class="saved-state" id="link-state">Not generated yet.</div>
+          </div>
+
+          <div class="delivery-card">
+            <h3>Email a copy</h3>
+            <p>Your email is requested only here, after the result. The button opens your mail app with the private result link prepared.</p>
+            <input class="control" id="result-email" type="email" autocomplete="email" placeholder="you@example.com"/>
+            <button type="button" class="btn btn-secondary" id="email-result">Email / Share Result</button>
+            <div class="private-note">Quiet Premium does not store this email address in browser analytics.</div>
+          </div>
+
+          <div class="delivery-card">
+            <h3>Save on this device</h3>
+            <p>Stores the completed Architecture in this browser's IndexedDB. It is separate from the anonymous unfinished-draft storage.</p>
+            <button type="button" class="btn btn-secondary" id="save-local-result">Save Private Copy</button>
+            <div class="saved-state" id="save-state">Not saved.</div>
+          </div>
+
+          <div class="delivery-card">
+            <h3>PDF report</h3>
+            <p>Creates a compact report containing your conclusion, metrics, recommended architecture, routing and corrections.</p>
+            <button type="button" class="btn btn-secondary" id="download-pdf">Download PDF</button>
+            <div class="saved-state" id="pdf-state">Ready.</div>
+          </div>
+        </div>
+
+        <div class="feedback-panel">
+          <div class="eyebrow">Founding feedback</div>
+          <h3>Did this feel useful?</h3>
+          <p>Your Architecture ID is attached to the feedback so the comment can be understood in context. Feedback is saved locally first, then your mail app opens a message to Quiet Premium.</p>
+          <div class="feedback-reactions" id="feedback-reactions">
+            <button type="button" data-reaction="Very useful">Very useful</button>
+            <button type="button" data-reaction="Somewhat useful">Somewhat useful</button>
+            <button type="button" data-reaction="Not useful yet">Not useful yet</button>
+          </div>
+          <textarea class="control" id="feedback-text" placeholder="What was clear, wrong, surprising, or missing?"></textarea>
+          <button type="button" class="btn btn-secondary btn-full" id="send-feedback">Send Feedback</button>
+          <div class="saved-state" id="feedback-state"></div>
+        </div>
+      </div>
+
+<div class="result-fineprint">Quiet Premium models maximum realistically attainable value using the inputs and supported program rules available to the engine. This is not a guarantee of card approval, upgrades, award availability, status treatment or redemption value.</div>
       <div class="result-actions"><button class="btn btn-primary" type="button" onclick="window.print()">Save / Print</button><button class="btn btn-secondary" type="button" id="start-over">Start Over</button></div>
     </div>
   </div>
 </section>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="qp_sim.js"></script>
 <script>
 (function(){
@@ -836,6 +920,300 @@ padding:34px 30px 30px;margin-bottom:22px}
     updateReconciliation();updateConditionals();saveDraft();
   });
   form.addEventListener('change',()=>{updateReconciliation();updateConditionals();saveDraft();});
+
+
+  // ---------------------------------------------------------------------------
+  // Phase 7 product infrastructure
+  // ---------------------------------------------------------------------------
+
+  const QP_DB_NAME='quietpremium';
+  const QP_DB_VERSION=1;
+  const QP_ARCH_STORE='architectures';
+  const QP_FEEDBACK_STORE='feedback';
+  let activeArchitecture=null;
+  let activePrivateLink=null;
+  let activeReaction='';
+
+  function makeArchitectureId(){
+    const d=new Date();
+    const stamp=`${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}`;
+    const bytes=new Uint8Array(4);
+    crypto.getRandomValues(bytes);
+    const suffix=[...bytes].map(x=>x.toString(16).padStart(2,'0')).join('').toUpperCase();
+    return `QP-${stamp}-${suffix}`;
+  }
+
+  function openQPDB(){
+    return new Promise((resolve,reject)=>{
+      if(!('indexedDB' in window)){reject(new Error('IndexedDB unavailable'));return;}
+      const req=indexedDB.open(QP_DB_NAME,QP_DB_VERSION);
+      req.onupgradeneeded=()=>{
+        const db=req.result;
+        if(!db.objectStoreNames.contains(QP_ARCH_STORE))db.createObjectStore(QP_ARCH_STORE,{keyPath:'id'});
+        if(!db.objectStoreNames.contains(QP_FEEDBACK_STORE))db.createObjectStore(QP_FEEDBACK_STORE,{keyPath:'id'});
+      };
+      req.onsuccess=()=>resolve(req.result);
+      req.onerror=()=>reject(req.error);
+    });
+  }
+
+  async function dbPut(store,value){
+    const db=await openQPDB();
+    return new Promise((resolve,reject)=>{
+      const tx=db.transaction(store,'readwrite');
+      tx.objectStore(store).put(value);
+      tx.oncomplete=()=>{db.close();resolve(value);};
+      tx.onerror=()=>{db.close();reject(tx.error);};
+    });
+  }
+
+  async function dbGet(store,key){
+    const db=await openQPDB();
+    return new Promise((resolve,reject)=>{
+      const tx=db.transaction(store,'readonly');
+      const req=tx.objectStore(store).get(key);
+      req.onsuccess=()=>{const v=req.result;db.close();resolve(v);};
+      req.onerror=()=>{db.close();reject(req.error);};
+    });
+  }
+
+  function resultSnapshot(result){
+    // Raw form answers are deliberately excluded from the portable snapshot.
+    return {
+      schema:'qp-architecture-snapshot-v1',
+      id:activeArchitecture?.id||makeArchitectureId(),
+      createdAt:activeArchitecture?.createdAt||new Date().toISOString(),
+      engine:result.engine,
+      dataQuality:result.dataQuality,
+      current:result.current,
+      maximum:result.maximum,
+      recommended:result.recommended,
+      opportunity:result.opportunity,
+      firstYear:result.firstYear,
+      ongoing:result.ongoing,
+      existingRedeemableValue:result.existingRedeemableValue,
+      recommendations:result.recommendations,
+      candidateCount:result.candidateCount,
+      display:{firstName:result.profile?.identity?.firstName||null,hotelNights:result.profile?.hotel?.nights||0}
+    };
+  }
+
+  async function compressText(text){
+    if('CompressionStream' in window){
+      const cs=new CompressionStream('deflate-raw');
+      const writer=cs.writable.getWriter();
+      writer.write(new TextEncoder().encode(text));writer.close();
+      return new Uint8Array(await new Response(cs.readable).arrayBuffer());
+    }
+    return new TextEncoder().encode(text);
+  }
+
+  async function decompressBytes(bytes,compressed){
+    if(compressed&&'DecompressionStream' in window){
+      const ds=new DecompressionStream('deflate-raw');
+      const writer=ds.writable.getWriter();
+      writer.write(bytes);writer.close();
+      return await new Response(ds.readable).text();
+    }
+    return new TextDecoder().decode(bytes);
+  }
+
+  function bytesToB64url(bytes){
+    let s='';for(const b of bytes)s+=String.fromCharCode(b);
+    return btoa(s).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+  }
+
+  function b64urlToBytes(s){
+    s=s.replace(/-/g,'+').replace(/_/g,'/');
+    while(s.length%4)s+='=';
+    const raw=atob(s),out=new Uint8Array(raw.length);
+    for(let i=0;i<raw.length;i++)out[i]=raw.charCodeAt(i);
+    return out;
+  }
+
+  async function buildPrivateLink(){
+    if(!activeArchitecture?.result)return null;
+    const snap=resultSnapshot(activeArchitecture.result);
+    const json=JSON.stringify(snap);
+    let compressed='1',bytes;
+    try{bytes=await compressText(json);}catch(_){compressed='0';bytes=new TextEncoder().encode(json);}
+    const url=new URL(location.href);
+    url.hash=`r=${compressed}.${bytesToB64url(bytes)}`;
+    activePrivateLink=url.toString();
+    return activePrivateLink;
+  }
+
+  async function decodePrivateSnapshot(hash){
+    const raw=hash.replace(/^#?r=/,'');
+    const dot=raw.indexOf('.');
+    if(dot<1)throw new Error('Invalid private link');
+    const compressed=raw.slice(0,dot)==='1';
+    const bytes=b64urlToBytes(raw.slice(dot+1));
+    return JSON.parse(await decompressBytes(bytes,compressed));
+  }
+
+  function snapshotToRenderable(s){
+    // Portable snapshot intentionally contains no raw intake. Rehydrate only
+    // the small display profile fields used by the results renderer.
+    return {
+      engine:s.engine,dataQuality:s.dataQuality,current:s.current,maximum:s.maximum,
+      recommended:s.recommended,opportunity:s.opportunity,firstYear:s.firstYear,
+      ongoing:s.ongoing,existingRedeemableValue:s.existingRedeemableValue,
+      recommendations:s.recommendations,candidateCount:s.candidateCount,
+      profile:{identity:{firstName:s.display?.firstName||null},hotel:{nights:s.display?.hotelNights||0}}
+    };
+  }
+
+  async function showPortableResult(snapshot){
+    activeArchitecture={id:snapshot.id,createdAt:snapshot.createdAt,result:snapshotToRenderable(snapshot),portable:true};
+    document.querySelector('main').style.display='none';
+    $('loading').classList.remove('active');
+    $('results').classList.add('active');
+    $('architecture-id').textContent=activeArchitecture.id;
+    renderResult(activeArchitecture.result);
+    window.scrollTo(0,0);
+  }
+
+  async function restoreFromHash(){
+    try{
+      if(location.hash.startsWith('#r=')){
+        const snap=await decodePrivateSnapshot(location.hash);
+        await showPortableResult(snap);
+        return true;
+      }
+      if(location.hash.startsWith('#a=')){
+        const id=decodeURIComponent(location.hash.slice(3));
+        const saved=await dbGet(QP_ARCH_STORE,id);
+        if(saved?.snapshot){await showPortableResult(saved.snapshot);return true;}
+      }
+    }catch(err){console.warn('QP retrieval failed',err);}
+    return false;
+  }
+
+  async function saveActiveResult(){
+    if(!activeArchitecture?.result)throw new Error('No active Architecture');
+    const snapshot=resultSnapshot(activeArchitecture.result);
+    await dbPut(QP_ARCH_STORE,{id:snapshot.id,createdAt:snapshot.createdAt,snapshot});
+    return snapshot.id;
+  }
+
+  function pdfLines(result){
+    const lines=[];
+    lines.push(['Quiet Premium — The Architecture',16]);
+    lines.push([`Architecture ID: ${activeArchitecture?.id||'—'}`,10]);
+    lines.push([`Maximum Potential Annual Value: ${fmtMoney(result.opportunity.maximumPotentialAnnualValue)}`,13]);
+    lines.push([`Currently Captured: ${result.opportunity.currentlyCaptured==null?'Partial':fmtMoney(result.opportunity.currentlyCaptured)}`,11]);
+    lines.push([`Unrealized Potential: ${result.opportunity.unrealizedPotential==null?'Not enough data':fmtMoney(result.opportunity.unrealizedPotential)}`,11]);
+    lines.push([`Gap Score: ${result.opportunity.gapScore==null?'Not enough data':result.opportunity.gapScore.toFixed(1)+'/10'}`,11]);
+    lines.push([`Spend Misrouted: ${fmtPct(result.opportunity.spendMisrouted.percent)}`,11]);
+    lines.push(['',9]);
+    lines.push([`Recommended: ${architectureLabel(result.recommended)}`,13]);
+    lines.push([`Recommended annual value: ${fmtMoney(result.ongoing.recommendedAnnualValue)}`,11]);
+    if(result.recommended?.airline?.tier)lines.push([`Airline position: ${result.recommended.airline.tier}`,11]);
+    if(result.recommended?.hotel?.tier)lines.push([`Hotel position: ${result.recommended.hotel.tier}`,11]);
+    lines.push(['',9]);
+    lines.push(['Routing',13]);
+    const a=result.recommended?.assignments;
+    const names={dining:'Dining',grocery:'Groceries',airfare:'Airfare',hotel:'Hotels'};
+    Object.entries(a?.categories||{}).forEach(([cat,v])=>{
+      if(v?.cardId&&v.amount>0)lines.push([`${names[cat]||cat}: ${cardLabel(v.cardId)} — ${fmtMoney(v.amount)}`,10]);
+    });
+    (a?.general||[]).forEach(v=>{
+      if(v?.cardId&&v.amount>0)lines.push([`General: ${cardLabel(v.cardId)} — ${fmtMoney(v.amount)} (${v.purpose.replaceAll('_',' ')})`,10]);
+    });
+    lines.push(['',9]);
+    lines.push(['Corrections',13]);
+    (result.recommendations?.corrections||[]).forEach((c,i)=>lines.push([`${i+1}. ${c.change}`,10]));
+    lines.push(['',9]);
+    lines.push([`Engine ${result.engine?.version||'—'} · Rules as of ${result.engine?.rulesAsOf||'—'}`,9]);
+    lines.push(['Modeled estimates; not a guarantee of card approval, upgrades, award availability, status treatment, or redemption value.',9]);
+    return lines;
+  }
+
+  async function createPdf(){
+    if(!activeArchitecture?.result)throw new Error('No active result');
+    const jsPDF=window.jspdf?.jsPDF;
+    if(!jsPDF){window.print();return;}
+    const pdf=new jsPDF({unit:'pt',format:'letter'});
+    const margin=54,maxWidth=504;
+    let y=58;
+    const addPageIfNeeded=(height=20)=>{if(y+height>735){pdf.addPage();y=58;}};
+    for(const [text,size] of pdfLines(activeArchitecture.result)){
+      pdf.setFont('helvetica',size>=13?'bold':'normal');pdf.setFontSize(size);
+      const parts=pdf.splitTextToSize(String(text),maxWidth);
+      addPageIfNeeded(parts.length*(size+4));
+      pdf.text(parts,margin,y);y+=parts.length*(size+4)+(text===''?3:5);
+    }
+    pdf.save(`${activeArchitecture.id}-Quiet-Premium-Architecture.pdf`);
+  }
+
+  async function shareResult(){
+    const link=activePrivateLink||await buildPrivateLink();
+    if(!link)return;
+    const email=$('result-email').value.trim();
+    const subject=`Quiet Premium Architecture ${activeArchitecture.id}`;
+    const text=`My Quiet Premium Architecture\n\n${link}\n\nThis private link contains the result snapshot. Anyone with the full link can read it.`;
+    if(navigator.share){
+      try{await navigator.share({title:subject,text,url:link});return;}catch(err){if(err?.name==='AbortError')return;}
+    }
+    const to=email||'';
+    location.href=`mailto:${encodeURIComponent(to)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(text)}`;
+  }
+
+  function bindInfrastructure(){
+    $('feedback-reactions').addEventListener('click',e=>{
+      const b=e.target.closest('button[data-reaction]');if(!b)return;
+      activeReaction=b.dataset.reaction;
+      [...$('feedback-reactions').querySelectorAll('button')].forEach(x=>x.classList.toggle('selected',x===b));
+    });
+
+    $('copy-private-link').addEventListener('click',async()=>{
+      try{
+        const link=await buildPrivateLink();
+        await navigator.clipboard.writeText(link);
+        $('link-state').textContent='Private link copied.';
+        track('result_private_link_copy');
+      }catch(_){$('link-state').textContent='Could not copy automatically.';}
+    });
+
+    $('save-local-result').addEventListener('click',async()=>{
+      try{
+        const id=await saveActiveResult();
+        $('save-state').textContent=`Saved on this device as ${id}.`;
+        history.replaceState(null,'',`${location.pathname}${location.search}#a=${encodeURIComponent(id)}`);
+        track('result_save');
+      }catch(_){$('save-state').textContent='This browser could not save the result.';}
+    });
+
+    $('email-result').addEventListener('click',async()=>{await shareResult();track('result_email_share');});
+
+    $('download-pdf').addEventListener('click',async()=>{
+      $('pdf-state').textContent='Creating PDF…';
+      try{await createPdf();$('pdf-state').textContent='PDF created.';track('pdf_download');}
+      catch(_){$('pdf-state').textContent='PDF could not be created. Use Save / Print instead.';}
+    });
+
+    $('send-feedback').addEventListener('click',async()=>{
+      if(!activeArchitecture)return;
+      const body=$('feedback-text').value.trim();
+      if(!activeReaction&&!body){$('feedback-state').textContent='Choose a reaction or add a comment first.';return;}
+      const feedback={
+        id:`${activeArchitecture.id}-${Date.now()}`,
+        architectureId:activeArchitecture.id,
+        createdAt:new Date().toISOString(),
+        reaction:activeReaction||null,
+        text:body||null,
+        engineVersion:activeArchitecture.result?.engine?.version||null
+      };
+      try{await dbPut(QP_FEEDBACK_STORE,feedback);}catch(_){}
+      $('feedback-state').textContent='Feedback saved locally. Opening your mail app…';
+      track('feedback_submit');
+      const subject=`Quiet Premium feedback · ${activeArchitecture.id}`;
+      const msg=`Architecture ID: ${activeArchitecture.id}\nReaction: ${activeReaction||'—'}\n\n${body||''}`;
+      setTimeout(()=>{location.href=`mailto:editor@quietpremium.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(msg)}`;},120);
+    });
+  }
+
 
   function engineReady(){
     const e=window.QuietPremiumEngine;
@@ -1108,6 +1486,8 @@ padding:34px 30px 30px;margin-bottom:22px}
       try{
         const data=serialize();
         const result=window.QuietPremiumEngine.optimizeArchitecture(data);
+        activeArchitecture={id:makeArchitectureId(),createdAt:new Date().toISOString(),result,portable:false};
+        $('architecture-id').textContent=activeArchitecture.id;
         renderResult(result);
         try{localStorage.removeItem(DRAFT_KEY)}catch(_){}
         track('results_view');
@@ -1124,6 +1504,8 @@ padding:34px 30px 30px;margin-bottom:22px}
   $('start-over').addEventListener('click',()=>{
     try{localStorage.removeItem(DRAFT_KEY)}catch(_){}
     form.reset();
+    activeArchitecture=null;activePrivateLink=null;activeReaction='';
+    history.replaceState(null,'',location.pathname+location.search);
     $('desired_outcomes').value='';
     [...$('outcomes').querySelectorAll('.choice')].forEach(b=>b.classList.remove('selected'));
     $('results').classList.remove('active');
@@ -1132,10 +1514,17 @@ padding:34px 30px 30px;margin-bottom:22px}
     track('assessment_restart');
   });
 
-  loadDraft();
-  updateConditionals();
-  updateReconciliation();
-  track('assessment_start');
+  bindInfrastructure();
+  restoreFromHash().then(restored=>{
+    if(restored){
+      track('result_retrieved');
+      return;
+    }
+    loadDraft();
+    updateConditionals();
+    updateReconciliation();
+    track('assessment_start');
+  });
 })();
 </script>
 </body>
