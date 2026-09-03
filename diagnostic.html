@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Quiet Premium · diagnostic.html · Phase 7 Product Infrastructure · build v2.2.0 · 2026-09-03
+<!-- Quiet Premium · diagnostic.html · Phase 10 Analytics & Funnel Measurement · build v2.4.0 · 2026-09-03
      Customer-facing assessment rebuilt around the validated QP engine input contract.
      Requires qp_sim.js engine v4.1+ in the same GitHub directory. -->
 <html lang="en">
@@ -600,7 +600,7 @@ padding:34px 30px 30px;margin-bottom:22px}
         </div>
 
         <div class="privacy">
-          Your unfinished answers are saved locally in this browser so you can move between steps. Quiet Premium does not send your spend or card answers to Google Analytics. This Phase 5 build calculates the result in your browser and does not ask for your email.
+          Your unfinished answers are saved locally in this browser so you can move between steps. Quiet Premium does not send spend, card, airline, hotel, point-balance or email answers to Google Analytics. A completed Architecture is centrally saved only after the calculation finishes; email remains optional and appears only after the result.
         </div>
       </section>
     </form>
@@ -617,14 +617,14 @@ padding:34px 30px 30px;margin-bottom:22px}
 
 <section class="results" id="results">
   <div class="result-shell">
-    <div class="result-hero">
+    <div class="result-hero" data-result-section="conclusion">
       <div class="eyebrow">Quiet Premium · The Architecture</div>
       <h1 id="result-title">Your spending has an answer.</h1>
       <p class="result-summary" id="result-summary"></p>
     </div>
     <div id="engine-error" class="error-box hidden"></div>
     <div id="result-content">
-      <div class="answer-band">
+      <div class="answer-band" data-result-section="maximum_first_move">
         <div class="answer-main">
           <div class="eyebrow">Maximum Potential Annual Value</div>
           <div class="big-money" id="hero-max">—</div>
@@ -636,7 +636,7 @@ padding:34px 30px 30px;margin-bottom:22px}
           <div class="first-move-note" id="first-move-note"></div>
         </div>
       </div>
-      <div class="metrics">
+      <div class="metrics" data-result-section="core_metrics">
         <div class="metric primary"><div class="metric-label">Currently Captured</div><div class="metric-value" id="metric-current">—</div><div class="metric-note" id="current-note"></div></div>
         <div class="metric"><div class="metric-label">Unrealized Potential</div><div class="metric-value" id="metric-unrealized">—</div><div class="metric-note">Modeled value between Current and Maximum.</div></div>
         <div class="metric"><div class="metric-label">Gap Score</div><div class="metric-value" id="metric-gap">—</div><div class="metric-note">0 = near optimized · 10 = most attainable value uncaptured.</div></div>
@@ -644,7 +644,7 @@ padding:34px 30px 30px;margin-bottom:22px}
       </div>
       <div class="confidence" id="confidence-box"></div>
 
-      <div class="section-block">
+      <div class="section-block" data-result-section="current_vs_recommended">
         <div class="section-heading"><h2>Current vs. recommended.</h2><p>Maximum is the ceiling. Recommended is QP's prescription after value, experience, feasibility and simplicity are considered together.</p></div>
         <div class="before-after">
           <div class="arch-panel"><div class="arch-label">Current Architecture</div><div class="arch-title" id="current-arch-title">—</div><div class="arch-stat"><span>Modeled annual net value</span><strong id="current-arch-value">—</strong></div><div class="arch-stat"><span>Airline position</span><strong id="current-airline">—</strong></div><div class="arch-stat"><span>Hotel position</span><strong id="current-hotel">—</strong></div></div>
@@ -652,7 +652,7 @@ padding:34px 30px 30px;margin-bottom:22px}
         </div>
       </div>
 
-      <div class="section-block">
+      <div class="section-block" data-result-section="travel_path">
         <div class="section-heading"><h2>Your travel path.</h2><p>Status appears only when the recommended architecture actually supports a useful path.</p></div>
         <div class="path-grid">
           <div class="path-card"><div class="eyebrow">Airline</div><div class="path-name" id="airline-path-name">—</div><div class="path-status" id="airline-path-status">—</div><div class="path-copy" id="airline-path-copy"></div><div class="path-bar"><div class="path-fill" id="airline-path-fill"></div></div><div class="path-foot"><span id="airline-path-left"></span><span id="airline-path-right"></span></div></div>
@@ -660,43 +660,44 @@ padding:34px 30px 30px;margin-bottom:22px}
         </div>
       </div>
 
-      <div class="section-block"><div class="section-heading"><h2>How to route the spend.</h2><p>Threshold spend stops at the useful breakpoint. The next dollar is re-evaluated.</p></div><div class="routing-map" id="routing-map"></div></div>
-      <div class="section-block"><div class="section-heading"><h2>What changes first.</h2><p>Only differences between Current and Recommended become corrections.</p></div><div class="corrections" id="correction-list"></div></div>
+      <div class="section-block" data-result-section="routing"><div class="section-heading"><h2>How to route the spend.</h2><p>Threshold spend stops at the useful breakpoint. The next dollar is re-evaluated.</p></div><div class="routing-map" id="routing-map"></div></div>
+      <div class="section-block" data-result-section="corrections"><div class="section-heading"><h2>What changes first.</h2><p>Only differences between Current and Recommended become corrections.</p></div><div class="corrections" id="correction-list"></div></div>
 
-      <div class="section-block"><div class="section-heading"><h2>First 12 months.</h2><p>Welcome offers can change acquisition sequence without changing the mature architecture.</p></div><div class="result-card"><div class="eyebrow">First-year maximum</div><h3 id="year1-title">—</h3><p id="year1-copy"></p></div></div>
+      <div class="section-block" data-result-section="first_year"><div class="section-heading"><h2>First 12 months.</h2><p>Welcome offers can change acquisition sequence without changing the mature architecture.</p></div><div class="result-card"><div class="eyebrow">First-year maximum</div><h3 id="year1-title">—</h3><p id="year1-copy"></p></div></div>
 
-      <div class="section-block"><div class="section-heading"><h2>How Maximum is calculated.</h2><p>Annual cost is subtracted symmetrically. Existing point balances remain separate.</p></div><div class="value-table" id="value-table"></div></div>
+      <div class="section-block" data-result-section="maximum_calculation"><div class="section-heading"><h2>How Maximum is calculated.</h2><p>Annual cost is subtracted symmetrically. Existing point balances remain separate.</p></div><div class="value-table" id="value-table"></div></div>
 
-      <div class="section-block"><div class="section-heading"><h2>Assumptions & confidence.</h2><p>The goal is a defensible answer, not false precision.</p></div><div class="assumptions" id="assumptions-box"></div></div>
+      <div class="section-block" data-result-section="assumptions"><div class="section-heading"><h2>Assumptions & confidence.</h2><p>The goal is a defensible answer, not false precision.</p></div><div class="assumptions" id="assumptions-box"></div></div>
 
-      <div class="section-block" id="stored-points-section"><div class="section-heading"><h2>Existing redeemable value.</h2><p>Stored points are not counted as new annual production.</p></div><div class="value-table" id="stored-points-table"></div></div>
+      <div class="section-block" id="stored-points-section" data-result-section="existing_points"><div class="section-heading"><h2>Existing redeemable value.</h2><p>Stored points are not counted as new annual production.</p></div><div class="value-table" id="stored-points-table"></div></div>
 
       
-      <div class="infrastructure">
+      <div class="infrastructure" data-result-section="save_share_feedback">
         <div class="section-heading">
           <h2>Keep this Architecture.</h2>
-          <p>Your completed result can be saved on this device, carried in a private link, emailed through your mail app, or exported as a PDF.</p>
+          <p>Your completed Architecture is securely stored by Quiet Premium, can be retrieved with a private link, saved on this device, shared, or exported as a PDF.</p>
         </div>
 
         <div class="arch-id">
           <span>Architecture ID</span>
           <strong id="architecture-id">—</strong>
         </div>
+        <div class="saved-state" id="backend-state" style="margin:-4px 0 14px">Saving securely…</div>
 
         <div class="delivery-grid">
           <div class="delivery-card">
             <h3>Private retrieval link</h3>
-            <p>The result snapshot is stored in the URL fragment, which is not sent to Quiet Premium's web server. Anyone with the full link can read the result.</p>
+            <p>Your result is stored in Quiet Premium's private data layer. The link contains an Architecture ID plus a high-entropy retrieval token. Anyone with the full link can read that one result.</p>
             <button type="button" class="btn btn-secondary" id="copy-private-link">Copy Private Link</button>
             <div class="saved-state" id="link-state">Not generated yet.</div>
           </div>
 
           <div class="delivery-card">
             <h3>Email a copy</h3>
-            <p>Your email is requested only here, after the result. The button opens your mail app with the private result link prepared.</p>
+            <p>Your email is requested only here, after the result. If entered, it is saved with this Architecture when you choose Email / Share Result; your mail app then opens with the private link prepared.</p>
             <input class="control" id="result-email" type="email" autocomplete="email" placeholder="you@example.com"/>
             <button type="button" class="btn btn-secondary" id="email-result">Email / Share Result</button>
-            <div class="private-note">Quiet Premium does not store this email address in browser analytics.</div>
+            <div class="private-note">Quiet Premium does not send this email address to Google Analytics.</div>
           </div>
 
           <div class="delivery-card">
@@ -717,7 +718,7 @@ padding:34px 30px 30px;margin-bottom:22px}
         <div class="feedback-panel">
           <div class="eyebrow">Founding feedback</div>
           <h3>Did this feel useful?</h3>
-          <p>Your Architecture ID is attached to the feedback so the comment can be understood in context. Feedback is saved locally first, then your mail app opens a message to Quiet Premium.</p>
+          <p>Your Architecture ID is attached to the feedback so the comment can be understood in context. Feedback is stored directly with the Architecture; no email app is required.</p>
           <div class="feedback-reactions" id="feedback-reactions">
             <button type="button" data-reaction="Very useful">Very useful</button>
             <button type="button" data-reaction="Somewhat useful">Somewhat useful</button>
@@ -746,12 +747,41 @@ padding:34px 30px 30px;margin-bottom:22px}
   const steps=[...document.querySelectorAll('.step')];
   const titles=['How You Travel','Where You Stay','Your Spend & Cards','What You Already Get','What You Want'];
   let currentStep=0;
+  const FUNNEL_SESSION_KEY='qp_funnel_session_v1';
+
+  function getFunnelSession(){
+    try{
+      let id=sessionStorage.getItem(FUNNEL_SESSION_KEY);
+      if(id&&/^[A-Za-z0-9_-]{12,80}$/.test(id))return id;
+      if(globalThis.crypto?.randomUUID)id=crypto.randomUUID().replaceAll('-','');
+      else{
+        const bytes=new Uint8Array(16);crypto.getRandomValues(bytes);
+        id=[...bytes].map(x=>x.toString(16).padStart(2,'0')).join('');
+      }
+      sessionStorage.setItem(FUNNEL_SESSION_KEY,id);
+      return id;
+    }catch(_){
+      return `fallback_${Date.now().toString(36)}_${Math.random().toString(36).slice(2,14)}`;
+    }
+  }
+  const funnelSession=getFunnelSession();
 
   const $=id=>document.getElementById(id);
   const form=$('architecture-form');
 
-  function track(name){
-    try{if(typeof gtag==='function')gtag('event',name);}catch(_){}
+  function safeAnalyticsMetadata(metadata={}){
+    const allow=new Set(['placement','step','section','data_quality','already_optimized','gap_band','misrouted_band','correction_index','correction_type','source','page','build']);
+    const out={};
+    Object.entries(metadata||{}).forEach(([k,v])=>{
+      if(allow.has(k)&&(typeof v==='string'||typeof v==='number'||typeof v==='boolean'))out[k]=v;
+    });
+    return out;
+  }
+
+  function track(name,metadata={}){
+    const clean=safeAnalyticsMetadata(metadata);
+    try{if(typeof gtag==='function')gtag('event',name,clean);}catch(_){}
+    try{if(typeof backendLogEvent==='function')backendLogEvent(name,clean);}catch(_){}
   }
 
   function money(v){
@@ -773,7 +803,7 @@ padding:34px 30px 30px;margin-bottom:22px}
     $('progress-fill').style.width=`${((currentStep+1)/steps.length)*100}%`;
     if(fromNav){
       window.scrollTo({top:0,behavior:'smooth'});
-      track(`assessment_section_${currentStep+1}_view`);
+      track(`assessment_section_${currentStep+1}_view`,{step:currentStep+1,section:titles[currentStep]});
     }
     updateConditionals();
   }
@@ -799,6 +829,7 @@ padding:34px 30px 30px;margin-bottom:22px}
       if(!valid)ok=false;
     });
     if(!ok){
+      track('assessment_validation_error',{step:index+1,section:titles[index],source:'step_validation'});
       const first=steps[index].querySelector('.invalid');
       first?.scrollIntoView({behavior:'smooth',block:'center'});
     }
@@ -810,7 +841,7 @@ padding:34px 30px 30px;margin-bottom:22px}
     const back=e.target.closest('[data-back]');
     if(next){
       if(!validateStep(currentStep))return;
-      track(`assessment_section_${currentStep+1}_complete`);
+      track(`assessment_section_${currentStep+1}_complete`,{step:currentStep+1,section:titles[currentStep]});
       showStep(currentStep+1);
     }
     if(back)showStep(currentStep-1);
@@ -894,7 +925,7 @@ padding:34px 30px 30px;margin-bottom:22px}
 
   function loadDraft(){
     try{
-      const raw=localStorage.getItem(DRAFT_KEY);if(!raw)return;
+      const raw=localStorage.getItem(DRAFT_KEY);if(!raw)return false;
       const saved=JSON.parse(raw);const d=saved.data||{};
       Object.entries(d).forEach(([k,v])=>{
         if(k==='point_balances'||k==='desired_outcomes')return;
@@ -912,7 +943,8 @@ padding:34px 30px 30px;margin-bottom:22px}
       [...$('outcomes').querySelectorAll('.choice')].forEach(b=>b.classList.toggle('selected',outcomes.includes(b.dataset.value)));
       showStep(Math.min(Number(saved.step)||0,4),false);
       updateReconciliation();
-    }catch(_){}
+      return true;
+    }catch(_){return false;}
   }
 
   form.addEventListener('input',e=>{
@@ -926,6 +958,9 @@ padding:34px 30px 30px;margin-bottom:22px}
   // Phase 7 product infrastructure
   // ---------------------------------------------------------------------------
 
+  const QP_SUPABASE_URL='https://jdtbyudbwmwldrkjaznk.supabase.co';
+  const QP_SUPABASE_KEY='sb_publishable_BETG0zmWAEmPByBsKyEUzA_yPCOkh5F';
+  const QP_BACKEND_BUILD='phase10_v1';
   const QP_DB_NAME='quietpremium';
   const QP_DB_VERSION=1;
   const QP_ARCH_STORE='architectures';
@@ -933,6 +968,109 @@ padding:34px 30px 30px;margin-bottom:22px}
   let activeArchitecture=null;
   let activePrivateLink=null;
   let activeReaction='';
+
+
+  async function qpRpc(name,payload){
+    const res=await fetch(`${QP_SUPABASE_URL}/rest/v1/rpc/${name}`,{
+      method:'POST',
+      headers:{'Content-Type':'application/json','apikey':QP_SUPABASE_KEY},
+      body:JSON.stringify(payload||{})
+    });
+    if(!res.ok){
+      const text=await res.text().catch(()=>'');
+      throw new Error(`QP backend ${name} failed (${res.status}) ${text.slice(0,180)}`);
+    }
+    const text=await res.text();
+    return text?JSON.parse(text):null;
+  }
+
+  function backendInputSnapshot(result){
+    const p=result?.profile||{};
+    return {
+      spend:p.spend||{},
+      travel:p.travel||{},
+      hotel:p.hotel||{},
+      preferences:p.preferences||{},
+      benefits:p.benefits||{},
+      cards:(p.cards||[]).map(c=>({id:c.id,label:c.label,supported:c.supported!==false})),
+      usage:{
+        dining:p.usage?.dining?.id||null,
+        grocery:p.usage?.grocery?.id||null,
+        airfare:p.usage?.airfare?.id||null,
+        hotel:p.usage?.hotel?.id||null
+      },
+      generalAllocations:p.generalAllocations||[],
+      pointBalances:p.pointBalances||{}
+    };
+  }
+
+  async function backendSaveArchitecture(result){
+    const saved=await qpRpc('qp_save_architecture',{
+      p_input:backendInputSnapshot(result),
+      p_result:result,
+      p_source:{channel:'web',diagnostic_build:'2.4.0',backend_build:QP_BACKEND_BUILD,funnel_session:funnelSession}
+    });
+    if(!saved?.architecture_id||!saved?.retrieval_token)throw new Error('Backend did not return retrieval credentials');
+    activeArchitecture={
+      id:saved.architecture_id,
+      token:saved.retrieval_token,
+      createdAt:saved.created_at||new Date().toISOString(),
+      result,
+      portable:false,
+      serverStored:true
+    };
+    $('architecture-id').textContent=activeArchitecture.id;
+    $('backend-state').textContent='Securely saved to Quiet Premium.';
+    activePrivateLink=null;
+    return activeArchitecture;
+  }
+
+  async function backendGetArchitecture(id,token){
+    return await qpRpc('qp_get_architecture',{p_architecture_id:id,p_token:token});
+  }
+
+  async function backendSaveContact(email){
+    if(!activeArchitecture?.serverStored||!activeArchitecture?.token||!email)return false;
+    return await qpRpc('qp_save_contact',{
+      p_architecture_id:activeArchitecture.id,
+      p_token:activeArchitecture.token,
+      p_email:email,
+      p_consent_context:'result_email_share'
+    });
+  }
+
+  async function backendSubmitFeedback(reaction,comment){
+    if(!activeArchitecture?.serverStored||!activeArchitecture?.token)return false;
+    return await qpRpc('qp_submit_feedback',{
+      p_architecture_id:activeArchitecture.id,
+      p_token:activeArchitecture.token,
+      p_reaction:reaction||null,
+      p_comment:comment||null
+    });
+  }
+
+  async function backendLogEvent(name,metadata={}){
+    try{
+      const valid=[
+        'homepage_view','sample_result_view','architecture_cta',
+        'assessment_start','assessment_resume',
+        'assessment_section_1_view','assessment_section_2_view','assessment_section_3_view','assessment_section_4_view','assessment_section_5_view',
+        'assessment_section_1_complete','assessment_section_2_complete','assessment_section_3_complete','assessment_section_4_complete','assessment_section_5_complete',
+        'assessment_validation_error','assessment_complete','results_view','result_section_view',
+        'correction_expand','assumptions_view','result_save','result_private_link_copy',
+        'result_email_share','pdf_download','feedback_submit','result_retrieved','assessment_restart'
+      ];
+      if(!valid.includes(name))return;
+      await qpRpc('qp_log_event_v2',{
+        p_event_type:name,
+        p_session_id:funnelSession,
+        p_architecture_id:activeArchitecture?.serverStored?activeArchitecture.id:null,
+        p_token:activeArchitecture?.serverStored?activeArchitecture.token:null,
+        p_metadata:safeAnalyticsMetadata(metadata)
+      });
+    }catch(_){}
+  }
+
 
   function makeArchitectureId(){
     const d=new Date();
@@ -1033,11 +1171,18 @@ padding:34px 30px 30px;margin-bottom:22px}
 
   async function buildPrivateLink(){
     if(!activeArchitecture?.result)return null;
+    const url=new URL(location.href);
+    if(activeArchitecture.serverStored&&activeArchitecture.token){
+      url.hash=`a=${encodeURIComponent(activeArchitecture.id)}&t=${encodeURIComponent(activeArchitecture.token)}`;
+      activePrivateLink=url.toString();
+      return activePrivateLink;
+    }
+
+    // Offline fallback only: portable result snapshot in the URL fragment.
     const snap=resultSnapshot(activeArchitecture.result);
     const json=JSON.stringify(snap);
     let compressed='1',bytes;
     try{bytes=await compressText(json);}catch(_){compressed='0';bytes=new TextEncoder().encode(json);}
-    const url=new URL(location.href);
     url.hash=`r=${compressed}.${bytesToB64url(bytes)}`;
     activePrivateLink=url.toString();
     return activePrivateLink;
@@ -1076,15 +1221,41 @@ padding:34px 30px 30px;margin-bottom:22px}
 
   async function restoreFromHash(){
     try{
+      if(location.hash.startsWith('#a=')){
+        const params=new URLSearchParams(location.hash.slice(1));
+        const id=params.get('a'),token=params.get('t');
+        if(id&&token){
+          const server=await backendGetArchitecture(id,token);
+          if(server?.result){
+            activeArchitecture={
+              id:server.id||id,
+              token,
+              createdAt:server.createdAt||new Date().toISOString(),
+              result:server.result,
+              portable:true,
+              serverStored:true
+            };
+            document.querySelector('main').style.display='none';
+            $('loading').classList.remove('active');
+            $('results').classList.add('active');
+            $('architecture-id').textContent=activeArchitecture.id;
+            $('backend-state').textContent='Retrieved securely from Quiet Premium.';
+            renderResult(activeArchitecture.result);
+            window.scrollTo(0,0);
+            return true;
+          }
+        }
+      }
+      if(location.hash.startsWith('#local=')){
+        const id=decodeURIComponent(location.hash.slice(7));
+        const saved=await dbGet(QP_ARCH_STORE,id);
+        if(saved?.snapshot){await showPortableResult(saved.snapshot);return true;}
+      }
       if(location.hash.startsWith('#r=')){
         const snap=await decodePrivateSnapshot(location.hash);
         await showPortableResult(snap);
+        $('backend-state').textContent='Portable offline result — not retrieved from central storage.';
         return true;
-      }
-      if(location.hash.startsWith('#a=')){
-        const id=decodeURIComponent(location.hash.slice(3));
-        const saved=await dbGet(QP_ARCH_STORE,id);
-        if(saved?.snapshot){await showPortableResult(saved.snapshot);return true;}
       }
     }catch(err){console.warn('QP retrieval failed',err);}
     return false;
@@ -1151,8 +1322,16 @@ padding:34px 30px 30px;margin-bottom:22px}
     const link=activePrivateLink||await buildPrivateLink();
     if(!link)return;
     const email=$('result-email').value.trim();
+
+    if(email&&activeArchitecture?.serverStored){
+      try{await backendSaveContact(email);}catch(err){
+        console.warn('QP contact save failed',err);
+        throw new Error('Email could not be saved securely. Please try again.');
+      }
+    }
+
     const subject=`Quiet Premium Architecture ${activeArchitecture.id}`;
-    const text=`My Quiet Premium Architecture\n\n${link}\n\nThis private link contains the result snapshot. Anyone with the full link can read it.`;
+    const text=`My Quiet Premium Architecture\n\n${link}\n\nThis private link opens only this Architecture. Anyone with the full link can read it.`;
     if(navigator.share){
       try{await navigator.share({title:subject,text,url:link});return;}catch(err){if(err?.name==='AbortError')return;}
     }
@@ -1180,12 +1359,15 @@ padding:34px 30px 30px;margin-bottom:22px}
       try{
         const id=await saveActiveResult();
         $('save-state').textContent=`Saved on this device as ${id}.`;
-        history.replaceState(null,'',`${location.pathname}${location.search}#a=${encodeURIComponent(id)}`);
+        if(!activeArchitecture?.serverStored)history.replaceState(null,'',`${location.pathname}${location.search}#local=${encodeURIComponent(id)}`);
         track('result_save');
       }catch(_){$('save-state').textContent='This browser could not save the result.';}
     });
 
-    $('email-result').addEventListener('click',async()=>{await shareResult();track('result_email_share');});
+    $('email-result').addEventListener('click',async()=>{
+      try{await shareResult();track('result_email_share');}
+      catch(err){$('link-state').textContent=err?.message||'Could not prepare the result.';}
+    });
 
     $('download-pdf').addEventListener('click',async()=>{
       $('pdf-state').textContent='Creating PDF…';
@@ -1197,6 +1379,19 @@ padding:34px 30px 30px;margin-bottom:22px}
       if(!activeArchitecture)return;
       const body=$('feedback-text').value.trim();
       if(!activeReaction&&!body){$('feedback-state').textContent='Choose a reaction or add a comment first.';return;}
+
+      $('feedback-state').textContent='Sending…';
+      try{
+        if(activeArchitecture.serverStored){
+          const ok=await backendSubmitFeedback(activeReaction||null,body||null);
+          if(!ok)throw new Error('Feedback was not accepted');
+          $('feedback-state').textContent='Thank you. Feedback saved with this Architecture.';
+          $('feedback-text').value='';
+          track('feedback_submit');
+          return;
+        }
+      }catch(err){console.warn('QP feedback backend failed',err);}
+
       const feedback={
         id:`${activeArchitecture.id}-${Date.now()}`,
         architectureId:activeArchitecture.id,
@@ -1205,12 +1400,8 @@ padding:34px 30px 30px;margin-bottom:22px}
         text:body||null,
         engineVersion:activeArchitecture.result?.engine?.version||null
       };
-      try{await dbPut(QP_FEEDBACK_STORE,feedback);}catch(_){}
-      $('feedback-state').textContent='Feedback saved locally. Opening your mail app…';
-      track('feedback_submit');
-      const subject=`Quiet Premium feedback · ${activeArchitecture.id}`;
-      const msg=`Architecture ID: ${activeArchitecture.id}\nReaction: ${activeReaction||'—'}\n\n${body||''}`;
-      setTimeout(()=>{location.href=`mailto:editor@quietpremium.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(msg)}`;},120);
+      try{await dbPut(QP_FEEDBACK_STORE,feedback);$('feedback-state').textContent='Saved on this device. Central feedback storage is temporarily unavailable.';}
+      catch(_){$('feedback-state').textContent='Feedback could not be saved. Please try again.';}
     });
   }
 
@@ -1282,7 +1473,7 @@ padding:34px 30px 30px;margin-bottom:22px}
       return;
     }
     cs.forEach((c,i)=>{
-      const el=document.createElement('div');el.className='correction';
+      const el=document.createElement('div');el.className='correction';el.dataset.correctionIndex=String(i+1);
       const impact=c.modeledAnnualImpact!=null&&Number(c.modeledAnnualImpact)!==0
         ?` · ${Number(c.modeledAnnualImpact)>0?'+':''}${fmtMoney(c.modeledAnnualImpact)} modeled annual reward impact`
         :'';
@@ -1290,6 +1481,13 @@ padding:34px 30px 30px;margin-bottom:22px}
       list.appendChild(el);
     });
   }
+
+
+  $('correction-list').addEventListener('click',e=>{
+    const el=e.target.closest('.correction[data-correction-index]');
+    if(!el)return;
+    track('correction_expand',{correction_index:Number(el.dataset.correctionIndex)||0,source:'correction_click'});
+  });
 
   function renderValueTable(r){
     const t=$('value-table');t.innerHTML='';
@@ -1401,6 +1599,25 @@ padding:34px 30px 30px;margin-bottom:22px}
     }
   }
 
+
+  let resultObserver=null;
+  function bindResultMeasurement(){
+    if(resultObserver)resultObserver.disconnect();
+    const seen=new Set();
+    resultObserver=new IntersectionObserver(entries=>{
+      entries.forEach(entry=>{
+        if(!entry.isIntersecting)return;
+        const section=entry.target.dataset.resultSection;
+        if(!section||seen.has(section))return;
+        seen.add(section);
+        track('result_section_view',{section});
+        if(section==='assumptions')track('assumptions_view',{section});
+        resultObserver.unobserve(entry.target);
+      });
+    },{threshold:.32,rootMargin:'0px 0px -12% 0px'});
+    document.querySelectorAll('[data-result-section]:not(.hidden)').forEach(el=>resultObserver.observe(el));
+  }
+
   function renderResult(r){
     const name=r.profile?.identity?.firstName;
     $('result-title').textContent=name?`${name}, here is your Architecture.`:'Here is your Architecture.';
@@ -1457,6 +1674,7 @@ padding:34px 30px 30px;margin-bottom:22px}
     renderValueTable(r);
     renderAssumptions(r);
     renderStoredPoints(r);
+    requestAnimationFrame(()=>bindResultMeasurement());
   }
 
   function escapeHtml(s){
@@ -1467,12 +1685,12 @@ padding:34px 30px 30px;margin-bottom:22px}
     e.preventDefault();
     if(!validateStep(currentStep))return;
 
-    track('assessment_complete');
+    track('assessment_complete',{step:currentStep+1,section:titles[currentStep]});
     document.querySelector('main').style.display='none';
     $('loading').classList.add('active');
     window.scrollTo(0,0);
 
-    setTimeout(()=>{
+    setTimeout(async()=>{
       $('loading').classList.remove('active');
       $('results').classList.add('active');
 
@@ -1486,11 +1704,32 @@ padding:34px 30px 30px;margin-bottom:22px}
       try{
         const data=serialize();
         const result=window.QuietPremiumEngine.optimizeArchitecture(data);
-        activeArchitecture={id:makeArchitectureId(),createdAt:new Date().toISOString(),result,portable:false};
+
+        // Render without making the customer wait on the network.
+        activeArchitecture={id:makeArchitectureId(),createdAt:new Date().toISOString(),result,portable:false,serverStored:false};
         $('architecture-id').textContent=activeArchitecture.id;
+        $('backend-state').textContent='Saving securely…';
         renderResult(result);
         try{localStorage.removeItem(DRAFT_KEY)}catch(_){}
-        track('results_view');
+
+        try{
+          await backendSaveArchitecture(result);
+          // Save a local cache of the centrally issued ID as a convenience, never as the authorization layer.
+          try{await saveActiveResult();}catch(_){}
+        }catch(err){
+          console.warn('QP central save failed',err);
+          $('backend-state').textContent='Result shown normally. Central saving is temporarily unavailable; Save Private Copy remains available on this device.';
+        }
+
+        const gap=Number(result.opportunity?.gapScore);
+        const mis=Number(result.opportunity?.spendMisrouted?.percent);
+        const corrections=result.recommendations?.corrections||[];
+        track('results_view',{
+          data_quality:result.dataQuality?.level||'PARTIAL',
+          already_optimized:corrections.length===0,
+          gap_band:Number.isFinite(gap)?(gap<2?'0-1.9':gap<4?'2-3.9':gap<6?'4-5.9':gap<8?'6-7.9':'8-10'):'unknown',
+          misrouted_band:Number.isFinite(mis)?(mis<10?'0-9':mis<25?'10-24':mis<50?'25-49':'50+'):'unknown'
+        });
       }catch(err){
         $('result-content').classList.add('hidden');
         $('engine-error').classList.remove('hidden');
@@ -1504,26 +1743,28 @@ padding:34px 30px 30px;margin-bottom:22px}
   $('start-over').addEventListener('click',()=>{
     try{localStorage.removeItem(DRAFT_KEY)}catch(_){}
     form.reset();
-    activeArchitecture=null;activePrivateLink=null;activeReaction='';
+    activeArchitecture=null;activePrivateLink=null;activeReaction='';$('backend-state').textContent='Saving securely…';
     history.replaceState(null,'',location.pathname+location.search);
     $('desired_outcomes').value='';
     [...$('outcomes').querySelectorAll('.choice')].forEach(b=>b.classList.remove('selected'));
     $('results').classList.remove('active');
     document.querySelector('main').style.display='';
     showStep(0,false);updateReconciliation();window.scrollTo(0,0);
-    track('assessment_restart');
+    track('assessment_restart',{page:'diagnostic'});
   });
 
   bindInfrastructure();
   restoreFromHash().then(restored=>{
     if(restored){
-      track('result_retrieved');
+      track('result_retrieved',{source:'private_link'});
       return;
     }
-    loadDraft();
+    const resumed=loadDraft();
     updateConditionals();
     updateReconciliation();
-    track('assessment_start');
+    track('assessment_start',{step:currentStep+1,section:titles[currentStep],page:'diagnostic',build:'2.4.0'});
+    if(resumed)track('assessment_resume',{step:currentStep+1,section:titles[currentStep]});
+    track(`assessment_section_${currentStep+1}_view`,{step:currentStep+1,section:titles[currentStep]});
   });
 })();
 </script>
