@@ -1,7 +1,7 @@
 /**
  * Quiet Premium — qp_sim.js
- * Phase 3C Adversarial Validation Engine
- * Build: 3C.1
+ * Phase 4 Recommendation Validation Engine
+ * Build: 4.1
  * Date: 2026-09-03
  *
  * NORTH STAR
@@ -39,7 +39,7 @@
 })(typeof globalThis !== "undefined" ? globalThis : this, function () {
   "use strict";
 
-  const ENGINE_VERSION = "3C.1";
+  const ENGINE_VERSION = "4.1";
   const RULES_AS_OF = "2026-09-03";
 
   // ---------------------------------------------------------------------------
@@ -1240,7 +1240,7 @@
     // QP may give up a small amount of theoretical net value for a meaningful
     // experience improvement, but not a large amount.
     const wantsStatus = /status|upgrade|treatment|hotel|recognition/.test(profile.preferences.desiredOutcomes);
-    const tolerance = wantsStatus ? Math.max(250, Math.max(0, maxNet) * 0.05) : baseTolerance;
+    const tolerance = wantsStatus ? Math.max(500, Math.max(0, maxNet) * 0.075) : baseTolerance;
     let near = candidates.filter(c => c.economics.netValue >= maxNet - tolerance);
 
     const protectAirline = /status|upgrade|treatment/.test(profile.preferences.desiredOutcomes);
@@ -1449,12 +1449,79 @@
     return out.slice(0, 5);
   }
 
+
+  // ---------------------------------------------------------------------------
+  // Data quality / confidence
+  //
+  // QP must not manufacture a precise Gap Score when Current Captured cannot be
+  // measured reliably. Unknown/unsupported current routing makes Current a known
+  // minimum, not a complete value estimate.
+  // ---------------------------------------------------------------------------
+
+  function dataQuality(profile) {
+    const issues = [];
+    const material = [];
+
+    if (profile.spend.reconciliationStatus === "categories_exceed_total") {
+      issues.push("Known spend categories exceed total annual card spend.");
+      material.push("SPEND_RECONCILIATION");
+    }
+    if (profile.spend.reconciliationStatus === "unclassified_spend_remaining" &&
+        Math.abs(profile.spend.reconciliationDelta || 0) > Math.max(5000, profile.spend.total * 0.10)) {
+      issues.push("A material portion of annual spend is not classified.");
+      material.push("UNCLASSIFIED_SPEND");
+    }
+
+    const categoryUsage = [
+      ["dining", profile.spend.dining, profile.usage.dining],
+      ["grocery", profile.spend.grocery, profile.usage.grocery],
+      ["airfare", profile.spend.airfare, profile.usage.airfare],
+      ["hotel", profile.spend.hotel, profile.usage.hotel]
+    ];
+
+    for (const [cat, amount, card] of categoryUsage) {
+      if (amount <= 0) continue;
+      if (!card) {
+        issues.push(`Current ${cat} card is unknown.`);
+        material.push(`UNKNOWN_${cat.toUpperCase()}_ROUTING`);
+      } else if (card.id === "unsupported") {
+        issues.push(`Current ${cat} card is outside the supported V1 universe.`);
+        material.push(`UNSUPPORTED_${cat.toUpperCase()}_ROUTING`);
+      }
+    }
+
+    const generalAllocated = profile.generalAllocations.reduce((s, a) => s + a.amount, 0);
+    if (profile.spend.general > 0 && generalAllocated + 1 < profile.spend.general) {
+      issues.push("Current general-spend routing is incomplete.");
+      material.push("UNKNOWN_GENERAL_ROUTING");
+    }
+    if (profile.generalAllocations.some(a => a.cardId === "unsupported")) {
+      issues.push("Current general-spend card is outside the supported V1 universe.");
+      material.push("UNSUPPORTED_GENERAL_ROUTING");
+    }
+
+    const unsupportedOwned = profile.cards.filter(c => c.id === "unsupported");
+    if (unsupportedOwned.length) {
+      issues.push("One or more owned cards are outside the supported V1 universe; their fee/benefit economics are not modeled.");
+      material.push("UNSUPPORTED_OWNED_CARD");
+    }
+
+    const complete = material.length === 0;
+    return {
+      level: complete ? "COMPLETE" : "PARTIAL",
+      complete,
+      issues: [...new Set(issues)],
+      materialIssues: [...new Set(material)]
+    };
+  }
+
   // ---------------------------------------------------------------------------
   // Optimizer
   // ---------------------------------------------------------------------------
 
   function optimizeArchitecture(rawProfile) {
     const profile = rawProfile?.spend ? rawProfile : normalizeProfile(rawProfile);
+    const quality = dataQuality(profile);
     const current = evaluateArchitecture(profile, null, true);
     const specs = candidateSpecs(profile);
     const candidates = specs.map(s => evaluateArchitecture(profile, s, false));
@@ -1468,53 +1535,102 @@
     }
 
     const recommended = chooseRecommended(profile, current, candidates, maximum);
+
+    // Ongoing metrics.
     const currentNet = Math.max(0, current.economics.netValue);
     const maxNet = Math.max(0, maximum.economics.netValue);
     const unrealized = Math.max(0, maxNet - currentNet);
-    const gap = maxNet > 0 ? round(clamp(10 * unrealized / maxNet, 0, 10), 1) : 0;
+    const rawGap = maxNet > 0 ? round(clamp(10 * unrealized / maxNet, 0, 10), 1) : 0;
     const misrouted = spendMisrouted(profile, recommended);
+
+    // Gap and exact Spend Misrouted are only authoritative when Current is
+    // complete enough to compare against Maximum using the same engine.
+    const gap = quality.complete ? rawGap : null;
+    if (!quality.complete) {
+      misrouted.percent = null;
+      misrouted.confidence = "PARTIAL";
+    }
+
     const storedPoints = existingPointBalanceValue(profile);
 
-    const welcomeMaximum = welcomeOfferValue(profile, maximum, current.cardIds);
-    const welcomeRecommended = welcomeOfferValue(profile, recommended, current.cardIds);
+    // First-year optimizer is independent from the mature architecture.
+    // A welcome offer can change acquisition sequence without becoming the
+    // permanent recommendation.
+    const allArchitectures = [current, ...candidates];
+    const year1Rows = allArchitectures.map(a => {
+      const welcome = welcomeOfferValue(profile, a, current.cardIds);
+      const ongoing = Math.max(0, a.economics.netValue);
+      return {
+        architecture: a,
+        welcome,
+        confirmedValue: round(ongoing + welcome.confirmed, 2),
+        maximumConditionalValue: round(ongoing + welcome.confirmed + welcome.conditional, 2)
+      };
+    });
 
-    const firstYearMaximum = round(maxNet + welcomeMaximum.confirmed + welcomeMaximum.conditional, 2);
-    const firstYearRecommended = round(
+    let firstYearMax = year1Rows[0];
+    for (const row of year1Rows) {
+      if (
+        row.maximumConditionalValue > firstYearMax.maximumConditionalValue ||
+        (row.maximumConditionalValue === firstYearMax.maximumConditionalValue &&
+         row.confirmedValue > firstYearMax.confirmedValue)
+      ) firstYearMax = row;
+    }
+
+    const recommendedWelcome = welcomeOfferValue(profile, recommended, current.cardIds);
+    const recommendedFirstYear = round(
       Math.max(0, recommended.economics.netValue) +
-      welcomeRecommended.confirmed +
-      welcomeRecommended.conditional,
+      recommendedWelcome.confirmed +
+      recommendedWelcome.conditional,
       2
     );
 
     const corrections = correctionList(profile, current, recommended);
     const alreadyOptimized =
       recommended.id === "current" ||
-      (gap <= 0.5 && (misrouted.percent == null || misrouted.percent <= 10) && corrections.length === 0);
+      (
+        quality.complete &&
+        rawGap <= 0.5 &&
+        (misrouted.percent == null || misrouted.percent <= 10) &&
+        corrections.length === 0
+      );
+
+    const tradeoff = Math.max(0, maximum.economics.netValue - recommended.economics.netValue);
+    const tradeoffPct = maximum.economics.netValue > 0
+      ? round((tradeoff / maximum.economics.netValue) * 100, 1)
+      : 0;
 
     const result = {
       engine: {
         version: ENGINE_VERSION,
-        phase: "3C",
+        phase: "4",
         rulesAsOf: RULES_AS_OF,
         valuationMode: QP_VALUATION.mode
       },
+      dataQuality: quality,
       profile,
       current,
       maximum,
       recommended,
       opportunity: {
         maximumPotentialAnnualValue: round(maxNet),
-        currentlyCaptured: round(currentNet),
-        unrealizedPotential: round(unrealized),
+        currentlyCaptured: quality.complete ? round(currentNet) : null,
+        currentlyCapturedKnownMinimum: quality.complete ? null : round(currentNet),
+        unrealizedPotential: quality.complete ? round(unrealized) : null,
         gapScore: gap,
+        modeledGapIfComplete: quality.complete ? null : rawGap,
         spendMisrouted: misrouted,
         experienceDelta: round(recommended.experienceScore - current.experienceScore, 1)
       },
       firstYear: {
-        maximumPotentialValue: round(firstYearMaximum),
-        recommendedPotentialValue: round(firstYearRecommended),
-        maximumWelcome: welcomeMaximum,
-        recommendedWelcome: welcomeRecommended
+        maximumPotentialValue: round(firstYearMax.maximumConditionalValue),
+        confirmedMaximumValue: round(firstYearMax.confirmedValue),
+        architectureId: firstYearMax.architecture.id,
+        cardIds: firstYearMax.architecture.cardIds,
+        welcome: firstYearMax.welcome,
+        differsFromOngoingMaximum: firstYearMax.architecture.id !== maximum.id,
+        recommendedPotentialValue: round(recommendedFirstYear),
+        recommendedWelcome
       },
       ongoing: {
         maximumPotentialAnnualValue: round(maxNet),
@@ -1523,7 +1639,13 @@
       existingRedeemableValue: storedPoints,
       recommendations: {
         alreadyOptimized,
-        corrections
+        corrections,
+        maximumVsRecommended: {
+          sameArchitecture: maximum.id === recommended.id,
+          annualValueTradeoff: round(tradeoff),
+          percentOfMaximumGivenUp: tradeoffPct,
+          reason: recommended.recommendationReason || (maximum.id === recommended.id ? "MAXIMUM_IS_RECOMMENDED" : "QP_BALANCE")
+        }
       },
       candidateCount: candidates.length
     };
@@ -1549,7 +1671,9 @@
         !r.recommended.airline.supported || r.recommended.airline.ecosystem === r.profile.travel.primaryAirline,
         r.recommended.airline.ecosystem);
 
-    add("GAP_RANGE", r.opportunity.gapScore >= 0 && r.opportunity.gapScore <= 10, r.opportunity.gapScore);
+    add("GAP_RANGE",
+        r.opportunity.gapScore == null || (r.opportunity.gapScore >= 0 && r.opportunity.gapScore <= 10),
+        r.opportunity.gapScore);
     add("MISROUTED_RANGE",
         r.opportunity.spendMisrouted.percent == null ||
         (r.opportunity.spendMisrouted.percent >= 0 && r.opportunity.spendMisrouted.percent <= 100),
@@ -1780,8 +1904,9 @@
     },
     {
       id: "welcome_eligible_first_year_only",
-      expect: r => r.firstYear.maximumPotentialValue >= r.ongoing.maximumPotentialAnnualValue &&
-        r.firstYear.maximumWelcome.confirmed >= 0,
+      expect: r => r.firstYear.maximumPotentialValue > r.ongoing.maximumPotentialAnnualValue &&
+        r.firstYear.welcome.confirmed > 0 &&
+        r.firstYear.differsFromOngoingMaximum === true,
       data: {
         total_spend: 90000, dining_spend: 18000, grocery_spend: 12000, general_spend: 45000,
         hotel_spend: 10000, individual_airfare_spend: 5000,
@@ -1797,7 +1922,7 @@
     },
     {
       id: "welcome_ineligible_excluded",
-      expect: r => r.firstYear.maximumWelcome.items.every(x => x.status !== "CONFIRMED" || x.cardId !== "chase_preferred"),
+      expect: r => r.firstYear.welcome.items.every(x => x.status !== "CONFIRMED" || x.cardId !== "chase_preferred"),
       data: {
         total_spend: 90000, dining_spend: 18000, grocery_spend: 12000, general_spend: 45000,
         hotel_spend: 10000, individual_airfare_spend: 5000,
@@ -1839,9 +1964,57 @@
         card_general: "American Express Gold"
       }
     }
+    ,
+    {
+      id: "delta_status_priority_uses_attainable_threshold",
+      expect: r =>
+        r.recommended.airline.ecosystem === "delta" &&
+        r.recommended.airline.tier === "Platinum Medallion" &&
+        (r.recommended.airlineStatusSpend || 0) > 0 &&
+        r.recommendations.maximumVsRecommended.percentOfMaximumGivenUp <= 7.5,
+      data: {
+        total_spend: 150000, dining_spend: 26000, grocery_spend: 18000, general_spend: 76000,
+        hotel_spend: 18000, individual_airfare_spend: 12000,
+        primary_airline_eco: "Delta", flights_taken: "21-40", airline_conc: "80%+",
+        booking_control: "Full control", primary_hotel_program: "Hilton", hotel_nights: 18,
+        hotel_conc: "60-80%", primary_cards: "American Express Platinum",
+        card_dining: "American Express Platinum", card_groceries: "American Express Platinum",
+        card_airfare: "American Express Platinum", card_hotels: "American Express Platinum",
+        card_general: "American Express Platinum", desired_outcomes: "status, upgrades"
+      }
+    },
+    {
+      id: "unsupported_current_card_suppresses_fake_precision",
+      expect: r =>
+        r.dataQuality.level === "PARTIAL" &&
+        r.opportunity.gapScore === null &&
+        r.opportunity.currentlyCaptured === null &&
+        r.opportunity.spendMisrouted.percent === null,
+      data: {
+        total_spend: 100000, dining_spend: 20000, grocery_spend: 15000, general_spend: 45000,
+        hotel_spend: 10000, individual_airfare_spend: 10000,
+        primary_airline_eco: "Delta", flights_taken: "11-20", airline_conc: "80%+",
+        booking_control: "Full control", primary_hotel_program: "Hilton", hotel_nights: 10,
+        primary_cards: "Unknown Premium Card", card_dining: "Unknown Premium Card",
+        card_groceries: "Unknown Premium Card", card_airfare: "Unknown Premium Card",
+        card_hotels: "Unknown Premium Card", card_general: "Unknown Premium Card"
+      }
+    },
+    {
+      id: "bad_spend_reconciliation_suppresses_gap",
+      expect: r => r.dataQuality.level === "PARTIAL" && r.opportunity.gapScore === null,
+      data: {
+        total_spend: 100000, dining_spend: 30000, grocery_spend: 25000, general_spend: 50000,
+        hotel_spend: 15000, individual_airfare_spend: 10000,
+        primary_airline_eco: "Mixed", flights_taken: "6-10", primary_hotel_program: "None",
+        primary_cards: "American Express Gold", card_dining: "American Express Gold",
+        card_groceries: "American Express Gold", card_airfare: "American Express Gold",
+        card_hotels: "American Express Gold", card_general: "American Express Gold"
+      }
+    }
   ];
 
-  function runPhase3CTests() {
+  function runPhase4Tests() {
     const rows = [];
     for (const t of TESTS) {
       let result, expectation = false, error = null;
@@ -1906,7 +2079,7 @@
 
     return {
       engineVersion: ENGINE_VERSION,
-      phase: "3C",
+      phase: "4",
       passed: rows.every(r => r.passed) && regression.every(r => r.pass),
       adversarialCount: rows.length,
       passedCount: rows.filter(r => r.passed).length,
@@ -1925,13 +2098,14 @@
     normalizeProfile,
     airlineStatus,
     hotelStatus,
+    dataQuality,
     optimizeArchitecture,
-    runPhase3CTests
+    runPhase4Tests
   });
 });
 
 if (typeof module === "object" && module.exports && require.main === module) {
-  const report = module.exports.runPhase3CTests();
+  const report = module.exports.runPhase4Tests();
   console.log(JSON.stringify(report, null, 2));
   if (!report.passed) process.exitCode = 1;
 }
