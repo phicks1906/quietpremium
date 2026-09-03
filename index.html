@@ -1,464 +1,512 @@
 <!DOCTYPE html>
-<!-- Quiet Premium · index.html · build v1.5.4 · 2026-06-14 · COSMETIC PASS: new hero (dusk business cabin) replaces flat hero2; two full-bleed photo bands (band-air after The Problem, band-hotel after What Changes) break the text-on-black scroll; "whole idea" one-liner rebuilt onto band-lounge image instead of floating in a black void; What Changes returned to clean text (img-band bg removed). Assets: /hero-cabin.jpeg /band-air.jpeg /band-hotel.jpeg /band-lounge.jpeg. v1.5.1: close anchored on /hero.jpeg so the final CTA lands on an image not black. v1.5.2: removed redundant Process section (restated The Architecture; private-conversation line folded into Architecture); tightened mobile hero bottom gap. End now reads Proof -> Who This Is For -> Close. v1.5.3: hero framing raised (center 40%) and bottom gradient lightened (0.88->0.74) to remove the black-void feel under the CTA; mobile hero bottom padding trimmed. Footer label synced. v1.5.4: gap-index retired/consolidated into architecture.html — two "see how it works" links repointed to architecture.html#faq, redundant footer "How It Works" link removed. -->
+<!-- Quiet Premium · index.html · build v1.7.0 · 2026-09-03 · PHASE 8 CONVERSION REBUILD
+     Product: The Architecture
+     Action: free assessment
+     Output: personalized Architecture
+     Metric: Gap Score
+     Conversion principle: show the result first; let the result earn the right to explain the philosophy.
+     Assets preserved: /hero-cabin.jpeg /band-air.jpeg /band-hotel.jpeg /band-lounge.jpeg /hero.jpeg -->
 <html lang="en">
 <head>
-<!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-2R14ZESQ0R"></script>
 <script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-  gtag('config', 'G-2R14ZESQ0R');
+window.dataLayer=window.dataLayer||[];
+function gtag(){dataLayer.push(arguments);}
+gtag('js',new Date());
+gtag('config','G-2R14ZESQ0R');
 </script>
+
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+<meta name="theme-color" content="#0A0A0A"/>
 <title>Quiet Premium — Same Spend. Different Outcome.</title>
-<meta name="description" content="A lot of households are already spending enough for a materially better travel life. The money is there. The routing underneath it is wrong. Quiet Premium fixes that."/>
-<meta name="keywords" content="get more from credit card spend, how to build airline status, hotel upgrade benefits, premium travel outcomes, spend routing, travel rewards strategy"/>
+<meta name="description" content="Quiet Premium shows whether your existing spending is producing the travel experience it should — and what the same spend could produce when routed differently."/>
 <meta property="og:title" content="Quiet Premium — Same Spend. Different Outcome."/>
-<meta property="og:description" content="A lot of households are already spending enough for a materially better travel life. The infrastructure underneath it is wrong."/>
+<meta property="og:description" content="A free personalized analysis of what your existing spending produces now — and what it could produce when routed differently."/>
 <meta property="og:type" content="website"/>
 <meta name="twitter:card" content="summary_large_image"/>
-<meta name="twitter:title" content="Quiet Premium — Same Spend. Different Outcome."/>
-<meta name="twitter:description" content="A lot of households are already spending enough for a materially better travel life. The infrastructure underneath it is wrong."/>
 <link rel="canonical" href="https://quietpremium.com/"/>
+
 <script type="application/ld+json">
 {
-  "@context": "https://schema.org",
-  "@type": "ProfessionalService",
-  "name": "Quiet Premium",
-  "description": "Premium travel advisory that restructures how households route spend through airlines, hotels, and card networks for materially better travel outcomes.",
-  "url": "https://quietpremium.com",
-  "email": "editor@quietpremium.com",
-  "priceRange": "Free during founding period",
-  "serviceType": "Travel Advisory"
+  "@context":"https://schema.org",
+  "@type":"WebApplication",
+  "name":"The Architecture by Quiet Premium",
+  "applicationCategory":"FinanceApplication",
+  "operatingSystem":"Web",
+  "description":"A free personalized analysis that compares a traveler's current spend and travel architecture with a modeled maximum and recommended architecture.",
+  "url":"https://quietpremium.com/diagnostic.html",
+  "offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}
 }
 </script>
-<meta name="description" content="Same spend. Different outcome. Quiet Premium restructures how your existing income moves through airlines, hotels, and card networks — so the premium life your budget already funds finally arrives."/>
+
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=DM+Mono:wght@300;400;500&family=Inter:wght@300;400;500&display=swap" rel="stylesheet"/>
+
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --black:#0A0A0A;--black2:#0D0D0C;--gold:#B08D57;--gold-lt:#C9A96E;
-  --gold-dk:#8B6D3F;--gold-pale:rgba(176,141,87,0.07);--white:#F5F2EC;
-  --grey:#9A9590;--grey-dk:#3A3530;--grey-mid:#857F79;
-  --serif:'Cormorant Garamond',Georgia,serif;
-  --mono:'DM Mono',monospace;--sans:'Inter',sans-serif;
+  --black:#0A0A0A;--black2:#0D0D0C;--panel:#11110F;--gold:#B08D57;--gold-lt:#D0B17A;
+  --gold-dk:#80663F;--gold-wash:rgba(176,141,87,.08);--white:#F5F2EC;
+  --grey:#AAA49D;--grey2:#7E7871;--line:#302C27;--line2:#1C1A18;
+  --serif:'Cormorant Garamond',Georgia,serif;--mono:'DM Mono',monospace;--sans:'Inter',sans-serif;
 }
-html{background:#0A0A0A;scroll-behavior:smooth}
-body{background:#0A0A0A;color:#F5F2EC;font-family:var(--sans);font-weight:300;-webkit-font-smoothing:antialiased;line-height:1.6}
+html{background:var(--black);scroll-behavior:smooth}
+body{background:var(--black);color:var(--white);font-family:var(--sans);font-weight:300;line-height:1.6;-webkit-font-smoothing:antialiased}
+a{color:inherit}.hidden{display:none!important}
 ::selection{background:var(--gold);color:var(--black)}
 
-/* NAV */
-nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:22px 56px;display:flex;align-items:center;justify-content:space-between;background:rgba(10,10,10,0.85);backdrop-filter:blur(12px);border-bottom:1px solid rgba(58,53,48,0.25)}
-.nb{width:28px;height:28px;border-radius:50%;border:1px solid var(--gold);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1.5px;flex-shrink:0}
-.nb span{font-family:var(--mono);font-size:5px;letter-spacing:.14em;color:var(--gold);line-height:1}
-.nb .nbr{width:12px;height:.5px;background:var(--gold-dk)}
-.nav-wm{font-family:var(--mono);font-size:9px;letter-spacing:.24em;text-transform:uppercase;color:var(--white);margin-left:12px}
-.nav-links{display:flex;gap:30px;align-items:center}
-.nav-link{font-family:var(--mono);font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:var(--grey);text-decoration:none;transition:color .3s}
-.nav-link:hover{color:var(--gold)}
-.nav-link.primary{color:var(--gold)}
-.hamburger{display:none;flex-direction:column;gap:5px;cursor:pointer;padding:4px}
-.hamburger span{width:20px;height:1px;background:var(--grey);display:block;transition:.3s}
-.mobile-menu{display:none;position:fixed;top:71px;left:0;right:0;background:var(--black);border-bottom:1px solid var(--grey-dk);padding:24px 56px;z-index:99;flex-direction:column;gap:0}
-.mobile-menu a{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--grey);text-decoration:none;padding:16px 0;border-bottom:1px solid #1a1a1a}
-.mobile-menu a:last-child{border-bottom:none;color:var(--gold)}
+nav{
+  position:fixed;inset:0 0 auto 0;z-index:100;height:72px;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 max(24px,env(safe-area-inset-right)) 0 max(24px,env(safe-area-inset-left));
+  background:rgba(10,10,10,.88);backdrop-filter:blur(14px);
+  border-bottom:1px solid rgba(176,141,87,.12)
+}
+.brand{display:flex;align-items:center}
+.nb{width:29px;height:29px;border:1px solid var(--gold);border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px}
+.nb span{font:400 5px/1 var(--mono);letter-spacing:.13em;color:var(--gold)}
+.nbr{width:12px;height:.5px;background:var(--gold-dk)}
+.nav-wm{margin-left:11px;font:400 9px/1 var(--mono);letter-spacing:.22em;text-transform:uppercase}
+.nav-links{display:flex;align-items:center;gap:28px}
+.nav-link{font:400 9px/1 var(--mono);letter-spacing:.13em;text-transform:uppercase;color:var(--grey);text-decoration:none}
+.nav-link:hover{color:var(--gold-lt)}
+.nav-cta{color:var(--black);background:var(--gold);padding:12px 17px}
+.nav-cta:hover{color:var(--black);background:var(--gold-lt)}
+.hamburger{display:none;width:28px;height:28px;align-items:center;justify-content:center;flex-direction:column;gap:5px;cursor:pointer}
+.hamburger span{display:block;width:20px;height:1px;background:var(--grey)}
+.mobile-menu{display:none;position:fixed;top:72px;left:0;right:0;z-index:99;background:#0c0c0c;border-bottom:1px solid var(--line);padding:12px 24px 22px}
+.mobile-menu a{display:block;text-decoration:none;padding:14px 0;border-bottom:1px solid var(--line2);font:400 10px/1.3 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--grey)}
+.mobile-menu a:last-child{color:var(--gold-lt);border-bottom:0}
 
-/* RHYTHM — generous, varied vertical space is the core of the redesign */
-section{padding:100px 56px;position:relative}
-.inner{max-width:1080px;margin:0 auto}
-.measure{max-width:600px}
-.measure-narrow{max-width:480px}
+section{padding:104px 56px;position:relative}
+.inner{max-width:1100px;margin:0 auto}
+.eyebrow{font:500 9px/1.4 var(--mono);letter-spacing:.22em;text-transform:uppercase;color:var(--gold);margin-bottom:20px}
+.h2{font:300 clamp(38px,5vw,64px)/1.02 var(--serif);letter-spacing:-.01em}
+.h2 em,.display em{font-style:italic;color:var(--gold-lt)}
+.lead{font-size:16px;line-height:1.8;color:var(--grey);max-width:620px}
+.body{font-size:13.5px;line-height:1.8;color:var(--grey)}
+.mono{font-family:var(--mono)}
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;min-height:52px;padding:0 28px;
+  background:var(--gold);color:var(--black);font:500 10px/1 var(--mono);letter-spacing:.12em;
+  text-transform:uppercase;text-decoration:none;border:1px solid var(--gold);transition:.2s
+}
+.btn:hover{background:var(--gold-lt);border-color:var(--gold-lt)}
+.btn-ghost{background:transparent;color:var(--gold-lt);border-color:#4A4032}
+.btn-ghost:hover{background:var(--gold-wash);color:var(--gold-lt);border-color:var(--gold)}
+.trustline{font:400 9px/1.6 var(--mono);letter-spacing:.06em;color:rgba(245,242,236,.66);margin-top:13px}
 
-/* EYEBROW — no numbers; editorial, sparing */
-.eyebrow{font-family:var(--mono);font-size:9px;letter-spacing:.28em;text-transform:uppercase;color:var(--gold);margin-bottom:24px;display:block}
-.eyebrow-quiet{font-family:var(--mono);font-size:8px;letter-spacing:.2em;text-transform:uppercase;color:var(--grey-mid);margin-bottom:16px;display:block}
-
-/* TYPE SCALE — bigger display, distilled body */
-.display{font-family:var(--serif);font-size:clamp(42px,6.5vw,84px);font-weight:300;line-height:1.02;letter-spacing:-.012em;text-shadow:0 2px 24px rgba(0,0,0,0.5)}
-.display em{font-style:italic;color:var(--gold)}
-.h2{font-family:var(--serif);font-size:clamp(36px,5vw,64px);font-weight:300;line-height:1.04;letter-spacing:-.01em}
-.h2 em{font-style:italic;color:var(--gold)}
-.h3{font-family:var(--serif);font-size:clamp(26px,3vw,38px);font-weight:300;line-height:1.1}
-.h3 em{font-style:italic;color:var(--gold)}
-.lead{font-size:17px;color:var(--grey);line-height:1.85;font-weight:300}
-.body{font-size:14px;color:var(--grey);line-height:1.85}
-.body-sm{font-size:12.5px;color:var(--grey);line-height:1.8}
-
-/* THE SIGNATURE — the "routed differently" line: two states, a shift between */
-.shift{display:flex;align-items:baseline;gap:18px;flex-wrap:wrap;font-family:var(--serif);font-weight:300;line-height:1.1}
-.shift .from{color:var(--grey-mid);font-size:clamp(22px,3vw,32px)}
-.shift .arrow{color:var(--gold);font-family:var(--sans);font-size:18px;font-weight:300}
-.shift .to{color:var(--white);font-size:clamp(22px,3vw,32px)}
-.shift .to em{font-style:italic;color:var(--gold)}
-
-/* BUTTONS — restrained */
-.btn{display:inline-block;background:var(--gold);color:var(--black);font-family:var(--mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;border:none;cursor:pointer;padding:18px 40px;transition:background .3s;text-decoration:none}
-.btn:hover{background:var(--gold-lt)}
-.btn-note{font-family:var(--mono);font-size:8px;letter-spacing:.12em;text-transform:uppercase;color:rgba(245,242,236,0.6);margin-top:16px;display:block}
-.link-quiet{font-family:var(--mono);font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);text-decoration:underline;text-underline-offset:3px;text-decoration-thickness:1px;transition:color .3s;display:inline-block}
-.link-quiet:hover{color:var(--gold-lt)}
-
-/* HERO — centered, spare, confident */
+/* HERO */
 #hero{
-  position:relative;min-height:84vh;display:flex;flex-direction:column;
-  justify-content:center;padding:110px 56px 60px;text-align:center;
-  background:url('/hero-cabin.jpeg') center 40%/cover no-repeat #0a0a0a;
-  overflow:hidden;
+  min-height:92vh;display:flex;align-items:center;padding-top:132px;padding-bottom:76px;
+  background:url('/hero-cabin.jpeg') center 40%/cover no-repeat #0a0a0a;overflow:hidden
 }
-#hero::before{
-  content:'';position:absolute;inset:0;
-  background:linear-gradient(
-    to bottom,
-    rgba(10,10,10,0.64) 0%,
-    rgba(10,10,10,0.50) 38%,
-    rgba(10,10,10,0.54) 68%,
-    rgba(10,10,10,0.74) 100%
-  );
-  z-index:1;
-}
-#hero>*{position:relative;z-index:2}
-.hero-inner{max-width:900px;margin:0 auto}
-.hero-sub{font-size:17px;color:rgba(245,242,236,0.82);line-height:1.8;max-width:480px;margin:24px auto 0}
-.hero-cta{margin-top:36px}
+#hero::before{content:'';position:absolute;inset:0;background:
+  linear-gradient(90deg,rgba(10,10,10,.88) 0%,rgba(10,10,10,.70) 48%,rgba(10,10,10,.34) 100%),
+  linear-gradient(0deg,rgba(10,10,10,.86) 0%,transparent 38%);z-index:0}
+.hero-grid{position:relative;z-index:1;display:grid;grid-template-columns:minmax(0,680px) 1fr;gap:50px;align-items:end}
+.display{font:300 clamp(52px,7vw,88px)/.96 var(--serif);letter-spacing:-.02em;max-width:700px}
+.hero-sub{font-size:18px;line-height:1.72;color:rgba(245,242,236,.82);max-width:590px;margin-top:24px}
+.hero-actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:34px}
+.hero-proof{border-left:1px solid rgba(208,177,122,.46);padding:4px 0 4px 22px;max-width:310px;margin-left:auto}
+.hero-proof .hp-head{font:400 26px/1.08 var(--serif);margin-bottom:10px}
+.hero-proof p{font-size:12px;line-height:1.7;color:rgba(245,242,236,.66)}
 
+/* SAMPLE — immediately after hero */
+.sample-section{padding-top:72px;padding-bottom:72px;background:#0c0c0b;border-top:1px solid var(--line2);border-bottom:1px solid var(--line2)}
+.sample-head{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:end;margin-bottom:30px}
+.sample-note{font-size:11px;line-height:1.65;color:var(--grey2);max-width:430px;justify-self:end}
+.sample-card{border:1px solid rgba(176,141,87,.36);background:
+  radial-gradient(circle at 90% 0%,rgba(176,141,87,.10),transparent 30%),var(--panel);padding:28px}
+.sample-top{display:flex;justify-content:space-between;gap:24px;align-items:start;padding-bottom:22px;border-bottom:1px solid var(--line)}
+.sample-title{font:400 28px/1.05 var(--serif)}
+.sample-tag{font:500 8px/1 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--gold-lt);border:1px solid #53442F;padding:8px 10px}
+.sample-metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);margin-top:1px}
+.sm{background:#0d0d0c;padding:21px 18px;min-height:118px}
+.sm-label{font:500 8px/1.35 var(--mono);letter-spacing:.09em;text-transform:uppercase;color:var(--grey2);margin-bottom:10px}
+.sm-value{font:400 30px/1 var(--serif)}
+.sm-value.gold{color:var(--gold-lt)}
+.sample-move{display:grid;grid-template-columns:150px 1fr;gap:26px;align-items:start;padding-top:22px;margin-top:1px;border-top:1px solid var(--line)}
+.sample-move .label{font:500 8px/1.4 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--gold)}
+.sample-move strong{font:400 20px/1.3 var(--serif)}
+.sample-move p{font-size:11.5px;line-height:1.65;color:var(--grey);margin-top:7px}
 
-/* WHAT CHANGES — list with rhythm, not a dense grid */
-.change-row{display:grid;grid-template-columns:160px 1fr;gap:48px;padding:38px 0;border-top:1px solid var(--grey-dk);align-items:baseline}
-.change-row:last-child{border-bottom:1px solid var(--grey-dk)}
-.change-cat{font-family:var(--mono);font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--gold)}
-.change-head{font-family:var(--serif);font-size:clamp(22px,2.6vw,30px);font-weight:300;line-height:1.2;color:var(--white);margin-bottom:10px}
-.change-body{font-size:13.5px;color:var(--grey);line-height:1.8;max-width:560px}
+/* RECOGNITION */
+.recognition-grid{display:grid;grid-template-columns:1fr 1fr;gap:74px;align-items:start}
+.problem-list{margin-top:14px}
+.problem-row{padding:22px 0;border-top:1px solid var(--line)}
+.problem-row:last-child{border-bottom:1px solid var(--line)}
+.problem-row strong{display:block;font:400 22px/1.2 var(--serif);margin-bottom:7px}
+.problem-row p{font-size:12.5px;line-height:1.7;color:var(--grey)}
+.recognition-callout{border:1px solid var(--line);background:var(--panel);padding:28px;position:sticky;top:100px}
+.recognition-callout .big{font:300 34px/1.1 var(--serif);margin:9px 0 15px}
+.recognition-callout p{font-size:12px;line-height:1.75;color:var(--grey)}
 
-/* PROCESS — three steps, spare */
-.step{display:grid;grid-template-columns:48px 1fr;gap:32px;padding:40px 0;border-top:1px solid var(--grey-dk);align-items:start}
-.step-n{font-family:var(--serif);font-size:32px;font-weight:300;color:var(--gold-dk);line-height:1}
-.step-head{font-family:var(--serif);font-size:clamp(24px,2.8vw,32px);font-weight:300;color:var(--white);margin-bottom:12px;line-height:1.15}
-.step-body{font-size:13.5px;color:var(--grey);line-height:1.8;max-width:560px}
+/* OUTCOMES */
+.outcomes{background:#0d0d0c}
+.outcome-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);margin-top:42px}
+.outcome{background:#0d0d0c;padding:30px 24px;min-height:228px}
+.outcome-label{font:500 8px/1.3 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:20px}
+.outcome h3{font:400 24px/1.15 var(--serif);margin-bottom:10px}
+.outcome p{font-size:11.5px;line-height:1.7;color:var(--grey)}
 
-/* PROOF — two example cards, the one place sell is explicit */
-.proof-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:56px}
-.proof-card{border:1px solid var(--grey-dk);padding:40px 36px;background:var(--black2)}
-.proof-card.lift{border-color:var(--gold-dk)}
-.proof-tier{font-family:var(--serif);font-size:clamp(28px,3.2vw,38px);font-weight:300;color:var(--white);line-height:1.1;margin-bottom:14px}
-.proof-tier em{font-style:italic;color:var(--gold)}
-.proof-spend{font-family:var(--mono);font-size:8px;letter-spacing:.14em;text-transform:uppercase;color:var(--grey-mid);margin-bottom:22px;display:block}
-.proof-body{font-size:13px;color:var(--grey);line-height:1.8;margin-bottom:28px}
-.proof-val{display:flex;align-items:baseline;gap:10px;padding-top:20px;border-top:1px solid var(--grey-dk)}
-.proof-val .num{font-family:var(--serif);font-size:30px;font-weight:300;color:var(--gold);line-height:1}
-.proof-val .cap{font-family:var(--mono);font-size:7px;letter-spacing:.1em;text-transform:uppercase;color:var(--grey-mid)}
+/* PHOTO */
+.photo-band{height:48vh;min-height:330px;max-height:520px;background:url('/band-air.jpeg') center 44%/cover no-repeat;position:relative}
+.photo-band::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(10,10,10,.08),rgba(10,10,10,.55))}
+.photo-cap{position:absolute;z-index:1;left:56px;bottom:30px;font:400 9px/1 var(--mono);letter-spacing:.16em;text-transform:uppercase;color:rgba(245,242,236,.84)}
 
-/* FIT — two columns, calm */
-.fit-grid{display:grid;grid-template-columns:1fr 1fr;gap:72px;margin-top:8px}
-.fit-h{font-family:var(--mono);font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);margin-bottom:20px;padding-bottom:12px;border-bottom:1px solid var(--grey-dk)}
-.fit-item{padding:13px 0;font-size:14px;color:var(--grey);line-height:1.6;border-bottom:1px solid #161514}
-.fit-item:last-child{border-bottom:none}
-.fit-item strong{color:var(--white);font-weight:400;display:block;margin-bottom:4px;font-size:14px}
-.fit-note{margin-top:34px;padding:26px 28px;border:1px solid var(--grey-dk);background:var(--black2)}
+/* HOW IT WORKS */
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);margin-top:44px}
+.step-card{background:var(--black);padding:32px 28px}
+.step-num{font:400 10px/1 var(--mono);color:var(--gold);margin-bottom:25px}
+.step-card h3{font:400 25px/1.1 var(--serif);margin-bottom:11px}
+.step-card p{font-size:11.5px;line-height:1.7;color:var(--grey)}
+.how-footer{display:flex;justify-content:space-between;gap:24px;align-items:center;border-top:1px solid var(--line);padding-top:26px;margin-top:28px}
+.how-footer p{font-size:11px;line-height:1.6;color:var(--grey2);max-width:540px}
+
+/* FIT */
+.fit-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:40px}
+.fit-card{border:1px solid var(--line);padding:29px;background:var(--panel)}
+.fit-card h3{font:400 25px/1.1 var(--serif);margin-bottom:20px}
+.fit-item{padding:13px 0;border-top:1px solid var(--line2);font-size:12px;line-height:1.55;color:var(--grey)}
+.fit-item strong{display:block;color:var(--white);font-weight:400;margin-bottom:4px}
+.fit-card.no{background:#0c0c0c}
+.fit-card.no h3{color:#c8c0b6}
+
+/* TRUST */
+.trust{background:url('/band-lounge.jpeg') center 48%/cover no-repeat}
+.trust::before{content:'';position:absolute;inset:0;background:rgba(10,10,10,.86)}
+.trust .inner{position:relative}
+.trust-grid{display:grid;grid-template-columns:1fr 1fr;gap:70px;align-items:center}
+.trust-points{display:grid;gap:12px}
+.trust-point{border:1px solid rgba(176,141,87,.25);background:rgba(12,12,12,.68);padding:18px}
+.trust-point strong{display:block;font-size:12px;font-weight:500;margin-bottom:4px}
+.trust-point span{font-size:11px;line-height:1.6;color:var(--grey)}
 
 /* CLOSE */
-.close{text-align:center}
-.close .h2{max-width:760px;margin:0 auto 24px}
-.close .lead{max-width:540px;margin:0 auto 44px}
+.close{padding:126px 56px;text-align:center;background:url('/hero.jpeg') center 54%/cover no-repeat}
+.close::before{content:'';position:absolute;inset:0;background:rgba(10,10,10,.82)}
+.close .inner{position:relative;max-width:790px}
+.close .lead{margin:20px auto 32px}
+.close .hero-actions{justify-content:center}
 
-/* FOOTER */
-footer{padding:72px 56px;border-top:1px solid var(--grey-dk);display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:32px}
-.footer-left{font-family:var(--mono);font-size:8px;letter-spacing:.12em;text-transform:uppercase;color:var(--grey-mid);line-height:2}
-.footer-links{display:flex;gap:28px}
-.footer-link{font-family:var(--mono);font-size:8px;letter-spacing:.12em;text-transform:uppercase;color:var(--grey-mid);text-decoration:underline;text-underline-offset:3px;transition:color .3s}
-.footer-link:hover{color:var(--gold)}
-.disclaimer{font-family:var(--mono);font-size:8px;letter-spacing:.05em;color:var(--grey-mid);line-height:1.9;max-width:880px;margin:0 auto;text-align:center;padding:0 56px 64px}
+footer{padding:56px;border-top:1px solid var(--line);display:flex;justify-content:space-between;gap:28px;flex-wrap:wrap}
+.footer-left{font:400 8px/1.9 var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--grey2)}
+.footer-links{display:flex;gap:24px}
+.footer-links a{font:400 8px/1 var(--mono);letter-spacing:.09em;text-transform:uppercase;color:var(--grey2)}
+.disclaimer{max-width:940px;margin:0 auto;padding:0 56px 50px;text-align:center;font:400 8px/1.8 var(--mono);color:#625d57}
 
-
-/* FULL-BLEED PHOTO BANDS — visual rest between text sections */
-.photo-band{
-  position:relative;height:56vh;min-height:360px;max-height:560px;
-  background-size:cover;background-position:center;
-  display:flex;align-items:flex-end;
-}
-.photo-band::after{
-  content:'';position:absolute;inset:0;z-index:1;
-  background:linear-gradient(to bottom,rgba(10,10,10,0.20) 0%,rgba(10,10,10,0.10) 45%,rgba(10,10,10,0.55) 100%);
-}
-.photo-band .cap{
-  position:relative;z-index:2;padding:0 56px 34px;
-  font-family:var(--mono);font-size:9px;letter-spacing:.22em;text-transform:uppercase;
-  color:rgba(245,242,236,0.92);
-}
-.band-air{background-image:url('/band-air.jpeg');background-position:center 42%}
-.band-hotel{background-image:url('/band-hotel.jpeg');background-position:center 55%}
-
-/* THE SHIFT — one-liner now sits on an image, not in a void */
-.shift-band{
-  position:relative;text-align:center;
-  background:url('/band-lounge.jpeg') center 45%/cover no-repeat #0a0a0a;
-  padding:120px 56px;
-}
-.shift-band::before{
-  content:'';position:absolute;inset:0;z-index:1;
-  background:linear-gradient(to bottom,rgba(10,10,10,0.86) 0%,rgba(10,10,10,0.80) 50%,rgba(10,10,10,0.90) 100%);
-}
-.shift-band>*{position:relative;z-index:2}
-
-/* CLOSE BAND — final CTA lands on an image (arrival), not black */
-.close-band{
-  position:relative;
-  background:url('/hero.jpeg') center 50%/cover no-repeat #0a0a0a;
-  padding:132px 56px;
-}
-.close-band::before{
-  content:'';position:absolute;inset:0;z-index:1;
-  background:linear-gradient(to bottom,rgba(10,10,10,0.74) 0%,rgba(10,10,10,0.80) 55%,rgba(10,10,10,0.92) 100%);
-}
-.close-band>*{position:relative;z-index:2}
-/* MOTION — restrained scroll reveal */
-.reveal{opacity:0;transform:translateY(16px);transition:opacity .9s ease,transform .9s ease}
+.reveal{opacity:0;transform:translateY(14px);transition:opacity .75s ease,transform .75s ease}
 .reveal.in{opacity:1;transform:none}
-@media(prefers-reduced-motion:reduce){.reveal{opacity:1;transform:none;transition:none}html{scroll-behavior:auto}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.reveal{opacity:1;transform:none;transition:none}}
 
-/* RESPONSIVE */
-@media(max-width:880px){
-  nav{padding:20px 28px}
-  .nav-links{display:none}
-  .hamburger{display:flex}
-  section{padding:56px 24px}
-  #hero{padding:92px 24px 10px;min-height:auto}
-  .change-row{grid-template-columns:1fr;gap:12px;padding:30px 0}
-  .proof-grid{grid-template-columns:1fr;gap:18px}
-  .fit-grid{grid-template-columns:1fr;gap:36px}
-  .step{grid-template-columns:36px 1fr;gap:20px}
-  .photo-band{height:38vh;min-height:240px}
-  .photo-band .cap{padding:0 24px 22px}
-  .shift-band{padding:80px 24px}
-  .close-band{padding:90px 24px}
+@media(max-width:900px){
+  nav{height:68px}.nav-links{display:none}.hamburger{display:flex}.mobile-menu{top:68px}
+  section{padding:72px 24px}
+  #hero{min-height:auto;padding:116px 24px 68px}
+  .hero-grid{grid-template-columns:1fr}.hero-proof{margin:20px 0 0}
+  .sample-head,.recognition-grid,.trust-grid{grid-template-columns:1fr;gap:28px}
+  .sample-note{justify-self:start}
+  .sample-metrics{grid-template-columns:1fr 1fr}
+  .outcome-grid{grid-template-columns:1fr 1fr}
+  .steps{grid-template-columns:1fr}
+  .recognition-callout{position:static}
+  .photo-cap{left:24px}
+  .close{padding:88px 24px}
+  footer{padding:44px 24px}
+  .disclaimer{padding:0 24px 40px}
+}
+@media(max-width:560px){
+  .display{font-size:49px}
+  .hero-sub{font-size:16px}
+  .hero-actions{flex-direction:column}.btn{width:100%}
+  .sample-metrics,.outcome-grid,.fit-grid{grid-template-columns:1fr}
+  .sample-move{grid-template-columns:1fr;gap:8px}
+  .how-footer{display:block}.how-footer .btn{margin-top:18px}
+  .sample-card{padding:20px}
+  .sm{min-height:auto}
 }
 </style>
 </head>
 <body>
 
 <nav>
-  <div style="display:flex;align-items:center">
+  <div class="brand">
     <div class="nb"><span>QUIET</span><div class="nbr"></div><span>PREM</span></div>
     <span class="nav-wm">Quiet Premium</span>
   </div>
   <div class="nav-links">
+    <a href="architecture.html" class="nav-link">How it works</a>
     <a href="contact.html" class="nav-link">Contact</a>
-    <a href="architecture.html" class="nav-link primary">The Architecture →</a>
+    <a href="diagnostic.html" class="nav-link nav-cta" onclick="track('architecture_cta',{placement:'nav'})">Build My Free Architecture</a>
   </div>
   <div class="hamburger" onclick="toggleMenu()"><span></span><span></span><span></span></div>
 </nav>
 <div class="mobile-menu" id="mobile-menu">
+  <a href="architecture.html">How it works</a>
   <a href="contact.html">Contact</a>
-  <a href="architecture.html">The Architecture</a>
+  <a href="diagnostic.html" onclick="track('architecture_cta',{placement:'mobile_menu'})">Build My Free Architecture</a>
 </div>
 
-<!-- HERO — centered, spare -->
 <section id="hero">
-  <div class="hero-inner">
-    <span class="eyebrow" style="opacity:0.85">Premium Travel Architecture</span>
-    <h1 class="display">Same spend.<br><em>Different outcome.</em></h1>
-    <p class="hero-sub">The money for a materially better travel life is usually already there. What's missing is the structure underneath it.</p>
-    <div class="hero-cta">
-      <a href="diagnostic.html" class="btn">Begin The Architecture</a>
-      <span class="btn-note">Founding access · Your plan on screen in fifteen minutes</span>
-      <div style="margin-top:20px"><a href="architecture.html#faq" style="font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold-lt);text-decoration:underline;text-underline-offset:4px;text-decoration-thickness:1px">New to this? See how it works first →</a></div>
+  <div class="inner hero-grid">
+    <div>
+      <div class="eyebrow">The Architecture · Quiet Premium</div>
+      <h1 class="display">Same spend.<br><em>Different outcome.</em></h1>
+      <p class="hero-sub">Find out whether your existing spending is producing the travel life it should — and what the same spend could realistically produce when it is routed differently.</p>
+      <div class="hero-actions">
+        <a href="diagnostic.html" class="btn" onclick="track('architecture_cta',{placement:'hero'})">Build My Free Architecture</a>
+        <a href="#sample" class="btn btn-ghost">See a Sample Result</a>
+      </div>
+      <div class="trustline">Free personalized analysis · Results immediately · No card required · About 15 minutes</div>
+    </div>
+    <div class="hero-proof">
+      <div class="eyebrow">The question</div>
+      <div class="hp-head">Is your current setup actually working?</div>
+      <p>QP measures what you capture now, calculates a maximum from the same spend and travel behavior, then shows the smallest high-impact changes worth making.</p>
     </div>
   </div>
 </section>
 
-<!-- THE PROBLEM -->
-<section class="reveal">
+<section class="sample-section reveal" id="sample" data-track-view="sample_result_view">
   <div class="inner">
-    <span class="eyebrow">The Problem</span>
-    <h2 class="h2" style="max-width:680px;margin-bottom:32px">Your spend is already there.<br><em>Your routing isn't.</em></h2>
-    <div style="max-width:560px;margin-bottom:56px">
-      <p class="lead">The institutions that decide who boards first, who gets upgraded, and who gets called when a flight cancels see a small slice of you — not the full picture of a premium client. The spend isn't missing. It's misdirected.</p>
-    </div>
-    <div class="change-row" style="border-top:1px solid var(--grey-dk)">
-      <div class="change-cat">Fragmented</div>
+    <div class="sample-head">
       <div>
-        <div class="change-head">The right spend, on the wrong cards.</div>
-        <div class="change-body">Airfare on a general card. Dining on a travel card. Hotels through OTAs that strip status credit. Every misrouted dollar is a signal the institutions never receive.</div>
+        <div class="eyebrow">What you actually receive</div>
+        <h2 class="h2">The answer comes <em>first.</em></h2>
       </div>
+      <p class="sample-note">Illustrative engine output from a sample profile. It is not a promise of what your result will be. Your inputs determine your Architecture.</p>
     </div>
-    <div class="change-row">
-      <div class="change-cat">Scattered</div>
-      <div>
-        <div class="change-head">Volume divided into invisibility.</div>
-        <div class="change-body">Flights split across three airlines means meaningful status on none. Hotels across six brands means recognition at zero. The volume that could earn elite treatment is there — it's just divided.</div>
-      </div>
-    </div>
-    <div class="change-row">
-      <div class="change-cat">Correctable</div>
-      <div>
-        <div class="change-head">Same income. Wrong infrastructure.</div>
-        <div class="change-body">The fix isn't spending more. Same cards, corrected. Same flights, concentrated. Same hotels, consolidated. The outcomes change without the budget moving.</div>
-      </div>
-    </div>
-  </div>
-</section>
 
-<!-- PHOTO BAND — in the air -->
-<section class="photo-band band-air reveal" aria-hidden="true">
-  <span class="cap">In the air</span>
-</section>
-
-<!-- WHAT CHANGES -->
-<section class="reveal">
-  <div class="inner">
-    <span class="eyebrow">What Changes</span>
-    <h2 class="h2" style="max-width:680px;margin-bottom:48px">The experience stops feeling <em>negotiated.</em></h2>
-    <div class="change-row" style="border-top:1px solid var(--grey-dk)">
-      <div class="change-cat">In the air</div>
-      <div>
-        <div class="change-head">You board early. You sit forward.</div>
-        <div class="change-body">Priority boarding on your primary airline at Gold and above. Upgrade eligibility on every eligible flight, clearing by status and route. Economy becomes optional rather than default.</div>
+    <div class="sample-card">
+      <div class="sample-top">
+        <div>
+          <div class="eyebrow" style="margin-bottom:9px">Illustrative Architecture</div>
+          <div class="sample-title">Same annual spend. A materially stronger routing plan.</div>
+        </div>
+        <div class="sample-tag">Sample result</div>
       </div>
-    </div>
-    <div class="change-row">
-      <div class="change-cat">On the ground</div>
-      <div>
-        <div class="change-head">The airport stops being something to endure.</div>
-        <div class="change-body">Centurion Lounge, airline club, and the Priority Pass network on departure days — a different start to the trip, on every trip, not occasionally.</div>
-      </div>
-    </div>
-    <div class="change-row">
-      <div class="change-cat">At the hotel</div>
-      <div>
-        <div class="change-head">Recognition as a benefit, not luck.</div>
-        <div class="change-body">Room upgrades, late checkout, and check-in recognition as published elite benefits — when inventory permits, per program terms. Consistent, rather than left to chance.</div>
-      </div>
-    </div>
-    <div class="change-row">
-      <div class="change-cat">When it breaks</div>
-      <div>
-        <div class="change-head">Priority when things go wrong.</div>
-        <div class="change-body">Improved rebooking position and direct service access. The difference between a two-hour resolution and a six-hour ordeal — which, across a year of travel, compounds.</div>
-      </div>
-    </div>
-    <div class="change-row">
-      <div class="change-cat">In the budget</div>
-      <div>
-        <div class="change-head">Cash redirected, not increased.</div>
-        <div class="change-body">Money that used to fund upgrades and buy-ups becomes available to redirect. No increase in household spend. The same budget, finally working correctly.</div>
-      </div>
-    </div>
-  </div>
-</section>
 
-<!-- PHOTO BAND — at the hotel -->
-<section class="photo-band band-hotel reveal" aria-hidden="true">
-  <span class="cap">At the hotel</span>
-</section>
-
-<!-- THE SHIFT — one-liner on an image, not a void -->
-<section class="shift-band reveal">
-  <div style="max-width:760px;margin:0 auto">
-    <span class="eyebrow-quiet">The whole idea, in one line</span>
-    <div class="shift" style="justify-content:center">
-      <span class="from">The same trip</span>
-      <span class="arrow">→</span>
-      <span class="to">a <em>different</em> experience</span>
-    </div>
-  </div>
-</section>
-
-<!-- THE ARCHITECTURE + PROOF -->
-<section class="reveal">
-  <div class="inner">
-    <span class="eyebrow">The Architecture</span>
-    <h2 class="h2" style="max-width:620px;margin-bottom:28px">Your numbers. <em>Your answer.</em></h2>
-    <p class="lead measure" style="margin-bottom:0">A fifteen-minute deep audit of your spend, cards, and travel. A complete routing plan on screen the moment you finish — no call, no wait. Your inputs determine your output.</p>
-
-    <div class="proof-grid">
-      <div class="proof-card">
-        <span class="proof-spend">A household routing ~$75,000 a year</span>
-        <div class="proof-tier">Delta Gold <em>within reach.</em></div>
-        <div class="proof-body">Priority boarding, consistent Comfort+ upgrades, lounge access, and guaranteed hotel benefits on eligible stays — recognition the airline and hotels weren't extending before.</div>
-        <div class="proof-val"><span class="num">~$3,500</span><span class="cap">potential annual value · outcomes vary</span></div>
+      <div class="sample-metrics">
+        <div class="sm"><div class="sm-label">Maximum Potential Annual Value</div><div class="sm-value gold">$7,317</div></div>
+        <div class="sm"><div class="sm-label">Currently Captured</div><div class="sm-value">$3,065</div></div>
+        <div class="sm"><div class="sm-label">Unrealized Potential</div><div class="sm-value">$4,252</div></div>
+        <div class="sm"><div class="sm-label">Gap Score</div><div class="sm-value">5.8/10</div></div>
       </div>
-      <div class="proof-card lift">
-        <span class="proof-spend">A household routing ~$150,000 a year</span>
-        <div class="proof-tier">Delta Platinum <em>within reach.</em></div>
-        <div class="proof-body">Everything Gold delivers, plus upgrade priority ahead of the field, four First Class upgrade certificates a year, and a tier where the airline treats the trip differently from the start.</div>
-        <div class="proof-val"><span class="num">~$6,700</span><span class="cap">potential annual value · outcomes vary</span></div>
-      </div>
-    </div>
-    <p class="body-sm" style="margin-top:24px;font-style:italic;color:var(--grey-mid);max-width:560px">These are illustrations, not the ceiling. Your number depends on your spend, your travel, and the cards you already hold — which is exactly what The Architecture maps.</p>
 
-    <div style="margin-top:56px">
-      <a href="diagnostic.html" class="btn">Begin The Architecture</a>
-      <span class="btn-note">Founding access · Complimentary while we build</span>
-    </div>
-    <p class="body-sm" style="margin-top:24px;color:var(--grey-mid);max-width:520px">Implement it yourself, at your pace — or, if your situation warrants a private conversation, that option exists.</p>
-  </div>
-</section>
-
-<!-- (Process section removed v1.5.2 — it restated The Architecture section; its one unique line, the private-conversation option, folded into The Architecture above.) -->
-
-<!-- WHO THIS IS FOR -->
-<section class="reveal">
-  <div class="inner">
-    <span class="eyebrow">Who This Is For</span>
-    <div class="fit-grid">
-      <div>
-        <div class="fit-h">The profile</div>
-        <div class="fit-item"><strong>Real household spending capacity</strong>Enough everyday spend — dining, travel, household — to route through premium cards and build meaningful status within a year.</div>
-        <div class="fit-item"><strong>A credit profile in the strong range</strong>The approach relies on premium cards, which generally call for roughly 680 and up to be approved.</div>
-        <div class="fit-item"><strong>Travel that recurs through the year</strong>Business or personal — enough trips that better boarding, upgrades, and recognition compound into something you feel.</div>
-        <div class="fit-item"><strong>Domestic-primary travel</strong>Built around domestic airline ecosystems and premium hotel programs.</div>
-      </div>
-      <div>
-        <div class="fit-h">Not the right fit</div>
-        <div class="fit-item">Points optimizers managing fifteen cards and four transfer partners.</div>
-        <div class="fit-item">Travel hackers chasing redemption math.</div>
-        <div class="fit-item">Households without the spend to build status on a single program.</div>
-        <div class="fit-item">International-primary travelers where primary carriers don't serve key routes.</div>
-        <div class="fit-item">Aspiration buyers — the spend needs to already be there.</div>
-        <div class="fit-note">
-          <span class="eyebrow-quiet">Not sure where you fall?</span>
-          <p class="body-sm" style="margin-bottom:18px">There's a two-minute version that maps your setup against the profile and gives an estimated value range.</p>
-          <a href="architecture.html#faq" class="link-quiet">See how it works →</a>
+      <div class="sample-move">
+        <div class="label">First move</div>
+        <div>
+          <strong>Stop sending high-value category spend to a one-point card.</strong>
+          <p>In this sample, QP preserves the traveler's primary airline, improves the rewards engine, and uses status spend only when a useful breakpoint is attainable.</p>
         </div>
       </div>
     </div>
+
+    <div style="margin-top:24px">
+      <a href="diagnostic.html" class="btn" onclick="track('architecture_cta',{placement:'sample'})">Build My Free Architecture</a>
+    </div>
   </div>
 </section>
 
-<!-- CLOSE -->
-<section class="reveal close close-band">
-  <span class="eyebrow" style="display:block">Find out what your spend is producing</span>
-  <h2 class="h2">Your number is <em>fifteen minutes away.</em></h2>
-  <a href="diagnostic.html" class="btn">Begin The Architecture</a>
-  <span class="btn-note">Founding access · Complimentary while we build</span>
+<section class="reveal">
+  <div class="inner recognition-grid">
+    <div>
+      <div class="eyebrow">The recognition moment</div>
+      <h2 class="h2">High spend can still produce <em>ordinary travel.</em></h2>
+      <p class="lead" style="margin-top:22px">The problem is often not the amount being spent. It is that the spend, airline activity and hotel activity are working as separate pieces instead of one architecture.</p>
+
+      <div class="problem-list">
+        <div class="problem-row"><strong>Strong spend. Weak redemption capacity.</strong><p>Too much spend earns at poor rates or in currencies that do not match the trips you actually take.</p></div>
+        <div class="problem-row"><strong>Enough airline activity. No useful status path.</strong><p>Flights and card spend are spread across rails, or status spend continues past the point where the next dollar would be more valuable elsewhere.</p></div>
+        <div class="problem-row"><strong>Hotel spend without consistent recognition.</strong><p>Nights, booking channel and card benefits are not aligned with one program strongly enough to create a repeatable advantage.</p></div>
+      </div>
+    </div>
+
+    <aside class="recognition-callout">
+      <div class="eyebrow">Quiet Premium's job</div>
+      <div class="big">Make the same resources work harder.</div>
+      <p>The Architecture compares Current, Maximum and Recommended using one engine. It can tell you to change cards, change routing, stop pursuing status — or leave the setup alone because it is already near optimal.</p>
+    </aside>
+  </div>
+</section>
+
+<section class="outcomes reveal">
+  <div class="inner">
+    <div class="eyebrow">What better structure can change</div>
+    <h2 class="h2">Not more points for the sake of <em>more points.</em></h2>
+    <p class="lead" style="margin-top:22px">The goal is a better whole-system travel outcome from the spending you already have.</p>
+
+    <div class="outcome-grid">
+      <div class="outcome"><div class="outcome-label">Redemption</div><h3>More travel capacity.</h3><p>More useful rewards generated from ordinary spend, routed into currencies that fit the trips you are actually likely to book.</p></div>
+      <div class="outcome"><div class="outcome-label">Airline</div><h3>Status when it is worth it.</h3><p>Spend can be directed toward a meaningful tier only when the threshold is attainable and the airline fits your real travel.</p></div>
+      <div class="outcome"><div class="outcome-label">Hotel</div><h3>Recognition with a reason.</h3><p>Hotel cards, nights, spend and booking behavior are tested together rather than assuming status is always valuable.</p></div>
+      <div class="outcome"><div class="outcome-label">Cash</div><h3>Less retail-priced premium travel.</h3><p>Better earning and usable benefits can reduce how often premium cabins, hotel upgrades or travel perks need to be purchased outright.</p></div>
+    </div>
+  </div>
+</section>
+
+<div class="photo-band reveal" aria-hidden="true"><div class="photo-cap">Travel is the proof channel</div></div>
+
+<section class="reveal">
+  <div class="inner">
+    <div class="eyebrow">How The Architecture works</div>
+    <h2 class="h2">Answer the questions.<br><em>Get the architecture.</em></h2>
+    <p class="lead" style="margin-top:22px">About fifteen minutes if you know your numbers. Estimates are fine.</p>
+
+    <div class="steps">
+      <div class="step-card"><div class="step-num">01</div><h3>Tell QP how you travel.</h3><p>Primary airline, routes, travel volume, booking control, hotel behavior and the outcomes you actually care about.</p></div>
+      <div class="step-card"><div class="step-num">02</div><h3>Map the spending.</h3><p>Annual spend, major categories, current cards and where those dollars are routed today.</p></div>
+      <div class="step-card"><div class="step-num">03</div><h3>Receive the answer.</h3><p>Current, Maximum, Recommended, Gap Score, Spend Misrouted, routing map, status paths and the first changes worth making.</p></div>
+    </div>
+
+    <div class="how-footer">
+      <p>QP does the complicated work underneath so the result can stay simple on top. No sales call is required to see your analysis.</p>
+      <a href="diagnostic.html" class="btn" onclick="track('architecture_cta',{placement:'how_it_works'})">Build My Free Architecture</a>
+    </div>
+  </div>
+</section>
+
+<section class="reveal" style="background:#0d0d0c">
+  <div class="inner">
+    <div class="eyebrow">Who it is built for</div>
+    <h2 class="h2">Enough spending to have a <em>real routing decision.</em></h2>
+
+    <div class="fit-grid">
+      <div class="fit-card">
+        <h3>Strong fit</h3>
+        <div class="fit-item"><strong>Meaningful annual personal-card spend</strong>Especially when everyday spend, travel and household categories create multiple plausible routing choices.</div>
+        <div class="fit-item"><strong>Recurring domestic travel</strong>Enough airline and hotel activity that status, benefits or program concentration could matter.</div>
+        <div class="fit-item"><strong>You pay cards in full</strong>The Architecture is about allocation, not financing.</div>
+        <div class="fit-item"><strong>You want a simpler answer</strong>Not another comparison grid — a recommendation based on your own behavior.</div>
+      </div>
+
+      <div class="fit-card no">
+        <h3>Probably not useful</h3>
+        <div class="fit-item">You already actively optimize many cards, transfer partners and award programs.</div>
+        <div class="fit-item">Your travel is mostly international and your important routes sit outside the supported V1 airline universe.</div>
+        <div class="fit-item">You do not have enough routable personal-card spend for card architecture to materially change the result.</div>
+        <div class="fit-item">You are looking for a welcome-bonus churn strategy or travel-hacking playbook.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="trust reveal">
+  <div class="inner trust-grid">
+    <div>
+      <div class="eyebrow">What QP will not do</div>
+      <h2 class="h2">No manufactured <em>value.</em></h2>
+      <p class="lead" style="margin-top:22px">High spending by itself does not earn a dramatic result. If your setup is already good, The Architecture should say so.</p>
+    </div>
+
+    <div class="trust-points">
+      <div class="trust-point"><strong>Maximum and Current use the same valuation engine.</strong><span>The gap is not created by valuing the proposed setup more generously than the current one.</span></div>
+      <div class="trust-point"><strong>Status is optional.</strong><span>QP can conclude that a status strategy is not worth the spend required to reach it.</span></div>
+      <div class="trust-point"><strong>Incomplete inputs suppress precision.</strong><span>If QP cannot measure Current reliably, it does not publish a fake exact Gap Score.</span></div>
+      <div class="trust-point"><strong>Maximum and Recommended are different concepts.</strong><span>Recommended may give up a modest amount of theoretical value when the experience or simplicity improvement makes the tradeoff worthwhile.</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="close reveal">
+  <div class="inner">
+    <div class="eyebrow">The Architecture · Founding access</div>
+    <h2 class="h2">See what your spending is <em>actually producing.</em></h2>
+    <p class="lead">Free personalized analysis. Results appear immediately. No card required.</p>
+    <div class="hero-actions">
+      <a href="diagnostic.html" class="btn" onclick="track('architecture_cta',{placement:'close'})">Build My Free Architecture</a>
+      <a href="architecture.html" class="btn btn-ghost">See How It Works</a>
+    </div>
+    <div class="trustline">About 15 minutes · Estimates are fine</div>
+  </div>
 </section>
 
 <footer>
   <div class="footer-left">
-    © 2026 Quiet Premium · editor@quietpremium.com<br>
-    Same spend. Different outcome.<br>
-    <span style="color:var(--grey-dk)">v1.5.4</span>
+    © 2026 Quiet Premium · editor@quietpremium.com<br/>
+    Same spend. Different outcome.<br/>
+    <span style="color:#4F4A45">v1.7.0</span>
   </div>
   <div class="footer-links">
-    <a href="architecture.html" class="footer-link">The Architecture</a>
-    <a href="contact.html" class="footer-link">Contact</a>
+    <a href="architecture.html">The Architecture</a>
+    <a href="contact.html">Contact</a>
   </div>
 </footer>
-<p class="disclaimer">Potential value estimates are based on published program benefits as of 2025–2026. Actual outcomes vary by redemption choices, program availability, and issuer terms. Status benefits are subject to airline and hotel program policies and may change. Quiet Premium is not affiliated with any airline, hotel, or card issuer mentioned.</p>
+
+<p class="disclaimer">Quiet Premium provides modeled estimates based on user inputs, supported program rules and valuation assumptions. Actual card approval, reward value, award availability, status qualification, upgrades and benefits can vary. Program and issuer terms change. Quiet Premium is not affiliated with any airline, hotel or card issuer mentioned.</p>
 
 <script>
+const QP_SUPABASE_URL='https://jdtbyudbwmwldrkjaznk.supabase.co';
+const QP_SUPABASE_KEY='sb_publishable_BETG0zmWAEmPByBsKyEUzA_yPCOkh5F';
+const QP_FUNNEL_KEY='qp_funnel_session_v1';
+
+function getFunnelSession(){
+  try{
+    let id=sessionStorage.getItem(QP_FUNNEL_KEY);
+    if(id&&/^[A-Za-z0-9_-]{12,80}$/.test(id))return id;
+    if(globalThis.crypto?.randomUUID)id=crypto.randomUUID().replaceAll('-','');
+    else{
+      const bytes=new Uint8Array(16);crypto.getRandomValues(bytes);
+      id=[...bytes].map(x=>x.toString(16).padStart(2,'0')).join('');
+    }
+    sessionStorage.setItem(QP_FUNNEL_KEY,id);
+    return id;
+  }catch(_){return `fallback_${Date.now().toString(36)}_${Math.random().toString(36).slice(2,14)}`;}
+}
+const qpFunnelSession=getFunnelSession();
+
+function cleanMeta(meta={}){
+  const allow=new Set(['placement','section','source','page','build']);
+  const out={};
+  Object.entries(meta||{}).forEach(([k,v])=>{
+    if(allow.has(k)&&(typeof v==='string'||typeof v==='number'||typeof v==='boolean'))out[k]=v;
+  });
+  return out;
+}
+async function centralTrack(name,meta={}){
+  try{
+    await fetch(`${QP_SUPABASE_URL}/rest/v1/rpc/qp_log_event_v2`,{
+      method:'POST',
+      keepalive:true,
+      headers:{'Content-Type':'application/json','apikey':QP_SUPABASE_KEY},
+      body:JSON.stringify({
+        p_event_type:name,
+        p_session_id:qpFunnelSession,
+        p_architecture_id:null,
+        p_token:null,
+        p_metadata:cleanMeta(meta)
+      })
+    });
+  }catch(_){}
+}
+function track(name,meta={}){
+  const clean=cleanMeta(meta);
+  try{if(typeof gtag==='function')gtag('event',name,clean);}catch(_){}
+  centralTrack(name,clean);
+}
 function toggleMenu(){
   const m=document.getElementById('mobile-menu');
-  m.style.display=m.style.display==='flex'?'none':'flex';
+  m.style.display=m.style.display==='block'?'none':'block';
 }
-// Restrained scroll reveal
-const io=new IntersectionObserver((entries)=>{
+const io=new IntersectionObserver(entries=>{
   entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}});
-},{threshold:0.12,rootMargin:'0px 0px -8% 0px'});
+},{threshold:.1,rootMargin:'0px 0px -6% 0px'});
 document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+
+const viewIo=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{
+    if(!e.isIntersecting)return;
+    const name=e.target.dataset.trackView;
+    if(name)track(name,{section:'sample_result'});
+    viewIo.unobserve(e.target);
+  });
+},{threshold:.35});
+document.querySelectorAll('[data-track-view]').forEach(el=>viewIo.observe(el));
+
+track('homepage_view',{page:'homepage',build:'1.7.0'});
 </script>
 </body>
 </html>
