@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Quiet Premium · index.html · build v1.7.0 · 2026-09-03 · PHASE 8 CONVERSION REBUILD
+<!-- Quiet Premium · index.html · build v1.8.0 · 2026-09-03 · PHASE 11 QA & LAUNCH HARDENING
      Product: The Architecture
      Action: free assessment
      Output: personalized Architecture
@@ -26,6 +26,7 @@ gtag('config','G-2R14ZESQ0R');
 <meta property="og:type" content="website"/>
 <meta name="twitter:card" content="summary_large_image"/>
 <link rel="canonical" href="https://quietpremium.com/"/>
+<link rel="preload" as="image" href="/hero-cabin.jpeg" fetchpriority="high"/>
 
 <script type="application/ld+json">
 {
@@ -56,6 +57,7 @@ html{background:var(--black);scroll-behavior:smooth}
 body{background:var(--black);color:var(--white);font-family:var(--sans);font-weight:300;line-height:1.6;-webkit-font-smoothing:antialiased}
 a{color:inherit}.hidden{display:none!important}
 ::selection{background:var(--gold);color:var(--black)}
+a:focus-visible,button:focus-visible{outline:2px solid var(--gold-lt);outline-offset:4px}
 
 nav{
   position:fixed;inset:0 0 auto 0;z-index:100;height:72px;
@@ -74,7 +76,7 @@ nav{
 .nav-link:hover{color:var(--gold-lt)}
 .nav-cta{color:var(--black);background:var(--gold);padding:12px 17px}
 .nav-cta:hover{color:var(--black);background:var(--gold-lt)}
-.hamburger{display:none;width:28px;height:28px;align-items:center;justify-content:center;flex-direction:column;gap:5px;cursor:pointer}
+.hamburger{display:none;width:34px;height:34px;align-items:center;justify-content:center;flex-direction:column;gap:5px;cursor:pointer;background:transparent;border:0;padding:0;color:inherit}
 .hamburger span{display:block;width:20px;height:1px;background:var(--grey)}
 .mobile-menu{display:none;position:fixed;top:72px;left:0;right:0;z-index:99;background:#0c0c0c;border-bottom:1px solid var(--line);padding:12px 24px 22px}
 .mobile-menu a{display:block;text-decoration:none;padding:14px 0;border-bottom:1px solid var(--line2);font:400 10px/1.3 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--grey)}
@@ -242,9 +244,9 @@ footer{padding:56px;border-top:1px solid var(--line);display:flex;justify-conten
     <a href="contact.html" class="nav-link">Contact</a>
     <a href="diagnostic.html" class="nav-link nav-cta" onclick="track('architecture_cta',{placement:'nav'})">Build My Free Architecture</a>
   </div>
-  <div class="hamburger" onclick="toggleMenu()"><span></span><span></span><span></span></div>
+  <button type="button" class="hamburger" id="menu-toggle" aria-label="Open navigation" aria-controls="mobile-menu" aria-expanded="false" onclick="toggleMenu()"><span></span><span></span><span></span></button>
 </nav>
-<div class="mobile-menu" id="mobile-menu">
+<div class="mobile-menu" id="mobile-menu" aria-hidden="true">
   <a href="architecture.html">How it works</a>
   <a href="contact.html">Contact</a>
   <a href="diagnostic.html" onclick="track('architecture_cta',{placement:'mobile_menu'})">Build My Free Architecture</a>
@@ -428,7 +430,7 @@ footer{padding:56px;border-top:1px solid var(--line);display:flex;justify-conten
   <div class="footer-left">
     © 2026 Quiet Premium · editor@quietpremium.com<br/>
     Same spend. Different outcome.<br/>
-    <span style="color:#4F4A45">v1.7.0</span>
+    <span style="color:#4F4A45">v1.8.0</span>
   </div>
   <div class="footer-links">
     <a href="architecture.html">The Architecture</a>
@@ -487,10 +489,21 @@ function track(name,meta={}){
   try{if(typeof gtag==='function')gtag('event',name,clean);}catch(_){}
   centralTrack(name,clean);
 }
-function toggleMenu(){
+function setMenu(open){
   const m=document.getElementById('mobile-menu');
-  m.style.display=m.style.display==='block'?'none':'block';
+  const b=document.getElementById('menu-toggle');
+  if(!m||!b)return;
+  m.style.display=open?'block':'none';
+  m.setAttribute('aria-hidden',open?'false':'true');
+  b.setAttribute('aria-expanded',open?'true':'false');
+  b.setAttribute('aria-label',open?'Close navigation':'Open navigation');
 }
+function toggleMenu(){
+  const b=document.getElementById('menu-toggle');
+  setMenu(b?.getAttribute('aria-expanded')!=='true');
+}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')setMenu(false);});
+window.addEventListener('resize',()=>{if(window.innerWidth>900)setMenu(false);});
 const io=new IntersectionObserver(entries=>{
   entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}});
 },{threshold:.1,rootMargin:'0px 0px -6% 0px'});
@@ -506,7 +519,7 @@ const viewIo=new IntersectionObserver(entries=>{
 },{threshold:.35});
 document.querySelectorAll('[data-track-view]').forEach(el=>viewIo.observe(el));
 
-track('homepage_view',{page:'homepage',build:'1.7.0'});
+track('homepage_view',{page:'homepage',build:'1.8.0'});
 </script>
 </body>
 </html>
