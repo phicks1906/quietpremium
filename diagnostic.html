@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Quiet Premium · diagnostic.html · Phase 5 Assessment Rebuild · build v2.0.0 · 2026-09-03
+<!-- Quiet Premium · diagnostic.html · Phase 6 Results Experience Rebuild · build v2.1.0 · 2026-09-03
      Customer-facing assessment rebuilt around the validated QP engine input contract.
      Requires qp_sim.js engine v4.1+ in the same GitHub directory. -->
 <html lang="en">
@@ -184,6 +184,54 @@ select.control{
 .confidence strong{color:var(--ivory)}
 .result-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:28px}
 .error-box{border:1px solid #694740;background:#160f0e;padding:18px;color:#e3b2ab;font-size:12px;line-height:1.6}
+
+
+/* Phase 6 — premium result system */
+.result-shell{max-width:980px}
+.result-hero{position:relative;overflow:hidden;border:1px solid rgba(176,141,87,.26);
+background:radial-gradient(circle at 80% 0%,rgba(176,141,87,.12),transparent 34%),linear-gradient(180deg,#11100e 0%,#0d0d0d 100%);
+padding:34px 30px 30px;margin-bottom:22px}
+.result-hero h1{font-size:clamp(42px,8vw,68px);margin-bottom:15px;max-width:760px}
+.result-hero .result-summary{font-size:clamp(19px,3vw,24px);line-height:1.38;margin:0;color:#ddd6cb}
+.answer-band{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(250px,.75fr);gap:1px;background:var(--line);border:1px solid var(--line);margin-bottom:22px}
+.answer-main,.answer-side{background:var(--panel);padding:28px}
+.answer-main .big-money{font:400 clamp(48px,8vw,72px)/.95 var(--serif);color:var(--gold2);letter-spacing:-.02em;margin:8px 0 9px}
+.answer-main .subline{font-size:12px;line-height:1.65;color:var(--muted);max-width:550px}
+.answer-side{display:flex;flex-direction:column;justify-content:center}
+.first-move-label{font:500 9px/1.2 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:9px}
+.first-move{font:400 22px/1.24 var(--serif);color:var(--ivory);margin-bottom:9px}
+.first-move-note{font-size:11.5px;line-height:1.6;color:var(--muted)}
+.metrics{grid-template-columns:repeat(4,1fr);border:1px solid var(--line)}
+.metric{position:relative}.metric.primary::after{content:'';position:absolute;left:0;right:0;bottom:0;height:2px;background:var(--gold)}
+.metric-value.smallish{font-size:28px}
+.section-block{margin-top:36px}
+.section-heading{display:flex;justify-content:space-between;gap:18px;align-items:end;margin-bottom:15px}
+.section-heading h2{font:400 31px/1 var(--serif);margin:0}
+.section-heading p{margin:0;max-width:470px;text-align:right;font-size:11px;line-height:1.5;color:var(--muted2)}
+.before-after{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line);border:1px solid var(--line)}
+.arch-panel{background:var(--panel);padding:25px}.arch-panel.recommended{background:linear-gradient(180deg,rgba(176,141,87,.08),#10100f)}
+.arch-label{font:500 9px/1 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--muted2);margin-bottom:9px}
+.arch-panel.recommended .arch-label{color:var(--gold)}.arch-title{font:400 25px/1.12 var(--serif);margin-bottom:17px}
+.arch-stat{display:flex;justify-content:space-between;gap:18px;padding:10px 0;border-top:1px solid var(--line);font-size:11.5px}
+.arch-stat span:first-child{color:var(--muted)}.arch-stat strong{font-weight:500;color:var(--ivory);text-align:right}
+.path-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}.path-card{border:1px solid var(--line);background:var(--panel);padding:22px}
+.path-name{font:400 22px/1.1 var(--serif);margin-bottom:15px}.path-status{font:500 10px/1.4 var(--mono);letter-spacing:.05em;color:var(--gold2);margin-bottom:9px}
+.path-copy{font-size:11.5px;line-height:1.65;color:var(--muted)}.path-bar{height:3px;background:#25221f;margin:18px 0 8px;overflow:hidden}
+.path-fill{height:100%;background:var(--gold2);width:0}.path-foot{display:flex;justify-content:space-between;gap:10px;font:400 9px/1.3 var(--mono);color:var(--muted2)}
+.routing-map,.value-table{border:1px solid var(--line);background:var(--panel)}
+.route-row{display:grid;grid-template-columns:140px minmax(0,1fr) auto;gap:18px;align-items:center;padding:15px 18px;border-bottom:1px solid var(--line)}
+.route-row:last-child{border-bottom:0}.route-cat{font:500 9px/1.3 var(--mono);text-transform:uppercase;letter-spacing:.08em;color:var(--muted2)}
+.route-card{font-size:12px;line-height:1.45}.route-amount{font:400 10px/1 var(--mono);color:var(--gold2);white-space:nowrap}
+.value-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:20px;padding:14px 18px;border-bottom:1px solid var(--line);align-items:center}
+.value-row:last-child{border-bottom:0}.value-row.total{background:var(--goldwash)}.value-name{font-size:11.5px;line-height:1.5;color:var(--muted)}
+.value-row.total .value-name{color:var(--ivory);font-weight:500}.value-num{font:400 12px/1 var(--mono);color:var(--ivory)}
+.value-row.total .value-num{color:var(--gold2);font-size:14px}
+.assumptions{border:1px solid var(--line);background:#0d0d0d;padding:18px 20px}.assumptions details{border-top:1px solid var(--line);padding:13px 0}
+.assumptions details:first-child{border-top:0}.assumptions summary{cursor:pointer;font-size:12px;font-weight:500;color:var(--ivory)}
+.assumptions p{font-size:11px;line-height:1.65;color:var(--muted);margin:9px 0 0}.result-fineprint{font-size:10px;line-height:1.65;color:var(--muted2);margin-top:22px}
+.result-actions{position:sticky;bottom:0;z-index:20;background:linear-gradient(180deg,transparent,rgba(9,9,9,.96) 24%);padding-top:28px;padding-bottom:max(10px,env(safe-area-inset-bottom))}
+@media(max-width:720px){.answer-band{grid-template-columns:1fr}.before-after,.path-grid{grid-template-columns:1fr}}
+@media(max-width:620px){.section-heading{display:block}.section-heading p{text-align:left;margin-top:8px}.route-row{grid-template-columns:1fr auto;gap:6px 14px}.route-cat{grid-column:1/-1}.route-card{grid-column:1}.route-amount{grid-column:2;text-align:right}}
 
 @media print{
   nav,.result-actions{display:none!important}
@@ -544,68 +592,62 @@ select.control{
 
 <section class="results" id="results">
   <div class="result-shell">
-    <div class="result-head">
-      <div class="result-kicker">Quiet Premium · The Architecture</div>
+    <div class="result-hero">
+      <div class="eyebrow">Quiet Premium · The Architecture</div>
       <h1 id="result-title">Your spending has an answer.</h1>
       <p class="result-summary" id="result-summary"></p>
     </div>
-
     <div id="engine-error" class="error-box hidden"></div>
-
     <div id="result-content">
-      <div class="metrics">
-        <div class="metric">
-          <div class="metric-label">Maximum Potential Annual Value</div>
-          <div class="metric-value gold" id="metric-max">—</div>
-          <div class="metric-note">Modeled ongoing value from the maximum feasible architecture.</div>
+      <div class="answer-band">
+        <div class="answer-main">
+          <div class="eyebrow">Maximum Potential Annual Value</div>
+          <div class="big-money" id="hero-max">—</div>
+          <div class="subline">The highest modeled ongoing net value QP found from the same annual spending and travel behavior.</div>
         </div>
-        <div class="metric">
-          <div class="metric-label">Currently Captured</div>
-          <div class="metric-value" id="metric-current">—</div>
-          <div class="metric-note" id="current-note">Same valuation engine as Maximum.</div>
-        </div>
-        <div class="metric">
-          <div class="metric-label">Gap Score</div>
-          <div class="metric-value" id="metric-gap">—</div>
-          <div class="metric-note">0 = near optimized · 10 = most attainable value uncaptured.</div>
-        </div>
-        <div class="metric">
-          <div class="metric-label">Spend Misrouted</div>
-          <div class="metric-value" id="metric-misrouted">—</div>
-          <div class="metric-note">Actual routable dollars that differ from QP's recommendation.</div>
+        <div class="answer-side">
+          <div class="first-move-label">First move</div>
+          <div class="first-move" id="first-move">—</div>
+          <div class="first-move-note" id="first-move-note"></div>
         </div>
       </div>
-
+      <div class="metrics">
+        <div class="metric primary"><div class="metric-label">Currently Captured</div><div class="metric-value" id="metric-current">—</div><div class="metric-note" id="current-note"></div></div>
+        <div class="metric"><div class="metric-label">Unrealized Potential</div><div class="metric-value" id="metric-unrealized">—</div><div class="metric-note">Modeled value between Current and Maximum.</div></div>
+        <div class="metric"><div class="metric-label">Gap Score</div><div class="metric-value" id="metric-gap">—</div><div class="metric-note">0 = near optimized · 10 = most attainable value uncaptured.</div></div>
+        <div class="metric"><div class="metric-label">Spend Misrouted</div><div class="metric-value smallish" id="metric-misrouted">—</div><div class="metric-note">Routable dollars that differ from Recommended.</div></div>
+      </div>
       <div class="confidence" id="confidence-box"></div>
 
-      <div class="result-grid">
-        <div class="result-card">
-          <div class="eyebrow">Maximum</div>
-          <h3 id="maximum-title">Mathematical ceiling</h3>
-          <p id="maximum-copy"></p>
-        </div>
-        <div class="result-card">
-          <div class="eyebrow">Recommended</div>
-          <h3 id="recommended-title">QP's prescription</h3>
-          <p id="recommended-copy"></p>
+      <div class="section-block">
+        <div class="section-heading"><h2>Current vs. recommended.</h2><p>Maximum is the ceiling. Recommended is QP's prescription after value, experience, feasibility and simplicity are considered together.</p></div>
+        <div class="before-after">
+          <div class="arch-panel"><div class="arch-label">Current Architecture</div><div class="arch-title" id="current-arch-title">—</div><div class="arch-stat"><span>Modeled annual net value</span><strong id="current-arch-value">—</strong></div><div class="arch-stat"><span>Airline position</span><strong id="current-airline">—</strong></div><div class="arch-stat"><span>Hotel position</span><strong id="current-hotel">—</strong></div></div>
+          <div class="arch-panel recommended"><div class="arch-label">Recommended Architecture</div><div class="arch-title" id="recommended-arch-title">—</div><div class="arch-stat"><span>Modeled annual net value</span><strong id="recommended-arch-value">—</strong></div><div class="arch-stat"><span>Airline position</span><strong id="recommended-airline">—</strong></div><div class="arch-stat"><span>Hotel position</span><strong id="recommended-hotel">—</strong></div></div>
         </div>
       </div>
 
-      <div class="result-card" style="margin-bottom:30px">
-        <div class="eyebrow">First 12 months</div>
-        <h3 id="year1-title">First-year potential</h3>
-        <p id="year1-copy"></p>
+      <div class="section-block">
+        <div class="section-heading"><h2>Your travel path.</h2><p>Status appears only when the recommended architecture actually supports a useful path.</p></div>
+        <div class="path-grid">
+          <div class="path-card"><div class="eyebrow">Airline</div><div class="path-name" id="airline-path-name">—</div><div class="path-status" id="airline-path-status">—</div><div class="path-copy" id="airline-path-copy"></div><div class="path-bar"><div class="path-fill" id="airline-path-fill"></div></div><div class="path-foot"><span id="airline-path-left"></span><span id="airline-path-right"></span></div></div>
+          <div class="path-card"><div class="eyebrow">Hotel</div><div class="path-name" id="hotel-path-name">—</div><div class="path-status" id="hotel-path-status">—</div><div class="path-copy" id="hotel-path-copy"></div><div class="path-bar"><div class="path-fill" id="hotel-path-fill"></div></div><div class="path-foot"><span id="hotel-path-left"></span><span id="hotel-path-right"></span></div></div>
+        </div>
       </div>
 
-      <div class="corrections">
-        <div class="eyebrow" style="margin-top:28px">What changes</div>
-        <div id="correction-list"></div>
-      </div>
+      <div class="section-block"><div class="section-heading"><h2>How to route the spend.</h2><p>Threshold spend stops at the useful breakpoint. The next dollar is re-evaluated.</p></div><div class="routing-map" id="routing-map"></div></div>
+      <div class="section-block"><div class="section-heading"><h2>What changes first.</h2><p>Only differences between Current and Recommended become corrections.</p></div><div class="corrections" id="correction-list"></div></div>
 
-      <div class="result-actions">
-        <button class="btn btn-primary" type="button" onclick="window.print()">Save / Print</button>
-        <button class="btn btn-secondary" type="button" id="start-over">Start Over</button>
-      </div>
+      <div class="section-block"><div class="section-heading"><h2>First 12 months.</h2><p>Welcome offers can change acquisition sequence without changing the mature architecture.</p></div><div class="result-card"><div class="eyebrow">First-year maximum</div><h3 id="year1-title">—</h3><p id="year1-copy"></p></div></div>
+
+      <div class="section-block"><div class="section-heading"><h2>How Maximum is calculated.</h2><p>Annual cost is subtracted symmetrically. Existing point balances remain separate.</p></div><div class="value-table" id="value-table"></div></div>
+
+      <div class="section-block"><div class="section-heading"><h2>Assumptions & confidence.</h2><p>The goal is a defensible answer, not false precision.</p></div><div class="assumptions" id="assumptions-box"></div></div>
+
+      <div class="section-block" id="stored-points-section"><div class="section-heading"><h2>Existing redeemable value.</h2><p>Stored points are not counted as new annual production.</p></div><div class="value-table" id="stored-points-table"></div></div>
+
+      <div class="result-fineprint">Quiet Premium models maximum realistically attainable value using the inputs and supported program rules available to the engine. This is not a guarantee of card approval, upgrades, award availability, status treatment or redemption value.</div>
+      <div class="result-actions"><button class="btn btn-primary" type="button" onclick="window.print()">Save / Print</button><button class="btn btn-secondary" type="button" id="start-over">Start Over</button></div>
     </div>
   </div>
 </section>
@@ -807,6 +849,180 @@ select.control{
     return cards||'your current setup';
   }
 
+  function tierLabel(obj){
+    return obj?.tier||'No status strategy';
+  }
+
+  function cardLabel(id){
+    return window.QuietPremiumEngine?.RULES?.cards?.[id]?.label||id||'—';
+  }
+
+  function renderRoutingMap(r){
+    const el=$('routing-map');el.innerHTML='';
+    const rows=[];
+    const a=r.recommended?.assignments;
+
+    if(a){
+      const names={dining:'Dining',grocery:'Groceries',airfare:'Airfare',hotel:'Hotels'};
+      Object.entries(a.categories||{}).forEach(([cat,v])=>{
+        if(v?.cardId&&v.amount>0)rows.push({
+          category:names[cat]||cat,
+          purpose:'Ongoing route',
+          card:cardLabel(v.cardId),
+          amount:v.amount
+        });
+      });
+      (a.general||[]).forEach(v=>{
+        if(!v?.cardId||v.amount<=0)return;
+        rows.push({
+          category:'General',
+          purpose:v.purpose==='airline_status'?'Until airline threshold':
+            v.purpose==='hotel_status'?'Until hotel threshold':'Remaining general spend',
+          card:cardLabel(v.cardId),
+          amount:v.amount
+        });
+      });
+    }
+
+    if(!rows.length){
+      el.innerHTML='<div class="route-row"><div class="route-cat">Routing</div><div class="route-card">No routing change required.</div><div class="route-amount">—</div></div>';
+      return;
+    }
+
+    rows.forEach(row=>{
+      const div=document.createElement('div');div.className='route-row';
+      div.innerHTML=`<div class="route-cat">${escapeHtml(row.category)} · ${escapeHtml(row.purpose)}</div><div class="route-card">${escapeHtml(row.card)}</div><div class="route-amount">${fmtMoney(row.amount)}</div>`;
+      el.appendChild(div);
+    });
+  }
+
+  function renderCorrections(r){
+    const list=$('correction-list');list.innerHTML='';
+    const cs=r.recommendations?.corrections||[];
+    if(!cs.length){
+      list.innerHTML='<div class="correction"><div class="correction-num">No forced corrections</div><div class="correction-title">QP does not see a change large enough to justify rebuilding your current setup from the information provided.</div></div>';
+      return;
+    }
+    cs.forEach((c,i)=>{
+      const el=document.createElement('div');el.className='correction';
+      const impact=c.modeledAnnualImpact!=null&&Number(c.modeledAnnualImpact)!==0
+        ?` · ${Number(c.modeledAnnualImpact)>0?'+':''}${fmtMoney(c.modeledAnnualImpact)} modeled annual reward impact`
+        :'';
+      el.innerHTML=`<div class="correction-num">${String(i+1).padStart(2,'0')} · ${escapeHtml(c.confidence||'MODELED')}</div><div class="correction-title">${escapeHtml(c.change)}${escapeHtml(impact)}</div>`;
+      list.appendChild(el);
+    });
+  }
+
+  function renderValueTable(r){
+    const t=$('value-table');t.innerHTML='';
+    const max=r.maximum;
+    const rows=[
+      ['Annual redemption / points production',max?.rewards?.value||0],
+      ['Modeled usable card benefits',max?.benefits?.value||0],
+      ['Annual architecture cost',-(max?.economics?.annualCost||0)]
+    ];
+    rows.forEach(([name,value])=>{
+      const div=document.createElement('div');div.className='value-row';
+      div.innerHTML=`<div class="value-name">${escapeHtml(name)}</div><div class="value-num">${value<0?'−':''}${fmtMoney(Math.abs(value))}</div>`;
+      t.appendChild(div);
+    });
+    const total=document.createElement('div');total.className='value-row total';
+    total.innerHTML=`<div class="value-name">Maximum Potential Annual Value</div><div class="value-num">${fmtMoney(r.opportunity.maximumPotentialAnnualValue)}</div>`;
+    t.appendChild(total);
+  }
+
+  function renderStoredPoints(r){
+    const section=$('stored-points-section'),table=$('stored-points-table');
+    table.innerHTML='';
+    const lines=r.existingRedeemableValue?.lines||[];
+    if(!lines.length){section.classList.add('hidden');return;}
+    section.classList.remove('hidden');
+    lines.forEach(line=>{
+      const div=document.createElement('div');div.className='value-row';
+      const label=String(line.currency||'points').replaceAll('_',' ').replace(/\b\w/g,x=>x.toUpperCase());
+      div.innerHTML=`<div class="value-name">${escapeHtml(label)} · ${Number(line.points).toLocaleString()} points</div><div class="value-num">${fmtMoney(line.value)}</div>`;
+      table.appendChild(div);
+    });
+    const total=document.createElement('div');total.className='value-row total';
+    total.innerHTML=`<div class="value-name">Existing redeemable value</div><div class="value-num">${fmtMoney(r.existingRedeemableValue.total)}</div>`;
+    table.appendChild(total);
+  }
+
+  function renderAssumptions(r){
+    const box=$('assumptions-box');box.innerHTML='';
+    const trade=r.recommendations?.maximumVsRecommended;
+    const items=[
+      ['What Maximum means','Maximum is the highest modeled ongoing net value among the feasible architectures QP tested. It does not assume additional baseline spending.'],
+      ['What Recommended means',trade?.sameArchitecture
+        ?'Recommended and Maximum are the same architecture for this profile.'
+        :`QP intentionally gives up ${fmtMoney(trade?.annualValueTradeoff||0)} of modeled annual value (${trade?.percentOfMaximumGivenUp||0}% of Maximum) to better fit the travel priorities and constraints you entered.`],
+      ['Valuation method','Point values use the engine’s maximum-realistic fallback unless a user-specific value is available. Card benefits count only when supported by entered behavior or a confirmed routing condition.'],
+      ['Status treatment','Status itself is not assigned a fake dollar value. QP monetizes supported economic components and keeps treatment, upgrades and recognition in the experience layer.'],
+      ['Data confidence',r.dataQuality?.complete
+        ?'The current setup is complete enough inside QP’s supported V1 universe to publish Current, Gap Score and Spend Misrouted.'
+        :'Current routing is incomplete or unsupported. QP suppresses exact Gap Score and Spend Misrouted rather than manufacture precision.']
+    ];
+    const extra=[...(r.dataQuality?.issues||[]),...(r.maximum?.benefits?.conditional||[])];
+    if(extra.length)items.push(['Conditions to keep in mind',extra.join(' ')]);
+    items.forEach(([title,copy],i)=>{
+      const d=document.createElement('details');if(i===0)d.open=true;
+      d.innerHTML=`<summary>${escapeHtml(title)}</summary><p>${escapeHtml(copy)}</p>`;
+      box.appendChild(d);
+    });
+  }
+
+  function renderPaths(r){
+    const air=r.recommended?.airline;
+    const hotel=r.recommended?.hotel;
+    const rules=window.QuietPremiumEngine?.RULES;
+
+    $('airline-path-name').textContent=air?.supported
+      ?(rules?.airlines?.[air.ecosystem]?.label||air.ecosystem)
+      :'No primary airline rail';
+    $('airline-path-status').textContent=air?.tier||'No airline-status strategy justified';
+
+    if(air?.supported){
+      const spend=r.recommended?.airlineStatusSpend||0;
+      $('airline-path-copy').textContent=spend>0
+        ?`${fmtMoney(spend)} of general spend is assigned to the airline rail only until the selected status breakpoint is reached.`
+        :air?.tier
+          ?'The recommended architecture does not require additional general spend to establish the modeled airline position.'
+          :'QP does not see a useful airline-status spend path from the inputs provided.';
+      const next=air?.nextTier;
+      const denom=next?.threshold||Math.max(air.metric||0,1);
+      $('airline-path-fill').style.width=`${Math.min(100,((air.metric||0)/denom)*100)}%`;
+      $('airline-path-left').textContent=air.metricName?`${Number(air.metric||0).toLocaleString()} ${air.metricName}`:'';
+      $('airline-path-right').textContent=next?`${Number(next.remaining||0).toLocaleString()} to ${next.tier}`:(air.tier?'Top modeled tier':'');
+    }else{
+      $('airline-path-copy').textContent='QP is not forcing you into an airline ecosystem.';
+      $('airline-path-fill').style.width='0%';$('airline-path-left').textContent='';$('airline-path-right').textContent='';
+    }
+
+    $('hotel-path-name').textContent=hotel?.supported
+      ?(rules?.hotels?.[hotel.program]?.label||hotel.program)
+      :'No primary hotel rail';
+    $('hotel-path-status').textContent=hotel?.tier||'No hotel-status strategy justified';
+
+    if(hotel?.supported){
+      const spend=r.recommended?.hotelStatusSpend||0;
+      $('hotel-path-copy').textContent=spend>0
+        ?`${fmtMoney(spend)} of general spend is assigned to the hotel rail until the useful hotel threshold is reached.`
+        :hotel?.tier
+          ?'The modeled hotel position does not require additional status spend beyond the recommended card and stay pattern.'
+          :'QP does not see enough hotel volume to justify manufacturing a status strategy.';
+      const nights=hotel.qualifyingNights||r.profile?.hotel?.nights||0;
+      const thresholds=rules?.hotels?.[hotel.program]?.thresholds||[];
+      const next=thresholds.find(t=>(t.nights||Infinity)>nights);
+      const denom=next?.nights||Math.max(nights,1);
+      $('hotel-path-fill').style.width=`${Math.min(100,(nights/denom)*100)}%`;
+      $('hotel-path-left').textContent=`${Number(nights).toLocaleString()} qualifying nights`;
+      $('hotel-path-right').textContent=next?`${Math.max(0,next.nights-nights)} to ${next.tier}`:(hotel.tier?'Top modeled tier':'');
+    }else{
+      $('hotel-path-copy').textContent='QP is not forcing a hotel-status strategy where the travel pattern does not support one.';
+      $('hotel-path-fill').style.width='0%';$('hotel-path-left').textContent='';$('hotel-path-right').textContent='';
+    }
+  }
+
   function renderResult(r){
     const name=r.profile?.identity?.firstName;
     $('result-title').textContent=name?`${name}, here is your Architecture.`:'Here is your Architecture.';
@@ -814,54 +1030,55 @@ select.control{
     const gap=r.opportunity.gapScore;
     const unrealized=r.opportunity.unrealizedPotential;
     const already=r.recommendations.alreadyOptimized;
-    let summary='';
-    if(r.dataQuality.level==='PARTIAL'){
-      summary='QP can calculate a maximum from the information provided, but your current setup cannot be measured precisely enough to publish a defensible Gap Score yet.';
-    }else if(already){
-      summary='Your current setup is already close to the best attainable use of the spending and travel behavior you entered. QP does not see a rebuild worth forcing.';
-    }else{
-      summary=`Your current setup leaves approximately ${fmtMoney(unrealized)} of modeled annual travel value uncaptured. The recommendation below closes the gap without increasing your baseline spending.`;
-    }
-    $('result-summary').textContent=summary;
 
-    $('metric-max').textContent=fmtMoney(r.opportunity.maximumPotentialAnnualValue);
+    if(r.dataQuality?.level==='PARTIAL'){
+      $('result-summary').textContent='QP found a feasible maximum, but your current setup cannot be measured precisely enough to publish a defensible Gap Score yet.';
+    }else if(already){
+      $('result-summary').textContent='Your current setup is already close to the best attainable use of the spending and travel behavior you entered. QP does not see a rebuild worth forcing.';
+    }else{
+      $('result-summary').textContent=`The same spending can produce approximately ${fmtMoney(unrealized)} more modeled annual travel value. The recommendation below shows where the difference comes from.`;
+    }
+
+    $('hero-max').textContent=fmtMoney(r.opportunity.maximumPotentialAnnualValue);
     $('metric-current').textContent=r.opportunity.currentlyCaptured==null?'Partial':fmtMoney(r.opportunity.currentlyCaptured);
-    $('current-note').textContent=r.opportunity.currentlyCaptured==null
-      ?`Known minimum: ${fmtMoney(r.opportunity.currentlyCapturedKnownMinimum)}. QP needs supported current routing for a precise comparison.`
-      :'Same valuation engine as Maximum.';
+    $('metric-unrealized').textContent=unrealized==null?'—':fmtMoney(unrealized);
     $('metric-gap').textContent=gap==null?'—':`${gap.toFixed(1)}/10`;
     $('metric-misrouted').textContent=fmtPct(r.opportunity.spendMisrouted.percent);
+    $('current-note').textContent=r.opportunity.currentlyCaptured==null
+      ?`Known minimum: ${fmtMoney(r.opportunity.currentlyCapturedKnownMinimum)}.`
+      :'Same valuation engine as Maximum.';
 
-    const q=r.dataQuality;
+    const cs=r.recommendations?.corrections||[];
+    $('first-move').textContent=cs.length?cs[0].change:(already?'Keep the architecture.':'No forced move.');
+    $('first-move-note').textContent=cs.length
+      ?'This is the first difference QP identified between Current and Recommended.'
+      :'QP does not see a high-confidence correction worth forcing.';
+
+    const q=r.dataQuality||{complete:false,issues:['Current inputs are incomplete.']};
     $('confidence-box').innerHTML=q.complete
-      ?'<strong>Confidence: complete for the supported V1 universe.</strong> QP could compare Current, Maximum and Recommended using the same rules and valuation engine.'
-      :`<strong>Confidence: partial.</strong> ${q.issues.map(x=>escapeHtml(x)).join(' ')}`;
+      ?'<strong>Confidence: complete inside the supported V1 universe.</strong> QP could compare Current, Maximum and Recommended using the same rules and valuation engine.'
+      :`<strong>Confidence: partial.</strong> ${(q.issues||[]).map(x=>escapeHtml(x)).join(' ')}`;
 
-    $('maximum-title').textContent=architectureLabel(r.maximum);
-    $('maximum-copy').textContent=`Modeled ongoing net value: ${fmtMoney(r.ongoing.maximumPotentialAnnualValue)} per year. This is the mathematical ceiling QP found among the feasible architectures it tested.`;
-
-    $('recommended-title').textContent=architectureLabel(r.recommended);
-    const trade=r.recommendations.maximumVsRecommended;
-    $('recommended-copy').textContent=trade.sameArchitecture
-      ?`QP recommends the mathematical maximum. Modeled ongoing net value: ${fmtMoney(r.ongoing.recommendedAnnualValue)}.`
-      :`QP recommends ${fmtMoney(r.ongoing.recommendedAnnualValue)} of modeled ongoing annual value and deliberately gives up ${fmtMoney(trade.annualValueTradeoff)} (${trade.percentOfMaximumGivenUp}% of Maximum) to better match the travel outcomes and constraints you entered.`;
+    $('current-arch-title').textContent=architectureLabel(r.current);
+    $('recommended-arch-title').textContent=architectureLabel(r.recommended);
+    $('current-arch-value').textContent=r.opportunity.currentlyCaptured==null?'Partial':fmtMoney(r.current?.economics?.netValue);
+    $('recommended-arch-value').textContent=fmtMoney(r.recommended?.economics?.netValue);
+    $('current-airline').textContent=tierLabel(r.current?.airline);
+    $('recommended-airline').textContent=tierLabel(r.recommended?.airline);
+    $('current-hotel').textContent=tierLabel(r.current?.hotel);
+    $('recommended-hotel').textContent=tierLabel(r.recommended?.hotel);
 
     $('year1-title').textContent=fmtMoney(r.firstYear.maximumPotentialValue);
     $('year1-copy').textContent=r.firstYear.differsFromOngoingMaximum
-      ?`The strongest first-year path differs from the mature Architecture because a confirmed or conditional welcome offer changes the acquisition sequence. Ongoing architecture remains ${architectureLabel(r.maximum)}.`
-      :`The first-year path does not materially change the mature Architecture with the offer information available to QP.`;
+      ?`The strongest first-year path differs from the mature Architecture because a confirmed or conditional welcome offer changes the acquisition sequence. The mature Maximum remains ${architectureLabel(r.maximum)}.`
+      :'The first-year path does not materially change the mature Architecture with the offer information available to QP.';
 
-    const list=$('correction-list');list.innerHTML='';
-    const cs=r.recommendations.corrections||[];
-    if(!cs.length){
-      list.innerHTML='<div class="correction"><div class="correction-num">No forced corrections</div><div class="correction-title">QP does not see a change large enough to justify rebuilding your current setup from the information provided.</div></div>';
-    }else{
-      cs.forEach((c,i)=>{
-        const el=document.createElement('div');el.className='correction';
-        el.innerHTML=`<div class="correction-num">0${i+1}</div><div class="correction-title">${escapeHtml(c.change)}</div>`;
-        list.appendChild(el);
-      });
-    }
+    renderRoutingMap(r);
+    renderCorrections(r);
+    renderPaths(r);
+    renderValueTable(r);
+    renderAssumptions(r);
+    renderStoredPoints(r);
   }
 
   function escapeHtml(s){
