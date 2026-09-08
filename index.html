@@ -1,10 +1,8 @@
 <!DOCTYPE html>
-<!-- Quiet Premium · index.html · build v1.8.0 · 2026-09-03 · PHASE 11 QA & LAUNCH HARDENING
-     Product: The Architecture
-     Action: free assessment
-     Output: personalized Architecture
-     Metric: Gap Score
-     Conversion principle: show the result first; let the result earn the right to explain the philosophy.
+<!-- Quiet Premium · index.html · build v1.9.0 · 2026-09-08
+     PHASE 1 + PHASE 2 — APPROVED DESIGN SYSTEM + HERO / PRODUCT REVEAL
+     Visual contract: approved Quiet Premium mock, 2026-09-08
+     Existing funnel, analytics, tracking, copy hierarchy, and downstream sections preserved.
      Assets preserved: /hero-cabin.jpeg /band-air.jpeg /band-hotel.jpeg /band-lounge.jpeg /hero.jpeg -->
 <html lang="en">
 <head>
@@ -15,10 +13,9 @@ function gtag(){dataLayer.push(arguments);}
 gtag('js',new Date());
 gtag('config','G-2R14ZESQ0R');
 </script>
-
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
-<meta name="theme-color" content="#0A0A0A"/>
+<meta name="theme-color" content="#0B0B0A"/>
 <title>Quiet Premium — Same Spend. Different Outcome.</title>
 <meta name="description" content="Quiet Premium shows whether your existing spending is producing the travel experience it should — and what the same spend could produce when routed differently."/>
 <meta property="og:title" content="Quiet Premium — Same Spend. Different Outcome."/>
@@ -27,218 +24,88 @@ gtag('config','G-2R14ZESQ0R');
 <meta name="twitter:card" content="summary_large_image"/>
 <link rel="canonical" href="https://quietpremium.com/"/>
 <link rel="preload" as="image" href="/hero-cabin.jpeg" fetchpriority="high"/>
-
 <script type="application/ld+json">
-{
-  "@context":"https://schema.org",
-  "@type":"WebApplication",
-  "name":"The Architecture by Quiet Premium",
-  "applicationCategory":"FinanceApplication",
-  "operatingSystem":"Web",
-  "description":"A free personalized analysis that compares a traveler's current spend and travel architecture with a modeled maximum and recommended architecture.",
-  "url":"https://quietpremium.com/diagnostic.html",
-  "offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}
-}
+{"@context":"https://schema.org","@type":"WebApplication","name":"The Architecture by Quiet Premium","applicationCategory":"FinanceApplication","operatingSystem":"Web","description":"A free personalized analysis that compares a traveler's current spend and travel architecture with a modeled maximum and recommended architecture.","url":"https://quietpremium.com/diagnostic.html","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}
 </script>
-
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=DM+Mono:wght@300;400;500&family=Inter:wght@300;400;500&display=swap" rel="stylesheet"/>
-
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=DM+Mono:wght@300;400;500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{
-  --black:#0A0A0A;--black2:#0D0D0C;--panel:#11110F;--gold:#B08D57;--gold-lt:#D0B17A;
-  --gold-dk:#80663F;--gold-wash:rgba(176,141,87,.08);--white:#F5F2EC;
-  --grey:#AAA49D;--grey2:#7E7871;--line:#302C27;--line2:#1C1A18;
-  --serif:'Cormorant Garamond',Georgia,serif;--mono:'DM Mono',monospace;--sans:'Inter',sans-serif;
-}
+:root{--black:#0B0B0A;--black2:#0E0E0D;--surface:#121210;--panel:#171511;--ivory:#F2EEE7;--muted:#AAA39A;--muted2:#827C74;--bronze:#B69A68;--gold:#CFB47D;--gold-soft:#C7A66B;--line:rgba(242,238,231,.10);--line-warm:rgba(182,154,104,.30);--wash:rgba(182,154,104,.08);--serif:'Cormorant Garamond',Georgia,serif;--sans:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;--mono:'DM Mono',ui-monospace,SFMono-Regular,Menlo,monospace;--max:1180px;--radius-sm:6px;--radius:9px}
 html{background:var(--black);scroll-behavior:smooth}
-body{background:var(--black);color:var(--white);font-family:var(--sans);font-weight:300;line-height:1.6;-webkit-font-smoothing:antialiased}
-a{color:inherit}.hidden{display:none!important}
-::selection{background:var(--gold);color:var(--black)}
-a:focus-visible,button:focus-visible{outline:2px solid var(--gold-lt);outline-offset:4px}
-
-nav{
-  position:fixed;inset:0 0 auto 0;z-index:100;height:72px;
-  display:flex;align-items:center;justify-content:space-between;
-  padding:0 max(24px,env(safe-area-inset-right)) 0 max(24px,env(safe-area-inset-left));
-  background:rgba(10,10,10,.88);backdrop-filter:blur(14px);
-  border-bottom:1px solid rgba(176,141,87,.12)
-}
-.brand{display:flex;align-items:center}
-.nb{width:29px;height:29px;border:1px solid var(--gold);border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px}
-.nb span{font:400 5px/1 var(--mono);letter-spacing:.13em;color:var(--gold)}
-.nbr{width:12px;height:.5px;background:var(--gold-dk)}
-.nav-wm{margin-left:11px;font:400 9px/1 var(--mono);letter-spacing:.22em;text-transform:uppercase}
-.nav-links{display:flex;align-items:center;gap:28px}
-.nav-link{font:400 9px/1 var(--mono);letter-spacing:.13em;text-transform:uppercase;color:var(--grey);text-decoration:none}
-.nav-link:hover{color:var(--gold-lt)}
-.nav-cta{color:var(--black);background:var(--gold);padding:12px 17px}
-.nav-cta:hover{color:var(--black);background:var(--gold-lt)}
-.hamburger{display:none;width:34px;height:34px;align-items:center;justify-content:center;flex-direction:column;gap:5px;cursor:pointer;background:transparent;border:0;padding:0;color:inherit}
-.hamburger span{display:block;width:20px;height:1px;background:var(--grey)}
-.mobile-menu{display:none;position:fixed;top:72px;left:0;right:0;z-index:99;background:#0c0c0c;border-bottom:1px solid var(--line);padding:12px 24px 22px}
-.mobile-menu a{display:block;text-decoration:none;padding:14px 0;border-bottom:1px solid var(--line2);font:400 10px/1.3 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--grey)}
-.mobile-menu a:last-child{color:var(--gold-lt);border-bottom:0}
-
-section{padding:104px 56px;position:relative}
-.inner{max-width:1100px;margin:0 auto}
-.eyebrow{font:500 9px/1.4 var(--mono);letter-spacing:.22em;text-transform:uppercase;color:var(--gold);margin-bottom:20px}
-.h2{font:300 clamp(38px,5vw,64px)/1.02 var(--serif);letter-spacing:-.01em}
-.h2 em,.display em{font-style:italic;color:var(--gold-lt)}
-.lead{font-size:16px;line-height:1.8;color:var(--grey);max-width:620px}
-.body{font-size:13.5px;line-height:1.8;color:var(--grey)}
-.mono{font-family:var(--mono)}
-.btn{
-  display:inline-flex;align-items:center;justify-content:center;min-height:52px;padding:0 28px;
-  background:var(--gold);color:var(--black);font:500 10px/1 var(--mono);letter-spacing:.12em;
-  text-transform:uppercase;text-decoration:none;border:1px solid var(--gold);transition:.2s
-}
-.btn:hover{background:var(--gold-lt);border-color:var(--gold-lt)}
-.btn-ghost{background:transparent;color:var(--gold-lt);border-color:#4A4032}
-.btn-ghost:hover{background:var(--gold-wash);color:var(--gold-lt);border-color:var(--gold)}
-.trustline{font:400 9px/1.6 var(--mono);letter-spacing:.06em;color:rgba(245,242,236,.66);margin-top:13px}
-
-/* HERO */
-#hero{
-  min-height:92vh;display:flex;align-items:center;padding-top:132px;padding-bottom:76px;
-  background:url('/hero-cabin.jpeg') center 40%/cover no-repeat #0a0a0a;overflow:hidden
-}
-#hero::before{content:'';position:absolute;inset:0;background:
-  linear-gradient(90deg,rgba(10,10,10,.88) 0%,rgba(10,10,10,.70) 48%,rgba(10,10,10,.34) 100%),
-  linear-gradient(0deg,rgba(10,10,10,.86) 0%,transparent 38%);z-index:0}
-.hero-grid{position:relative;z-index:1;display:grid;grid-template-columns:minmax(0,680px) 1fr;gap:50px;align-items:end}
-.display{font:300 clamp(52px,7vw,88px)/.96 var(--serif);letter-spacing:-.02em;max-width:700px}
-.hero-sub{font-size:18px;line-height:1.72;color:rgba(245,242,236,.82);max-width:590px;margin-top:24px}
-.hero-actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:34px}
-.hero-proof{border-left:1px solid rgba(208,177,122,.46);padding:4px 0 4px 22px;max-width:310px;margin-left:auto}
-.hero-proof .hp-head{font:400 26px/1.08 var(--serif);margin-bottom:10px}
-.hero-proof p{font-size:12px;line-height:1.7;color:rgba(245,242,236,.66)}
-
-/* SAMPLE — immediately after hero */
-.sample-section{padding-top:72px;padding-bottom:72px;background:#0c0c0b;border-top:1px solid var(--line2);border-bottom:1px solid var(--line2)}
-.sample-head{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:end;margin-bottom:30px}
-.sample-note{font-size:11px;line-height:1.65;color:var(--grey2);max-width:430px;justify-self:end}
-.sample-card{border:1px solid rgba(176,141,87,.36);background:
-  radial-gradient(circle at 90% 0%,rgba(176,141,87,.10),transparent 30%),var(--panel);padding:28px}
-.sample-top{display:flex;justify-content:space-between;gap:24px;align-items:start;padding-bottom:22px;border-bottom:1px solid var(--line)}
-.sample-title{font:400 28px/1.05 var(--serif)}
-.sample-tag{font:500 8px/1 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--gold-lt);border:1px solid #53442F;padding:8px 10px}
-.sample-metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);margin-top:1px}
-.sm{background:#0d0d0c;padding:21px 18px;min-height:118px}
-.sm-label{font:500 8px/1.35 var(--mono);letter-spacing:.09em;text-transform:uppercase;color:var(--grey2);margin-bottom:10px}
-.sm-value{font:400 30px/1 var(--serif)}
-.sm-value.gold{color:var(--gold-lt)}
-.sample-move{display:grid;grid-template-columns:150px 1fr;gap:26px;align-items:start;padding-top:22px;margin-top:1px;border-top:1px solid var(--line)}
-.sample-move .label{font:500 8px/1.4 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--gold)}
-.sample-move strong{font:400 20px/1.3 var(--serif)}
-.sample-move p{font-size:11.5px;line-height:1.65;color:var(--grey);margin-top:7px}
-
-/* RECOGNITION */
-.recognition-grid{display:grid;grid-template-columns:1fr 1fr;gap:74px;align-items:start}
-.problem-list{margin-top:14px}
-.problem-row{padding:22px 0;border-top:1px solid var(--line)}
-.problem-row:last-child{border-bottom:1px solid var(--line)}
-.problem-row strong{display:block;font:400 22px/1.2 var(--serif);margin-bottom:7px}
-.problem-row p{font-size:12.5px;line-height:1.7;color:var(--grey)}
-.recognition-callout{border:1px solid var(--line);background:var(--panel);padding:28px;position:sticky;top:100px}
-.recognition-callout .big{font:300 34px/1.1 var(--serif);margin:9px 0 15px}
-.recognition-callout p{font-size:12px;line-height:1.75;color:var(--grey)}
-
-/* OUTCOMES */
-.outcomes{background:#0d0d0c}
-.outcome-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);margin-top:42px}
-.outcome{background:#0d0d0c;padding:30px 24px;min-height:228px}
-.outcome-label{font:500 8px/1.3 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:20px}
-.outcome h3{font:400 24px/1.15 var(--serif);margin-bottom:10px}
-.outcome p{font-size:11.5px;line-height:1.7;color:var(--grey)}
-
-/* PHOTO */
-.photo-band{height:48vh;min-height:330px;max-height:520px;background:url('/band-air.jpeg') center 44%/cover no-repeat;position:relative}
-.photo-band::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(10,10,10,.08),rgba(10,10,10,.55))}
-.photo-cap{position:absolute;z-index:1;left:56px;bottom:30px;font:400 9px/1 var(--mono);letter-spacing:.16em;text-transform:uppercase;color:rgba(245,242,236,.84)}
-
-/* HOW IT WORKS */
-.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);margin-top:44px}
-.step-card{background:var(--black);padding:32px 28px}
-.step-num{font:400 10px/1 var(--mono);color:var(--gold);margin-bottom:25px}
-.step-card h3{font:400 25px/1.1 var(--serif);margin-bottom:11px}
-.step-card p{font-size:11.5px;line-height:1.7;color:var(--grey)}
-.how-footer{display:flex;justify-content:space-between;gap:24px;align-items:center;border-top:1px solid var(--line);padding-top:26px;margin-top:28px}
-.how-footer p{font-size:11px;line-height:1.6;color:var(--grey2);max-width:540px}
-
-/* FIT */
-.fit-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:40px}
-.fit-card{border:1px solid var(--line);padding:29px;background:var(--panel)}
-.fit-card h3{font:400 25px/1.1 var(--serif);margin-bottom:20px}
-.fit-item{padding:13px 0;border-top:1px solid var(--line2);font-size:12px;line-height:1.55;color:var(--grey)}
-.fit-item strong{display:block;color:var(--white);font-weight:400;margin-bottom:4px}
-.fit-card.no{background:#0c0c0c}
-.fit-card.no h3{color:#c8c0b6}
-
-/* TRUST */
-.trust{background:url('/band-lounge.jpeg') center 48%/cover no-repeat}
-.trust::before{content:'';position:absolute;inset:0;background:rgba(10,10,10,.86)}
-.trust .inner{position:relative}
-.trust-grid{display:grid;grid-template-columns:1fr 1fr;gap:70px;align-items:center}
-.trust-points{display:grid;gap:12px}
-.trust-point{border:1px solid rgba(176,141,87,.25);background:rgba(12,12,12,.68);padding:18px}
-.trust-point strong{display:block;font-size:12px;font-weight:500;margin-bottom:4px}
-.trust-point span{font-size:11px;line-height:1.6;color:var(--grey)}
-
-/* CLOSE */
-.close{padding:126px 56px;text-align:center;background:url('/hero.jpeg') center 54%/cover no-repeat}
-.close::before{content:'';position:absolute;inset:0;background:rgba(10,10,10,.82)}
-.close .inner{position:relative;max-width:790px}
-.close .lead{margin:20px auto 32px}
-.close .hero-actions{justify-content:center}
-
-footer{padding:56px;border-top:1px solid var(--line);display:flex;justify-content:space-between;gap:28px;flex-wrap:wrap}
-.footer-left{font:400 8px/1.9 var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--grey2)}
-.footer-links{display:flex;gap:24px}
-.footer-links a{font:400 8px/1 var(--mono);letter-spacing:.09em;text-transform:uppercase;color:var(--grey2)}
-.disclaimer{max-width:940px;margin:0 auto;padding:0 56px 50px;text-align:center;font:400 8px/1.8 var(--mono);color:#625d57}
-
-.reveal{opacity:0;transform:translateY(14px);transition:opacity .75s ease,transform .75s ease}
-.reveal.in{opacity:1;transform:none}
-@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.reveal{opacity:1;transform:none;transition:none}}
-
-@media(max-width:900px){
-  nav{height:68px}.nav-links{display:none}.hamburger{display:flex}.mobile-menu{top:68px}
-  section{padding:72px 24px}
-  #hero{min-height:auto;padding:116px 24px 68px}
-  .hero-grid{grid-template-columns:1fr}.hero-proof{margin:20px 0 0}
-  .sample-head,.recognition-grid,.trust-grid{grid-template-columns:1fr;gap:28px}
-  .sample-note{justify-self:start}
-  .sample-metrics{grid-template-columns:1fr 1fr}
-  .outcome-grid{grid-template-columns:1fr 1fr}
-  .steps{grid-template-columns:1fr}
-  .recognition-callout{position:static}
-  .photo-cap{left:24px}
-  .close{padding:88px 24px}
-  footer{padding:44px 24px}
-  .disclaimer{padding:0 24px 40px}
-}
-@media(max-width:560px){
-  .display{font-size:49px}
-  .hero-sub{font-size:16px}
-  .hero-actions{flex-direction:column}.btn{width:100%}
-  .sample-metrics,.outcome-grid,.fit-grid{grid-template-columns:1fr}
-  .sample-move{grid-template-columns:1fr;gap:8px}
-  .how-footer{display:block}.how-footer .btn{margin-top:18px}
-  .sample-card{padding:20px}
-  .sm{min-height:auto}
-}
+body{background:var(--black);color:var(--ivory);font-family:var(--sans);font-weight:300;line-height:1.6;-webkit-font-smoothing:antialiased}
+a{color:inherit}::selection{background:var(--bronze);color:var(--black)}
+a:focus-visible,button:focus-visible{outline:2px solid var(--gold);outline-offset:4px}
+nav{position:fixed;inset:0 0 auto 0;z-index:100;height:76px;display:flex;align-items:center;justify-content:space-between;padding:0 max(32px,env(safe-area-inset-right)) 0 max(32px,env(safe-area-inset-left));background:rgba(11,11,10,.90);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);border-bottom:1px solid rgba(182,154,104,.12)}
+.brand{display:flex;align-items:center;text-decoration:none}
+.qp-mark{width:34px;height:34px;border:1px solid var(--bronze);border-radius:50%;display:grid;place-items:center;color:var(--gold);font:400 13px/1 var(--serif);letter-spacing:-.08em}
+.nav-wm{margin-left:13px;font:500 11px/1 var(--sans);letter-spacing:.22em;text-transform:uppercase;color:var(--ivory)}
+.nav-links{display:flex;align-items:center;gap:30px}
+.nav-link{font:500 11px/1 var(--sans);letter-spacing:.08em;text-transform:uppercase;color:rgba(242,238,231,.70);text-decoration:none;transition:color .18s ease}
+.nav-link:hover{color:var(--ivory)}
+.nav-cta{min-height:42px;display:inline-flex;align-items:center;padding:0 18px;color:var(--black);background:var(--gold-soft);border:1px solid var(--gold-soft);border-radius:var(--radius-sm)}
+.nav-cta:hover{color:var(--black);background:var(--gold);border-color:var(--gold)}
+.hamburger{display:none;width:42px;height:42px;align-items:center;justify-content:center;flex-direction:column;gap:6px;cursor:pointer;background:transparent;border:0;padding:0}
+.hamburger span{display:block;width:23px;height:1px;background:#c7c0b7}
+.mobile-menu{display:none;position:fixed;top:76px;left:0;right:0;z-index:99;background:rgba(11,11,10,.98);border-bottom:1px solid var(--line);padding:14px 24px 24px}
+.mobile-menu a{display:block;text-decoration:none;padding:15px 0;border-bottom:1px solid var(--line);font:500 11px/1.3 var(--sans);letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
+.mobile-menu a:last-child{color:var(--gold);border-bottom:0}
+section{padding:88px 56px;position:relative}.inner{max-width:1100px;margin:0 auto}
+.eyebrow{font:500 10px/1.4 var(--mono);letter-spacing:.18em;text-transform:uppercase;color:var(--bronze);margin-bottom:17px}
+.h2{font:300 clamp(38px,5vw,62px)/1.02 var(--serif);letter-spacing:-.015em}.h2 em,.display em{font-style:italic;color:var(--gold)}
+.lead{font-size:16.5px;line-height:1.72;color:var(--muted);max-width:620px}.body{font-size:14px;line-height:1.8;color:var(--muted)}
+.btn{display:inline-flex;align-items:center;justify-content:center;min-height:54px;padding:0 25px;background:var(--gold-soft);color:var(--black);font:600 11px/1 var(--sans);letter-spacing:.07em;text-transform:uppercase;text-decoration:none;border:1px solid var(--gold-soft);border-radius:var(--radius-sm);transition:background .18s ease,border-color .18s ease,transform .18s ease}
+.btn::after{content:'→';margin-left:13px;font-size:15px;font-weight:400;line-height:1}.btn:hover{background:var(--gold);border-color:var(--gold);transform:translateY(-1px)}
+.btn-ghost{background:rgba(11,11,10,.30);color:var(--gold);border-color:rgba(207,180,125,.45)}.btn-ghost::after{display:none}.btn-ghost:hover{background:var(--wash);color:var(--gold);border-color:var(--bronze)}
+.trustline{font:400 10px/1.65 var(--mono);letter-spacing:.035em;color:rgba(242,238,231,.65);margin-top:14px}
+#hero{min-height:780px;display:flex;align-items:center;padding:132px 56px 72px;background:url('/hero-cabin.jpeg') center 42%/cover no-repeat #0b0b0a;overflow:hidden}
+#hero::before{content:'';position:absolute;inset:0;z-index:0;background:linear-gradient(90deg,rgba(8,8,8,.91) 0%,rgba(8,8,8,.78) 38%,rgba(8,8,8,.38) 68%,rgba(8,8,8,.45) 100%),linear-gradient(0deg,rgba(8,8,8,.90) 0%,rgba(8,8,8,.12) 48%,rgba(8,8,8,.30) 100%)}
+.hero-grid{width:100%;max-width:var(--max);margin:0 auto;position:relative;z-index:1;display:grid;grid-template-columns:minmax(0,.88fr) minmax(480px,1.12fr);gap:58px;align-items:center}
+.hero-copy{max-width:590px}.display{font:300 clamp(62px,6vw,84px)/.94 var(--serif);letter-spacing:-.025em;max-width:650px}
+.hero-sub{font-size:17px;line-height:1.66;color:rgba(242,238,231,.83);max-width:575px;margin-top:25px}.hero-actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:33px}
+.arch-preview{position:relative;border:1px solid rgba(182,154,104,.42);border-radius:var(--radius);background:radial-gradient(circle at 100% 0%,rgba(182,154,104,.12),transparent 34%),rgba(10,10,9,.92);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);box-shadow:0 28px 70px rgba(0,0,0,.32);overflow:hidden}
+.arch-preview-head{display:flex;justify-content:space-between;align-items:center;gap:18px;padding:20px 24px 18px;border-bottom:1px solid var(--line)}
+.arch-preview-title{font:500 10px/1.3 var(--mono);letter-spacing:.13em;text-transform:uppercase;color:var(--ivory)}.arch-preview-badge{font:500 8px/1 var(--mono);letter-spacing:.11em;text-transform:uppercase;color:var(--bronze)}
+.arch-preview-metrics{display:grid;grid-template-columns:1.15fr 1fr .72fr;padding:0 24px}.apm{padding:24px 18px 22px 0;min-width:0}.apm+.apm{border-left:1px solid var(--line);padding-left:20px}
+.apm-label{font:500 9px/1.35 var(--mono);letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}.apm-value{font:400 clamp(34px,3.4vw,48px)/1 var(--serif);margin-top:10px;color:var(--ivory)}.apm-value.gold{color:var(--gold)}.apm-note{font-size:10.5px;line-height:1.45;color:var(--muted2);margin-top:7px}
+.arch-preview-move{display:grid;grid-template-columns:42px 1fr;gap:16px;align-items:center;margin:0 24px;padding:20px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.move-arrow{width:40px;height:40px;border:1px solid var(--bronze);border-radius:50%;display:grid;place-items:center;color:var(--gold);font:400 18px/1 var(--sans)}.move-kicker{font:500 9px/1 var(--mono);letter-spacing:.11em;text-transform:uppercase;color:var(--bronze);margin-bottom:7px}.move-copy{font:400 20px/1.28 var(--serif);color:var(--ivory)}
+.arch-preview-foot{display:flex;justify-content:space-between;align-items:center;gap:18px;padding:17px 24px}.arch-preview-link{font:500 10px/1 var(--sans);letter-spacing:.04em;color:var(--gold);text-decoration:none;border-bottom:1px solid rgba(207,180,125,.35);padding-bottom:3px}.arch-preview-link:hover{border-bottom-color:var(--gold)}
+.arch-preview-foot span{font:400 8px/1.3 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted2)}
+.hero-outcomes{background:#0c0c0b;border-top:1px solid rgba(182,154,104,.14);border-bottom:1px solid var(--line);padding:0 56px}.hero-outcomes-inner{max-width:var(--max);margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr)}
+.hero-outcome{position:relative;padding:27px 24px 28px;text-align:center;min-height:150px}.hero-outcome+.hero-outcome{border-left:1px solid var(--line)}
+.ho-icon{height:32px;margin:0 auto 12px;color:var(--bronze)}.ho-icon svg{width:31px;height:31px;stroke:currentColor;fill:none;stroke-width:1.35}
+.hero-outcome strong{display:block;font:500 11px/1.2 var(--sans);letter-spacing:.12em;text-transform:uppercase;color:var(--ivory);margin-bottom:8px}.hero-outcome p{font:400 13px/1.5 var(--serif);color:#bbb4aa}
+.sample-section{padding-top:62px;padding-bottom:62px;background:#0c0c0b;border-bottom:1px solid var(--line)}
+.sample-head{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:end;margin-bottom:30px}.sample-note{font-size:12px;line-height:1.65;color:#918a81;max-width:430px;justify-self:end}
+.sample-card{border:1px solid rgba(182,154,104,.32);border-radius:var(--radius);background:radial-gradient(circle at 90% 0%,rgba(182,154,104,.09),transparent 30%),var(--surface);padding:28px}
+.sample-top{display:flex;justify-content:space-between;gap:24px;align-items:start;padding-bottom:22px;border-bottom:1px solid var(--line)}.sample-title{font:400 28px/1.05 var(--serif)}
+.sample-tag{font:500 9px/1 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--gold);border:1px solid rgba(182,154,104,.42);border-radius:4px;padding:8px 10px}
+.sample-metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);margin-top:1px}.sm{background:#0d0d0c;padding:21px 18px;min-height:118px}.sm-label{font:500 9px/1.35 var(--mono);letter-spacing:.09em;text-transform:uppercase;color:#989187;margin-bottom:10px}.sm-value{font:400 30px/1 var(--serif)}.sm-value.gold{color:var(--gold)}
+.sample-move{display:grid;grid-template-columns:150px 1fr;gap:26px;align-items:start;padding-top:22px;margin-top:1px;border-top:1px solid var(--line)}.sample-move .label{font:500 9px/1.4 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--bronze)}.sample-move strong{font:400 20px/1.3 var(--serif)}.sample-move p{font-size:12px;line-height:1.65;color:var(--muted);margin-top:7px}
+.recognition-grid{display:grid;grid-template-columns:1fr 1fr;gap:62px;align-items:start}.problem-list{margin-top:14px}.problem-row{padding:18px 0;border-top:1px solid var(--line)}.problem-row:last-child{border-bottom:1px solid var(--line)}.problem-row strong{display:block;font:400 22px/1.2 var(--serif);margin-bottom:7px}.problem-row p{font-size:13px;line-height:1.65;color:var(--muted)}
+.recognition-callout{border:1px solid var(--line);border-radius:var(--radius);background:var(--surface);padding:28px;position:sticky;top:104px}.recognition-callout .big{font:300 34px/1.1 var(--serif);margin:9px 0 15px}.recognition-callout p{font-size:12.5px;line-height:1.75;color:var(--muted)}
+.outcomes{background:#0d0d0c}.outcome-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);margin-top:34px}.outcome{background:#0d0d0c;padding:26px 22px;min-height:205px}.outcome-label{font:500 9px/1.3 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--bronze);margin-bottom:16px}.outcome h3{font:400 24px/1.15 var(--serif);margin-bottom:10px}.outcome p{font-size:12px;line-height:1.7;color:var(--muted)}
+.photo-band{height:42vh;min-height:300px;max-height:520px;background:url('/band-air.jpeg') center 44%/cover no-repeat;position:relative}.photo-band::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(10,10,10,.08),rgba(10,10,10,.55))}.photo-cap{position:absolute;z-index:1;left:56px;bottom:30px;font:500 10px/1 var(--mono);letter-spacing:.16em;text-transform:uppercase;color:rgba(242,238,231,.84)}
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);margin-top:36px}.step-card{background:var(--black);padding:28px 25px}.step-num{font:500 10px/1 var(--mono);color:var(--bronze);margin-bottom:25px}.step-card h3{font:400 25px/1.1 var(--serif);margin-bottom:11px}.step-card p{font-size:12px;line-height:1.7;color:var(--muted)}.how-footer{display:flex;justify-content:space-between;gap:24px;align-items:center;border-top:1px solid var(--line);padding-top:26px;margin-top:28px}.how-footer p{font-size:12px;line-height:1.6;color:#8f887f;max-width:540px}
+.fit-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:34px}.fit-card{border:1px solid var(--line);border-radius:var(--radius);padding:25px;background:var(--surface)}.fit-card h3{font:400 25px/1.1 var(--serif);margin-bottom:20px}.fit-item{padding:13px 0;border-top:1px solid var(--line);font-size:12.5px;line-height:1.55;color:var(--muted)}.fit-item strong{display:block;color:var(--ivory);font-weight:500;margin-bottom:4px}.fit-card.no{background:#0c0c0c}.fit-card.no h3{color:#c8c0b6}
+.trust{background:url('/band-lounge.jpeg') center 48%/cover no-repeat}.trust::before{content:'';position:absolute;inset:0;background:rgba(10,10,10,.87)}.trust .inner{position:relative}.trust-grid{display:grid;grid-template-columns:1fr 1fr;gap:70px;align-items:center}.trust-points{display:grid;gap:12px}.trust-point{border:1px solid rgba(182,154,104,.23);border-radius:var(--radius);background:rgba(12,12,12,.70);padding:18px}.trust-point strong{display:block;font-size:12.5px;font-weight:500;margin-bottom:4px}.trust-point span{font-size:11.5px;line-height:1.6;color:var(--muted)}
+.close{padding:108px 56px;text-align:center;background:url('/hero.jpeg') center 54%/cover no-repeat}.close::before{content:'';position:absolute;inset:0;background:rgba(10,10,10,.83)}.close .inner{position:relative;max-width:790px}.close .lead{margin:20px auto 32px}.close .hero-actions{justify-content:center}
+footer{padding:56px;border-top:1px solid var(--line);display:flex;justify-content:space-between;gap:28px;flex-wrap:wrap}.footer-left{font:400 9px/1.9 var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted2)}.footer-links{display:flex;gap:24px}.footer-links a{font:500 10px/1 var(--sans);letter-spacing:.08em;text-transform:uppercase;color:var(--muted2)}.disclaimer{max-width:940px;margin:0 auto;padding:0 56px 50px;text-align:center;font:400 9px/1.8 var(--mono);color:#625d57}
+.reveal{opacity:0;transform:translateY(14px);transition:opacity .7s ease,transform .7s ease}.reveal.in{opacity:1;transform:none}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.reveal{opacity:1;transform:none;transition:none}.btn{transition:none}}
+@media(max-width:980px){nav{height:70px;padding-left:max(24px,env(safe-area-inset-left));padding-right:max(24px,env(safe-area-inset-right))}.nav-links{display:none}.hamburger{display:flex}.mobile-menu{top:70px}#hero{min-height:auto;padding:120px 24px 58px}.hero-grid{grid-template-columns:1fr;gap:32px;max-width:760px}.hero-copy{max-width:650px}.arch-preview{max-width:760px}.hero-outcomes{padding:0 24px}.hero-outcomes-inner{grid-template-columns:1fr 1fr}.hero-outcome:nth-child(3){border-left:0;border-top:1px solid var(--line)}.hero-outcome:nth-child(4){border-top:1px solid var(--line)}section{padding:64px 24px}.sample-head,.recognition-grid,.trust-grid{grid-template-columns:1fr;gap:28px}.sample-note{justify-self:start}.sample-metrics{grid-template-columns:1fr 1fr}.outcome-grid{grid-template-columns:1fr 1fr}.steps{grid-template-columns:1fr}.recognition-callout{position:static}.photo-band{height:36vh;min-height:260px}.photo-cap{left:24px}.close{padding:82px 24px}footer{padding:44px 24px}.disclaimer{padding:0 24px 40px}}
+@media(max-width:600px){nav{height:68px;padding-left:max(20px,env(safe-area-inset-left));padding-right:max(20px,env(safe-area-inset-right))}.mobile-menu{top:68px}.qp-mark{width:34px;height:34px}.nav-wm{font-size:10.5px;letter-spacing:.21em;margin-left:12px}#hero{padding:112px 20px 38px;background-position:center 36%}#hero::before{background:linear-gradient(180deg,rgba(9,9,9,.43) 0%,rgba(9,9,9,.59) 31%,rgba(9,9,9,.91) 74%,rgba(9,9,9,.98) 100%),linear-gradient(90deg,rgba(9,9,9,.60),rgba(9,9,9,.22))}.hero-grid{gap:28px}.display{font-size:clamp(49px,14vw,62px);line-height:.94}.hero-sub{font-size:16px;line-height:1.62;margin-top:22px}.hero-actions{flex-direction:column;margin-top:28px}.btn{width:100%;min-height:56px}.trustline{font-size:9.5px}.arch-preview{border-radius:8px}.arch-preview-head{padding:17px 17px 15px}.arch-preview-badge{display:none}.arch-preview-metrics{grid-template-columns:1fr 1fr;padding:0 17px}.apm{padding:19px 12px 18px 0}.apm:nth-child(2){padding-left:14px}.apm:nth-child(3){grid-column:1/-1;border-left:0;border-top:1px solid var(--line);padding:17px 0 18px}.apm-value{font-size:34px}.arch-preview-move{margin:0 17px;grid-template-columns:36px 1fr;gap:12px;padding:18px 0}.move-arrow{width:34px;height:34px}.move-copy{font-size:18px}.arch-preview-foot{padding:15px 17px}.arch-preview-foot span{display:none}.hero-outcomes{padding:0 20px}.hero-outcomes-inner{grid-template-columns:1fr 1fr}.hero-outcome{padding:22px 12px;min-height:138px}.hero-outcome p{font-size:12.5px}.hero-outcome strong{font-size:10px}section{padding:58px 20px}.h2{font-size:44px}.sample-card{padding:20px}.sample-title{font-size:26px}.sample-top{display:grid}.sample-tag{justify-self:start}.sample-metrics,.outcome-grid,.fit-grid{grid-template-columns:1fr}.sm{min-height:auto;padding:18px 15px}.sample-move{grid-template-columns:1fr;gap:8px}.problem-row strong{font-size:21px}.how-footer{display:block}.how-footer .btn{margin-top:18px}.photo-band{min-height:240px}.close{padding:72px 20px}footer{padding:38px 20px}}
 </style>
 </head>
 <body>
 
 <nav>
-  <div class="brand">
-    <div class="nb"><span>QUIET</span><div class="nbr"></div><span>PREM</span></div>
+  <a class="brand" href="index.html" aria-label="Quiet Premium home">
+    <div class="qp-mark" aria-hidden="true">QP</div>
     <span class="nav-wm">Quiet Premium</span>
-  </div>
+  </a>
   <div class="nav-links">
     <a href="architecture.html" class="nav-link">How it works</a>
     <a href="contact.html" class="nav-link">Contact</a>
@@ -246,6 +113,7 @@ footer{padding:56px;border-top:1px solid var(--line);display:flex;justify-conten
   </div>
   <button type="button" class="hamburger" id="menu-toggle" aria-label="Open navigation" aria-controls="mobile-menu" aria-expanded="false" onclick="toggleMenu()"><span></span><span></span><span></span></button>
 </nav>
+
 <div class="mobile-menu" id="mobile-menu" aria-hidden="true">
   <a href="architecture.html">How it works</a>
   <a href="contact.html">Contact</a>
@@ -253,8 +121,8 @@ footer{padding:56px;border-top:1px solid var(--line);display:flex;justify-conten
 </div>
 
 <section id="hero">
-  <div class="inner hero-grid">
-    <div>
+  <div class="hero-grid">
+    <div class="hero-copy">
       <div class="eyebrow">The Architecture · Quiet Premium</div>
       <h1 class="display">Same spend.<br><em>Different outcome.</em></h1>
       <p class="hero-sub">Find out whether your existing spending is producing the travel life it should — and what the same spend could realistically produce when it is routed differently.</p>
@@ -264,13 +132,64 @@ footer{padding:56px;border-top:1px solid var(--line);display:flex;justify-conten
       </div>
       <div class="trustline">Free personalized analysis · Results immediately · No card required · About 15 minutes</div>
     </div>
-    <div class="hero-proof">
-      <div class="eyebrow">The question</div>
-      <div class="hp-head">Is your current setup actually working?</div>
-      <p>QP measures what you capture now, calculates a maximum from the same spend and travel behavior, then shows the smallest high-impact changes worth making.</p>
-    </div>
+
+    <aside class="arch-preview" aria-label="Illustrative Architecture result">
+      <div class="arch-preview-head">
+        <div class="arch-preview-title">Your Architecture <span style="color:var(--muted2)">(Sample)</span></div>
+        <div class="arch-preview-badge">Same spend. Different outcome.</div>
+      </div>
+      <div class="arch-preview-metrics">
+        <div class="apm">
+          <div class="apm-label">Maximum Potential</div>
+          <div class="apm-value gold">$7,317</div>
+          <div class="apm-note">Estimated annual value</div>
+        </div>
+        <div class="apm">
+          <div class="apm-label">Currently Captured</div>
+          <div class="apm-value">$3,065</div>
+          <div class="apm-note">Estimated annual value</div>
+        </div>
+        <div class="apm">
+          <div class="apm-label">Gap Score</div>
+          <div class="apm-value">5.8<span style="font-size:.55em;color:var(--muted)">/10</span></div>
+          <div class="apm-note">Illustrative gap</div>
+        </div>
+      </div>
+      <div class="arch-preview-move">
+        <div class="move-arrow" aria-hidden="true">→</div>
+        <div>
+          <div class="move-kicker">First move</div>
+          <div class="move-copy">Stop sending high-value category spend to a one-point card.</div>
+        </div>
+      </div>
+      <div class="arch-preview-foot">
+        <a class="arch-preview-link" href="#sample">See the full sample result →</a>
+        <span>Your inputs determine your Architecture.</span>
+      </div>
+    </aside>
   </div>
 </section>
+
+<div class="hero-outcomes" aria-label="Potential outcomes">
+  <div class="hero-outcomes-inner">
+    <div class="hero-outcome">
+      <div class="ho-icon" aria-hidden="true"><svg viewBox="0 0 32 32"><path d="M3 17.2 29 8.5M15.8 12.9l-5.6-7.2 2.8-.9 7.1 6.7M18.2 13.1l4.8 8.6-2.5.9-6.7-7.7M6.5 16l-2.9-2.8 2-.7 4.5 2.4"/></svg></div>
+      <strong>Better seats</strong><p>More upgrades.<br/>More comfortable travel.</p>
+    </div>
+    <div class="hero-outcome">
+      <div class="ho-icon" aria-hidden="true"><svg viewBox="0 0 32 32"><path d="M4 24V9M4 18h24v8M7 15h8c2 0 3 1 3 3H7zM19 12h7c1.1 0 2 .9 2 2v4h-9zM4 26h24"/></svg></div>
+      <strong>Better rooms</strong><p>More recognition.<br/>A better stay, more often.</p>
+    </div>
+    <div class="hero-outcome">
+      <div class="ho-icon" aria-hidden="true"><svg viewBox="0 0 32 32"><rect x="5" y="8" width="22" height="17" rx="2"/><path d="M5 13h22M9 19h7"/></svg></div>
+      <strong>More value</strong><p>More from the points<br/>you already earn.</p>
+    </div>
+    <div class="hero-outcome">
+      <div class="ho-icon" aria-hidden="true"><svg viewBox="0 0 32 32"><path d="M16 3 27 7v8c0 7-4.7 11.7-11 14-6.3-2.3-11-7-11-14V7z"/><path d="m11 16 3 3 7-8"/></svg></div>
+      <strong>More flexibility</strong><p>More options when<br/>plans change.</p>
+    </div>
+  </div>
+</div>
 
 <section class="sample-section reveal" id="sample" data-track-view="sample_result_view">
   <div class="inner">
@@ -290,14 +209,12 @@ footer{padding:56px;border-top:1px solid var(--line);display:flex;justify-conten
         </div>
         <div class="sample-tag">Sample result</div>
       </div>
-
       <div class="sample-metrics">
         <div class="sm"><div class="sm-label">Maximum Potential Annual Value</div><div class="sm-value gold">$7,317</div></div>
         <div class="sm"><div class="sm-label">Currently Captured</div><div class="sm-value">$3,065</div></div>
         <div class="sm"><div class="sm-label">Unrealized Potential</div><div class="sm-value">$4,252</div></div>
         <div class="sm"><div class="sm-label">Gap Score</div><div class="sm-value">5.8/10</div></div>
       </div>
-
       <div class="sample-move">
         <div class="label">First move</div>
         <div>
@@ -306,7 +223,6 @@ footer{padding:56px;border-top:1px solid var(--line);display:flex;justify-conten
         </div>
       </div>
     </div>
-
     <div style="margin-top:24px">
       <a href="diagnostic.html" class="btn" onclick="track('architecture_cta',{placement:'sample'})">Build My Free Architecture</a>
     </div>
@@ -318,15 +234,13 @@ footer{padding:56px;border-top:1px solid var(--line);display:flex;justify-conten
     <div>
       <div class="eyebrow">The recognition moment</div>
       <h2 class="h2">High spend can still produce <em>ordinary travel.</em></h2>
-      <p class="lead" style="margin-top:22px">The problem is often not the amount being spent. It is that the spend, airline activity and hotel activity are working as separate pieces instead of one architecture.</p>
-
+      <p class="lead" style="margin-top:22px">The problem is often not how much is being spent. It is that spend, airline activity and hotel activity are working as separate pieces.</p>
       <div class="problem-list">
         <div class="problem-row"><strong>Strong spend. Weak redemption capacity.</strong><p>Too much spend earns at poor rates or in currencies that do not match the trips you actually take.</p></div>
         <div class="problem-row"><strong>Enough airline activity. No useful status path.</strong><p>Flights and card spend are spread across rails, or status spend continues past the point where the next dollar would be more valuable elsewhere.</p></div>
         <div class="problem-row"><strong>Hotel spend without consistent recognition.</strong><p>Nights, booking channel and card benefits are not aligned with one program strongly enough to create a repeatable advantage.</p></div>
       </div>
     </div>
-
     <aside class="recognition-callout">
       <div class="eyebrow">Quiet Premium's job</div>
       <div class="big">Make the same resources work harder.</div>
@@ -339,8 +253,7 @@ footer{padding:56px;border-top:1px solid var(--line);display:flex;justify-conten
   <div class="inner">
     <div class="eyebrow">What better structure can change</div>
     <h2 class="h2">Not more points for the sake of <em>more points.</em></h2>
-    <p class="lead" style="margin-top:22px">The goal is a better whole-system travel outcome from the spending you already have.</p>
-
+    <p class="lead" style="margin-top:22px">The goal is a better travel outcome from the spending you already have.</p>
     <div class="outcome-grid">
       <div class="outcome"><div class="outcome-label">Redemption</div><h3>More travel capacity.</h3><p>More useful rewards generated from ordinary spend, routed into currencies that fit the trips you are actually likely to book.</p></div>
       <div class="outcome"><div class="outcome-label">Airline</div><h3>Status when it is worth it.</h3><p>Spend can be directed toward a meaningful tier only when the threshold is attainable and the airline fits your real travel.</p></div>
@@ -357,13 +270,11 @@ footer{padding:56px;border-top:1px solid var(--line);display:flex;justify-conten
     <div class="eyebrow">How The Architecture works</div>
     <h2 class="h2">Answer the questions.<br><em>Get the architecture.</em></h2>
     <p class="lead" style="margin-top:22px">About fifteen minutes if you know your numbers. Estimates are fine.</p>
-
     <div class="steps">
       <div class="step-card"><div class="step-num">01</div><h3>Tell QP how you travel.</h3><p>Primary airline, routes, travel volume, booking control, hotel behavior and the outcomes you actually care about.</p></div>
       <div class="step-card"><div class="step-num">02</div><h3>Map the spending.</h3><p>Annual spend, major categories, current cards and where those dollars are routed today.</p></div>
       <div class="step-card"><div class="step-num">03</div><h3>Receive the answer.</h3><p>Current, Maximum, Recommended, Gap Score, Spend Misrouted, routing map, status paths and the first changes worth making.</p></div>
     </div>
-
     <div class="how-footer">
       <p>QP does the complicated work underneath so the result can stay simple on top. No sales call is required to see your analysis.</p>
       <a href="diagnostic.html" class="btn" onclick="track('architecture_cta',{placement:'how_it_works'})">Build My Free Architecture</a>
@@ -374,8 +285,7 @@ footer{padding:56px;border-top:1px solid var(--line);display:flex;justify-conten
 <section class="reveal" style="background:#0d0d0c">
   <div class="inner">
     <div class="eyebrow">Who it is built for</div>
-    <h2 class="h2">Enough spending to have a <em>real routing decision.</em></h2>
-
+    <h2 class="h2">Built for a <em>real routing decision.</em></h2>
     <div class="fit-grid">
       <div class="fit-card">
         <h3>Strong fit</h3>
@@ -384,7 +294,6 @@ footer{padding:56px;border-top:1px solid var(--line);display:flex;justify-conten
         <div class="fit-item"><strong>You pay cards in full</strong>The Architecture is about allocation, not financing.</div>
         <div class="fit-item"><strong>You want a simpler answer</strong>Not another comparison grid — a recommendation based on your own behavior.</div>
       </div>
-
       <div class="fit-card no">
         <h3>Probably not useful</h3>
         <div class="fit-item">You already actively optimize many cards, transfer partners and award programs.</div>
@@ -403,7 +312,6 @@ footer{padding:56px;border-top:1px solid var(--line);display:flex;justify-conten
       <h2 class="h2">No manufactured <em>value.</em></h2>
       <p class="lead" style="margin-top:22px">High spending by itself does not earn a dramatic result. If your setup is already good, The Architecture should say so.</p>
     </div>
-
     <div class="trust-points">
       <div class="trust-point"><strong>Maximum and Current use the same valuation engine.</strong><span>The gap is not created by valuing the proposed setup more generously than the current one.</span></div>
       <div class="trust-point"><strong>Status is optional.</strong><span>QP can conclude that a status strategy is not worth the spend required to reach it.</span></div>
@@ -429,15 +337,13 @@ footer{padding:56px;border-top:1px solid var(--line);display:flex;justify-conten
 <footer>
   <div class="footer-left">
     © 2026 Quiet Premium · editor@quietpremium.com<br/>
-    Same spend. Different outcome.<br/>
-    <span style="color:#4F4A45">v1.8.0</span>
+    Same spend. Different outcome.
   </div>
   <div class="footer-links">
     <a href="architecture.html">The Architecture</a>
     <a href="contact.html">Contact</a>
   </div>
 </footer>
-
 <p class="disclaimer">Quiet Premium provides modeled estimates based on user inputs, supported program rules and valuation assumptions. Actual card approval, reward value, award availability, status qualification, upgrades and benefits can vary. Program and issuer terms change. Quiet Premium is not affiliated with any airline, hotel or card issuer mentioned.</p>
 
 <script>
@@ -503,7 +409,8 @@ function toggleMenu(){
   setMenu(b?.getAttribute('aria-expanded')!=='true');
 }
 document.addEventListener('keydown',e=>{if(e.key==='Escape')setMenu(false);});
-window.addEventListener('resize',()=>{if(window.innerWidth>900)setMenu(false);});
+window.addEventListener('resize',()=>{if(window.innerWidth>980)setMenu(false);});
+
 const io=new IntersectionObserver(entries=>{
   entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}});
 },{threshold:.1,rootMargin:'0px 0px -6% 0px'});
@@ -519,7 +426,7 @@ const viewIo=new IntersectionObserver(entries=>{
 },{threshold:.35});
 document.querySelectorAll('[data-track-view]').forEach(el=>viewIo.observe(el));
 
-track('homepage_view',{page:'homepage',build:'1.8.0'});
+track('homepage_view',{page:'homepage',build:'1.9.0'});
 </script>
 </body>
 </html>
