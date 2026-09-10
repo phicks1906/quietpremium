@@ -1,0 +1,43 @@
+name: Quiet Premium Architecture v1.11.1 mobile compression
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/qp-v1111.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch-architecture:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply final Phase 4 mobile compression
+        shell: python
+        run: |
+          from pathlib import Path
+          p=Path('architecture.html')
+          txt=p.read_text(encoding='utf-8')
+          txt=txt.replace('build v1.11.0','build v1.11.1')
+          txt=txt.replace('PHASE 4 — ARCHITECTURE / HOW IT WORKS REDESIGN','PHASE 4.1 — MOBILE COMPRESSION & RHYTHM')
+          txt=txt.replace('Approved flow: answer → proof → aspiration → trust → start.','Approved flow preserved: answer → proof → aspiration → trust → start. Mobile cards and trust section compressed for faster progression.')
+
+          # Add a narrow final mobile override before </style> so the approved desktop composition is untouched.
+          marker='</style>'
+          css='''\n/* PHASE 4.1 — final mobile compression */\n@media(max-width:600px){\n  .views{padding-top:42px!important;padding-bottom:34px!important;}\n  .views .eyebrow{margin-bottom:12px!important;}\n  .views .lead{margin-top:12px!important;font-size:14px!important;line-height:1.58!important;}\n  .view-grid{margin-top:20px!important;gap:7px!important;}\n  .view-card{padding:16px 17px 17px!important;}\n  .view-num{margin-bottom:9px!important;font-size:8px!important;}\n  .view-card h3{font-size:24px!important;margin-bottom:5px!important;}\n  .view-card p{font-size:11.5px!important;line-height:1.52!important;}\n  .decision-note{margin-top:14px!important;padding-top:12px!important;font-size:11.5px!important;line-height:1.55!important;}\n  .sample{padding-top:2px!important;padding-bottom:48px!important;}\n  .method{padding-top:44px!important;padding-bottom:46px!important;}\n  .method .eyebrow{margin-bottom:12px!important;}\n  .method .lead{margin-top:12px!important;font-size:14px!important;line-height:1.58!important;}\n  .inputs{margin-top:15px!important;gap:6px!important;}\n  .chip{padding:6px 8px!important;font-size:8px!important;}\n  .principles{gap:7px!important;}\n  .principle{padding:14px 15px!important;}\n  .principle strong{font-size:11.8px!important;margin-bottom:3px!important;}\n  .principle p{font-size:11px!important;line-height:1.52!important;}\n}\n'''
+          if 'PHASE 4.1 — final mobile compression' not in txt:
+              txt=txt.replace(marker,css+marker,1)
+          assert 'build v1.11.1' in txt
+          assert 'PHASE 4.1 — final mobile compression' in txt
+          assert '.view-card{padding:16px 17px 17px!important;}' in txt
+          assert '.principle{padding:14px 15px!important;}' in txt
+          p.write_text(txt,encoding='utf-8')
+      - name: Commit Architecture compression
+        run: |
+          git config user.name "Quiet Premium Build"
+          git config user.email "actions@users.noreply.github.com"
+          git add architecture.html
+          git commit -m "Quiet Premium v1.11.1 — compress Architecture mobile flow"
+          git push
