@@ -1,0 +1,64 @@
+@media(min-width:821px){
+  :root{--max:922px}
+  nav{height:44px;padding:0 36px;gap:23px}
+  .brand{font-size:23.5px}
+  .navlinks{gap:23px}.signin-gap{width:14px;flex-basis:14px}
+  .navlinks a{font-size:7.6px}
+  .navcta{height:29px;padding:0 16.5px!important;box-shadow:0 5px 12px rgba(119,84,38,.15)}
+  .eyebrow{font-size:6.9px}
+  .display{font-size:56.5px}
+  .h2{font-size:33px}
+  .btn{height:40px;width:257px;font-size:9.7px;box-shadow:0 7px 17px rgba(120,86,38,.18)}
+  .btn::after{margin-left:12px;font-size:13px}
+  .trust{margin-top:7px;font-size:6.9px}
+  #hero{height:325px}
+  .hero-inner{padding:35px 36px}
+  .hero-copy{max-width:469px}
+  .hero-copy .display{margin-top:8px}
+  .hero-sub{margin-top:11px;max-width:407px;font-size:11.7px}
+  .hero-actions{margin-top:15px}
+  .hero-aside{top:50px;width:114px;font-size:7.6px}
+  .hero-aside:after{width:23px;margin-top:8px}
+  .benefits{height:104px;padding:0 36px}
+  .benefit{gap:7px}
+  .ico{width:26px;height:26px}
+  .benefit strong{font-size:13.1px}
+  .architecture{height:314px;padding:36px 36px 24px}
+  .arch-head{height:79px;gap:48px}
+  .arch-copy{font-size:10.3px;max-width:345px;margin-top:12px}
+  .flow{height:173px;grid-template-columns:1fr 34px 1.12fr 34px 1.12fr 100px}
+  .card{border-radius:7px;padding:12px 12px 11px;box-shadow:0 6px 14px rgba(55,42,25,.035)}
+  .label{gap:6px;font-size:6.2px}
+  .badge{width:14.5px;height:14.5px;font-size:6.2px}
+  .spend{font-size:21.4px;margin-top:14px}
+  .spendcap{font-size:6.2px;margin-top:2px}
+  .cards{height:57px;margin:8px 0 3px}
+  .cc{width:54px;height:34px;border-radius:3px}
+  .cc:nth-child(1){left:66px;top:1px}
+  .cc:nth-child(2){left:46px;top:8px}
+  .cc:nth-child(3){left:26px;top:17px}
+  .note{font-size:7.9px}
+  .arrow{font-size:21px}
+  .venn{height:64px}
+  .venn span{width:37px;height:37px;margin:0 -6px}
+  .list{font-size:7.6px;gap:2px}
+  .list li{padding-left:12px}
+  .outphoto{height:91px;margin:10px 0 6px;border-radius:4px}
+  .script{padding-left:16px;font-size:23.5px}
+  .script:after{width:32px;margin:9px 0 0 8px}
+  .closing{height:108px;padding:0 36px}
+  .closing-grid{max-width:922px;grid-template-columns:1fr 231px;gap:34px}
+  .closing .eyebrow{margin-bottom:4px}
+  .closing h2{font-size:32.4px}
+  .closing .btn{height:34.5px}
+  .closing .trust{font-size:6.2px;margin-top:5px}
+  footer{height:49px;padding:0 36px;gap:19px}
+  .footer-brand{font-size:14.5px}
+  .footer-tag{font-size:5.5px}
+  .footer-links{gap:18px}
+  .footer-links a{font-size:5.5px}
+  .social{gap:10px}
+  .social svg{width:11px;height:11px}
+  .build{font-size:5.5px}
+  .disclaimer{padding:0 36px 6px;font-size:4.2px}
+}
