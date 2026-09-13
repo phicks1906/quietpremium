@@ -1,3 +1,4 @@
+const qpAnalysisFix=document.createElement('link');qpAnalysisFix.rel='stylesheet';qpAnalysisFix.href='assets/v215-analysis-fixes.css?v=215';document.head.appendChild(qpAnalysisFix);
 const intro=document.getElementById('intro');
 const quick=document.getElementById('quick');
 const preview=document.getElementById('preview');
@@ -14,7 +15,7 @@ const spendMap={
 };
 const flightMap={'1-5':3,'6-12':9,'13-24':18,'25-40':32,'40+':45};
 function show(which){[intro,quick,preview].forEach(x=>x.classList.add('hidden'));which.classList.remove('hidden');window.scrollTo({top:0,behavior:'instant'});}
-startBtn.addEventListener('click',()=>{show(quick);track('quick_analysis_start',{page:'analysis',build:'2.1.1'});});
+startBtn.addEventListener('click',()=>{show(quick);track('quick_analysis_start',{page:'analysis',build:'2.1.2'});});
 priorities.forEach(btn=>btn.addEventListener('click',()=>{const v=btn.dataset.value;if(selected.has(v)){selected.delete(v);btn.classList.remove('selected');btn.setAttribute('aria-pressed','false');return;}if(selected.size>=2){const first=[...selected][0];selected.delete(first);const old=priorities.find(x=>x.dataset.value===first);old?.classList.remove('selected');old?.setAttribute('aria-pressed','false');}selected.add(v);btn.classList.add('selected');btn.setAttribute('aria-pressed','true');}));
 function cleanAirport(v){return String(v||'').trim().toUpperCase().slice(0,5)}
 function validate(){let ok=true;form.querySelectorAll('.question').forEach(q=>q.classList.remove('invalid'));['spend_band','home_airport','primary_airline','flights'].forEach(id=>{const el=document.getElementById(id);if(!el.value.trim()){el.closest('.question').classList.add('invalid');ok=false;}});if(!selected.size){document.getElementById('priority-q').classList.add('invalid');ok=false;}return ok;}
@@ -29,7 +30,22 @@ function personalizeImpacts(data){
   hotels.textContent=data.priorities.includes('hotels')?'Hotel recognition is one of your priorities, so the full analysis will test whether your stay pattern can support meaningful status or premium-hotel value.':'The full analysis will test whether your real hotel behavior supports stronger recognition or better premium-stay value.';
   cash.textContent='The goal is to have more of the premium travel you already value funded by the value your spending produces, reducing the need to buy every upgrade or trip with cash.';
 }
-form.addEventListener('submit',e=>{e.preventDefault();if(!validate()){track('assessment_validation_error',{page:'analysis',section:'quick_analysis',build:'2.1.1'});return;}const data={spend_band:document.getElementById('spend_band').value,home_airport:cleanAirport(document.getElementById('home_airport').value),primary_airline:document.getElementById('primary_airline').value,flights:document.getElementById('flights').value,priorities:[...selected]};buildDraft(data);const m=spendMap[data.spend_band];document.getElementById('preview-spend').textContent=`Based on approximately ${m.label} in annual personal-card spend. This is a directional preview, not your final recommendation.`;document.getElementById('current-points').textContent=m.current;document.getElementById('potential-points').textContent=m.potential;personalizeImpacts(data);show(preview);track('quick_analysis_complete',{page:'analysis',build:'2.1.1',spend_band:data.spend_band,airline:data.primary_airline,priority:data.priorities[0]||''});track('preliminary_result_view',{page:'analysis',build:'2.1.1',spend_band:data.spend_band});});
-document.getElementById('full-analysis').addEventListener('click',()=>track('full_analysis_cta',{page:'analysis',placement:'preliminary_result',build:'2.1.1'}));
+function renderImpactBullets(data){
+  const bundles=[
+    ['Extra-legroom seats more often','Stronger upgrade position','Useful status where your travel supports it'],
+    [data.priorities.includes('international')?'More international travel options':'More premium-trip capacity','Greater redemption capacity','Less cash needed for premium travel'],
+    ['Recognition that actually matters','More upgrade opportunities','More value from premium stays'],
+    ['Fewer paid upgrades','More travel funded by earned value','Keep cash for what points cannot cover']
+  ];
+  document.querySelectorAll('.impact').forEach((card,i)=>{
+    card.querySelector('p')?.remove();card.querySelector('.impact-list')?.remove();
+    const ul=document.createElement('ul');ul.className='impact-list';
+    (bundles[i]||[]).forEach(t=>{const li=document.createElement('li');li.textContent=t;ul.appendChild(li)});card.appendChild(ul);
+  });
+}
+form.addEventListener('submit',e=>{e.preventDefault();if(!validate()){track('assessment_validation_error',{page:'analysis',section:'quick_analysis',build:'2.1.2'});return;}const data={spend_band:document.getElementById('spend_band').value,home_airport:cleanAirport(document.getElementById('home_airport').value),primary_airline:document.getElementById('primary_airline').value,flights:document.getElementById('flights').value,priorities:[...selected]};buildDraft(data);const m=spendMap[data.spend_band];document.getElementById('preview-spend').textContent=`Based on approximately ${m.label} in annual personal-card spend. This is a directional preview, not your final recommendation.`;document.getElementById('current-points').textContent=m.current;document.getElementById('potential-points').textContent=m.potential;personalizeImpacts(data);renderImpactBullets(data);show(preview);track('quick_analysis_complete',{page:'analysis',build:'2.1.2',spend_band:data.spend_band,airline:data.primary_airline,priority:data.priorities[0]||''});track('preliminary_result_view',{page:'analysis',build:'2.1.2',spend_band:data.spend_band});});
+const fullAnalysis=document.getElementById('full-analysis');
+fullAnalysis.href='refine.html?from=quick';
+fullAnalysis.addEventListener('click',()=>track('full_analysis_cta',{page:'analysis',placement:'preliminary_result',build:'2.1.2'}));
 document.getElementById('edit-quick').addEventListener('click',()=>show(quick));
-track('analysis_intro_view',{page:'analysis',build:'2.1.1'});
+track('analysis_intro_view',{page:'analysis',build:'2.1.2'});
