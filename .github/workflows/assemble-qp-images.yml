@@ -1,0 +1,106 @@
+name: Assemble Quiet Premium production photography
+
+on:
+  push:
+    paths:
+      - '.image-build/READY-v210'
+
+permissions:
+  contents: write
+
+jobs:
+  assemble:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Assemble and validate binary images
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p assets
+          cat .image-build/hero/*.part | base64 --decode > assets/qp-hero-v210.jpg
+          cat .image-build/outcome/*.part | base64 --decode > assets/qp-outcome-v210.jpg
+          cat .image-build/closing/*.part | base64 --decode > assets/qp-closing-v210.jpg
+
+          echo '1faa3f63940799432869c19bc502e45a50c32b046955a77130cc9405a1ae9a33  assets/qp-hero-v210.jpg' | sha256sum -c -
+          echo '3c7a16cf3dfceea82f4c869e1904c126e0c57e8327df5edbfe8226aaffb44f18  assets/qp-outcome-v210.jpg' | sha256sum -c -
+          echo 'dd60a3b900a0518825f4876279bb4a379fdaed80d9aa136556e7a4d200448bb7  assets/qp-closing-v210.jpg' | sha256sum -c -
+
+          test "$(xxd -p -l 2 assets/qp-hero-v210.jpg)" = 'ffd8'
+          test "$(tail -c 2 assets/qp-hero-v210.jpg | xxd -p)" = 'ffd9'
+          test "$(xxd -p -l 2 assets/qp-outcome-v210.jpg)" = 'ffd8'
+          test "$(tail -c 2 assets/qp-outcome-v210.jpg | xxd -p)" = 'ffd9'
+          test "$(xxd -p -l 2 assets/qp-closing-v210.jpg)" = 'ffd8'
+          test "$(tail -c 2 assets/qp-closing-v210.jpg | xxd -p)" = 'ffd9'
+
+      - name: Wire production CSS and build metadata
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat > assets/v210-photo-fix.css <<'CSS'
+          /* Quiet Premium v2.0.10 — complete binary photography */
+          #hero .photo{
+            background-image:url('qp-hero-v210.jpg') !important;
+            background-position:center 53% !important;
+            background-size:cover !important;
+            background-repeat:no-repeat !important;
+          }
+          .outphoto{
+            background-image:url('qp-outcome-v210.jpg') !important;
+            background-position:center 58% !important;
+            background-size:cover !important;
+            background-repeat:no-repeat !important;
+          }
+          .closing{
+            background-image:url('qp-closing-v210.jpg') !important;
+            background-position:center 53% !important;
+            background-size:cover !important;
+            background-repeat:no-repeat !important;
+          }
+          @media(max-width:820px){
+            .closing{
+              background-image:url('qp-closing-v210.jpg') !important;
+              background-position:center 53% !important;
+              background-size:cover !important;
+              background-repeat:no-repeat !important;
+              color:#fff !important;
+            }
+            .closing:before{
+              display:block !important;
+              background:linear-gradient(90deg,rgba(16,16,15,.74),rgba(16,16,15,.48),rgba(16,16,15,.28)) !important;
+            }
+            .closing .trust{color:rgba(255,255,255,.82) !important;}
+          }
+          CSS
+
+          cp assets/v208-app.js assets/v210-app.js
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('assets/v210-app.js')
+          s=p.read_text()
+          s=s.replace("build:'2.0.8'", "build:'2.0.10'")
+          p.write_text(s)
+
+          p=Path('index.html')
+          s=p.read_text()
+          s=s.replace('assets/v209-photo-fix.css', 'assets/v210-photo-fix.css?v=210')
+          s=s.replace('assets/v208-app.js', 'assets/v210-app.js?v=210')
+          s=s.replace('Build v2.0.9', 'Build v2.0.10')
+          p.write_text(s)
+          PY
+
+      - name: Commit atomic production fix
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'quietpremium-build-bot'
+          git config user.email 'actions@users.noreply.github.com'
+          git rm -r .image-build
+          git rm .github/workflows/assemble-qp-images.yml
+          git add index.html assets/qp-hero-v210.jpg assets/qp-outcome-v210.jpg assets/qp-closing-v210.jpg assets/v210-photo-fix.css assets/v210-app.js
+          git commit -m 'Quiet Premium v2.0.10 — install verified binary photography'
+          git push origin HEAD:main
