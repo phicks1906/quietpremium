@@ -6,6 +6,18 @@ const QP_FUNNEL_KEY='qp_funnel_session_v1';
     const p=location.pathname.replace(/\/+$/,'');
     if(p===''||p.endsWith('/index.html')){
       const l=document.createElement('link');l.rel='stylesheet';l.href='assets/v215-home-fixes.css?v=215';document.head.appendChild(l);
+      const bundles=[
+        ['Extra-legroom seats more often','Fewer cash upgrades','Stronger upgrade position'],
+        ['Qualify earlier in the year','More months receiving status benefits','Better priority when travel goes wrong'],
+        ['More meaningful recognition','Better upgrade opportunities','More premium-stay benefits'],
+        ['Greater redemption capacity','More international travel options','Less cash required for premium travel']
+      ];
+      document.querySelectorAll('.experience-card').forEach((card,i)=>{
+        const pEl=card.querySelector('p');if(pEl)pEl.remove();
+        const ul=document.createElement('ul');ul.className='experience-list';
+        (bundles[i]||[]).forEach(text=>{const li=document.createElement('li');li.textContent=text;ul.appendChild(li)});
+        card.appendChild(ul);
+      });
     }
   }catch(_){}
 })();
