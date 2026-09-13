@@ -22,13 +22,13 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p assets
-          cat .image-build/avif-hero/*.part | base64 --decode > assets/qp-hero-v210.avif
-          cat .image-build/avif-outcome/*.part | base64 --decode > assets/qp-outcome-v210.avif
-          cat .image-build/avif-closing/*.part | base64 --decode > assets/qp-closing-v210.avif
+          cat .image-build/v210-hero/*.part | base64 --decode > assets/qp-hero-v210.avif
+          cat .image-build/v210-outcome/*.part | base64 --decode > assets/qp-outcome-v210.avif
+          cat .image-build/v210-closing/*.part | base64 --decode > assets/qp-closing-v210.avif
 
-          echo '9d825cc1845bd45a67df524d994a3e0e2e3c892f4673f9edf6f0c171eb7e6fc4  assets/qp-hero-v210.avif' | sha256sum -c -
-          echo 'd0d394b797d5c09d75dc060d6f4771d941de85a94d7f4194204021fde3bf9934  assets/qp-outcome-v210.avif' | sha256sum -c -
-          echo 'd49ab5976ce4ca400eaae0476bfa7ece716a09ea8c0b1e1ee2dd9c1157038f3d  assets/qp-closing-v210.avif' | sha256sum -c -
+          echo '06145a8bf6ce6b0950b892c5fc60c97747553e6f15232f5886c0525799fd2eed  assets/qp-hero-v210.avif' | sha256sum -c -
+          echo '6a0cf11a90eff8774ec3ce991e340fd7632cad1a908c9b829ed01bfaa4d4ae4a  assets/qp-outcome-v210.avif' | sha256sum -c -
+          echo '217c9a9829342480dcb39a7e06e56080fd3b091a37291d590c7930e6fb5e6062  assets/qp-closing-v210.avif' | sha256sum -c -
 
           file assets/qp-hero-v210.avif assets/qp-outcome-v210.avif assets/qp-closing-v210.avif
 
