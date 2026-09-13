@@ -84,14 +84,26 @@
     addPrefillSummary(s3,[['total_spend','Annual spend']]);
   }
 
+  function scrubVisibleText(root){
+    if(!root)return;
+    const walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,{acceptNode(node){const p=node.parentElement;if(!p||['SCRIPT','STYLE'].includes(p.tagName))return NodeFilter.FILTER_REJECT;return /architecture/i.test(node.nodeValue||'')?NodeFilter.FILTER_ACCEPT:NodeFilter.FILTER_REJECT}});
+    const nodes=[];while(walker.nextNode())nodes.push(walker.currentNode);
+    nodes.forEach(node=>{node.nodeValue=node.nodeValue.replace(/\bThe Architecture\b/g,'the full analysis').replace(/\bArchitecture\b/g,'plan').replace(/\barchitecture\b/g,'plan')});
+  }
+
   function watchStepTitle(){
     const el=$('step-title');if(!el)return;
     renameStepTitle();
     new MutationObserver(renameStepTitle).observe(el,{childList:true,characterData:true,subtree:true});
   }
 
+  function watchDynamicCopy(){
+    scrubVisibleText(document.body);
+    new MutationObserver(muts=>muts.forEach(m=>m.addedNodes.forEach(n=>{if(n.nodeType===Node.ELEMENT_NODE||n.nodeType===Node.TEXT_NODE)scrubVisibleText(n.nodeType===Node.TEXT_NODE?n.parentElement:n)}))).observe(document.body,{childList:true,subtree:true});
+  }
+
   function enhance(){
-    setIntro();rewriteNotes();badgeOptionalFields();collapsePointBalances();watchStepTitle();applyPrefill();
+    setIntro();rewriteNotes();badgeOptionalFields();collapsePointBalances();watchStepTitle();applyPrefill();watchDynamicCopy();
     document.querySelectorAll('input,select,textarea').forEach(el=>{el.style.fontSize='16px'});
   }
 
