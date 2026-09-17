@@ -1,27 +1,23 @@
 /**
  * Quiet Premium — qp_sim_v5.js
  * Isolated V5 Travel-Strategy Engine
- * Build: 5.0-alpha.1
+ * Build: 5.0-alpha.2
  * Date: 2026-09-17
  *
- * IMPORTANT: This file is intentionally NOT wired to diagnostic.html or any
- * customer-facing page. It exists only for recommendation development and
- * validation until the V5 accuracy gate passes.
+ * NOT wired to diagnostic.html or any customer-facing page.
  *
  * NORTH STAR
- * Quiet Premium optimizes for the best realistic travel life the customer can
- * receive from money they already spend. Points, cards, status and benefits are
- * mechanisms, not the objective.
+ * Optimize for the best realistic travel life from money the customer already
+ * spends. Points, cards, status and benefits are mechanisms, not the objective.
  *
- * V5 DECISION ORDER
- * travel life -> route/airline strategy -> hotel strategy -> rewards currency
- * -> benefits/overlap -> cards -> exact spend routing -> travel outcomes.
- *
- * ASPIRATIONS ARE PRESENTATION-ONLY.
- * Facts determine opportunity. Behavioral constraints determine feasibility.
- * Aspirations determine display order and emphasis only.
+ * LOCKED DISTINCTIONS
+ * - Facts determine opportunity.
+ * - Behavioral constraints determine feasibility.
+ * - Aspirations determine presentation order/emphasis ONLY.
+ * - Benefit visibility is separate from recommendation credit.
+ *   Real supported benefits stay visible; internal weighting only determines
+ *   how much a benefit helps justify a recommendation.
  */
-
 (function (root, factory) {
   const api = factory();
   if (typeof module === "object" && module.exports) module.exports = api;
@@ -29,19 +25,9 @@
 })(typeof globalThis !== "undefined" ? globalThis : this, function () {
   "use strict";
 
-  const ENGINE_VERSION = "5.0-alpha.1";
+  const ENGINE_VERSION = "5.0-alpha.2";
   const RULES_AS_OF = "2026-09-17";
-
   const CATEGORIES = ["dining", "grocery", "airfare", "hotel", "general"];
-  const OUTCOME_KEYS = [
-    "travelCapacity",
-    "flightQuality",
-    "airportExperience",
-    "hotelExperience",
-    "reliability",
-    "cashEfficiency",
-    "complexity"
-  ];
 
   const clean = v => String(v ?? "").trim();
   const lc = v => clean(v).toLowerCase();
@@ -56,16 +42,10 @@
     const p = 10 ** d;
     return Math.round((Number(n) || 0) * p) / p;
   };
-  const uniq = arr => [...new Set((arr || []).filter(Boolean))];
-  const sum = arr => (arr || []).reduce((a, b) => a + (Number(b) || 0), 0);
-  const deepClone = obj => JSON.parse(JSON.stringify(obj));
+  const uniq = a => [...new Set((a || []).filter(Boolean))];
+  const sum = a => (a || []).reduce((x, y) => x + (Number(y) || 0), 0);
+  const clone = x => JSON.parse(JSON.stringify(x));
 
-  // -------------------------------------------------------------------------
-  // Rule registry
-  // -------------------------------------------------------------------------
-
-  // Rule records distinguish current verified facts from QP modeling choices.
-  // URLs are documentation notes for validation, not runtime dependencies.
   const RULES = Object.freeze({
     meta: {
       version: ENGINE_VERSION,
@@ -143,9 +123,7 @@
           { tier: "Gold", nights: 25, stays: 15, spend: 6000 },
           { tier: "Diamond", nights: 50, stays: 25, spend: 11500 }
         ],
-        diamondReserve: { tier: "Diamond Reserve", nights: 80, stays: 40, spend: 18000 },
-        verifiedAsOf: "2026-09-17",
-        source: "https://www.hilton.com/en/hilton-honors/support-faq/"
+        diamondReserve: { tier: "Diamond Reserve", nights: 80, stays: 40, spend: 18000 }
       }
     },
     cards: {
@@ -155,10 +133,7 @@
         currency: "amex_mr",
         annualFee: 325,
         earn: { dining: 4, grocery: 4, airfare: 3, hotel: 1, general: 1 },
-        caps: { dining: 50000, grocery: 25000 },
-        bookingBonuses: { amex_prepaid_hotel: 5 },
-        verifiedAsOf: "2026-09-17",
-        source: "https://www.americanexpress.com/us/credit-cards/card/gold-card/"
+        caps: { dining: 50000, grocery: 25000 }
       },
       amex_platinum: {
         label: "The Platinum Card from American Express",
@@ -167,11 +142,7 @@
         annualFee: 895,
         earn: { dining: 1, grocery: 1, airfare: 5, hotel: 1, general: 1 },
         caps: { airfare: 500000 },
-        bookingBonuses: { amex_prepaid_hotel: 5 },
-        premiumBooking: "fhr_thc",
-        benefitTags: ["lounge", "premium_hotel_booking"],
-        verifiedAsOf: "2026-09-17",
-        source: "https://www.americanexpress.com/us/credit-cards/card/platinum/"
+        benefitTags: ["lounge", "premium_hotel_booking"]
       },
       chase_preferred: {
         label: "Chase Sapphire Preferred",
@@ -179,7 +150,6 @@
         currency: "chase_ur",
         annualFee: 95,
         earn: { dining: 3, grocery: 1, airfare: 2, hotel: 2, general: 1 },
-        verifiedAsOf: "2026-09-03",
         verificationPending: true
       },
       chase_reserve: {
@@ -188,19 +158,14 @@
         currency: "chase_ur",
         annualFee: 795,
         earn: { dining: 3, grocery: 1, airfare: 4, hotel: 4, general: 1 },
-        bookingBonuses: { chase_travel: 8 },
-        benefitTags: ["lounge", "travel_credit"],
-        verifiedAsOf: "2026-09-17",
-        source: "https://creditcards.chase.com/rewards-credit-cards/sapphire/reserve"
+        benefitTags: ["lounge", "travel_credit"]
       },
       venture: {
         label: "Capital One Venture Rewards",
         family: "capital_one",
         currency: "capital_one_miles",
         annualFee: 95,
-        earn: { dining: 2, grocery: 2, airfare: 2, hotel: 2, general: 2 },
-        verifiedAsOf: "2026-09-17",
-        source: "https://www.capitalone.com/credit-cards/compare/"
+        earn: { dining: 2, grocery: 2, airfare: 2, hotel: 2, general: 2 }
       },
       venture_x: {
         label: "Capital One Venture X Rewards",
@@ -208,10 +173,7 @@
         currency: "capital_one_miles",
         annualFee: 395,
         earn: { dining: 2, grocery: 2, airfare: 2, hotel: 2, general: 2 },
-        bookingBonuses: { capital_one_flights: 5, capital_one_hotels: 10 },
-        benefitTags: ["lounge", "capital_one_travel_credit", "anniversary_miles"],
-        verifiedAsOf: "2026-09-17",
-        source: "https://www.capitalone.com/credit-cards/venture-x/"
+        benefitTags: ["lounge", "travel_credit", "anniversary_miles"]
       },
       delta_platinum: {
         label: "Delta SkyMiles Platinum American Express Card",
@@ -220,10 +182,8 @@
         annualFee: 350,
         earn: { dining: 2, grocery: 2, airfare: 3, hotel: 3, general: 1 },
         airline: "delta",
-        status: { metric: "MQD", headstart: 2500, spendDivisor: 20 },
-        benefitTags: ["companion_certificate_renewal"],
-        verifiedAsOf: "2026-09-17",
-        source: "https://www.americanexpress.com/us/credit-cards/card/delta-skymiles-platinum-american-express-card/"
+        status: { headstart: 2500, spendDivisor: 20 },
+        benefitTags: ["companion_certificate_renewal"]
       },
       delta_reserve: {
         label: "Delta SkyMiles Reserve American Express Card",
@@ -232,10 +192,8 @@
         annualFee: 650,
         earn: { dining: 1, grocery: 1, airfare: 3, hotel: 1, general: 1 },
         airline: "delta",
-        status: { metric: "MQD", headstart: 2500, spendDivisor: 10 },
-        benefitTags: ["lounge", "upgrade_priority", "companion_certificate_renewal"],
-        verifiedAsOf: "2026-09-17",
-        source: "https://www.americanexpress.com/us/credit-cards/card/delta-skymiles-reserve-american-express-card/"
+        status: { headstart: 2500, spendDivisor: 10 },
+        benefitTags: ["lounge", "upgrade_priority", "companion_certificate_renewal"]
       },
       united_explorer: {
         label: "United Explorer Card",
@@ -244,8 +202,7 @@
         annualFee: 150,
         earn: { dining: 2, grocery: 1, airfare: 3, hotel: 2, general: 1 },
         airline: "united",
-        status: { metric: "PQP", spendDivisor: 20, annualCap: 1000 },
-        verifiedAsOf: "2026-09-03",
+        status: { spendDivisor: 20, annualCap: 1000 },
         verificationPending: true
       },
       united_quest: {
@@ -255,9 +212,7 @@
         annualFee: 350,
         earn: { dining: 2, grocery: 1, airfare: 4, hotel: 2, general: 1 },
         airline: "united",
-        status: { metric: "PQP", spendDivisor: 20, annualCap: 18000, annualBonus: 1000, bonusRequiresPriorYearOpen: true },
-        verifiedAsOf: "2026-09-17",
-        source: "https://creditcards.chase.com/travel-credit-cards/united/united-quest"
+        status: { spendDivisor: 20, annualCap: 18000, annualBonus: 1000, bonusRequiresPriorYearOpen: true }
       },
       united_club: {
         label: "United Club Card",
@@ -266,10 +221,8 @@
         annualFee: 695,
         earn: { dining: 2, grocery: 1, airfare: 5, hotel: 2, general: 1 },
         airline: "united",
-        status: { metric: "PQP", spendDivisor: 15, annualCap: 28000, annualBonus: 1500, bonusRequiresPriorYearOpen: true },
-        benefitTags: ["lounge"],
-        verifiedAsOf: "2026-09-17",
-        source: "https://www.chase.com/personal/credit-cards/united/united-visa-infinite-card"
+        status: { spendDivisor: 15, annualCap: 28000, annualBonus: 1500, bonusRequiresPriorYearOpen: true },
+        benefitTags: ["lounge"]
       },
       aa_executive: {
         label: "Citi / AAdvantage Executive World Legend Mastercard",
@@ -278,10 +231,8 @@
         annualFee: 695,
         earn: { dining: 1, grocery: 1, airfare: 4, hotel: 1, general: 1 },
         airline: "american",
-        status: { metric: "Loyalty Points", lpPerEligiblePurchaseDollar: 1 },
-        benefitTags: ["lounge", "priority_airport"],
-        verifiedAsOf: "2026-09-17",
-        source: "https://creditcards.aa.com/credit-cards/citi-executive-card-american-airlines-direct/"
+        status: { lpPerEligiblePurchaseDollar: 1 },
+        benefitTags: ["lounge", "priority_airport"]
       },
       southwest_priority: {
         label: "Southwest Rapid Rewards Priority Credit Card",
@@ -290,8 +241,7 @@
         annualFee: 229,
         earn: { dining: 2, grocery: 1, airfare: 4, hotel: 1, general: 1 },
         airline: "southwest",
-        status: { metric: "TQP", spendBlock: 5000, tqpPerBlock: 2500 },
-        verifiedAsOf: "2026-09-03",
+        status: { spendBlock: 5000, tqpPerBlock: 2500 },
         verificationPending: true
       },
       hyatt_consumer: {
@@ -301,9 +251,7 @@
         annualFee: 95,
         earn: { dining: 2, grocery: 1, airfare: 2, hotel: 4, general: 1 },
         hotel: "hyatt",
-        hotelStatus: { automaticTier: "Discoverist", annualNights: 5, spendBlock: 5000, nightsPerBlock: 2 },
-        verifiedAsOf: "2026-09-17",
-        source: "https://www.chase.com/personal/credit-cards/hyatt/world-hyatt/earn-maintain"
+        hotelStatus: { automaticTier: "Discoverist", annualNights: 5, spendBlock: 5000, nightsPerBlock: 2 }
       },
       marriott_boundless: {
         label: "Marriott Bonvoy Boundless Credit Card",
@@ -313,7 +261,6 @@
         earn: { dining: 2, grocery: 2, airfare: 2, hotel: 6, general: 2 },
         hotel: "marriott",
         hotelStatus: { automaticTier: "Silver Elite", annualNights: 15 },
-        verifiedAsOf: "2026-09-03",
         verificationPending: true
       },
       marriott_brilliant: {
@@ -324,8 +271,7 @@
         earn: { dining: 3, grocery: 2, airfare: 3, hotel: 6, general: 2 },
         hotel: "marriott",
         hotelStatus: { automaticTier: "Platinum Elite", annualNights: 25 },
-        verifiedAsOf: "2026-09-03",
-        verificationPending: true
+        benefitTags: ["premium_hotel_benefits"]
       },
       hilton_no_fee: {
         label: "Hilton Honors American Express Card",
@@ -334,9 +280,7 @@
         annualFee: 0,
         earn: { dining: 5, grocery: 5, airfare: 3, hotel: 7, general: 3 },
         hotel: "hilton",
-        hotelStatus: { automaticTier: "Silver" },
-        verifiedAsOf: "2026-09-03",
-        verificationPending: true
+        hotelStatus: { automaticTier: "Silver" }
       },
       hilton_surpass: {
         label: "Hilton Honors American Express Surpass Card",
@@ -345,9 +289,7 @@
         annualFee: 150,
         earn: { dining: 6, grocery: 6, airfare: 3, hotel: 12, general: 3 },
         hotel: "hilton",
-        hotelStatus: { automaticTier: "Gold" },
-        verifiedAsOf: "2026-09-03",
-        verificationPending: true
+        hotelStatus: { automaticTier: "Gold" }
       },
       hilton_aspire: {
         label: "Hilton Honors American Express Aspire Card",
@@ -357,71 +299,43 @@
         earn: { dining: 7, grocery: 3, airfare: 7, hotel: 14, general: 3 },
         hotel: "hilton",
         hotelStatus: { automaticTier: "Diamond" },
-        verifiedAsOf: "2026-09-03",
-        verificationPending: true
+        benefitTags: ["premium_hotel_benefits"]
       }
     }
   });
 
   const VALUATIONS = Object.freeze({
     conservative: {
-      amex_mr: 0.0125,
-      chase_ur: 0.0125,
-      capital_one_miles: 0.010,
-      skymiles: 0.011,
-      united_miles: 0.012,
-      aadvantage: 0.012,
-      southwest_points: 0.012,
-      hyatt_points: 0.016,
-      marriott_points: 0.006,
-      hilton_points: 0.0045
+      amex_mr: .0125, chase_ur: .0125, capital_one_miles: .010,
+      skymiles: .012, united_miles: .012, aadvantage: .013,
+      southwest_points: .013, hyatt_points: .017, marriott_points: .007, hilton_points: .005
     },
     base: {
-      amex_mr: 0.020,
-      chase_ur: 0.020,
-      capital_one_miles: 0.017,
-      skymiles: 0.015,
-      united_miles: 0.017,
-      aadvantage: 0.018,
-      southwest_points: 0.014,
-      hyatt_points: 0.022,
-      marriott_points: 0.009,
-      hilton_points: 0.008
+      amex_mr: .020, chase_ur: .020, capital_one_miles: .017,
+      skymiles: .015, united_miles: .017, aadvantage: .018,
+      southwest_points: .014, hyatt_points: .022, marriott_points: .009, hilton_points: .008
     },
     upper: {
-      amex_mr: 0.025,
-      chase_ur: 0.025,
-      capital_one_miles: 0.020,
-      skymiles: 0.018,
-      united_miles: 0.021,
-      aadvantage: 0.022,
-      southwest_points: 0.016,
-      hyatt_points: 0.026,
-      marriott_points: 0.011,
-      hilton_points: 0.010
+      amex_mr: .024, chase_ur: .024, capital_one_miles: .020,
+      skymiles: .018, united_miles: .021, aadvantage: .022,
+      southwest_points: .016, hyatt_points: .026, marriott_points: .011, hilton_points: .010
     }
   });
 
-  // Modeling thresholds are QP judgment calls, not issuer facts.
   const MODEL = Object.freeze({
-    materialAnnualTravelValue: 400,
-    materialCashImprovement: 300,
-    materialTravelValueDifference: 250,
-    routeFitMinimumForMigration: 0.80,
-    routeFitMinimumForConcentration: 0.60,
-    airlineConcentrationMinimum: 0.60,
-    minimumFlightsForStatusUseCase: 6,
-    hotelConcentrationMinimum: 0.50,
-    minimumHotelNightsForStatusUseCase: 10,
+    maxPortfolioCards: 4,
     maxNewCardsDefault: 2,
-    complexityPenaltyPerCard: 1,
-    complexityPenaltyPerCurrency: 1,
-    statusSpendOpportunityCostLimit: 900
+    materialTravelValue: 400,
+    materialCashImprovement: 300,
+    minFlightsForStatus: 8,
+    minHotelNightsForStatus: 8,
+    minAirlineShare: .55,
+    minHotelShare: .45,
+    complexityPenaltyPerCard: 1.25,
+    complexityPenaltyPerCurrency: .75,
+    statusOpportunityCostLimit: 900,
+    incrementalTravelValuePerExtraCard: 750
   });
-
-  // -------------------------------------------------------------------------
-  // Card matching: specific products before broad family names.
-  // -------------------------------------------------------------------------
 
   const CARD_ALIASES = [
     ["hilton_aspire", ["hilton honors american express aspire", "hilton aspire"]],
@@ -431,59 +345,58 @@
     ["marriott_boundless", ["marriott bonvoy boundless"]],
     ["delta_reserve", ["delta skymiles reserve", "delta reserve"]],
     ["delta_platinum", ["delta skymiles platinum", "delta platinum"]],
-    ["united_club", ["united club", "club infinite"]],
+    ["united_club", ["united club"]],
     ["united_quest", ["united quest"]],
     ["united_explorer", ["united explorer"]],
-    ["aa_executive", ["aadvantage executive", "aa executive", "world legend"]],
+    ["aa_executive", ["aadvantage executive", "american airlines executive", "citi / aadvantage executive"]],
     ["southwest_priority", ["southwest rapid rewards priority", "southwest priority"]],
-    ["hyatt_consumer", ["world of hyatt credit card", "world of hyatt"]],
+    ["hyatt_consumer", ["world of hyatt credit card", "world of hyatt card"]],
+    ["amex_platinum", ["platinum card from american express", "american express platinum", "amex platinum"]],
+    ["amex_gold", ["american express gold", "amex gold"]],
     ["chase_reserve", ["chase sapphire reserve", "sapphire reserve"]],
     ["chase_preferred", ["chase sapphire preferred", "sapphire preferred"]],
     ["venture_x", ["capital one venture x", "venture x"]],
-    ["venture", ["capital one venture rewards", "capital one venture"]],
-    ["amex_platinum", ["platinum card from american express", "american express platinum", "amex platinum"]],
-    ["amex_gold", ["american express gold", "amex gold"]]
+    ["venture", ["capital one venture rewards", "capital one venture"]]
   ];
 
-  function matchCard(value) {
-    const s = lc(value);
+  function matchCard(v) {
+    const s = lc(v);
     if (!s) return null;
     if (RULES.cards[s]) return s;
     for (const [id, aliases] of CARD_ALIASES) {
-      if (aliases.some(alias => s.includes(alias))) return id;
+      if (aliases.some(a => s.includes(a))) return id;
     }
     return null;
   }
 
-  // -------------------------------------------------------------------------
-  // Normalization
-  // -------------------------------------------------------------------------
-
   function normalizeSpend(raw = {}) {
-    const spend = raw.spend || raw;
+    const s = raw.spend || raw;
     return {
-      dining: num(spend.dining ?? raw.dining_spend),
-      grocery: num(spend.grocery ?? raw.grocery_spend),
-      airfare: num(spend.airfare ?? raw.household_airfare_spend ?? raw.airfare_spend),
-      hotel: num(spend.hotel ?? raw.hotel_spend),
-      general: num(spend.general ?? raw.general_spend)
+      dining: num(s.dining ?? raw.dining_spend),
+      grocery: num(s.grocery ?? raw.grocery_spend),
+      airfare: num(s.airfare ?? raw.household_airfare_spend ?? raw.airfare_spend),
+      hotel: num(s.hotel ?? raw.hotel_spend),
+      general: num(s.general ?? raw.general_spend)
     };
+  }
+
+  function normalizeSpendMap(raw = {}, fallback = {}) {
+    const r = raw || {};
+    return Object.fromEntries(CATEGORIES.map(c => [c, num(r[c] ?? fallback[c] ?? 0)]));
   }
 
   function normalizeRouting(raw = {}, spend) {
     const input = raw.currentRouting || raw.current_routing || {};
     const out = {};
-    for (const category of CATEGORIES) {
-      const rows = Array.isArray(input[category]) ? input[category] : [];
-      out[category] = rows.map(row => ({
+    for (const c of CATEGORIES) {
+      const rows = Array.isArray(input[c]) ? input[c] : [];
+      out[c] = rows.map(row => ({
         card: matchCard(row.card || row.cardId || row.name) || clean(row.card || row.cardId || row.name),
         amount: num(row.amount)
-      })).filter(row => row.card && row.amount > 0);
-
-      if (!out[category].length) {
-        const fallbackName = raw[`card_${category}`] || (category === "general" ? raw.card_general : null);
-        const fallbackCard = matchCard(fallbackName);
-        if (fallbackCard && spend[category] > 0) out[category] = [{ card: fallbackCard, amount: spend[category] }];
+      })).filter(r => r.card && r.amount > 0);
+      if (!out[c].length) {
+        const fallback = matchCard(raw[`card_${c}`] || (c === "general" ? raw.card_general : ""));
+        if (fallback && spend[c] > 0) out[c] = [{ card: fallback, amount: spend[c] }];
       }
     }
     return out;
@@ -504,43 +417,59 @@
     };
   }
 
+  function normalizeFutureActivity(raw = {}, annualSpend) {
+    const f = raw.futureActivity || raw.future_activity || {};
+    const s = f.statusSpend || f.status_spend || raw.futureStatusSpend || raw.future_status_spend || {};
+    return {
+      statusSpend: normalizeSpendMap(s, annualSpend),
+      delta: { mqd: num(f.delta?.mqd ?? raw.future_delta_mqd) },
+      united: { pqp: num(f.united?.pqp ?? raw.future_united_pqp), pqf: num(f.united?.pqf ?? raw.future_united_pqf) },
+      american: { loyaltyPoints: num(f.american?.loyaltyPoints ?? raw.future_american_loyalty_points) },
+      southwest: { tqp: num(f.southwest?.tqp ?? raw.future_southwest_tqp), qualifyingFlights: num(f.southwest?.qualifyingFlights ?? raw.future_southwest_qualifying_flights) },
+      hotel: {
+        qualifyingNights: num(f.hotel?.qualifyingNights ?? raw.future_hotel_qualifying_nights),
+        qualifyingStays: num(f.hotel?.qualifyingStays ?? raw.future_hotel_qualifying_stays),
+        qualifyingSpend: num(f.hotel?.qualifyingSpend ?? raw.future_hotel_qualifying_spend)
+      }
+    };
+  }
+
   function normalizeProfile(raw = {}) {
     const spend = normalizeSpend(raw);
     const currentCardsRaw = raw.currentCards || raw.primary_cards || raw.cards || [];
     const currentCards = uniq((Array.isArray(currentCardsRaw) ? currentCardsRaw : [currentCardsRaw])
-      .map(v => matchCard(v) || clean(v))
-      .filter(Boolean));
-
+      .map(v => matchCard(v) || clean(v)).filter(Boolean));
     const primaryAirline = lc(raw.primaryAirline || raw.primary_airline_eco || raw.primary_airline);
     const primaryHotel = lc(raw.primaryHotel || raw.primary_hotel || raw.hotel_program);
-    const routeFitRaw = raw.routeFit || raw.route_fit || {};
-    const airlineShare = clamp(num(raw.primaryAirlineShare ?? raw.primary_airline_share ?? raw.airline_concentration) / (num(raw.primaryAirlineShare ?? raw.primary_airline_share ?? raw.airline_concentration) > 1 ? 100 : 1), 0, 1);
-    const hotelShare = clamp(num(raw.primaryHotelShare ?? raw.primary_hotel_share ?? raw.hotel_concentration) / (num(raw.primaryHotelShare ?? raw.primary_hotel_share ?? raw.hotel_concentration) > 1 ? 100 : 1), 0, 1);
-
     const aspirationsRaw = raw.aspirations || raw.desiredOutcomes || raw.desired_outcomes || [];
     const aspirations = uniq((Array.isArray(aspirationsRaw) ? aspirationsRaw : [aspirationsRaw]).map(lc));
-    const constraintsRaw = raw.constraints || {};
-
-    const profile = {
+    const constraints = raw.constraints || {};
+    const airlineShareRaw = num(raw.primaryAirlineShare ?? raw.primary_airline_share ?? raw.airline_concentration);
+    const hotelShareRaw = num(raw.primaryHotelShare ?? raw.primary_hotel_share ?? raw.hotel_concentration);
+    const routeFitRaw = raw.routeFit || raw.route_fit || {};
+    const statusProgress = normalizeStatusProgress(raw);
+    return {
       spend,
       totalSpend: sum(Object.values(spend)),
-      householdAirfareSpend: num(raw.householdAirfareSpend ?? raw.household_airfare_spend ?? spend.airfare),
       currentCards,
       currentRouting: normalizeRouting(raw, spend),
+      statusProgress,
+      futureActivity: normalizeFutureActivity(raw, spend),
+      progressIncludesCurrentCardCredits: raw.progressIncludesCurrentCardCredits !== false,
       cardTenure: raw.cardTenure || raw.card_tenure || {},
-      benefitUse: raw.benefitUse || raw.benefit_use || {},
       naturalBenefitValue: raw.naturalBenefitValue || raw.natural_benefit_value || {},
+      explicitBenefitUse: raw.explicitBenefitUse || raw.explicit_benefit_use || {},
       currencyUtility: {
-        amex_mr: clamp(num(raw.currencyUtility?.amex_mr ?? raw.currency_utility?.amex_mr ?? 1), 0, 1),
-        chase_ur: clamp(num(raw.currencyUtility?.chase_ur ?? raw.currency_utility?.chase_ur ?? 1), 0, 1),
-        capital_one_miles: clamp(num(raw.currencyUtility?.capital_one_miles ?? raw.currency_utility?.capital_one_miles ?? 1), 0, 1),
-        skymiles: clamp(num(raw.currencyUtility?.skymiles ?? raw.currency_utility?.skymiles ?? (primaryAirline === "delta" ? 1 : 0.45)), 0, 1),
-        united_miles: clamp(num(raw.currencyUtility?.united_miles ?? raw.currency_utility?.united_miles ?? (primaryAirline === "united" ? 1 : 0.45)), 0, 1),
-        aadvantage: clamp(num(raw.currencyUtility?.aadvantage ?? raw.currency_utility?.aadvantage ?? (primaryAirline === "american" ? 1 : 0.45)), 0, 1),
-        southwest_points: clamp(num(raw.currencyUtility?.southwest_points ?? raw.currency_utility?.southwest_points ?? (primaryAirline === "southwest" ? 1 : 0.45)), 0, 1),
-        hyatt_points: clamp(num(raw.currencyUtility?.hyatt_points ?? raw.currency_utility?.hyatt_points ?? (primaryHotel === "hyatt" ? 1 : 0.45)), 0, 1),
-        marriott_points: clamp(num(raw.currencyUtility?.marriott_points ?? raw.currency_utility?.marriott_points ?? (primaryHotel === "marriott" ? 1 : 0.45)), 0, 1),
-        hilton_points: clamp(num(raw.currencyUtility?.hilton_points ?? raw.currency_utility?.hilton_points ?? (primaryHotel === "hilton" ? 1 : 0.45)), 0, 1)
+        amex_mr: clamp(num(raw.currencyUtility?.amex_mr ?? 1), 0, 1),
+        chase_ur: clamp(num(raw.currencyUtility?.chase_ur ?? 1), 0, 1),
+        capital_one_miles: clamp(num(raw.currencyUtility?.capital_one_miles ?? 1), 0, 1),
+        skymiles: clamp(num(raw.currencyUtility?.skymiles ?? (primaryAirline === "delta" ? 1 : .45)), 0, 1),
+        united_miles: clamp(num(raw.currencyUtility?.united_miles ?? (primaryAirline === "united" ? 1 : .45)), 0, 1),
+        aadvantage: clamp(num(raw.currencyUtility?.aadvantage ?? (primaryAirline === "american" ? 1 : .45)), 0, 1),
+        southwest_points: clamp(num(raw.currencyUtility?.southwest_points ?? (primaryAirline === "southwest" ? 1 : .45)), 0, 1),
+        hyatt_points: clamp(num(raw.currencyUtility?.hyatt_points ?? (primaryHotel === "hyatt" ? 1 : .45)), 0, 1),
+        marriott_points: clamp(num(raw.currencyUtility?.marriott_points ?? (primaryHotel === "marriott" ? 1 : .45)), 0, 1),
+        hilton_points: clamp(num(raw.currencyUtility?.hilton_points ?? (primaryHotel === "hilton" ? 1 : .45)), 0, 1)
       },
       travel: {
         homeAirport: clean(raw.homeAirport || raw.home_airport),
@@ -555,688 +484,733 @@
       },
       airline: {
         primary: primaryAirline,
-        share: airlineShare || (primaryAirline ? 0.70 : 0),
+        share: clamp((airlineShareRaw > 1 ? airlineShareRaw / 100 : airlineShareRaw) || (primaryAirline ? .70 : 0), 0, 1),
         reportedStatus: clean(raw.currentAirlineStatus || raw.primary_airline_status || raw.airline_status),
-        progress: normalizeStatusProgress(raw),
-        routeFit: Object.fromEntries(Object.entries(routeFitRaw).map(([k, v]) => [lc(k), clamp(num(v), 0, 1)])),
+        routeFit: Object.fromEntries(Object.entries(routeFitRaw).map(([k,v]) => [lc(k), clamp(num(v),0,1)])),
         statusUsefulOverride: typeof raw.airlineStatusUseful === "boolean" ? raw.airlineStatusUseful : null
       },
       hotel: {
         primary: primaryHotel,
-        share: hotelShare || (primaryHotel ? 0.60 : 0),
+        share: clamp((hotelShareRaw > 1 ? hotelShareRaw / 100 : hotelShareRaw) || (primaryHotel ? .60 : 0), 0, 1),
         reportedStatus: clean(raw.currentHotelStatus || raw.primary_hotel_status || raw.hotel_status),
-        premiumStayShare: clamp(num(raw.premiumStayShare ?? raw.premium_stay_share) / (num(raw.premiumStayShare ?? raw.premium_stay_share) > 1 ? 100 : 1), 0, 1)
+        premiumStayShare: clamp(num(raw.premiumStayShare ?? raw.premium_stay_share) > 1
+          ? num(raw.premiumStayShare ?? raw.premium_stay_share)/100
+          : num(raw.premiumStayShare ?? raw.premium_stay_share), 0, 1)
       },
-      statusProgress: normalizeStatusProgress(raw),
-      aspirations, // PRESENTATION ONLY. Never used to choose the recommendation.
+      aspirations,
       constraints: {
-        noNewCards: !!constraintsRaw.noNewCards,
-        maxNewCards: constraintsRaw.maxNewCards == null ? MODEL.maxNewCardsDefault : Math.max(0, num(constraintsRaw.maxNewCards)),
-        keepAirline: constraintsRaw.keepAirline !== false,
-        noAirlineChange: constraintsRaw.noAirlineChange !== false,
-        noHotelConcentration: !!constraintsRaw.noHotelConcentration,
-        noPortalBooking: !!constraintsRaw.noPortalBooking,
-        prohibitedCards: uniq((constraintsRaw.prohibitedCards || []).map(v => matchCard(v) || clean(v))),
-        requiredCards: uniq((constraintsRaw.requiredCards || []).map(v => matchCard(v) || clean(v)))
+        noNewCards: !!constraints.noNewCards,
+        maxNewCards: constraints.maxNewCards == null ? MODEL.maxNewCardsDefault : Math.max(0, num(constraints.maxNewCards)),
+        noAirlineChange: constraints.noAirlineChange !== false,
+        noHotelConcentration: !!constraints.noHotelConcentration,
+        noPortalBooking: !!constraints.noPortalBooking,
+        prohibitedCards: uniq((constraints.prohibitedCards || []).map(v => matchCard(v) || clean(v))),
+        requiredCards: uniq((constraints.requiredCards || []).map(v => matchCard(v) || clean(v)))
       },
       __normalizedV5: true,
-      meta: {
-        source: raw.source || "v5",
-        quickAspirations: aspirations,
-        rawProfileId: clean(raw.id || raw.profileId)
-      }
+      meta: { rawProfileId: clean(raw.id || raw.profileId), source: raw.source || "v5" }
     };
-
-    return profile;
   }
-
-  // -------------------------------------------------------------------------
-  // Status facts and usefulness
-  // -------------------------------------------------------------------------
 
   function tierIndex(program, tier) {
-    const t = lc(tier);
-    if (!t) return -1;
-    const rows = RULES.airlines[program]?.thresholds || RULES.hotels[program]?.thresholds || [];
-    return rows.findIndex(row => lc(row.tier) === t);
+    if (!program || !tier) return -1;
+    const rules = RULES.airlines[program]?.thresholds || RULES.hotels[program]?.thresholds || [];
+    return rules.findIndex(r => lc(r.tier) === lc(tier));
   }
 
-  function airlineStatusUsefulness(profile) {
-    if (profile.airline.statusUsefulOverride != null) return !!profile.airline.statusUsefulOverride;
-    if (!profile.airline.primary) return false;
-    if (profile.airline.share < MODEL.airlineConcentrationMinimum) return false;
-    if (profile.travel.annualOneWayFlights < MODEL.minimumFlightsForStatusUseCase) return false;
-    if (profile.travel.bookingControl === "none") return false;
-    return true;
+  function maxTier(program, a, b) {
+    return tierIndex(program, a) >= tierIndex(program, b) ? (a || "") : (b || "");
   }
 
-  function hotelStatusUsefulness(profile) {
-    if (!profile.hotel.primary || profile.constraints.noHotelConcentration) return false;
-    if (profile.hotel.share < MODEL.hotelConcentrationMinimum) return false;
-    return profile.statusProgress.hotel.qualifyingNights >= MODEL.minimumHotelNightsForStatusUseCase;
+  function airlineStatusUsefulness(p) {
+    if (p.airline.statusUsefulOverride != null) return !!p.airline.statusUsefulOverride;
+    return !!p.airline.primary &&
+      p.airline.share >= MODEL.minAirlineShare &&
+      p.travel.annualOneWayFlights >= MODEL.minFlightsForStatus &&
+      p.travel.bookingControl !== "none";
   }
 
-  function currentReportedStatus(profile) {
-    return {
-      airline: profile.airline.reportedStatus || "",
-      hotel: profile.hotel.reportedStatus || ""
-    };
+  function hotelStatusUsefulness(p) {
+    return !!p.hotel.primary && !p.constraints.noHotelConcentration &&
+      p.hotel.share >= MODEL.minHotelShare &&
+      (p.statusProgress.hotel.qualifyingNights + p.futureActivity.hotel.qualifyingNights) >= MODEL.minHotelNightsForStatus;
   }
 
-  function cardSpendTotals(routing) {
-    const totals = {};
-    for (const category of CATEGORIES) {
-      for (const row of routing[category] || []) totals[row.card] = (totals[row.card] || 0) + num(row.amount);
-    }
-    return totals;
+  function progressMetric(p, airline) {
+    const x = p.statusProgress[airline] || {};
+    return airline === "delta" ? x.mqd :
+      airline === "united" ? x.pqp :
+      airline === "american" ? x.loyaltyPoints :
+      airline === "southwest" ? x.tqp : 0;
   }
 
-  function airlineProgressWithCardSpend(profile, airline, cardSpendById) {
-    const p = profile.statusProgress[airline] || {};
-    let metric = airline === "delta" ? p.mqd : airline === "united" ? p.pqp : airline === "american" ? p.loyaltyPoints : p.tqp;
-    let qualifyingFlights = airline === "southwest" ? p.qualifyingFlights : 0;
-    const contributions = [];
-
-    for (const [cardId, spend] of Object.entries(cardSpendById || {})) {
-      const card = RULES.cards[cardId];
-      if (!card || card.airline !== airline || !card.status) continue;
-      const s = card.status;
-      let added = 0;
-      if (airline === "delta") {
-        added += s.headstart || 0;
-        added += spend / s.spendDivisor;
-      } else if (airline === "united") {
-        added += Math.min(s.annualCap || Infinity, spend / s.spendDivisor);
-        const tenure = profile.cardTenure[cardId] || {};
-        if (s.annualBonus && (!s.bonusRequiresPriorYearOpen || tenure.eligibleAnnualBonus === true)) added += s.annualBonus;
-      } else if (airline === "american") {
-        // AAdvantage credit-card Loyalty Points accrue from base miles on eligible purchases.
-        // The current supported AAdvantage card earns one base mile per eligible purchase dollar.
-        added += spend * (s.lpPerEligiblePurchaseDollar || 0);
-      } else if (airline === "southwest") {
-        added += Math.floor(spend / (s.spendBlock || Infinity)) * (s.tqpPerBlock || 0);
-      }
-      metric += added;
-      contributions.push({ cardId, spend: round(spend), added: round(added) });
-    }
-
-    return { metric: round(metric), qualifyingFlights, contributions };
+  function organicFutureMetric(p, airline) {
+    const x = p.futureActivity[airline] || {};
+    return airline === "delta" ? x.mqd :
+      airline === "united" ? x.pqp :
+      airline === "american" ? x.loyaltyPoints :
+      airline === "southwest" ? x.tqp : 0;
   }
 
-  function statusTierForProgress(airline, progress) {
+  function tierForAirlineProgress(airline, metric, flights) {
     const rules = RULES.airlines[airline];
     if (!rules) return "";
     let tier = "";
-    for (const row of rules.thresholds || []) if (progress.metric >= row.amount) tier = row.tier;
+    for (const r of rules.thresholds || []) if (metric >= r.amount) tier = r.tier;
     if (airline === "southwest") {
-      for (const row of rules.flightThresholds || []) if (progress.qualifyingFlights >= row.flights) tier = row.tier;
+      for (const r of rules.flightThresholds || []) if (flights >= r.flights) tier = r.tier;
     }
     return tier;
   }
 
-  function hotelStatusFromCards(profile, cardSpendById) {
-    const program = profile.hotel.primary;
-    if (!program || !RULES.hotels[program]) return { tier: "", qualifyingNights: profile.statusProgress.hotel.qualifyingNights, contributions: [] };
-    let nights = profile.statusProgress.hotel.qualifyingNights;
-    let bestAutoTier = "";
+  function airlineFutureProgress(p, airline, futureCardSpend = {}) {
+    let metric = progressMetric(p, airline) + organicFutureMetric(p, airline);
+    let flights = (p.statusProgress.southwest?.qualifyingFlights || 0) +
+      (p.futureActivity.southwest?.qualifyingFlights || 0);
     const contributions = [];
-    for (const [cardId, spend] of Object.entries(cardSpendById || {})) {
+    for (const [cardId, spendRaw] of Object.entries(futureCardSpend || {})) {
+      const card = RULES.cards[cardId];
+      if (!card || card.airline !== airline || !card.status) continue;
+      const spend = num(spendRaw);
+      let added = 0;
+      if (airline === "delta") {
+        if (!p.currentCards.includes(cardId)) added += card.status.headstart || 0;
+        added += spend / (card.status.spendDivisor || Infinity);
+      } else if (airline === "united") {
+        added += Math.min(card.status.annualCap || Infinity, spend / (card.status.spendDivisor || Infinity));
+        const pending = p.cardTenure[cardId]?.futureAnnualBonusEligible === true;
+        if (pending && card.status.annualBonus) added += card.status.annualBonus;
+      } else if (airline === "american") {
+        added += spend * (card.status.lpPerEligiblePurchaseDollar || 0);
+      } else if (airline === "southwest") {
+        added += Math.floor(spend / (card.status.spendBlock || Infinity)) * (card.status.tqpPerBlock || 0);
+      }
+      metric += added;
+      contributions.push({ cardId, spend: round(spend), added: round(added) });
+    }
+    return { metric: round(metric), qualifyingFlights: flights, contributions, tier: tierForAirlineProgress(airline, metric, flights) };
+  }
+
+  function hotelTierFromFacts(p, portfolio, futureCardSpend = {}) {
+    const program = p.hotel.primary;
+    if (!program || !RULES.hotels[program]) {
+      return { projectedTier: "", effectiveTier: p.hotel.reportedStatus || "", qualifyingNights: p.statusProgress.hotel.qualifyingNights };
+    }
+    let nights = p.statusProgress.hotel.qualifyingNights + p.futureActivity.hotel.qualifyingNights;
+    const stays = p.statusProgress.hotel.qualifyingStays + p.futureActivity.hotel.qualifyingStays;
+    const qSpend = p.statusProgress.hotel.qualifyingSpend + p.futureActivity.hotel.qualifyingSpend;
+    let auto = "";
+    const contributions = [];
+
+    for (const cardId of portfolio) {
       const card = RULES.cards[cardId];
       if (!card || card.hotel !== program || !card.hotelStatus) continue;
       const hs = card.hotelStatus;
-      let addedNights = hs.annualNights || 0;
-      if (hs.spendBlock && hs.nightsPerBlock) addedNights += Math.floor(spend / hs.spendBlock) * hs.nightsPerBlock;
+      let addedNights = 0;
+      if (!p.currentCards.includes(cardId)) addedNights += hs.annualNights || 0;
+      const futureSpend = num(futureCardSpend[cardId]);
+      if (hs.spendBlock && hs.nightsPerBlock) {
+        addedNights += Math.floor(futureSpend / hs.spendBlock) * hs.nightsPerBlock;
+      }
       nights += addedNights;
-      if (hs.automaticTier && tierIndex(program, hs.automaticTier) > tierIndex(program, bestAutoTier)) bestAutoTier = hs.automaticTier;
-      contributions.push({ cardId, spend: round(spend), addedNights, automaticTier: hs.automaticTier || "" });
+      if (hs.automaticTier) auto = maxTier(program, auto, hs.automaticTier);
+      contributions.push({ cardId, futureSpend, addedNights, automaticTier: hs.automaticTier || "" });
     }
-    let earnedTier = "";
-    const rules = RULES.hotels[program];
+
+    let earned = "";
     if (program === "hilton") {
-      const stays = profile.statusProgress.hotel.qualifyingStays;
-      const qSpend = profile.statusProgress.hotel.qualifyingSpend;
-      for (const row of rules.thresholds) {
-        if (nights >= row.nights || stays >= row.stays || qSpend >= row.spend) earnedTier = row.tier;
+      for (const r of RULES.hotels.hilton.thresholds) {
+        if (nights >= r.nights || stays >= r.stays || qSpend >= r.spend) earned = r.tier;
       }
-      const dr = rules.diamondReserve;
-      if ((nights >= dr.nights && qSpend >= dr.spend) || (stays >= dr.stays && qSpend >= dr.spend)) earnedTier = dr.tier;
+      const d = RULES.hotels.hilton.diamondReserve;
+      if (((nights >= d.nights) || (stays >= d.stays)) && qSpend >= d.spend) earned = d.tier;
     } else {
-      for (const row of rules.thresholds) if (nights >= row.nights) earnedTier = row.tier;
+      for (const r of RULES.hotels[program].thresholds) if (nights >= r.nights) earned = r.tier;
     }
-    const tier = tierIndex(program, bestAutoTier) > tierIndex(program, earnedTier) ? bestAutoTier : earnedTier;
-    return { tier, qualifyingNights: nights, contributions };
+    const projectedTier = maxTier(program, earned, auto);
+    const effectiveTier = maxTier(program, p.hotel.reportedStatus, projectedTier);
+    return { projectedTier, effectiveTier, qualifyingNights: nights, qualifyingStays: stays, qualifyingSpend: qSpend, contributions };
   }
 
-  // -------------------------------------------------------------------------
-  // Earning and benefits
-  // -------------------------------------------------------------------------
-
-  function earningRate(card, category, profile) {
+  function earningRate(card, category, amount) {
     if (!card) return 0;
-    let rate = card.earn?.[category] || 0;
-    const booking = profile.bookingMethods || {};
-    if (category === "hotel" && booking.hotel === "amex_prepaid" && card.bookingBonuses?.amex_prepaid_hotel) rate = card.bookingBonuses.amex_prepaid_hotel;
-    if (category === "airfare" && booking.airfare === "capital_one" && card.bookingBonuses?.capital_one_flights) rate = card.bookingBonuses.capital_one_flights;
-    if (category === "hotel" && booking.hotel === "capital_one" && card.bookingBonuses?.capital_one_hotels) rate = card.bookingBonuses.capital_one_hotels;
-    if ((category === "airfare" || category === "hotel") && booking[category] === "chase_travel" && card.bookingBonuses?.chase_travel) rate = card.bookingBonuses.chase_travel;
-    return rate;
+    const base = card.earn?.[category] || 0;
+    const cap = card.caps?.[category];
+    if (!cap || amount <= cap) return base;
+    return ((cap * base) + ((amount - cap) * 1)) / amount;
   }
 
-  function categoryPoints(cardId, category, amount, profile) {
+  function cardCategoryValue(p, cardId, category, amount, scenario) {
     const card = RULES.cards[cardId];
-    if (!card || amount <= 0) return { currency: null, points: 0 };
-    const rate = earningRate(card, category, profile);
-    let points = amount * rate;
-    if (card.caps?.[category]) {
-      const cap = card.caps[category];
-      points = Math.min(amount, cap) * rate + Math.max(0, amount - cap) * 1;
-    }
-    return { currency: card.currency, points: round(points) };
-  }
-
-  function naturalBenefitValue(profile, cardId) {
-    const v = profile.naturalBenefitValue?.[cardId];
-    if (typeof v === "number") return Math.max(0, v);
-    if (v && typeof v === "object") return sum(Object.values(v).map(num));
-    return 0;
-  }
-
-  function evaluateRouting(profile, routing, portfolio, valuationScenario = "base") {
-    const pointsByCurrency = {};
-    const spendByCard = cardSpendTotals(routing);
-    const unsupportedRouting = [];
-
-    for (const category of CATEGORIES) {
-      for (const row of routing[category] || []) {
-        const card = RULES.cards[row.card];
-        if (!card) {
-          unsupportedRouting.push({ category, card: row.card, amount: row.amount });
-          continue;
-        }
-        const earned = categoryPoints(row.card, category, row.amount, profile);
-        if (earned.currency) pointsByCurrency[earned.currency] = (pointsByCurrency[earned.currency] || 0) + earned.points;
-      }
-    }
-
-    const valuations = VALUATIONS[valuationScenario] || VALUATIONS.base;
-    let travelValue = 0;
-    for (const [currency, points] of Object.entries(pointsByCurrency)) {
-      const utility = profile.currencyUtility[currency] ?? 0.5;
-      travelValue += points * (valuations[currency] || 0) * utility;
-    }
-
-    let annualFees = 0;
-    let benefitValue = 0;
-    const unverifiedCards = [];
-    for (const cardId of portfolio) {
-      const card = RULES.cards[cardId];
-      if (!card) continue;
-      annualFees += card.annualFee || 0;
-      benefitValue += naturalBenefitValue(profile, cardId);
-      if (card.verificationPending) unverifiedCards.push(cardId);
-    }
-
-    const airline = profile.airline.primary;
-    const airlineProgress = airline ? airlineProgressWithCardSpend(profile, airline, spendByCard) : null;
-    const modeledAirlineStatus = airlineProgress ? statusTierForProgress(airline, airlineProgress) : "";
-    const hotelStatus = hotelStatusFromCards(profile, spendByCard);
-
-    return {
-      pointsByCurrency: Object.fromEntries(Object.entries(pointsByCurrency).map(([k, v]) => [k, round(v)])),
-      grossTravelValue: round(travelValue),
-      naturalBenefitValue: round(benefitValue),
-      annualFees: round(annualFees),
-      netEconomicValue: round(travelValue + benefitValue - annualFees),
-      spendByCard,
-      airlineProgress,
-      modeledAirlineStatus,
-      reportedAirlineStatus: profile.airline.reportedStatus,
-      modeledHotelStatus: hotelStatus.tier,
-      reportedHotelStatus: profile.hotel.reportedStatus,
-      hotelStatusDetails: hotelStatus,
-      unsupportedRouting,
-      unverifiedCards
-    };
-  }
-
-  function currentRoutingCoverage(profile) {
-    const coverage = {};
-    let covered = 0;
-    for (const category of CATEGORIES) {
-      const amount = sum((profile.currentRouting[category] || []).map(r => r.amount));
-      coverage[category] = { expected: profile.spend[category], routed: amount, gap: round(profile.spend[category] - amount) };
-      covered += Math.min(profile.spend[category], amount);
-    }
-    return { coverage, ratio: profile.totalSpend ? covered / profile.totalSpend : 1 };
-  }
-
-  // -------------------------------------------------------------------------
-  // Strategy layer
-  // -------------------------------------------------------------------------
-
-  function airlineStrategy(profile) {
-    const primary = profile.airline.primary;
-    if (!primary) return { type: "none", airline: "", statusUseful: false, reason: "No primary airline relationship established." };
-    const routeFit = profile.airline.routeFit[primary];
-    const fitKnown = routeFit != null;
-    const concentrationOk = profile.airline.share >= MODEL.airlineConcentrationMinimum;
-    if (!concentrationOk) return { type: "none", airline: primary, statusUseful: false, reason: "Travel is not concentrated enough to justify airline concentration." };
-    if (fitKnown && routeFit < MODEL.routeFitMinimumForConcentration) return { type: "none", airline: primary, statusUseful: false, reason: "Current airline does not meet the minimum route-fit threshold." };
-    return {
-      type: "keep",
-      airline: primary,
-      routeFitKnown: fitKnown,
-      routeFit: fitKnown ? routeFit : null,
-      statusUseful: airlineStatusUsefulness(profile),
-      reason: fitKnown ? "Current airline fits the traveler’s routes and concentration." : "Current airline is preserved; independent migration is not allowed without route-fit evidence."
-    };
-  }
-
-  function hotelStrategy(profile, portfolio) {
-    const primary = profile.hotel.primary;
-    const hasPlatinum = portfolio.includes("amex_platinum");
-    const loyaltyUseful = hotelStatusUsefulness(profile);
-    if (profile.constraints.noHotelConcentration) {
-      return hasPlatinum ? { type: "premium_booking", program: primary, reason: "Hotel concentration is constrained; premium booking benefits remain available." } : { type: "none", program: primary, reason: "Hotel concentration is constrained." };
-    }
-    if (loyaltyUseful && hasPlatinum && profile.hotel.premiumStayShare > 0.25) return { type: "mixed", program: primary, reason: "Both chain concentration and premium booking treatment are materially relevant." };
-    if (loyaltyUseful) return { type: "loyalty", program: primary, reason: "Qualifying activity and concentration support a hotel loyalty strategy." };
-    if (hasPlatinum && profile.hotel.premiumStayShare > 0) return { type: "premium_booking", program: primary, reason: "Premium booking benefits fit the stay pattern better than manufactured hotel status." };
-    return { type: "none", program: primary, reason: "No hotel-status strategy is justified by current stay behavior." };
-  }
-
-  function relevantFlexibleCards(profile) {
-    if (profile.constraints.noNewCards) return [];
-    const ids = ["amex_gold", "amex_platinum", "chase_preferred", "chase_reserve", "venture", "venture_x"];
-    return ids.filter(id => {
-      if (profile.currentCards.includes(id)) return false;
-      if (profile.constraints.prohibitedCards.includes(id)) return false;
-      const card = RULES.cards[id];
-      return (profile.currencyUtility[card.currency] ?? 0) >= 0.55;
-    });
-  }
-
-  function relevantAirlineCards(profile, airStrategy) {
-    if (profile.constraints.noNewCards || !airStrategy.airline || !airStrategy.statusUseful) return [];
-    return Object.keys(RULES.cards).filter(id => {
-      const card = RULES.cards[id];
-      return card.airline === airStrategy.airline && !profile.currentCards.includes(id) && !profile.constraints.prohibitedCards.includes(id);
-    });
-  }
-
-  function relevantHotelCards(profile) {
-    if (profile.constraints.noNewCards || !profile.hotel.primary || profile.constraints.noHotelConcentration) return [];
-    if (!hotelStatusUsefulness(profile)) return [];
-    return Object.keys(RULES.cards).filter(id => {
-      const card = RULES.cards[id];
-      return card.hotel === profile.hotel.primary && !profile.currentCards.includes(id) && !profile.constraints.prohibitedCards.includes(id);
-    });
-  }
-
-  function candidatePortfolios(profile) {
-    const base = uniq([...profile.currentCards, ...profile.constraints.requiredCards]);
-    const air = airlineStrategy(profile);
-    const additions = uniq([...relevantFlexibleCards(profile), ...relevantAirlineCards(profile, air), ...relevantHotelCards(profile)]);
-    const sets = new Map();
-    const addSet = cards => {
-      const sorted = uniq(cards).sort();
-      const newCount = sorted.filter(id => !base.includes(id)).length;
-      if (newCount > profile.constraints.maxNewCards) return;
-      const key = sorted.join("|");
-      if (!sets.has(key)) sets.set(key, sorted);
-    };
-
-    addSet(base);
-
-    for (const add of additions) {
-      addSet([...base, add]);
-      for (const existing of base) {
-        if (profile.constraints.requiredCards.includes(existing)) continue;
-        addSet([...base.filter(id => id !== existing), add]);
-      }
-    }
-
-    // Removal-only cases expose redundancy and ensure fees cannot vanish silently.
-    for (const existing of base) {
-      if (profile.constraints.requiredCards.includes(existing)) continue;
-      addSet(base.filter(id => id !== existing));
-    }
-
-    // Limited two-add combinations: one flexible plus one airline/hotel mechanism.
-    const flex = relevantFlexibleCards(profile);
-    const purpose = uniq([...relevantAirlineCards(profile, air), ...relevantHotelCards(profile)]);
-    for (const f of flex) for (const p of purpose) if (f !== p) addSet([...base, f, p]);
-
-    return [...sets.values()];
-  }
-
-  function cardValueForCategory(profile, cardId, category, scenario = "base") {
-    const card = RULES.cards[cardId];
-    if (!card) return -Infinity;
-    const rate = earningRate(card, category, profile);
-    const utility = profile.currencyUtility[card.currency] ?? 0.5;
+    if (!card || amount <= 0) return -Infinity;
+    const rate = earningRate(card, category, amount);
+    const utility = p.currencyUtility[card.currency] ?? .5;
     return rate * (VALUATIONS[scenario][card.currency] || 0) * utility;
   }
 
-  function routeSpendNormally(profile, portfolio, scenario = "base") {
+  function routeAnnualSpend(p, portfolio, scenario) {
     const routing = {};
-    for (const category of CATEGORIES) {
-      const amount = profile.spend[category];
-      if (amount <= 0) { routing[category] = []; continue; }
-      let best = null;
-      let bestValue = -Infinity;
+    for (const c of CATEGORIES) {
+      const amount = p.spend[c];
+      if (!amount) { routing[c] = []; continue; }
+      let best = null, bestV = -Infinity;
       for (const cardId of portfolio) {
-        if (!RULES.cards[cardId]) continue;
-        const v = cardValueForCategory(profile, cardId, category, scenario);
-        if (v > bestValue) { bestValue = v; best = cardId; }
+        const v = cardCategoryValue(p, cardId, c, amount, scenario);
+        if (v > bestV) { bestV = v; best = cardId; }
       }
-      routing[category] = best ? [{ card: best, amount }] : [];
+      routing[c] = best ? [{ card: best, amount }] : [];
     }
     return routing;
   }
 
-  function nextAirlineThreshold(profile, airline) {
-    const rules = RULES.airlines[airline];
-    if (!rules) return null;
-    const p = profile.statusProgress[airline] || {};
-    const currentMetric = airline === "delta" ? p.mqd : airline === "united" ? p.pqp : airline === "american" ? p.loyaltyPoints : p.tqp;
-    return rules.thresholds.find(row => row.amount > currentMetric) || null;
-  }
-
-  function qualifyingStatusCardIds(portfolio, airline) {
-    return portfolio.filter(id => RULES.cards[id]?.airline === airline && RULES.cards[id]?.status);
-  }
-
-  function statusSpendNeeded(profile, airline, cardId) {
-    const card = RULES.cards[cardId];
-    const threshold = nextAirlineThreshold(profile, airline);
-    if (!card?.status || !threshold) return null;
-    const s = card.status;
-    const p = profile.statusProgress[airline] || {};
-    let base = airline === "delta" ? p.mqd : airline === "united" ? p.pqp : airline === "american" ? p.loyaltyPoints : p.tqp;
-    if (airline === "delta") base += s.headstart || 0;
-    if (airline === "united" && s.annualBonus) {
-      const tenure = profile.cardTenure[cardId] || {};
-      if (!s.bonusRequiresPriorYearOpen || tenure.eligibleAnnualBonus === true) base += s.annualBonus;
-    }
-    const gap = Math.max(0, threshold.amount - base);
-    if (gap <= 0) return { spend: 0, target: threshold };
-    if (airline === "delta") return { spend: gap * s.spendDivisor, target: threshold };
-    if (airline === "united") return { spend: gap * s.spendDivisor, target: threshold };
-    if (airline === "american") return { spend: gap / (s.lpPerEligiblePurchaseDollar || 1), target: threshold };
-    if (airline === "southwest") return { spend: Math.ceil(gap / (s.tqpPerBlock || 1)) * (s.spendBlock || 0), target: threshold };
-    return null;
-  }
-
-  function applyUsefulStatusRouting(profile, portfolio, routing, scenario = "base") {
-    const air = airlineStrategy(profile);
-    if (!air.statusUseful || !air.airline) return { routing, statusTarget: null, opportunityCost: 0 };
-    const statusCards = qualifyingStatusCardIds(portfolio, air.airline);
-    if (!statusCards.length) return { routing, statusTarget: null, opportunityCost: 0 };
-
-    let bestPlan = null;
-    for (const statusCard of statusCards) {
-      const need = statusSpendNeeded(profile, air.airline, statusCard);
-      if (!need || need.spend <= 0 || need.spend > profile.totalSpend) continue;
-      let remaining = need.spend;
-      let cost = 0;
-      const shifts = [];
-      const categoryLosses = CATEGORIES.map(category => {
-        const normalCard = routing[category]?.[0]?.card;
-        const amount = routing[category]?.[0]?.amount || 0;
-        const normal = normalCard ? cardValueForCategory(profile, normalCard, category, scenario) : 0;
-        const status = cardValueForCategory(profile, statusCard, category, scenario);
-        return { category, amount, lossPerDollar: Math.max(0, normal - status) };
-      }).sort((a, b) => a.lossPerDollar - b.lossPerDollar);
-
-      for (const item of categoryLosses) {
-        if (remaining <= 0) break;
-        const shifted = Math.min(item.amount, remaining);
-        if (shifted <= 0) continue;
-        shifts.push({ ...item, shifted });
-        cost += shifted * item.lossPerDollar;
-        remaining -= shifted;
+  function pointsFromRouting(p, routing, scenario) {
+    const byCurrency = {};
+    for (const c of CATEGORIES) {
+      for (const row of routing[c] || []) {
+        const card = RULES.cards[row.card];
+        if (!card) continue;
+        const amount = num(row.amount);
+        const pts = amount * earningRate(card, c, amount);
+        byCurrency[card.currency] = (byCurrency[card.currency] || 0) + pts;
       }
-      if (remaining > 0) continue;
-      if (cost > MODEL.statusSpendOpportunityCostLimit) continue;
-      if (!bestPlan || cost < bestPlan.cost) bestPlan = { statusCard, need, shifts, cost };
     }
-
-    if (!bestPlan) return { routing, statusTarget: null, opportunityCost: 0 };
-
-    const adjusted = deepClone(routing);
-    for (const shift of bestPlan.shifts) {
-      const rows = adjusted[shift.category] || [];
-      const normal = rows[0];
-      if (!normal) continue;
-      normal.amount = round(Math.max(0, normal.amount - shift.shifted));
-      const existing = rows.find(r => r.card === bestPlan.statusCard);
-      if (existing) existing.amount = round(existing.amount + shift.shifted);
-      else rows.push({ card: bestPlan.statusCard, amount: round(shift.shifted) });
-      adjusted[shift.category] = rows.filter(r => r.amount > 0);
+    let gross = 0;
+    for (const [cur, pts] of Object.entries(byCurrency)) {
+      gross += pts * (VALUATIONS[scenario][cur] || 0) * (p.currencyUtility[cur] ?? .5);
     }
+    return { byCurrency: Object.fromEntries(Object.entries(byCurrency).map(([k,v]) => [k, round(v)])), grossTravelValue: round(gross) };
+  }
 
+  function visibleBenefits(portfolio) {
+    const out = [];
+    for (const id of portfolio) {
+      const card = RULES.cards[id];
+      for (const tag of card?.benefitTags || []) out.push({ cardId: id, benefit: tag });
+      if (card?.hotelStatus?.automaticTier) out.push({ cardId: id, benefit: "automatic_hotel_status", detail: card.hotelStatus.automaticTier });
+      if (card?.airline && card?.status) out.push({ cardId: id, benefit: "status_earning_mechanism", detail: card.airline });
+    }
+    return out;
+  }
+
+  function benefitRecommendationCredit(p, portfolio) {
+    const credits = {
+      lounge: 0,
+      premiumHotel: 0,
+      priorityAirport: 0,
+      upgradePriority: 0
+    };
+    const tags = new Set(portfolio.flatMap(id => RULES.cards[id]?.benefitTags || []));
+    if (tags.has("lounge") && p.travel.annualOneWayFlights >= 6) credits.lounge = 1;
+    if ((tags.has("premium_hotel_booking") || tags.has("premium_hotel_benefits")) && p.spend.hotel > 0 && p.hotel.premiumStayShare > 0) credits.premiumHotel = 1;
+    if (tags.has("priority_airport") && p.travel.annualOneWayFlights >= 6) credits.priorityAirport = 1;
+    if (tags.has("upgrade_priority") && p.airline.primary === "delta" && p.travel.annualOneWayFlights >= 8) credits.upgradePriority = 1;
+    return credits;
+  }
+
+  function naturalBenefitValue(p, portfolio) {
+    let total = 0;
+    for (const id of portfolio) total += num(p.naturalBenefitValue[id]);
+    return total;
+  }
+
+  function evaluateEconomics(p, routing, portfolio, scenario) {
+    const pts = pointsFromRouting(p, routing, scenario);
+    const fees = sum(portfolio.map(id => RULES.cards[id]?.annualFee || 0));
+    const benefits = naturalBenefitValue(p, portfolio);
+    const unverifiedCards = portfolio.filter(id => RULES.cards[id]?.verificationPending);
     return {
-      routing: adjusted,
-      statusTarget: { airline: air.airline, tier: bestPlan.need.target.tier, cardId: bestPlan.statusCard, spendDirected: round(bestPlan.need.spend) },
-      opportunityCost: round(bestPlan.cost)
+      pointsByCurrency: pts.byCurrency,
+      grossTravelValue: pts.grossTravelValue,
+      annualFees: fees,
+      naturalBenefitValue: benefits,
+      netEconomicValue: round(pts.grossTravelValue + benefits - fees),
+      unverifiedCards
     };
   }
 
-  // -------------------------------------------------------------------------
-  // Outcomes, actions, confidence
-  // -------------------------------------------------------------------------
+  function airlineStrategy(p) {
+    if (!p.airline.primary) return { type: "none", airline: "", statusUseful: false, routeFitEstablished: false };
+    const routeFit = p.airline.routeFit[p.airline.primary];
+    return {
+      type: "keep",
+      airline: p.airline.primary,
+      statusUseful: airlineStatusUsefulness(p),
+      routeFitEstablished: routeFit != null,
+      routeFit: routeFit == null ? null : routeFit
+    };
+  }
 
-  function complexity(profile, portfolio, economics) {
+  function hotelStrategy(p, portfolio, benefitCredit) {
+    const chain = hotelStatusUsefulness(p);
+    const premium = benefitCredit.premiumHotel > 0;
+    return {
+      type: chain && premium ? "mixed" : chain ? "chain_loyalty_status" : premium ? "premium_booking" : "none",
+      program: p.hotel.primary || ""
+    };
+  }
+
+  function relevantCards(p) {
+    const flex = ["amex_gold", "amex_platinum", "chase_preferred", "chase_reserve", "venture", "venture_x"];
+    const airline = {
+      delta: ["delta_platinum", "delta_reserve"],
+      united: ["united_explorer", "united_quest", "united_club"],
+      american: ["aa_executive"],
+      southwest: ["southwest_priority"]
+    }[p.airline.primary] || [];
+    const hotel = {
+      hyatt: ["hyatt_consumer"],
+      marriott: ["marriott_boundless", "marriott_brilliant"],
+      hilton: ["hilton_no_fee", "hilton_surpass", "hilton_aspire"]
+    }[p.hotel.primary] || [];
+    return uniq([...p.currentCards, ...p.constraints.requiredCards, ...flex, ...airline, ...hotel])
+      .filter(id => RULES.cards[id] && !p.constraints.prohibitedCards.includes(id));
+  }
+
+  function combinations(arr, maxSize) {
+    const out = [];
+    function walk(i, picked) {
+      if (picked.length <= maxSize) out.push(picked.slice());
+      if (picked.length === maxSize) return;
+      for (let j = i; j < arr.length; j++) {
+        picked.push(arr[j]); walk(j + 1, picked); picked.pop();
+      }
+    }
+    walk(0, []);
+    return out;
+  }
+
+  function hasUnjustifiedHotelOverlap(p, set) {
+    const byProgram = {};
+    for (const id of set) {
+      const card = RULES.cards[id];
+      if (!card?.hotel) continue;
+      (byProgram[card.hotel] ||= []).push(id);
+    }
+    for (const ids of Object.values(byProgram)) {
+      if (ids.length <= 1) continue;
+      const sorted = ids.slice().sort((a,b) => (RULES.cards[b].annualFee || 0) - (RULES.cards[a].annualFee || 0));
+      for (const extra of sorted.slice(1)) {
+        if (num(p.naturalBenefitValue[extra]) <= 0) return true;
+      }
+    }
+    return false;
+  }
+
+  function candidatePortfolios(p) {
+    const relevant = relevantCards(p);
+    const max = Math.min(MODEL.maxPortfolioCards, relevant.length);
+    const sets = [];
+    for (const s of combinations(relevant, max)) {
+      if (!s.length && p.totalSpend > 0) continue;
+      if (p.constraints.requiredCards.some(id => !s.includes(id))) continue;
+      const newCount = s.filter(id => !p.currentCards.includes(id)).length;
+      if (p.constraints.noNewCards && newCount > 0) continue;
+      if (newCount > p.constraints.maxNewCards) continue;
+      if (hasUnjustifiedHotelOverlap(p, s)) continue;
+      sets.push(s);
+    }
+    if (!sets.some(s => JSON.stringify(s.slice().sort()) === JSON.stringify(p.currentCards.slice().sort()))) sets.push(p.currentCards.slice());
+    return sets;
+  }
+
+  function categoryFutureBudgets(p) {
+    return clone(p.futureActivity.statusSpend);
+  }
+
+  function futureSpendOnCardFromRouting(p, annualRouting, targetCard) {
+    const budgets = categoryFutureBudgets(p);
+    let total = 0;
+    for (const c of CATEGORIES) {
+      const rows = annualRouting[c] || [];
+      const annualCategory = p.spend[c] || 0;
+      const futureCategory = budgets[c] || 0;
+      if (!annualCategory || !futureCategory) continue;
+      for (const r of rows) if (r.card === targetCard) total += futureCategory * (r.amount / annualCategory);
+    }
+    return total;
+  }
+
+  function futureCardSpendMap(p, annualRouting) {
+    const out = {};
+    for (const id of uniq(Object.values(annualRouting).flat().map(r => r.card))) {
+      out[id] = futureSpendOnCardFromRouting(p, annualRouting, id);
+    }
+    return out;
+  }
+
+  function nextUsefulAirlineThreshold(p, airline) {
+    const rules = RULES.airlines[airline];
+    if (!rules) return null;
+    const reportedIdx = tierIndex(airline, p.airline.reportedStatus);
+    const organic = airlineFutureProgress(p, airline, {});
+    const projectedIdx = tierIndex(airline, organic.tier);
+    const baselineIdx = Math.max(reportedIdx, projectedIdx);
+    if (reportedIdx >= 0 && projectedIdx < reportedIdx) {
+      return { target: rules.thresholds[reportedIdx], type: "retain", organic };
+    }
+    const target = rules.thresholds.find((r, idx) => idx > baselineIdx);
+    return target ? { target, type: "upgrade", organic } : null;
+  }
+
+  function airlineStatusSpendNeed(p, airline, cardId) {
+    const card = RULES.cards[cardId];
+    const plan = nextUsefulAirlineThreshold(p, airline);
+    if (!card?.status || !plan) return null;
+    const organic = plan.organic;
+
+    if (airline === "southwest") {
+      const targetFlight = RULES.airlines.southwest.flightThresholds.find(r => r.tier === plan.target.tier);
+      if (targetFlight && organic.qualifyingFlights >= targetFlight.flights) return { spend: 0, ...plan, achievedOrganically: true };
+    }
+
+    let base = organic.metric;
+    if (airline === "delta" && !p.currentCards.includes(cardId)) base += card.status.headstart || 0;
+    if (airline === "united" && p.cardTenure[cardId]?.futureAnnualBonusEligible === true) base += card.status.annualBonus || 0;
+
+    const gap = Math.max(0, plan.target.amount - base);
+    if (!gap) return { spend: 0, ...plan, achievedOrganically: true };
+    let spend = Infinity;
+    if (airline === "delta" || airline === "united") spend = gap * card.status.spendDivisor;
+    if (airline === "american") spend = gap / (card.status.lpPerEligiblePurchaseDollar || 1);
+    if (airline === "southwest") spend = Math.ceil(gap / (card.status.tqpPerBlock || 1)) * card.status.spendBlock;
+    return { spend, ...plan, achievedOrganically: false };
+  }
+
+  function hotelStatusSpendNeed(p, portfolio, cardId) {
+    const program = p.hotel.primary;
+    const card = RULES.cards[cardId];
+    if (!program || !card?.hotelStatus || card.hotel !== program || !hotelStatusUsefulness(p)) return null;
+    const currentFuture = hotelTierFromFacts(p, portfolio, {});
+    const currentIdx = tierIndex(program, p.hotel.reportedStatus);
+    const projectedIdx = tierIndex(program, currentFuture.projectedTier);
+    const baseline = Math.max(currentIdx, projectedIdx);
+    const rules = RULES.hotels[program];
+    if (program === "hilton") return null;
+    let target;
+    let type;
+    if (currentIdx >= 0 && projectedIdx < currentIdx) {
+      target = rules.thresholds[currentIdx]; type = "retain";
+    } else {
+      target = rules.thresholds.find((r, idx) => idx > baseline); type = "upgrade";
+    }
+    if (!target) return null;
+    const hs = card.hotelStatus;
+    if (!hs.spendBlock || !hs.nightsPerBlock) return null;
+    let nights = p.statusProgress.hotel.qualifyingNights + p.futureActivity.hotel.qualifyingNights;
+    if (!p.currentCards.includes(cardId)) nights += hs.annualNights || 0;
+    const gapNights = Math.max(0, target.nights - nights);
+    if (!gapNights) return { spend: 0, target, type, achievedOrganically: true };
+    const blocks = Math.ceil(gapNights / hs.nightsPerBlock);
+    return { spend: blocks * hs.spendBlock, target, type, achievedOrganically: false };
+  }
+
+  function shiftFutureStatusSpend(p, routing, targetCard, requiredSpend, scenario) {
+    if (!requiredSpend || requiredSpend <= 0) return { routing: clone(routing), shifted: 0, opportunityCost: 0 };
+    const futureBudget = categoryFutureBudgets(p);
+    const adjusted = clone(routing);
+    const choices = [];
+
+    for (const c of CATEGORIES) {
+      const annual = p.spend[c] || 0;
+      const available = Math.min(annual, futureBudget[c] || 0);
+      if (!available) continue;
+      const rows = adjusted[c] || [];
+      const normalCard = rows[0]?.card;
+      if (!normalCard) continue;
+      const normalValue = cardCategoryValue(p, normalCard, c, annual, scenario);
+      const targetValue = cardCategoryValue(p, targetCard, c, annual, scenario);
+      choices.push({ c, available, normalCard, loss: Math.max(0, normalValue - targetValue) });
+    }
+    choices.sort((a,b) => a.loss - b.loss);
+    let remaining = requiredSpend, cost = 0, shifted = 0;
+    for (const x of choices) {
+      if (remaining <= 0) break;
+      const take = Math.min(x.available, remaining);
+      if (!take) continue;
+      const rows = adjusted[x.c] || [];
+      const normal = rows.find(r => r.card === x.normalCard);
+      if (normal) normal.amount = round(Math.max(0, normal.amount - take));
+      const target = rows.find(r => r.card === targetCard);
+      if (target) target.amount = round(target.amount + take);
+      else rows.push({ card: targetCard, amount: round(take) });
+      adjusted[x.c] = rows.filter(r => r.amount > 0);
+      shifted += take; remaining -= take; cost += take * x.loss;
+    }
+    if (remaining > 0) return null;
+    return { routing: adjusted, shifted: round(shifted), opportunityCost: round(cost) };
+  }
+
+  function applyStatusPlan(p, portfolio, baseRouting, scenario) {
+    let routing = clone(baseRouting);
+    const air = airlineStrategy(p);
+    let airlineTarget = null;
+    let hotelTarget = null;
+    let opportunityCost = 0;
+
+    if (air.statusUseful && air.airline) {
+      const statusCards = portfolio.filter(id => RULES.cards[id]?.airline === air.airline && RULES.cards[id]?.status);
+      let best = null;
+      for (const id of statusCards) {
+        const need = airlineStatusSpendNeed(p, air.airline, id);
+        if (!need || need.achievedOrganically || need.spend <= 0) continue;
+        const shifted = shiftFutureStatusSpend(p, routing, id, need.spend, scenario);
+        if (!shifted || shifted.opportunityCost > MODEL.statusOpportunityCostLimit) continue;
+        if (!best || shifted.opportunityCost < best.shifted.opportunityCost) best = { id, need, shifted };
+      }
+      if (best) {
+        routing = best.shifted.routing;
+        opportunityCost += best.shifted.opportunityCost;
+        airlineTarget = {
+          airline: air.airline, tier: best.need.target.tier, type: best.need.type,
+          cardId: best.id, spendDirected: best.shifted.shifted
+        };
+      }
+    }
+
+    if (hotelStatusUsefulness(p) && p.hotel.primary) {
+      const hotelCards = portfolio.filter(id => RULES.cards[id]?.hotel === p.hotel.primary && RULES.cards[id]?.hotelStatus?.spendBlock);
+      let best = null;
+      for (const id of hotelCards) {
+        const need = hotelStatusSpendNeed(p, portfolio, id);
+        if (!need || need.achievedOrganically || need.spend <= 0) continue;
+        const shifted = shiftFutureStatusSpend(p, routing, id, need.spend, scenario);
+        if (!shifted || shifted.opportunityCost > MODEL.statusOpportunityCostLimit) continue;
+        if (!best || shifted.opportunityCost < best.shifted.opportunityCost) best = { id, need, shifted };
+      }
+      if (best) {
+        routing = best.shifted.routing;
+        opportunityCost += best.shifted.opportunityCost;
+        hotelTarget = {
+          program: p.hotel.primary, tier: best.need.target.tier, type: best.need.type,
+          cardId: best.id, spendDirected: best.shifted.shifted
+        };
+      }
+    }
+
+    return { routing, airlineTarget, hotelTarget, opportunityCost: round(opportunityCost) };
+  }
+
+  function effectiveAirlineStatus(p, airline, futureProgress) {
+    return maxTier(airline, p.airline.reportedStatus, futureProgress.tier);
+  }
+
+  function explicitActions(p, portfolio) {
+    const actions = [];
+    for (const id of p.currentCards) {
+      if (!RULES.cards[id]) actions.push({ cardId: id, action: "manual_review" });
+      else if (portfolio.includes(id)) actions.push({ cardId: id, action: "keep" });
+      else actions.push({ cardId: id, action: "remove_or_downgrade_after_review" });
+    }
+    for (const id of portfolio) if (!p.currentCards.includes(id)) actions.push({ cardId: id, action: "add" });
+    return actions;
+  }
+
+  function complexity(portfolio, p) {
     const currencies = uniq(portfolio.map(id => RULES.cards[id]?.currency).filter(Boolean));
-    const newCards = portfolio.filter(id => !profile.currentCards.includes(id));
+    const newCards = portfolio.filter(id => !p.currentCards.includes(id));
     return {
       cardCount: portfolio.length,
       newCardCount: newCards.length,
       currencyCount: currencies.length,
-      burden: portfolio.length * MODEL.complexityPenaltyPerCard + currencies.length * MODEL.complexityPenaltyPerCurrency + newCards.length
+      burden: round(portfolio.length * MODEL.complexityPenaltyPerCard +
+        currencies.length * MODEL.complexityPenaltyPerCurrency + newCards.length, 2)
     };
   }
 
-  function outcomeLedger(profile, portfolio, economics, strategyMeta) {
-    const currentStatus = currentReportedStatus(profile);
-    const modeledAirlineStatus = economics.modeledAirlineStatus;
-    const modeledHotelStatus = economics.modeledHotelStatus;
-    const hasLounge = portfolio.some(id => (RULES.cards[id]?.benefitTags || []).includes("lounge"));
-    const hasPremiumHotel = portfolio.some(id => (RULES.cards[id]?.benefitTags || []).includes("premium_hotel_booking"));
-    const comp = complexity(profile, portfolio, economics);
-    const tripCost = profile.travel.typicalTripCashCost;
-    const equivalentTrips = tripCost > 0 ? economics.grossTravelValue / tripCost : null;
-
+  function outcomeLedger(p, portfolio, economics, statusPlan, futureAir, futureHotel, credit) {
+    const effectiveAir = p.airline.primary ? effectiveAirlineStatus(p, p.airline.primary, futureAir) : "";
     return {
       travelCapacity: {
         annualTravelValue: economics.grossTravelValue,
-        equivalentTrips: equivalentTrips == null ? null : round(equivalentTrips, 1),
-        pointsByCurrency: economics.pointsByCurrency
+        pointsByCurrency: economics.pointsByCurrency,
+        equivalentTrips: p.travel.typicalTripCashCost > 0 ? round(economics.grossTravelValue / p.travel.typicalTripCashCost, 1) : null
       },
       flightQuality: {
-        reportedStatus: currentStatus.airline,
-        projectedStatus: modeledAirlineStatus,
-        usefulStatusStrategy: !!strategyMeta.statusTarget,
-        statusTarget: strategyMeta.statusTarget
+        reportedStatus: p.airline.reportedStatus,
+        projectedFutureStatus: futureAir.tier || "",
+        effectiveStatus: effectiveAir,
+        statusTarget: statusPlan.airlineTarget
       },
       airportExperience: {
-        loungeAccess: hasLounge,
-        priorityFromStatus: !!modeledAirlineStatus || !!currentStatus.airline
+        loungeRecommendationCredit: credit.lounge,
+        priorityRecommendationCredit: credit.priorityAirport,
+        upgradePriorityRecommendationCredit: credit.upgradePriority
       },
       hotelExperience: {
-        reportedStatus: currentStatus.hotel,
-        projectedStatus: modeledHotelStatus,
-        premiumBooking: hasPremiumHotel,
-        strategy: strategyMeta.hotelStrategy.type
+        reportedStatus: p.hotel.reportedStatus,
+        projectedFutureStatus: futureHotel.projectedTier || "",
+        effectiveStatus: futureHotel.effectiveTier || "",
+        premiumHotelRecommendationCredit: credit.premiumHotel,
+        statusTarget: statusPlan.hotelTarget
       },
       reliability: {
-        airlineStatusUseful: airlineStatusUsefulness(profile),
-        statusPresent: !!(modeledAirlineStatus || currentStatus.airline)
+        preservesCurrentAirlineStatus: !!(p.airline.reportedStatus && effectiveAir === p.airline.reportedStatus &&
+          tierIndex(p.airline.primary, futureAir.tier) >= tierIndex(p.airline.primary, p.airline.reportedStatus))
       },
-      cashEfficiency: {
-        annualTravelValue: economics.grossTravelValue,
-        netEconomicValue: economics.netEconomicValue
-      },
-      complexity: comp
+      cashEfficiency: { netEconomicValue: economics.netEconomicValue, annualTravelValue: economics.grossTravelValue },
+      complexity: complexity(portfolio, p)
     };
   }
 
-  function explicitCardActions(profile, portfolio) {
-    const actions = [];
-    for (const id of profile.currentCards) {
-      if (!RULES.cards[id]) actions.push({ cardId: id, action: "manual_review", reason: "Current card is outside the supported rules universe." });
-      else if (portfolio.includes(id)) actions.push({ cardId: id, action: "keep", reason: "Card remains part of the recommended implementation." });
-      else actions.push({ cardId: id, action: "remove_or_downgrade_after_review", reason: "Modeled strategy does not require this card; final close/downgrade path must be verified before action." });
-    }
-    for (const id of portfolio) {
-      if (!profile.currentCards.includes(id)) actions.push({ cardId: id, action: "add", reason: "Card has a defined role in the recommended travel strategy." });
-    }
-    return actions;
-  }
-
-  function dataQuality(profile, economics) {
+  function dataQuality(p, economics) {
     const issues = [];
-    const coverage = currentRoutingCoverage(profile);
-    if (coverage.ratio < 0.90) issues.push({ code: "routing_incomplete", severity: "high", detail: `Only ${round(coverage.ratio * 100)}% of modeled spend is represented in current routing.` });
-    for (const id of profile.currentCards) if (!RULES.cards[id]) issues.push({ code: "unsupported_current_card", severity: "high", detail: id });
-    for (const id of economics?.unverifiedCards || []) issues.push({ code: "rule_verification_pending", severity: "medium", detail: id });
-    if (profile.airline.primary && profile.airline.routeFit[profile.airline.primary] == null) issues.push({ code: "route_fit_not_independently_verified", severity: "medium", detail: profile.airline.primary });
-    if (profile.airline.primary && airlineStatusUsefulness(profile)) {
-      const p = profile.statusProgress[profile.airline.primary];
-      const known = profile.airline.primary === "delta" ? p?.mqd > 0 : profile.airline.primary === "united" ? p?.pqp > 0 : profile.airline.primary === "american" ? p?.loyaltyPoints > 0 : p?.tqp > 0 || p?.qualifyingFlights > 0;
-      if (!known) issues.push({ code: "status_progress_missing", severity: "medium", detail: profile.airline.primary });
-    }
-    const high = issues.filter(i => i.severity === "high").length;
-    const medium = issues.filter(i => i.severity === "medium").length;
-    return { level: high ? "low" : medium >= 2 ? "medium" : "high", issues };
+    for (const id of p.currentCards) if (!RULES.cards[id]) issues.push({ code: "unsupported_current_card", severity: "high", detail: id });
+    for (const id of economics.unverifiedCards || []) issues.push({ code: "rule_verification_pending", severity: "medium", detail: id });
+    if (p.airline.primary && p.airline.routeFit[p.airline.primary] == null) issues.push({ code: "route_fit_not_independently_verified", severity: "medium", detail: p.airline.primary });
+    const totalRouted = sum(CATEGORIES.flatMap(c => (p.currentRouting[c] || []).map(r => r.amount)));
+    if (p.totalSpend && totalRouted / p.totalSpend < .9) issues.push({ code: "routing_incomplete", severity: "high" });
+    return {
+      level: issues.some(i => i.severity === "high") ? "low" : issues.filter(i => i.severity === "medium").length >= 2 ? "medium" : "high",
+      issues
+    };
   }
 
-  function strategyRecord(profile, portfolio, scenario = "base") {
-    const normal = routeSpendNormally(profile, portfolio, scenario);
-    const statusAdjusted = applyUsefulStatusRouting(profile, portfolio, normal, scenario);
-    const economics = evaluateRouting(profile, statusAdjusted.routing, portfolio, scenario);
-    const airStrategy = airlineStrategy(profile);
-    const hStrategy = hotelStrategy(profile, portfolio);
-    const meta = {
-      airlineStrategy: airStrategy,
-      hotelStrategy: hStrategy,
-      statusTarget: statusAdjusted.statusTarget,
-      statusOpportunityCost: statusAdjusted.opportunityCost
-    };
-    const outcomes = outcomeLedger(profile, portfolio, economics, meta);
-    const actions = explicitCardActions(profile, portfolio);
-    const quality = dataQuality(profile, economics);
-    return {
+  function strategyRecord(p, portfolio, scenario = "base") {
+    const baseRouting = routeAnnualSpend(p, portfolio, scenario);
+    const statusPlan = applyStatusPlan(p, portfolio, baseRouting, scenario);
+    const economics = evaluateEconomics(p, statusPlan.routing, portfolio, scenario);
+    const futureCardSpend = futureCardSpendMap(p, statusPlan.routing);
+    const futureAir = p.airline.primary ? airlineFutureProgress(p, p.airline.primary, futureCardSpend) : { tier: "", metric: 0, qualifyingFlights: 0 };
+    const futureHotel = hotelTierFromFacts(p, portfolio, futureCardSpend);
+    const credit = benefitRecommendationCredit(p, portfolio);
+    const airStrategy = airlineStrategy(p);
+    const hStrategy = hotelStrategy(p, portfolio, credit);
+    const record = {
       id: portfolio.slice().sort().join("+") || "no_cards",
       portfolio: portfolio.slice(),
-      routing: statusAdjusted.routing,
+      routing: statusPlan.routing,
       economics,
-      strategy: meta,
-      outcomes,
-      actions,
-      quality
+      strategy: {
+        airlineStrategy: airStrategy,
+        hotelStrategy: hStrategy,
+        airlineStatusTarget: statusPlan.airlineTarget,
+        hotelStatusTarget: statusPlan.hotelTarget,
+        statusOpportunityCost: statusPlan.opportunityCost
+      },
+      outcomes: outcomeLedger(p, portfolio, economics, statusPlan, futureAir, futureHotel, credit),
+      visibleBenefits: visibleBenefits(portfolio),
+      recommendationCredit: credit,
+      actions: explicitActions(p, portfolio)
     };
+    record.quality = dataQuality(p, economics);
+    return record;
   }
 
-  function currentRecord(profile, scenario = "base") {
-    const economics = evaluateRouting(profile, profile.currentRouting, profile.currentCards, scenario);
-    const meta = { airlineStrategy: airlineStrategy(profile), hotelStrategy: hotelStrategy(profile, profile.currentCards), statusTarget: null, statusOpportunityCost: 0 };
-    return {
+  function currentRecord(p, scenario = "base") {
+    const economics = evaluateEconomics(p, p.currentRouting, p.currentCards, scenario);
+    const futureSpend = futureCardSpendMap(p, p.currentRouting);
+    const futureAir = p.airline.primary ? airlineFutureProgress(p, p.airline.primary, futureSpend) : { tier: "", metric: 0, qualifyingFlights: 0 };
+    const futureHotel = hotelTierFromFacts(p, p.currentCards, futureSpend);
+    const credit = benefitRecommendationCredit(p, p.currentCards);
+    const plan = { airlineTarget: null, hotelTarget: null, opportunityCost: 0 };
+    const record = {
       id: "current",
-      portfolio: profile.currentCards.slice(),
-      routing: deepClone(profile.currentRouting),
+      portfolio: p.currentCards.slice(),
+      routing: clone(p.currentRouting),
       economics,
-      strategy: meta,
-      outcomes: outcomeLedger(profile, profile.currentCards, economics, meta),
-      actions: explicitCardActions(profile, profile.currentCards),
-      quality: dataQuality(profile, economics)
+      strategy: { airlineStrategy: airlineStrategy(p), hotelStrategy: hotelStrategy(p, p.currentCards, credit), airlineStatusTarget: null, hotelStatusTarget: null, statusOpportunityCost: 0 },
+      outcomes: outcomeLedger(p, p.currentCards, economics, plan, futureAir, futureHotel, credit),
+      visibleBenefits: visibleBenefits(p.currentCards),
+      recommendationCredit: credit,
+      actions: explicitActions(p, p.currentCards)
     };
+    record.quality = dataQuality(p, economics);
+    return record;
   }
 
   function materialComparison(a, b) {
-    // Returns material improvements of A relative to B. No opaque weighted score.
-    const improvements = [];
-    const regressions = [];
+    const improvements = [], regressions = [];
     const av = a.outcomes.travelCapacity.annualTravelValue;
     const bv = b.outcomes.travelCapacity.annualTravelValue;
-    if (av - bv >= MODEL.materialAnnualTravelValue) improvements.push("travelCapacity");
-    if (bv - av >= MODEL.materialAnnualTravelValue) regressions.push("travelCapacity");
+    if (av - bv >= MODEL.materialTravelValue) improvements.push("travelCapacity");
+    if (bv - av >= MODEL.materialTravelValue) regressions.push("travelCapacity");
 
     const an = a.outcomes.cashEfficiency.netEconomicValue;
     const bn = b.outcomes.cashEfficiency.netEconomicValue;
     if (an - bn >= MODEL.materialCashImprovement) improvements.push("cashEfficiency");
     if (bn - an >= MODEL.materialCashImprovement) regressions.push("cashEfficiency");
 
-    const as = tierIndex(a.strategy.airlineStrategy.airline, a.outcomes.flightQuality.projectedStatus);
-    const bs = tierIndex(b.strategy.airlineStrategy.airline, b.outcomes.flightQuality.projectedStatus);
-    if (a.strategy.airlineStrategy.airline === b.strategy.airlineStrategy.airline) {
-      if (as > bs) improvements.push("flightQuality");
-      if (bs > as) regressions.push("flightQuality");
+    const air = a.strategy.airlineStrategy.airline || b.strategy.airlineStrategy.airline;
+    if (air) {
+      const ai = tierIndex(air, a.outcomes.flightQuality.effectiveStatus);
+      const bi = tierIndex(air, b.outcomes.flightQuality.effectiveStatus);
+      if (ai > bi) improvements.push("flightQuality");
+      if (bi > ai) regressions.push("flightQuality");
+      if (a.outcomes.reliability.preservesCurrentAirlineStatus && !b.outcomes.reliability.preservesCurrentAirlineStatus) improvements.push("reliability");
+      if (b.outcomes.reliability.preservesCurrentAirlineStatus && !a.outcomes.reliability.preservesCurrentAirlineStatus) regressions.push("reliability");
     }
 
-    const ah = a.outcomes.hotelExperience.projectedStatus;
-    const bh = b.outcomes.hotelExperience.projectedStatus;
-    const hp = a.strategy.hotelStrategy.program || b.strategy.hotelStrategy.program;
-    if (hp) {
-      const ai = tierIndex(hp, ah), bi = tierIndex(hp, bh);
-      if (ai > bi || (a.outcomes.hotelExperience.premiumBooking && !b.outcomes.hotelExperience.premiumBooking)) improvements.push("hotelExperience");
-      if (bi > ai || (b.outcomes.hotelExperience.premiumBooking && !a.outcomes.hotelExperience.premiumBooking)) regressions.push("hotelExperience");
+    const hotel = a.strategy.hotelStrategy.program || b.strategy.hotelStrategy.program;
+    if (hotel) {
+      const ai = tierIndex(hotel, a.outcomes.hotelExperience.effectiveStatus);
+      const bi = tierIndex(hotel, b.outcomes.hotelExperience.effectiveStatus);
+      if (ai > bi) improvements.push("hotelExperience");
+      if (bi > ai) regressions.push("hotelExperience");
     }
+    if (a.recommendationCredit.premiumHotel > b.recommendationCredit.premiumHotel) improvements.push("hotelExperience");
+    if (b.recommendationCredit.premiumHotel > a.recommendationCredit.premiumHotel) regressions.push("hotelExperience");
 
-    if (a.outcomes.airportExperience.loungeAccess && !b.outcomes.airportExperience.loungeAccess) improvements.push("airportExperience");
-    if (b.outcomes.airportExperience.loungeAccess && !a.outcomes.airportExperience.loungeAccess) regressions.push("airportExperience");
+    const aAirport = a.recommendationCredit.lounge + a.recommendationCredit.priorityAirport + a.recommendationCredit.upgradePriority;
+    const bAirport = b.recommendationCredit.lounge + b.recommendationCredit.priorityAirport + b.recommendationCredit.upgradePriority;
+    if (aAirport > bAirport) improvements.push("airportExperience");
+    if (bAirport > aAirport) regressions.push("airportExperience");
 
     const ac = a.outcomes.complexity.burden, bc = b.outcomes.complexity.burden;
     if (bc - ac >= 2) improvements.push("complexity");
     if (ac - bc >= 2) regressions.push("complexity");
-
     return { improvements: uniq(improvements), regressions: uniq(regressions) };
   }
 
   function dominates(a, b) {
-    const c = materialComparison(a, b);
-    return c.improvements.length > 0 && c.regressions.length === 0;
+    const x = materialComparison(a, b);
+    return x.improvements.length > 0 && x.regressions.length === 0;
   }
 
   function paretoSurvivors(records) {
-    return records.filter((candidate, i) => !records.some((other, j) => i !== j && dominates(other, candidate)));
+    return records.filter((r, i) => !records.some((o, j) => i !== j && dominates(o, r)));
   }
 
-  function chooseRecommended(profile, records, current) {
+  function chooseRecommended(p, records, current) {
     const survivors = paretoSurvivors(records);
-    // Aspirations are intentionally NOT referenced here.
-    // 1) Prefer strategies with more distinct material improvements over current.
-    // 2) Then lower complexity.
-    // 3) Then stronger base economics.
-    const ranked = survivors.map(r => {
-      const cmp = materialComparison(r, current);
-      return { record: r, improvements: cmp.improvements, regressions: cmp.regressions };
-    }).filter(x => x.regressions.length === 0 || x.improvements.length > x.regressions.length);
+    const viable = survivors.map(r => ({ r, cmp: materialComparison(r, current) }))
+      .filter(x => x.cmp.improvements.length > 0)
+      .filter(x => x.cmp.regressions.filter(k => k !== "complexity").length === 0 ||
+        x.cmp.improvements.length > x.cmp.regressions.filter(k => k !== "complexity").length);
 
-    ranked.sort((x, y) => {
-      if (y.improvements.length !== x.improvements.length) return y.improvements.length - x.improvements.length;
-      const xc = x.record.outcomes.complexity.burden, yc = y.record.outcomes.complexity.burden;
-      if (xc !== yc) return xc - yc;
-      return y.record.economics.netEconomicValue - x.record.economics.netEconomicValue;
+    viable.sort((x, y) => {
+      const xn = x.cmp.improvements.filter(k => k !== "complexity").length;
+      const yn = y.cmp.improvements.filter(k => k !== "complexity").length;
+      if (yn !== xn) return yn - xn;
+
+      const xCards = x.r.outcomes.complexity.cardCount;
+      const yCards = y.r.outcomes.complexity.cardCount;
+      const travelDelta = y.r.outcomes.travelCapacity.annualTravelValue - x.r.outcomes.travelCapacity.annualTravelValue;
+      const cardDelta = yCards - xCards;
+      if (cardDelta !== 0) {
+        const required = Math.abs(cardDelta) * MODEL.incrementalTravelValuePerExtraCard;
+        if (Math.abs(travelDelta) >= required) return travelDelta > 0 ? 1 : -1;
+      }
+
+      if (x.r.outcomes.complexity.burden !== y.r.outcomes.complexity.burden) {
+        return x.r.outcomes.complexity.burden - y.r.outcomes.complexity.burden;
+      }
+      return y.r.economics.netEconomicValue - x.r.economics.netEconomicValue;
     });
 
-    const best = ranked[0]?.record || current;
-    const againstCurrent = materialComparison(best, current);
-    if (!againstCurrent.improvements.length) return current;
-    return best;
+    const best = viable[0]?.r || current;
+    return materialComparison(best, current).improvements.length ? best : current;
   }
 
-  function sensitivity(profile, portfolio) {
-    const result = {};
-    for (const scenario of ["conservative", "base", "upper"]) result[scenario] = strategyRecord(profile, portfolio, scenario);
-    const ids = Object.values(result).map(r => r.id);
-    return { scenarios: result, strategyStable: new Set(ids).size === 1 };
+  function selectForScenario(p, scenario) {
+    const current = currentRecord(p, scenario);
+    const records = candidatePortfolios(p).map(set => strategyRecord(p, set, scenario));
+    const recommended = chooseRecommended(p, records, current);
+    return { current, records, recommended, pareto: paretoSurvivors(records) };
   }
 
-  function presentationOrder(profile, recommended) {
+  function presentationOrder(p) {
     const base = ["travelCapacity", "flightQuality", "airportExperience", "hotelExperience", "reliability", "cashEfficiency", "complexity"];
-    const mapping = {
+    const map = {
       "travel more": ["travelCapacity", "cashEfficiency"],
       "fly & airport better": ["flightQuality", "airportExperience", "reliability"],
       "fly and airport better": ["flightQuality", "airportExperience", "reliability"],
@@ -1245,8 +1219,20 @@
       "show me everything": []
     };
     const first = [];
-    for (const a of profile.aspirations) for (const key of mapping[a] || []) if (!first.includes(key)) first.push(key);
+    for (const a of p.aspirations) for (const k of map[a] || []) if (!first.includes(k)) first.push(k);
     return [...first, ...base.filter(k => !first.includes(k))];
+  }
+
+  function recommendationFingerprint(resultOrRecord) {
+    const r = resultOrRecord.recommended || resultOrRecord;
+    return JSON.stringify({
+      portfolio: r.portfolio.slice().sort(),
+      routing: r.routing,
+      airline: r.strategy.airlineStrategy,
+      hotel: r.strategy.hotelStrategy,
+      airlineStatusTarget: r.strategy.airlineStatusTarget,
+      hotelStatusTarget: r.strategy.hotelStatusTarget
+    });
   }
 
   function allMaterialBenefits(current, recommended) {
@@ -1254,76 +1240,51 @@
     return cmp.improvements.map(key => ({ key, outcome: recommended.outcomes[key] }));
   }
 
-  function analyze(rawProfile) {
-    const profile = rawProfile?.__normalizedV5 ? rawProfile : normalizeProfile(rawProfile);
-    const current = currentRecord(profile, "base");
-    const portfolios = candidatePortfolios(profile);
-    const records = portfolios.map(p => strategyRecord(profile, p, "base"));
-    const recommended = chooseRecommended(profile, records, current);
-    const sens = sensitivity(profile, recommended.portfolio);
-
+  function analyze(raw) {
+    const p = raw?.__normalizedV5 ? raw : normalizeProfile(raw);
+    const base = selectForScenario(p, "base");
+    const conservative = selectForScenario(p, "conservative");
+    const upper = selectForScenario(p, "upper");
+    const fp = [conservative, base, upper].map(x => recommendationFingerprint(x.recommended));
+    const visible = base.recommended.visibleBenefits;
     return {
       engineVersion: ENGINE_VERSION,
       rulesAsOf: RULES_AS_OF,
-      profile,
-      current,
-      recommended,
-      candidatesEvaluated: records.length,
-      paretoSurvivorIds: paretoSurvivors(records).map(r => r.id),
-      allMaterialBenefits: allMaterialBenefits(current, recommended),
-      presentation: {
-        aspirations: profile.aspirations,
-        order: presentationOrder(profile, recommended)
-      },
+      profile: p,
+      current: base.current,
+      recommended: base.recommended,
+      candidatesEvaluated: base.records.length,
+      paretoSurvivorIds: base.pareto.map(r => r.id),
+      allMaterialBenefits: allMaterialBenefits(base.current, base.recommended),
+      visibleBenefits: visible,
+      presentation: { aspirations: p.aspirations, order: presentationOrder(p) },
       sensitivity: {
-        strategyStable: sens.strategyStable,
-        economics: Object.fromEntries(Object.entries(sens.scenarios).map(([k, v]) => [k, {
-          grossTravelValue: v.economics.grossTravelValue,
-          netEconomicValue: v.economics.netEconomicValue
-        }]))
+        strategyStable: new Set(fp).size === 1,
+        recommendationIds: {
+          conservative: conservative.recommended.id,
+          base: base.recommended.id,
+          upper: upper.recommended.id
+        },
+        economics: {
+          conservative: conservative.recommended.economics,
+          base: base.recommended.economics,
+          upper: upper.recommended.economics
+        }
       },
       integrity: {
         aspirationsUsedInRecommendationSelection: false,
-        factsConstraintsAspirationsSeparated: true,
+        benefitVisibilitySeparatedFromRecommendationCredit: true,
         reportedStatusAuthoritative: true,
-        currentRoutingCoverage: currentRoutingCoverage(profile)
+        currentStatusProgressNotDoubleCounted: true
       }
     };
   }
 
-  function recommendationFingerprint(result) {
-    const r = result.recommended;
-    return JSON.stringify({
-      portfolio: r.portfolio.slice().sort(),
-      routing: r.routing,
-      airlineStrategy: r.strategy.airlineStrategy,
-      hotelStrategy: r.strategy.hotelStrategy,
-      statusTarget: r.strategy.statusTarget
-    });
-  }
-
   return Object.freeze({
-    ENGINE_VERSION,
-    RULES_AS_OF,
-    RULES,
-    VALUATIONS,
-    MODEL,
-    matchCard,
-    normalizeProfile,
-    currentReportedStatus,
-    airlineStatusUsefulness,
-    hotelStatusUsefulness,
-    airlineProgressWithCardSpend,
-    hotelStatusFromCards,
-    evaluateRouting,
-    airlineStrategy,
-    hotelStrategy,
-    candidatePortfolios,
-    strategyRecord,
-    currentRecord,
-    materialComparison,
-    paretoSurvivors,
-    analyze,
-    recommendationFingerprint
+    ENGINE_VERSION, RULES_AS_OF, RULES, VALUATIONS, MODEL,
+    matchCard, normalizeProfile, airlineStatusUsefulness, hotelStatusUsefulness,
+    airlineFutureProgress, hotelTierFromFacts, visibleBenefits, benefitRecommendationCredit,
+    candidatePortfolios, strategyRecord, currentRecord, materialComparison,
+    paretoSurvivors, selectForScenario, analyze, recommendationFingerprint
   });
 });
