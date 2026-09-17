@@ -1,4 +1,4 @@
-/** Quiet Premium V5 validation harness — 5.0-alpha.9 */
+/** Quiet Premium V5 validation harness — 5.0-alpha.10 */
 "use strict";
 const E=require("./qp_sim_v5.js");
 let pass=0,fail=0;const failures=[];
@@ -16,9 +16,8 @@ function base(overrides={}){return{
  currencyUtility:{amex_mr:1,chase_ur:.75,capital_one_miles:.95,hyatt_points:1},legacyNaturalBenefitValue:{amex_platinum:700},
  bookingMethod:{airfare:"direct_airline",hotel:"direct_hotel"},constraints:{maxNewCards:2},aspirations:["travel more"],...overrides};}
 
-assert("engine is alpha.9",E.ENGINE_VERSION==="5.0-alpha.9");
+assert("engine is alpha.10",E.ENGINE_VERSION==="5.0-alpha.10");
 
-// Aspirations remain presentation-only.
 {
  const a=E.analyze(base({aspirations:["travel more"]}));
  const b=E.analyze(base({aspirations:["stay better"]}));
@@ -27,7 +26,6 @@ assert("engine is alpha.9",E.ENGINE_VERSION==="5.0-alpha.9");
  assert("opportunity set is aspiration-invariant",same(a.allMaterialOpportunities,b.allMaterialOpportunities));
 }
 
-// Benefits remain visible even without recommendation credit.
 {
  const p=E.normalizeProfile(base({currentCards:[],currentRouting:emptyRouting(),primaryAirline:"",primaryAirlineShare:0,primaryHotel:"",primaryHotelShare:0,annualOneWayFlights:2,statusProgress:{hotel:{qualifyingNights:0}},remainingYear:{cardSpend:{},hotel:{qualifyingNights:0}},legacyNaturalBenefitValue:{}}));
  const r=E.strategyRecord(p,["venture_x"],"base");
@@ -35,7 +33,6 @@ assert("engine is alpha.9",E.ENGINE_VERSION==="5.0-alpha.9");
  assert("unused lounge gets zero recommendation credit",r.recommendationCredit.lounge===0);
 }
 
-// Alpha.9: a current card with undifferentiated benefit value is protected from removal.
 {
  const p=E.normalizeProfile(base({
   primaryAirline:"southwest",primaryAirlineShare:.9,routeFit:{southwest:.9},annualOneWayFlights:24,currentAirlineStatus:"",
@@ -52,19 +49,30 @@ assert("engine is alpha.9",E.ENGINE_VERSION==="5.0-alpha.9");
  assert("missing benefit detail is surfaced",r.current.quality.issues.some(x=>x.code==="legacy_benefit_detail_missing"&&x.detail==="southwest_priority"));
 }
 
-// Detailed benefit data removes the blanket legacy protection so replacement can be analyzed precisely.
+{
+ const p=E.normalizeProfile(base({
+  primaryAirline:"southwest",primaryAirlineShare:.9,routeFit:{southwest:.9},annualOneWayFlights:24,
+  statusProgress:{southwest:{tqp:10000,qualifyingFlights:19},hotel:{qualifyingNights:0}},remainingYear:{cardSpend:{general:3000},southwest:{qualifyingFlights:1},hotel:{qualifyingNights:0}},
+  primaryHotel:"",primaryHotelShare:0,currentCards:["southwest_priority","amex_platinum"],currentRouting:{...emptyRouting(),airfare:[{card:"southwest_priority",amount:12000}],general:[{card:"amex_platinum",amount:138000}]},
+  legacyNaturalBenefitValue:{southwest_priority:229},benefitValueByType:{lounge:300},cardUniqueBenefitValue:{amex_platinum:500}
+ }));
+ const ledger=E.benefitLedger(p,["southwest_priority","amex_platinum"]);
+ assert("detail on Platinum does not remove Southwest protection",E.legacyBenefitProtectionIds(p).includes("southwest_priority"));
+ assert("legacy Southwest value survives partial wallet detail",ledger.unresolvedLegacyValue===229&&ledger.totalValue===1029,JSON.stringify(ledger));
+ assert("mixed benefit ledger identifies unresolved Southwest card",ledger.mode==="mixed_card_detail"&&ledger.unresolvedLegacyIds.includes("southwest_priority"),JSON.stringify(ledger));
+}
+
 {
  const p=E.normalizeProfile(base({
   primaryAirline:"southwest",primaryAirlineShare:.9,routeFit:{southwest:.9},annualOneWayFlights:24,
   statusProgress:{southwest:{tqp:10000,qualifyingFlights:19},hotel:{qualifyingNights:0}},remainingYear:{cardSpend:{general:3000},southwest:{qualifyingFlights:1},hotel:{qualifyingNights:0}},
   primaryHotel:"",primaryHotelShare:0,currentCards:["southwest_priority","venture"],currentRouting:{...emptyRouting(),airfare:[{card:"southwest_priority",amount:12000}],general:[{card:"venture",amount:138000}]},
-  legacyNaturalBenefitValue:{southwest_priority:229},benefitValueByType:{checked_bag:0}
+  legacyNaturalBenefitValue:{southwest_priority:229},cardUniqueBenefitValue:{southwest_priority:0}
  }));
- assert("detailed benefit model removes blanket legacy protection",!E.legacyBenefitProtectionIds(p).includes("southwest_priority"));
- assert("replacement candidates can be evaluated once benefit detail exists",E.candidatePortfolios(p).some(x=>!x.includes("southwest_priority")));
+ assert("card-specific detail removes protection only for that card",E.cardBenefitDetailKnown(p,"southwest_priority")===true&&!E.legacyBenefitProtectionIds(p).includes("southwest_priority"));
+ assert("replacement candidates can be evaluated after that card is detailed",E.candidatePortfolios(p).some(x=>!x.includes("southwest_priority")));
 }
 
-// Alpha.9: reported, projected and effective airline status are separate.
 {
  const p=E.normalizeProfile(base({
   currentCards:["delta_reserve"],currentRouting:{...emptyRouting(),airfare:[{card:"delta_reserve",amount:12000}],general:[{card:"delta_reserve",amount:138000}]},
@@ -77,7 +85,6 @@ assert("engine is alpha.9",E.ENGINE_VERSION==="5.0-alpha.9");
  assert("airline effective status reflects higher projected tier",c.outcomes.flightQuality.effectiveStatus==="Platinum Medallion");
 }
 
-// Alpha.9: reported, projected and effective hotel status are separate.
 {
  const p=E.normalizeProfile(base({
   primaryAirline:"",primaryAirlineShare:0,primaryHotel:"hilton",primaryHotelShare:.9,currentHotelStatus:"Gold",
@@ -90,34 +97,49 @@ assert("engine is alpha.9",E.ENGINE_VERSION==="5.0-alpha.9");
  assert("hotel effective status reflects projected Diamond",c.outcomes.hotelExperience.effectiveStatus==="Diamond");
 }
 
-// A candidate may not claim an upgrade that the current setup already projects.
 {
  const p=E.normalizeProfile(base({
   primaryAirline:"",primaryAirlineShare:0,primaryHotel:"hilton",primaryHotelShare:.9,currentHotelStatus:"Gold",
   statusProgress:{hotel:{qualifyingNights:20}},remainingYear:{cardSpend:{general:25000},hotel:{qualifyingNights:4}},
-  currentCards:["hilton_surpass"],currentRouting:{...emptyRouting(),general:[{card:"hilton_surpass",amount:150000}]},cardSpendYTD:{hilton_surpass:20000},
-  benefitValueByType:{hilton_credit_200:200},cardUniqueBenefitValue:{hilton_surpass:0},legacyNaturalBenefitValue:{}
+  currentCards:["hilton_surpass","venture"],currentRouting:{...emptyRouting(),general:[{card:"hilton_surpass",amount:150000}]},cardSpendYTD:{hilton_surpass:20000},
+  benefitValueByType:{hilton_credit_200:200},cardUniqueBenefitValue:{hilton_surpass:0,venture:0},legacyNaturalBenefitValue:{}
  }));
  const baseline=E.projectedCurrentStatusBaseline(p);
  assert("current setup already projects Diamond",baseline.hotel.effectiveStatus==="Diamond",JSON.stringify(baseline.hotel));
- const r=E.strategyRecord(p,["hilton_surpass"],"base");
+ const r=E.strategyRecord(p,["hilton_surpass","venture"],"base");
  assert("no false Diamond upgrade target is stated",!r.strategy.hotelStatusTarget||r.strategy.hotelStatusTarget.tier!=="Diamond",JSON.stringify(r.strategy.hotelStatusTarget));
+ const annualGeneral=(r.annualRouting.general||[]).find(x=>x.card==="hilton_surpass")?.amount||0;
+ const remainingGeneral=(r.hotelQualificationRouting.general||[]).find(x=>x.card==="hilton_surpass")?.amount||0;
+ assert("no unnecessary Surpass status reroute remains",annualGeneral===0&&remainingGeneral===0,JSON.stringify({annual:r.annualRouting.general,remaining:r.hotelQualificationRouting.general}));
 }
 
-// Any stated airline upgrade must exceed the current projected setup, not merely today's reported tier.
 {
  const p=E.normalizeProfile(base({
-  currentCards:["delta_reserve"],currentRouting:{...emptyRouting(),airfare:[{card:"delta_reserve",amount:12000}],general:[{card:"delta_reserve",amount:138000}]},
+  currentCards:["delta_reserve","venture"],currentRouting:{...emptyRouting(),airfare:[{card:"delta_reserve",amount:12000}],general:[{card:"delta_reserve",amount:138000}]},
   currentAirlineStatus:"Gold Medallion",statusProgress:{delta:{mqd:13000},hotel:{qualifyingNights:0}},remainingYear:{cardSpend:{general:50000},delta:{mqd:1000},hotel:{qualifyingNights:0}},primaryHotel:"",primaryHotelShare:0,
-  benefitValueByType:{lounge:300},cardUniqueBenefitValue:{delta_reserve:300},legacyNaturalBenefitValue:{}
+  benefitValueByType:{lounge:300},cardUniqueBenefitValue:{delta_reserve:300,venture:0},legacyNaturalBenefitValue:{}
  }));
  const baseline=E.projectedCurrentStatusBaseline(p);
- const r=E.strategyRecord(p,["delta_reserve"],"base"),t=r.strategy.airlineStatusTarget;
+ const r=E.strategyRecord(p,["delta_reserve","venture"],"base"),t=r.strategy.airlineStatusTarget;
  assert("current airline projection is separated from reported status",baseline.airline.reportedStatus==="Gold Medallion"&&baseline.airline.projectedStatus==="Platinum Medallion");
  assert("stated airline upgrade, if any, exceeds current projected setup",!t||E.RULES.airlines.delta.thresholds.findIndex(x=>x.tier===t.tier)>E.RULES.airlines.delta.thresholds.findIndex(x=>x.tier===baseline.airline.effectiveStatus),JSON.stringify({baseline:baseline.airline,target:t}));
+ const routedReserve=(r.airlineQualificationRouting.general||[]).find(x=>x.card==="delta_reserve")?.amount||0;
+ assert("no status spend is redirected merely to recreate current projected Platinum",routedReserve===0,JSON.stringify(r.airlineQualificationRouting.general));
 }
 
-// Keep core alpha.8 mechanics covered.
+{
+ const p=E.normalizeProfile(base({
+  spend:{dining:0,grocery:0,online_grocery:0,gas_ev:0,online_retail:0,vacation_home:0,airfare:120000,hotel:0,general:30000},
+  currentCards:["delta_platinum","venture"],currentRouting:{...emptyRouting(),airfare:[{card:"delta_platinum",amount:120000}],general:[{card:"venture",amount:30000}]},
+  currentAirlineStatus:"Gold Medallion",statusProgress:{delta:{mqd:14500},hotel:{qualifyingNights:0}},remainingYear:{cardSpend:{airfare:110000},delta:{mqd:500},hotel:{qualifyingNights:0}},primaryHotel:"",primaryHotelShare:0,
+  benefitValueByType:{companion_certificate_renewal:300},cardUniqueBenefitValue:{delta_platinum:300,venture:0},legacyNaturalBenefitValue:{}
+ }));
+ const baseline=E.projectedCurrentStatusBaseline(p);
+ const r=E.strategyRecord(p,["delta_reserve","venture"],"base");
+ assert("current setup stops at projected Platinum in genuine-upgrade case",baseline.airline.effectiveStatus==="Platinum Medallion",JSON.stringify(baseline.airline));
+ assert("a genuinely higher projected Delta tier is still recognized",r.outcomes.flightQuality.projectedStatus==="Diamond Medallion",JSON.stringify(r.outcomes.flightQuality));
+}
+
 assert("CSP gas/EV remains 3x",E.RULES.cards.chase_preferred.earn.gas_ev===3);
 assert("Boundless combined cap remains $6K",E.RULES.cards.marriott_boundless.groupCaps.boundless_everyday===6000);
 assert("Surpass Diamond threshold remains $40K",E.RULES.cards.hilton_surpass.hotelStatus.spendTier.amount===40000);
@@ -138,10 +160,10 @@ assert("Southwest Priority remains 2500 TQP per $5000",E.RULES.cards.southwest_p
 {
  const r=E.analyze(base({routeFit:{}}));
  assert("missing route fit remains visible",r.current.quality.issues.some(x=>x.code==="route_fit_not_independently_verified"));
- assert("alpha.9 integrity flags are present",r.integrity.legacyBenefitRichCurrentCardsProtected===true&&r.integrity.reportedAndProjectedStatusSeparated===true&&r.integrity.statusTargetsComparedToProjectedCurrentSetup===true);
+ assert("alpha.10 integrity flags are present",r.integrity.legacyBenefitRichCurrentCardsProtected===true&&r.integrity.benefitProtectionIsCardSpecific===true&&r.integrity.legacyBenefitValuePreservedWithPartialDetail===true&&r.integrity.nonIncrementalStatusSpendMovesRemoved===true&&r.integrity.reportedAndProjectedStatusSeparated===true&&r.integrity.statusTargetsComparedToProjectedCurrentSetup===true);
 }
 
 console.log("\n------------------------------");
-console.log(`V5 alpha.9 harness: ${pass} passed, ${fail} failed`);
+console.log(`V5 alpha.10 harness: ${pass} passed, ${fail} failed`);
 if(failures.length)console.log(JSON.stringify(failures,null,2));
 process.exitCode=fail?1:0;
