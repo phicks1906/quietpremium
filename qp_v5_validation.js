@@ -1,4 +1,4 @@
-/** Quiet Premium V5 validation harness — 5.0-alpha.11 */
+/** Quiet Premium V5 validation harness — 5.0-alpha.12 */
 "use strict";
 const E=require("./qp_sim_v5.js");
 let pass=0,fail=0;const failures=[];
@@ -16,7 +16,7 @@ function base(overrides={}){return{
  currencyUtility:{amex_mr:1,chase_ur:.75,capital_one_miles:.95,hyatt_points:1},legacyNaturalBenefitValue:{amex_platinum:700},
  bookingMethod:{airfare:"direct_airline",hotel:"direct_hotel"},constraints:{maxNewCards:2},aspirations:["travel more"],...overrides};}
 
-assert("engine is alpha.11",E.ENGINE_VERSION==="5.0-alpha.11");
+assert("engine is alpha.12",E.ENGINE_VERSION==="5.0-alpha.12");
 
 {
  const a=E.analyze(base({aspirations:["travel more"]}));
@@ -108,6 +108,65 @@ assert("engine is alpha.11",E.ENGINE_VERSION==="5.0-alpha.11");
  const n=E.normalizeProfile(p),r=E.analyze(n);
  assert("typed Platinum benefit use is recognized as detail",E.cardBenefitDetailKnown(n,"amex_platinum")===true);
  assert("typed Platinum experience prevents Gold-only regression",r.recommended.portfolio.includes("amex_platinum")&&r.recommended.portfolio.includes("amex_gold"),r.recommended.id);
+}
+
+
+{
+ const p=E.normalizeProfile(base({
+  spend:{dining:50000,grocery:25000,online_grocery:0,gas_ev:0,online_retail:0,vacation_home:0,airfare:0,hotel:0,general:75000},
+  currentCards:["amex_platinum"],currentRouting:{...emptyRouting(),dining:[{card:"amex_platinum",amount:50000}],grocery:[{card:"amex_platinum",amount:25000}],general:[{card:"amex_platinum",amount:75000}]},
+  primaryAirline:"",primaryAirlineShare:0,annualOneWayFlights:2,statusProgress:{hotel:{qualifyingNights:0}},primaryHotel:"",primaryHotelShare:0,remainingYear:{cardSpend:{}},
+  currencyUtility:{amex_mr:1,chase_ur:.3,capital_one_miles:.3},cardUniqueBenefitValue:{amex_platinum:900},legacyNaturalBenefitValue:{},
+  benefitValueByType:{lounge:300},explicitBenefitUse:{amex_platinum:{lounge_access:true}},constraints:{maxNewCards:1}
+ }));
+ const ledger=E.benefitLedger(p,p.currentCards);
+ assert("partial $300 explanation leaves $600 Platinum residual protected",ledger.totalValue===900&&ledger.residualByCard.amex_platinum===600&&E.legacyBenefitProtectionIds(p).includes("amex_platinum"),JSON.stringify(ledger));
+}
+
+{
+ const p=E.normalizeProfile(base({
+  spend:{dining:50000,grocery:25000,online_grocery:0,gas_ev:0,online_retail:0,vacation_home:0,airfare:0,hotel:0,general:75000},
+  currentCards:["amex_platinum"],currentRouting:{...emptyRouting(),dining:[{card:"amex_platinum",amount:50000}],grocery:[{card:"amex_platinum",amount:25000}],general:[{card:"amex_platinum",amount:75000}]},
+  primaryAirline:"",primaryAirlineShare:0,annualOneWayFlights:2,statusProgress:{hotel:{qualifyingNights:0}},primaryHotel:"",primaryHotelShare:0,remainingYear:{cardSpend:{}},
+  currencyUtility:{amex_mr:1,chase_ur:.3,capital_one_miles:.3},cardUniqueBenefitValue:{amex_platinum:900},legacyNaturalBenefitValue:{},
+  benefitValueByType:{},explicitBenefitUse:{amex_platinum:{lounge_access:false}},constraints:{maxNewCards:1}
+ }));
+ assert("unused single benefit does not unlock unexplained Platinum total",!E.cardBenefitDetailKnown(p,"amex_platinum")&&E.legacyBenefitProtectionIds(p).includes("amex_platinum"));
+}
+
+{
+ const p=E.normalizeProfile(base({
+  spend:{dining:50000,grocery:25000,online_grocery:0,gas_ev:0,online_retail:0,vacation_home:0,airfare:0,hotel:0,general:75000},
+  currentCards:["amex_platinum"],currentRouting:{...emptyRouting(),dining:[{card:"amex_platinum",amount:50000}],grocery:[{card:"amex_platinum",amount:25000}],general:[{card:"amex_platinum",amount:75000}]},
+  primaryAirline:"",primaryAirlineShare:0,annualOneWayFlights:2,statusProgress:{hotel:{qualifyingNights:0}},primaryHotel:"",primaryHotelShare:0,remainingYear:{cardSpend:{}},
+  currencyUtility:{amex_mr:1,chase_ur:.3,capital_one_miles:.3},cardUniqueBenefitValue:{amex_platinum:900},legacyNaturalBenefitValue:{},
+  benefitValueByType:{checked_bag:900},explicitBenefitUse:{amex_platinum:{checked_bag:true}},constraints:{maxNewCards:1}
+ }));
+ assert("irrelevant benefit detail does not unlock Platinum",!E.cardBenefitDetailKnown(p,"amex_platinum")&&E.legacyBenefitProtectionIds(p).includes("amex_platinum"));
+}
+
+{
+ const p=E.normalizeProfile(base({
+  spend:{dining:50000,grocery:25000,online_grocery:0,gas_ev:0,online_retail:0,vacation_home:0,airfare:0,hotel:0,general:75000},
+  currentCards:["amex_platinum"],currentRouting:{...emptyRouting(),dining:[{card:"amex_platinum",amount:50000}],grocery:[{card:"amex_platinum",amount:25000}],general:[{card:"amex_platinum",amount:75000}]},
+  primaryAirline:"",primaryAirlineShare:0,annualOneWayFlights:2,statusProgress:{hotel:{qualifyingNights:0}},primaryHotel:"",primaryHotelShare:0,remainingYear:{cardSpend:{}},
+  currencyUtility:{amex_mr:1,chase_ur:.3,capital_one_miles:.3},cardUniqueBenefitValue:{amex_platinum:900},legacyNaturalBenefitValue:{},
+  benefitValueByType:{lounge:300,premium_hotel_booking:300,airline_fee_credit:300},explicitBenefitUse:{amex_platinum:{lounge_access:true,premium_hotel:true,airline_fee_credit:true}},constraints:{maxNewCards:1}
+ }));
+ const ledger=E.benefitLedger(p,p.currentCards);
+ assert("complete $900 breakdown replaces rather than stacks with aggregate",ledger.totalValue===900&&ledger.unresolvedLegacyValue===0&&E.cardBenefitDetailKnown(p,"amex_platinum")&&!E.legacyBenefitProtectionIds(p).includes("amex_platinum"),JSON.stringify(ledger));
+}
+
+{
+ const p=E.normalizeProfile(base({
+  currentCards:["amex_platinum","venture_x"],
+  currentRouting:{...emptyRouting(),dining:[{card:"venture_x",amount:20000}],grocery:[{card:"venture_x",amount:15000}],airfare:[{card:"amex_platinum",amount:12000}],hotel:[{card:"venture_x",amount:10000}],general:[{card:"venture_x",amount:93000}]},
+  primaryAirline:"",primaryAirlineShare:0,primaryHotel:"",primaryHotelShare:0,annualOneWayFlights:4,statusProgress:{hotel:{qualifyingNights:0}},remainingYear:{cardSpend:{}},
+  cardUniqueBenefitValue:{amex_platinum:900,venture_x:400},legacyNaturalBenefitValue:{},benefitValueByType:{},explicitBenefitUse:{},constraints:{maxNewCards:0}
+ }));
+ const ledger=E.benefitLedger(p,p.currentCards);
+ assert("overlapping unexplained premium-card totals are not blindly summed",ledger.overlapUnresolved===true&&ledger.totalValue===900,JSON.stringify(ledger));
+ assert("both unexplained premium cards remain protected",E.legacyBenefitProtectionIds(p).includes("amex_platinum")&&E.legacyBenefitProtectionIds(p).includes("venture_x"));
 }
 
 {
@@ -216,10 +275,10 @@ assert("Southwest Priority remains 2500 TQP per $5000",E.RULES.cards.southwest_p
 {
  const r=E.analyze(base({routeFit:{}}));
  assert("missing route fit remains visible",r.current.quality.issues.some(x=>x.code==="route_fit_not_independently_verified"));
- assert("alpha.11 integrity flags are present",r.integrity.legacyBenefitRichCurrentCardsProtected===true&&r.integrity.untypedCardBenefitTotalsProtected===true&&r.integrity.benefitProtectionIsCardSpecific===true&&r.integrity.legacyBenefitValuePreservedWithPartialDetail===true&&r.integrity.nonIncrementalStatusSpendMovesRemoved===true&&r.integrity.reportedAndProjectedStatusSeparated===true&&r.integrity.statusTargetsComparedToProjectedCurrentSetup===true);
+ assert("alpha.12 integrity flags are present",r.integrity.legacyBenefitRichCurrentCardsProtected===true&&r.integrity.untypedCardBenefitTotalsProtected===true&&r.integrity.partialCardBenefitTotalsRemainProtected===true&&r.integrity.aggregateBenefitValuesDoNotDoubleCountTypedBreakdowns===true&&r.integrity.unresolvedCrossCardBenefitOverlapIsConservative===true&&r.integrity.benefitProtectionIsCardSpecific===true&&r.integrity.legacyBenefitValuePreservedWithPartialDetail===true&&r.integrity.nonIncrementalStatusSpendMovesRemoved===true&&r.integrity.reportedAndProjectedStatusSeparated===true&&r.integrity.statusTargetsComparedToProjectedCurrentSetup===true);
 }
 
 console.log("\n------------------------------");
-console.log(`V5 alpha.11 harness: ${pass} passed, ${fail} failed`);
+console.log(`V5 alpha.12 harness: ${pass} passed, ${fail} failed`);
 if(failures.length)console.log(JSON.stringify(failures,null,2));
 process.exitCode=fail?1:0;
