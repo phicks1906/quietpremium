@@ -1,4 +1,4 @@
-/** Quiet Premium V5 validation harness — 5.0-alpha.10 */
+/** Quiet Premium V5 validation harness — 5.0-alpha.11 */
 "use strict";
 const E=require("./qp_sim_v5.js");
 let pass=0,fail=0;const failures=[];
@@ -16,7 +16,7 @@ function base(overrides={}){return{
  currencyUtility:{amex_mr:1,chase_ur:.75,capital_one_miles:.95,hyatt_points:1},legacyNaturalBenefitValue:{amex_platinum:700},
  bookingMethod:{airfare:"direct_airline",hotel:"direct_hotel"},constraints:{maxNewCards:2},aspirations:["travel more"],...overrides};}
 
-assert("engine is alpha.10",E.ENGINE_VERSION==="5.0-alpha.10");
+assert("engine is alpha.11",E.ENGINE_VERSION==="5.0-alpha.11");
 
 {
  const a=E.analyze(base({aspirations:["travel more"]}));
@@ -54,7 +54,7 @@ assert("engine is alpha.10",E.ENGINE_VERSION==="5.0-alpha.10");
   primaryAirline:"southwest",primaryAirlineShare:.9,routeFit:{southwest:.9},annualOneWayFlights:24,
   statusProgress:{southwest:{tqp:10000,qualifyingFlights:19},hotel:{qualifyingNights:0}},remainingYear:{cardSpend:{general:3000},southwest:{qualifyingFlights:1},hotel:{qualifyingNights:0}},
   primaryHotel:"",primaryHotelShare:0,currentCards:["southwest_priority","amex_platinum"],currentRouting:{...emptyRouting(),airfare:[{card:"southwest_priority",amount:12000}],general:[{card:"amex_platinum",amount:138000}]},
-  legacyNaturalBenefitValue:{southwest_priority:229},benefitValueByType:{lounge:300},cardUniqueBenefitValue:{amex_platinum:500}
+  legacyNaturalBenefitValue:{southwest_priority:229},benefitValueByType:{lounge:300,premium_hotel_booking:500},cardUniqueBenefitValue:{},explicitBenefitUse:{amex_platinum:{lounge_access:true,premium_hotel:true}}
  }));
  const ledger=E.benefitLedger(p,["southwest_priority","amex_platinum"]);
  assert("detail on Platinum does not remove Southwest protection",E.legacyBenefitProtectionIds(p).includes("southwest_priority"));
@@ -67,10 +67,47 @@ assert("engine is alpha.10",E.ENGINE_VERSION==="5.0-alpha.10");
   primaryAirline:"southwest",primaryAirlineShare:.9,routeFit:{southwest:.9},annualOneWayFlights:24,
   statusProgress:{southwest:{tqp:10000,qualifyingFlights:19},hotel:{qualifyingNights:0}},remainingYear:{cardSpend:{general:3000},southwest:{qualifyingFlights:1},hotel:{qualifyingNights:0}},
   primaryHotel:"",primaryHotelShare:0,currentCards:["southwest_priority","venture"],currentRouting:{...emptyRouting(),airfare:[{card:"southwest_priority",amount:12000}],general:[{card:"venture",amount:138000}]},
-  legacyNaturalBenefitValue:{southwest_priority:229},cardUniqueBenefitValue:{southwest_priority:0}
+  legacyNaturalBenefitValue:{southwest_priority:229},cardUniqueBenefitValue:{},benefitValueByType:{checked_bag:229},explicitBenefitUse:{southwest_priority:{checked_bag:true}}
  }));
- assert("card-specific detail removes protection only for that card",E.cardBenefitDetailKnown(p,"southwest_priority")===true&&!E.legacyBenefitProtectionIds(p).includes("southwest_priority"));
+ assert("benefit-type detail removes protection only for that card",E.cardBenefitDetailKnown(p,"southwest_priority")===true&&!E.legacyBenefitProtectionIds(p).includes("southwest_priority"));
  assert("replacement candidates can be evaluated after that card is detailed",E.candidatePortfolios(p).some(x=>!x.includes("southwest_priority")));
+}
+
+
+{
+ const p=base({
+  spend:{dining:50000,grocery:25000,online_grocery:0,gas_ev:0,online_retail:0,vacation_home:0,airfare:0,hotel:0,general:75000},
+  currentCards:["amex_platinum"],
+  currentRouting:{...emptyRouting(),dining:[{card:"amex_platinum",amount:50000}],grocery:[{card:"amex_platinum",amount:25000}],general:[{card:"amex_platinum",amount:75000}]},
+  primaryAirline:"",primaryAirlineShare:0,annualOneWayFlights:2,statusProgress:{hotel:{qualifyingNights:0}},
+  primaryHotel:"",primaryHotelShare:0,remainingYear:{cardSpend:{}},
+  currencyUtility:{amex_mr:1,chase_ur:.3,capital_one_miles:.3,hyatt_points:.5},
+  cardUniqueBenefitValue:{amex_platinum:900},legacyNaturalBenefitValue:{},benefitValueByType:{},explicitBenefitUse:{},benefitEvidence:{},
+  constraints:{maxNewCards:1}
+ });
+ const n=E.normalizeProfile(p),r=E.analyze(n);
+ assert("untyped $900 Platinum benefit total is not treated as benefit detail",E.cardBenefitDetailKnown(n,"amex_platinum")===false);
+ assert("untyped $900 Platinum benefit total protects Platinum from removal",E.legacyBenefitProtectionIds(n).includes("amex_platinum")&&E.candidatePortfolios(n).every(x=>x.includes("amex_platinum")));
+ assert("untyped Platinum dollars still count in economics",r.current.economics.naturalBenefitValue===900,JSON.stringify(r.current.economics.benefitLedger));
+ assert("high-spend low-travel case keeps Platinum and can add Gold",r.recommended.portfolio.includes("amex_platinum")&&r.recommended.portfolio.includes("amex_gold"),r.recommended.id);
+}
+
+{
+ const p=base({
+  spend:{dining:50000,grocery:25000,online_grocery:0,gas_ev:0,online_retail:0,vacation_home:0,airfare:0,hotel:0,general:75000},
+  currentCards:["amex_platinum"],
+  currentRouting:{...emptyRouting(),dining:[{card:"amex_platinum",amount:50000}],grocery:[{card:"amex_platinum",amount:25000}],general:[{card:"amex_platinum",amount:75000}]},
+  primaryAirline:"",primaryAirlineShare:0,annualOneWayFlights:2,statusProgress:{hotel:{qualifyingNights:0}},
+  primaryHotel:"",primaryHotelShare:0,remainingYear:{cardSpend:{}},
+  currencyUtility:{amex_mr:1,chase_ur:.3,capital_one_miles:.3,hyatt_points:.5},
+  legacyNaturalBenefitValue:{},cardUniqueBenefitValue:{},
+  benefitValueByType:{lounge:300,premium_hotel_booking:300,airline_fee_credit:300},
+  explicitBenefitUse:{amex_platinum:{lounge_access:true,premium_hotel:true,airline_fee_credit:true}},
+  constraints:{maxNewCards:1}
+ });
+ const n=E.normalizeProfile(p),r=E.analyze(n);
+ assert("typed Platinum benefit use is recognized as detail",E.cardBenefitDetailKnown(n,"amex_platinum")===true);
+ assert("typed Platinum experience prevents Gold-only regression",r.recommended.portfolio.includes("amex_platinum")&&r.recommended.portfolio.includes("amex_gold"),r.recommended.id);
 }
 
 {
@@ -140,6 +177,25 @@ assert("engine is alpha.10",E.ENGINE_VERSION==="5.0-alpha.10");
  assert("a genuinely higher projected Delta tier is still recognized",r.outcomes.flightQuality.projectedStatus==="Diamond Medallion",JSON.stringify(r.outcomes.flightQuality));
 }
 
+
+{
+ const p=E.normalizeProfile(base({
+  spend:{dining:100000,grocery:0,online_grocery:0,gas_ev:0,online_retail:0,vacation_home:0,airfare:0,hotel:20000,general:30000},
+  currentCards:["hyatt_consumer"],
+  currentRouting:{...emptyRouting(),dining:[{card:"hyatt_consumer",amount:100000}],hotel:[{card:"hyatt_consumer",amount:20000}],general:[{card:"hyatt_consumer",amount:30000}]},
+  primaryAirline:"",primaryAirlineShare:0,annualOneWayFlights:2,
+  primaryHotel:"hyatt",primaryHotelShare:.9,currentHotelStatus:"Explorist",
+  statusProgress:{hotel:{qualifyingNights:35}},
+  remainingYear:{cardSpend:{dining:30000,hotel:5000,general:15000},hotel:{qualifyingNights:5}},
+  legacyNaturalBenefitValue:{},cardUniqueBenefitValue:{},benefitValueByType:{},constraints:{maxNewCards:0}
+ }));
+ const r=E.strategyRecord(p,["hyatt_consumer"],"base");
+ const naturalSpend=Object.values(r.hotelQualificationRouting).flat().filter(x=>x.card==="hyatt_consumer").reduce((a,x)=>a+x.amount,0);
+ assert("natural Hyatt spend can project Globalist as a by-product",r.outcomes.hotelExperience.projectedStatus==="Globalist",JSON.stringify(r.outcomes.hotelExperience));
+ assert("natural Hyatt Globalist does not create a separate status-chasing target",r.strategy.hotelStatusTarget===null,JSON.stringify(r.strategy.hotelStatusTarget));
+ assert("Hyatt qualification routing preserves ordinary remaining-year card spend",naturalSpend===50000,JSON.stringify(r.hotelQualificationRouting));
+}
+
 assert("CSP gas/EV remains 3x",E.RULES.cards.chase_preferred.earn.gas_ev===3);
 assert("Boundless combined cap remains $6K",E.RULES.cards.marriott_boundless.groupCaps.boundless_everyday===6000);
 assert("Surpass Diamond threshold remains $40K",E.RULES.cards.hilton_surpass.hotelStatus.spendTier.amount===40000);
@@ -160,10 +216,10 @@ assert("Southwest Priority remains 2500 TQP per $5000",E.RULES.cards.southwest_p
 {
  const r=E.analyze(base({routeFit:{}}));
  assert("missing route fit remains visible",r.current.quality.issues.some(x=>x.code==="route_fit_not_independently_verified"));
- assert("alpha.10 integrity flags are present",r.integrity.legacyBenefitRichCurrentCardsProtected===true&&r.integrity.benefitProtectionIsCardSpecific===true&&r.integrity.legacyBenefitValuePreservedWithPartialDetail===true&&r.integrity.nonIncrementalStatusSpendMovesRemoved===true&&r.integrity.reportedAndProjectedStatusSeparated===true&&r.integrity.statusTargetsComparedToProjectedCurrentSetup===true);
+ assert("alpha.11 integrity flags are present",r.integrity.legacyBenefitRichCurrentCardsProtected===true&&r.integrity.untypedCardBenefitTotalsProtected===true&&r.integrity.benefitProtectionIsCardSpecific===true&&r.integrity.legacyBenefitValuePreservedWithPartialDetail===true&&r.integrity.nonIncrementalStatusSpendMovesRemoved===true&&r.integrity.reportedAndProjectedStatusSeparated===true&&r.integrity.statusTargetsComparedToProjectedCurrentSetup===true);
 }
 
 console.log("\n------------------------------");
-console.log(`V5 alpha.10 harness: ${pass} passed, ${fail} failed`);
+console.log(`V5 alpha.11 harness: ${pass} passed, ${fail} failed`);
 if(failures.length)console.log(JSON.stringify(failures,null,2));
 process.exitCode=fail?1:0;
