@@ -3,6 +3,7 @@ import "./qp_sim_v5.js";
 import { stageOneEntities, finalEntities, chunkEntityRequest, verificationGaps, mergeSnapshotParts, sameEntityRequest } from "./core.ts";
 
 const ORIGINS=new Set(["https://quietpremium.com","https://www.quietpremium.com"]);
+const PUBLIC_BROWSER_KEY="sb_publishable_BETG0zmWAEmPByBsKyEUzA_yPCOkh5F";
 const VERIFIER="qp-verify-facts",MAX_PROFILE_BYTES=250000,MAX_STABILIZATION_PASSES=2;
 const E=(globalThis as any).QuietPremiumEngineV5;
 
@@ -21,7 +22,7 @@ function preflight(origin:string){
   }});
 }
 function publishableKeys(){
-  const out:string[]=[];
+  const out:string[]=[PUBLIC_BROWSER_KEY];
   try{const x=JSON.parse(Deno.env.get("SUPABASE_PUBLISHABLE_KEYS")||"{}");for(const v of Object.values(x))if(typeof v==="string"&&v)out.push(v)}catch{}
   const legacy=Deno.env.get("SUPABASE_ANON_KEY");if(legacy)out.push(legacy);
   return new Set(out);
