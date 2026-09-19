@@ -480,6 +480,37 @@ assert("Southwest Priority remains 2500 TQP per $5000",E.RULES.cards.southwest_p
  const facts=E.airlineFacts(p,"united");assert("complete verified airline replaces minimum segment rule",facts.minimumUnitedSegments===6&&facts.thresholds[0].amount===7000,JSON.stringify(facts));
 }
 
+
+{
+ const complete=(annualFee,earn,benefitTags,status={})=>({verificationStatus:"verified",complete:true,verifiedAt:"2026-09-19",sources:["issuer"],facts:{annualFee,earn,bookingEarn:{},caps:{},capGroups:{},groupCaps:{},postCapEarn:{},benefitTags,recurringCredits:{},multiYearCredits:{},annualBonusPoints:0,hotelStatus:{},hotelStatusByProgram:{},status,transferRules:{},verified:true}});
+ const p=E.normalizeProfile(base({
+  currentCards:["amex_platinum","delta_reserve"],
+  currentRouting:{...emptyRouting(),dining:[{card:"amex_platinum",amount:20000}],grocery:[{card:"amex_platinum",amount:15000}],airfare:[{card:"amex_platinum",amount:12000}],hotel:[{card:"amex_platinum",amount:10000}],general:[{card:"amex_platinum",amount:93000}]},
+  primaryAirline:"delta",primaryAirlineShare:.8,routeFit:{delta:.9},annualOneWayFlights:4,statusProgress:{delta:{mqd:0},hotel:{qualifyingNights:0}},remainingYear:{cardSpend:{},delta:{mqd:0}},
+  primaryHotel:"",primaryHotelShare:0,constraints:{maxNewCards:0},
+  verifiedFacts:{snapshotId:"cobrand-nojob",verifiedAt:"2026-09-19",sources:["issuer"],cards:{
+   amex_platinum:complete(895,{dining:1,grocery:1,online_grocery:1,gas_ev:1,online_retail:1,vacation_home:1,airfare:1,hotel:1,general:1},["lounge"]),
+   delta_reserve:complete(650,{dining:1,grocery:1,online_grocery:1,gas_ev:1,online_retail:1,vacation_home:1,airfare:1,hotel:1,general:1},[],{})
+  },airlines:{delta:{verificationStatus:"verified",complete:true,verifiedAt:"2026-09-19",sources:["delta"],thresholds:[{tier:"Silver Medallion",amount:5000},{tier:"Gold Medallion",amount:10000},{tier:"Platinum Medallion",amount:15000},{tier:"Diamond Medallion",amount:28000}]}},hotels:{}}
+ }));
+ const s=E.selectForScenario(p,"base"),role=s.current.cardRoles.find(x=>x.cardId==="delta_reserve");
+ assert("matching airline alone does not create co-brand job",role?.role==="no_job",JSON.stringify(s.current.cardRoles));
+ assert("paid matching-airline no-job card can be removed",!s.recommended.portfolio.includes("delta_reserve"),JSON.stringify({portfolio:s.recommended.portfolio,actions:s.recommended.actions}));
+}
+{
+ const p=E.normalizeProfile(base({
+  currentCards:["amex_platinum","hyatt_consumer"],
+  currentRouting:{...emptyRouting(),dining:[{card:"amex_platinum",amount:20000}],grocery:[{card:"amex_platinum",amount:15000}],airfare:[{card:"amex_platinum",amount:12000}],hotel:[{card:"amex_platinum",amount:10000}],general:[{card:"amex_platinum",amount:93000}]},
+  primaryAirline:"",primaryAirlineShare:0,primaryHotel:"hyatt",primaryHotelShare:.7,currentHotelStatus:"Globalist",statusProgress:{hotel:{qualifyingNights:60}},remainingYear:{cardSpend:{}},constraints:{maxNewCards:0},
+  verifiedFacts:{snapshotId:"cobrand-benefit",verifiedAt:"2026-09-19",sources:["issuer"],cards:{
+   amex_platinum:{verificationStatus:"verified",complete:true,verifiedAt:"2026-09-19",sources:["amex"],annualFee:895,earn:{dining:1,grocery:1,online_grocery:1,gas_ev:1,online_retail:1,vacation_home:1,airfare:1,hotel:1,general:1},bookingEarn:{},caps:{},capGroups:{},groupCaps:{},postCapEarn:{},benefitTags:["lounge"],recurringCredits:{},multiYearCredits:{},annualBonusPoints:0,hotelStatus:{},hotelStatusByProgram:{},status:{},transferRules:{},verified:true},
+   hyatt_consumer:{verificationStatus:"verified",complete:true,verifiedAt:"2026-09-19",sources:["chase"],annualFee:95,earn:{dining:2,grocery:1,online_grocery:1,gas_ev:1,online_retail:1,vacation_home:1,airfare:2,hotel:4,general:1},bookingEarn:{},caps:{},capGroups:{},groupCaps:{},postCapEarn:{},benefitTags:["free_night_reward_annual"],recurringCredits:{},multiYearCredits:{},annualBonusPoints:0,hotelStatus:{automaticTier:"Discoverist"},hotelStatusByProgram:{},status:{},transferRules:{},verified:true}
+  },airlines:{},hotels:{hyatt:{verificationStatus:"verified",complete:true,verifiedAt:"2026-09-19",sources:["hyatt"],thresholds:[{tier:"Discoverist",nights:10},{tier:"Explorist",nights:30},{tier:"Globalist",nights:60}]}}}
+ }));
+ const s=E.selectForScenario(p,"base"),role=s.current.cardRoles.find(x=>x.cardId==="hyatt_consumer");
+ assert("unique recurring non-dollar co-brand benefit creates retention job",role?.role==="travel_benefit",JSON.stringify(s.current.cardRoles));
+}
+
 console.log("\n------------------------------");
 console.log(`V5 alpha.14 harness: ${pass} passed, ${fail} failed`);
 if(failures.length)console.log(JSON.stringify(failures,null,2));
