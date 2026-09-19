@@ -1,6 +1,7 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import "./qp_sim_v5.js";
 import { stageOneEntities, finalEntities, chunkEntityRequest, verificationGaps, mergeSnapshotParts, sameEntityRequest } from "./core.ts";
+import { auditPlan } from "./audit.ts";
 
 const ORIGINS=new Set(["https://quietpremium.com","https://www.quietpremium.com"]);
 const PUBLIC_BROWSER_KEY="sb_publishable_BETG0zmWAEmPByBsKyEUzA_yPCOkh5F";
@@ -121,6 +122,8 @@ Deno.serve(async(req:Request)=>{
     },409,origin);
 
     const result=E.analyze(working);
+    const audit=auditPlan(result,E);
+    if(!audit.pass)return json({status:"not_ready",reason:"pre_output_audit_failed",audit,factQuality:result?.factQuality||null,factsSnapshot:result?.factsSnapshot||null},409,origin);
     if(!result?.factQuality?.productionReady)return json({
       status:"not_ready",reason:"engine_fact_quality_not_ready",
       factQuality:result?.factQuality||null,factsSnapshot:result?.factsSnapshot||null
@@ -133,7 +136,7 @@ Deno.serve(async(req:Request)=>{
       verification:{request:expected,gaps:finalGaps,snapshot:result.profile.verifiedFacts}
     },409,origin);
 
-    return json(safePlanResult(result),200,origin);
+    return json({...safePlanResult(result),audit},200,origin);
   }catch(e){
     return json({error:"plan_build_failed",detail:String((e as Error)?.message||e)},502,origin);
   }
