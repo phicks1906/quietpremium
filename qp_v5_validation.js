@@ -552,6 +552,18 @@ assert("Southwest Priority remains 2500 TQP per $5000",E.RULES.cards.southwest_p
  assert("conditional award discount uses currency-equivalent value without pretending points are earned",jobs.some(x=>x.purpose==="award_discount_10k"&&x.modeledValue>0),JSON.stringify(jobs));
 }
 
+
+{
+ const p=E.normalizeProfile(base({currentCards:["aa_executive"],currentRouting:{...emptyRouting(),general:[{card:"aa_executive",amount:10000}]},primaryAirline:"american",primaryAirlineShare:.8,annualOneWayFlights:12,primaryHotel:"",primaryHotelShare:0,statusProgress:{american:{loyaltyPoints:45000},hotel:{qualifyingNights:0}},americanQualification:{cardSpend:{general:10000},loyaltyPoints:0},constraints:{maxNewCards:0},verifiedFacts:{snapshotId:"aa-milestone",verifiedAt:"2026-09-19",sources:["citi"],cards:{aa_executive:{verificationStatus:"verified",complete:true,verifiedAt:"2026-09-19",sources:["citi"],annualFee:695,earn:{dining:1,grocery:1,online_grocery:1,gas_ev:1,online_retail:1,vacation_home:1,airfare:4,hotel:1,general:1},bookingEarn:{},caps:{},capGroups:{},groupCaps:{},postCapEarn:{},benefitTags:["lounge","loyalty_point_bonus_milestones"],recurringCredits:{},multiYearCredits:{},annualBonusPoints:0,hotelStatus:{},hotelStatusByProgram:{},status:{lpPerEligiblePurchaseDollar:1},transferRules:{},spendRewards:[],statusMilestoneRewards:[{metric:"loyaltyPoints",threshold:50000,bonus:10000},{metric:"loyaltyPoints",threshold:90000,bonus:10000}],verified:true}},airlines:{american:{verificationStatus:"verified",complete:true,verifiedAt:"2026-09-19",sources:["aa"],thresholds:[{tier:"AAdvantage Gold",amount:40000},{tier:"AAdvantage Platinum",amount:75000},{tier:"AAdvantage Platinum Pro",amount:125000},{tier:"AAdvantage Executive Platinum",amount:200000}]}},hotels:{}}}));
+ const a=E.airlineProjection(p,"american",{...emptyRouting(),general:[{card:"aa_executive",amount:10000}]},["aa_executive"]);
+ assert("American future Loyalty Point milestone bonus is added once after newly crossing threshold",a.metric===65000&&a.statusMilestoneBonus===10000&&a.statusMilestones.length===1,JSON.stringify(a));
+}
+{
+ const p=E.normalizeProfile(base({currentCards:["aa_executive"],currentRouting:{...emptyRouting()},primaryAirline:"american",primaryAirlineShare:.8,annualOneWayFlights:12,primaryHotel:"",primaryHotelShare:0,statusProgress:{american:{loyaltyPoints:55000},hotel:{qualifyingNights:0}},americanQualification:{cardSpend:{},loyaltyPoints:0},constraints:{maxNewCards:0},verifiedFacts:{snapshotId:"aa-no-double",verifiedAt:"2026-09-19",sources:["citi"],cards:{aa_executive:{verificationStatus:"verified",complete:true,verifiedAt:"2026-09-19",sources:["citi"],annualFee:695,earn:{dining:1,grocery:1,online_grocery:1,gas_ev:1,online_retail:1,vacation_home:1,airfare:4,hotel:1,general:1},bookingEarn:{},caps:{},capGroups:{},groupCaps:{},postCapEarn:{},benefitTags:["lounge"],recurringCredits:{},multiYearCredits:{},annualBonusPoints:0,hotelStatus:{},hotelStatusByProgram:{},status:{lpPerEligiblePurchaseDollar:1},transferRules:{},spendRewards:[],statusMilestoneRewards:[{metric:"loyaltyPoints",threshold:50000,bonus:10000}],verified:true}},airlines:{american:{verificationStatus:"verified",complete:true,verifiedAt:"2026-09-19",sources:["aa"],thresholds:[{tier:"AAdvantage Gold",amount:40000},{tier:"AAdvantage Platinum",amount:75000}]}},hotels:{}}}));
+ const a=E.airlineProjection(p,"american",emptyRouting(),["aa_executive"]);
+ assert("American milestone already below current reported progress is not double counted",a.metric===55000&&a.statusMilestoneBonus===0,JSON.stringify(a));
+}
+
 console.log("\n------------------------------");
 console.log(`V5 alpha.14 harness: ${pass} passed, ${fail} failed`);
 if(failures.length)console.log(JSON.stringify(failures,null,2));
