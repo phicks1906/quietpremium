@@ -373,7 +373,7 @@ function cardSpendRewardsV15(id){
 }
 function spendRewardModeledValueV15(p,portfolio,reward,scenario){
   const cash=n(reward?.cashValue);if(cash>0)return cash;
-  const pts=n(reward?.points),currency=s(reward?.currency);if(pts>0&&currency)return round(pts*currencyPointValue(p,currency,scenario,portfolio));
+  const pts=n(reward?.points??reward?.valuePoints),currency=s(reward?.currency);if(pts>0&&currency)return round(pts*currencyPointValue(p,currency,scenario,portfolio));
   return 0;
 }
 function reachableSpendRewardV13(p,id){
@@ -382,7 +382,7 @@ function reachableSpendRewardV13(p,id){
   const available=sum(Object.values(p.remainingYear.cardSpend||{}));
   return rewards.some(r=>r.amount>ytd&&r.amount-ytd<=available&&spendRewardModeledValueV15(p,uniq([...p.currentCards,id]),r,"conservative")>0);
 }
-const NON_DOLLAR_JOB_TAGS_V14=new Set(["checked_bag","priority_boarding","boarding_benefits","seat_benefits","upgrade_eligibility","companion_certificate_renewal","free_night_reward_annual","free_night_award_35k","free_night_award_85k","free_night_reward_15k","travel_protections","lifestyle_collection","award_discount_threshold","united_travel_benefits"]);
+const NON_DOLLAR_JOB_TAGS_V14=new Set(["checked_bag","priority_boarding","boarding_benefits","seat_benefits","lounge_passes","award_discount_annual","upgrade_eligibility","companion_certificate_renewal","free_night_reward_annual","free_night_award_35k","free_night_award_85k","free_night_reward_15k","travel_protections","lifestyle_collection","award_discount_threshold","united_travel_benefits"]);
 function cardHasUniqueNonDollarJobV14(portfolio,id){
   const own=(RULES.cards[id]?.benefitTags||[]).map(canonicalBenefit).filter(x=>NON_DOLLAR_JOB_TAGS_V14.has(x)),others=new Set();
   for(const other of portfolio)if(other!==id)for(const tag of RULES.cards[other]?.benefitTags||[])others.add(canonicalBenefit(tag));
