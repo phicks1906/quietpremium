@@ -545,6 +545,13 @@ assert("Southwest Priority remains 2500 TQP per $5000",E.RULES.cards.southwest_p
  assert("valued conditional reward may redirect spend only when value exceeds opportunity cost",jobs.some(x=>x.purpose==="united_travelbank_100"&&x.modeledValue===100&&x.opportunityCost<100),JSON.stringify(jobs));
 }
 
+
+{
+ const p=E.normalizeProfile(base({currentCards:["united_quest"],currentRouting:{...emptyRouting(),general:[{card:"united_quest",amount:20000}]},spend:{dining:0,grocery:0,online_grocery:0,gas_ev:0,online_retail:0,vacation_home:0,airfare:0,hotel:0,general:20000},primaryAirline:"united",primaryAirlineShare:.8,annualOneWayFlights:4,primaryHotel:"",primaryHotelShare:0,cardSpendYTD:{united_quest:19000},remainingYear:{cardSpend:{general:1000},united:{pqp:0,pqf:0,unitedSegments:0}},statusProgress:{united:{pqp:0,pqf:0,unitedSegments:0},hotel:{qualifyingNights:0}},constraints:{maxNewCards:0},verifiedFacts:{snapshotId:"value-points",verifiedAt:"2026-09-19",sources:["issuer"],cards:{united_quest:{verificationStatus:"verified",complete:true,verifiedAt:"2026-09-19",sources:["issuer"],annualFee:350,earn:{dining:1,grocery:1,online_grocery:1,gas_ev:1,online_retail:1,vacation_home:1,airfare:1,hotel:1,general:1},bookingEarn:{},caps:{},capGroups:{},groupCaps:{},postCapEarn:{},benefitTags:["checked_bag"],recurringCredits:{},multiYearCredits:{},annualBonusPoints:0,hotelStatus:{},hotelStatusByProgram:{},status:{},transferRules:{},spendRewards:[{amount:20000,benefit:"award_discount_10k",valuePoints:10000,currency:"united_miles"}],verified:true}},airlines:{united:{verificationStatus:"verified",complete:true,verifiedAt:"2026-09-19",sources:["united"],thresholds:[{tier:"Premier Silver",amount:6000,pqpOnly:6000,pqpWithPQF:5000,pqf:15}],minimumUnitedSegments:4}},hotels:{}}}));
+ const annual={...emptyRouting(),general:[{card:"united_quest",amount:20000}]};const jobs=E.temporaryJobs(p,["united_quest"],annual,{airlineTarget:null,hotelTarget:null},"base");
+ assert("conditional award discount uses currency-equivalent value without pretending points are earned",jobs.some(x=>x.purpose==="award_discount_10k"&&x.modeledValue>0),JSON.stringify(jobs));
+}
+
 console.log("\n------------------------------");
 console.log(`V5 alpha.14 harness: ${pass} passed, ${fail} failed`);
 if(failures.length)console.log(JSON.stringify(failures,null,2));
