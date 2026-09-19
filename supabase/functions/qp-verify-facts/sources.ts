@@ -22,14 +22,14 @@ export const ENTITY_SOURCES = Object.freeze({
   }),
   airlines: Object.freeze({
     delta: { urls: ['https://www.delta.com/us/en/skymiles/medallion-program/how-to-qualify','https://news.delta.com/booking-benefits-and-beyond-map-out-your-next-journey-skymiles-and-app'], required: ['thresholds'] },
-    united: { urls: ['https://www.united.com/en/us/fly/mileageplus/premier/qualify.html'], required: ['thresholds'] },
+    united: { urls: ['https://www.united.com/en/us/fly/mileageplus/premier/qualify.html'], required: ['thresholds','minimumUnitedSegments'] },
     american: { urls: ['https://www.aa.com/web/i18n/aadvantage-program/loyalty-points/index.html','https://news.aa.com/news/news-details/2026/American-Airlines-maintains-AAdvantage-status-and-reward-levels-for-third-year-in-a-row-AADV-01/default.aspx'], required: ['thresholds'] },
     southwest: { urls: ['https://www.southwest.com/rapid-rewards/tiers/a-list/','https://www.southwest.com/rapid-rewards/tiers/a-list-preferred/'], required: ['thresholds','flightThresholds'] }
   }),
   hotels: Object.freeze({
     hyatt: { urls: ['https://world.hyatt.com/content/gp/en/tiers-and-benefits.html'], required: ['thresholds'] },
     marriott: { urls: ['https://www.marriott.com/loyalty/member-benefits.mi','https://www.marriott.com/brands/mgm-collection/member-benefits.mi'], required: ['thresholds'] },
-    hilton: { urls: ['https://www.hilton.com/en/hilton-honors/support-faq/','https://stories.hilton.com/hilton-honors-fact-sheet'], required: ['thresholds'] }
+    hilton: { urls: ['https://www.hilton.com/en/hilton-honors/support-faq/','https://stories.hilton.com/hilton-honors-fact-sheet'], required: ['thresholds','diamondReserve'] }
   })
 });
 
