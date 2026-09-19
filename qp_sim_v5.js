@@ -89,19 +89,29 @@ function factPayloadV14(record){
   if(isPlainObjectV14(record.facts))return clone(record.facts);
   const out={};for(const[k,val]of Object.entries(record))if(!FACT_META_KEYS.has(k))out[k]=clone(val);return out;
 }
-function mergeVerifiedRecordV14(base,record){
+const COMPLETE_VOLATILE_FIELDS_V14=Object.freeze({
+  cards:["annualFee","earn","bookingEarn","caps","capGroups","groupCaps","postCapEarn","benefitTags","recurringCredits","multiYearCredits","annualBonusPoints","hotelStatus","hotelStatusByProgram","status","transferRules","verified"],
+  airlines:["thresholds","flightThresholds","minimumUnitedSegments"],
+  hotels:["thresholds","diamondReserve"]
+});
+function mergeVerifiedRecordV14(base,record,kind){
   const payload=factPayloadV14(record);
-  if(record?.complete===true){const out=clone(base);for(const[k,val]of Object.entries(payload))out[k]=clone(val);return out;}
+  if(record?.complete===true){
+    const out=clone(base);
+    for(const key of COMPLETE_VOLATILE_FIELDS_V14[kind]||[])delete out[key];
+    for(const[k,val]of Object.entries(payload))out[k]=clone(val);
+    return out;
+  }
   return deepMergeFactsV14(base,payload);
 }
 function mergedCardFactsV14(id,record){
   const base=BASE_RULES.cards[id];if(!base)return null;
-  const out=mergeVerifiedRecordV14(base,record);
+  const out=mergeVerifiedRecordV14(base,record,"cards");
   for(const key of ["label","kind","currency","airline","hotel"]){if(hasOwn(base,key))out[key]=base[key];else delete out[key];}
   return out;
 }
 function mergedProgramFactsV14(kind,id,record){
-  const base=BASE_RULES[kind]?.[id];return base?mergeVerifiedRecordV14(base,record):null;
+  const base=BASE_RULES[kind]?.[id];return base?mergeVerifiedRecordV14(base,record,kind):null;
 }
 const RULES=Object.freeze({
   meta:BASE_RULES.meta,
