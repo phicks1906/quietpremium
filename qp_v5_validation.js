@@ -438,6 +438,38 @@ assert("Southwest Priority remains 2500 TQP per $5000",E.RULES.cards.southwest_p
  assert("zero-fee retained card can remain no-job",role?.role==="no_job",JSON.stringify(role));
 }
 
+
+{
+ const p=E.normalizeProfile(base({verifiedFacts:{snapshotId:"fee-override",verifiedAt:"2026-09-19T16:00:00-04:00",sources:["issuer"],cards:{amex_platinum:{verificationStatus:"verified",complete:false,annualFee:999,sources:["issuer"],verifiedAt:"2026-09-19"}}},constraints:{maxNewCards:0}}));
+ assert("verified card fee overrides fallback fixture",E.cardFacts(p,"amex_platinum").annualFee===999,JSON.stringify(E.cardFacts(p,"amex_platinum")));
+ const r=E.analyze(p);assert("verified card fee override reaches current economics",r.current.economics.annualFees===999,JSON.stringify(r.current.economics));
+ assert("partial verified card snapshot explicitly reports fallback",r.factQuality.fallbackFactsUsed.includes("cards.amex_platinum")&&r.factQuality.productionReady===false,JSON.stringify(r.factQuality));
+}
+{
+ const p=E.normalizeProfile(base({currentCards:["amex_gold","amex_platinum"],currentRouting:{...emptyRouting(),dining:[{card:"amex_gold",amount:20000}],grocery:[{card:"amex_gold",amount:15000}],airfare:[{card:"amex_platinum",amount:12000}],hotel:[{card:"amex_platinum",amount:10000}],general:[{card:"amex_platinum",amount:83000}]},verifiedFacts:{snapshotId:"earn-override",verifiedAt:"2026-09-19",sources:["issuer"],cards:{amex_platinum:{verificationStatus:"verified",complete:false,earn:{dining:10},sources:["issuer"],verifiedAt:"2026-09-19"}}},constraints:{maxNewCards:0}}));
+ const s=E.selectForScenario(p,"base"),dining=s.recommended.ongoingRouting.dining||[];assert("verified earn rate changes routing",dining.length===1&&dining[0].card==="amex_platinum",JSON.stringify(dining));
+}
+{
+ const p=E.normalizeProfile(base({currentCards:["amex_gold"],currentRouting:{...emptyRouting(),general:[{card:"amex_gold",amount:10000}]},spend:{dining:0,grocery:0,online_grocery:0,gas_ev:0,online_retail:0,vacation_home:0,airfare:0,hotel:0,general:10000},primaryAirline:"",primaryAirlineShare:0,primaryHotel:"",primaryHotelShare:0,annualOneWayFlights:0,statusProgress:{hotel:{qualifyingNights:0}},remainingYear:{cardSpend:{}},verifiedFacts:{snapshotId:"benefits",verifiedAt:"2026-09-19",sources:["issuer"],cards:{amex_gold:{verificationStatus:"verified",complete:true,recurringCredits:{dining_credit:500},sources:["issuer"],verifiedAt:"2026-09-19"}}},constraints:{maxNewCards:0}}));
+ const r=E.analyze(p);assert("verified recurring benefits apply symmetrically to current and recommended",r.current.economics.recurringBenefitValue===r.recommended.economics.recurringBenefitValue&&r.current.economics.recurringBenefitValue===500,JSON.stringify({c:r.current.economics.recurringBenefitValue,r:r.recommended.economics.recurringBenefitValue}));
+ assert("complete single-card verified snapshot can be production ready",r.factQuality.productionReady===true,JSON.stringify(r.factQuality));
+}
+{
+ const p=E.normalizeProfile(base({primaryAirline:"delta",primaryAirlineShare:.8,annualOneWayFlights:12,currentAirlineStatus:"",statusProgress:{delta:{mqd:6000},hotel:{qualifyingNights:0}},remainingYear:{cardSpend:{},delta:{mqd:0}},primaryHotel:"",primaryHotelShare:0,constraints:{maxNewCards:0},verifiedFacts:{snapshotId:"delta-threshold",verifiedAt:"2026-09-19",sources:["delta"],cards:{amex_platinum:{verificationStatus:"verified",complete:true,sources:["amex"],verifiedAt:"2026-09-19"}},airlines:{delta:{verificationStatus:"verified",complete:true,thresholds:[{tier:"Silver Medallion",amount:9000},{tier:"Gold Medallion",amount:14000},{tier:"Platinum Medallion",amount:20000},{tier:"Diamond Medallion",amount:30000}],sources:["delta"],verifiedAt:"2026-09-19"}}}}));
+ const r=E.analyze(p);assert("verified airline threshold overrides fallback fixture",r.recommended.travelActions.airline.projectedNaturalStatus==="",JSON.stringify(r.recommended.travelActions.airline));
+}
+{
+ const p=E.normalizeProfile(base({currentCards:["hyatt_consumer"],currentRouting:{...emptyRouting(),hotel:[{card:"hyatt_consumer",amount:10000}],general:[{card:"hyatt_consumer",amount:20000}]},spend:{dining:0,grocery:0,online_grocery:0,gas_ev:0,online_retail:0,vacation_home:0,airfare:0,hotel:10000,general:20000},primaryAirline:"",primaryAirlineShare:0,annualOneWayFlights:0,primaryHotel:"hyatt",primaryHotelShare:.8,currentHotelStatus:"Explorist",statusProgress:{hotel:{qualifyingNights:54,qualifyingStays:20,qualifyingSpend:9000}},remainingYear:{cardSpend:{},hotel:{qualifyingNights:6,qualifyingStays:3,qualifyingSpend:2500}},cardUniqueBenefitValue:{hyatt_consumer:250},constraints:{maxNewCards:0},verifiedFacts:{snapshotId:"hyatt-threshold",verifiedAt:"2026-09-19",sources:["hyatt"],cards:{hyatt_consumer:{verificationStatus:"verified",complete:true,sources:["chase"],verifiedAt:"2026-09-19"}},hotels:{hyatt:{verificationStatus:"verified",complete:true,thresholds:[{tier:"Discoverist",nights:10},{tier:"Explorist",nights:30},{tier:"Globalist",nights:70}],sources:["hyatt"],verifiedAt:"2026-09-19"}}}}));
+ const r=E.analyze(p);assert("verified hotel threshold overrides fallback fixture",r.recommended.travelActions.hotel.projectedNaturalStatus!=="Globalist",JSON.stringify(r.recommended.travelActions.hotel));
+}
+{
+ const r=E.analyze(base({constraints:{maxNewCards:0}}));assert("analysis without verified snapshot discloses fallback facts",r.factQuality.verifiedSnapshotPresent===false&&r.factQuality.fallbackFactsUsed.length>0&&r.factQuality.productionReady===false,JSON.stringify(r.factQuality));
+}
+{
+ const p=base({primaryAirline:"",primaryAirlineShare:0,primaryHotel:"",primaryHotelShare:0,annualOneWayFlights:0,statusProgress:{hotel:{qualifyingNights:0}},remainingYear:{cardSpend:{}},constraints:{maxNewCards:0},verifiedFacts:{snapshotId:"same-snapshot",verifiedAt:"2026-09-19",sources:["issuer"],cards:{amex_platinum:{verificationStatus:"verified",complete:true,sources:["issuer"],verifiedAt:"2026-09-19"}}}});
+ const r=E.analyze(p);assert("current and recommended use the same immutable facts snapshot",r.current.factsSnapshotId==="same-snapshot"&&r.recommended.factsSnapshotId==="same-snapshot"&&r.factsSnapshot.snapshotId==="same-snapshot"&&Object.isFrozen(r.profile.verifiedFacts),JSON.stringify(r.factsSnapshot));
+}
+
 console.log("\n------------------------------");
 console.log(`V5 alpha.14 harness: ${pass} passed, ${fail} failed`);
 if(failures.length)console.log(JSON.stringify(failures,null,2));
