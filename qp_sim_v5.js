@@ -373,7 +373,7 @@ function reachableSpendRewardV13(p,id){
   const ytd=p.currentCards.includes(id)?maybeNum(p.cardSpendYTD[id]):0;if(ytd==null)return false;
   const available=sum(Object.values(p.remainingYear.cardSpend||{}));return h.spendRewards.some(r=>r.amount>ytd&&r.amount-ytd<=available);
 }
-const NON_DOLLAR_JOB_TAGS_V14=new Set(["checked_bag","priority_boarding","boarding_benefits","seat_benefits","companion_certificate_renewal","free_night_reward_annual","free_night_award_35k","free_night_award_85k","free_night_reward_15k","travel_protections","lifestyle_collection","award_discount_threshold","united_travel_benefits"]);
+const NON_DOLLAR_JOB_TAGS_V14=new Set(["checked_bag","priority_boarding","boarding_benefits","seat_benefits","upgrade_eligibility","companion_certificate_renewal","free_night_reward_annual","free_night_award_35k","free_night_award_85k","free_night_reward_15k","travel_protections","lifestyle_collection","award_discount_threshold","united_travel_benefits"]);
 function cardHasUniqueNonDollarJobV14(portfolio,id){
   const own=(RULES.cards[id]?.benefitTags||[]).map(canonicalBenefit).filter(x=>NON_DOLLAR_JOB_TAGS_V14.has(x)),others=new Set();
   for(const other of portfolio)if(other!==id)for(const tag of RULES.cards[other]?.benefitTags||[])others.add(canonicalBenefit(tag));
