@@ -33,6 +33,13 @@ export function auditPlan(result:any,E:any){
     }
   }
 
+  if(primary==="chase_ur"&&String(profile?.redemptionPartner||"").toLowerCase()==="hyatt"){
+    for(const id of portfolio){
+      const facts=E.cardFacts(profile,id);
+      if(facts?.kind==="flex"&&facts?.currency==="chase_ur"&&facts?.transferRules?.hyatt?.defaultRatio==null)errors.push({code:"hyatt_transfer_ratio_unverified",cardId:id});
+    }
+  }
+
   for(const id of portfolio){
     const facts=E.cardFacts(profile,id),role=roles.get(id)||"";
     if(!facts){errors.push({code:"portfolio_unknown_card",cardId:id});continue}
