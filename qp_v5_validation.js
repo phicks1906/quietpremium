@@ -1,4 +1,4 @@
-/** Quiet Premium V5 validation harness — 5.0-alpha.12 */
+/** Quiet Premium V5 validation harness — 5.0-alpha.13 */
 "use strict";
 const E=require("./qp_sim_v5.js");
 let pass=0,fail=0;const failures=[];
@@ -16,7 +16,7 @@ function base(overrides={}){return{
  currencyUtility:{amex_mr:1,chase_ur:.75,capital_one_miles:.95,hyatt_points:1},legacyNaturalBenefitValue:{amex_platinum:700},
  bookingMethod:{airfare:"direct_airline",hotel:"direct_hotel"},constraints:{maxNewCards:2},aspirations:["travel more"],...overrides};}
 
-assert("engine is alpha.12",E.ENGINE_VERSION==="5.0-alpha.12");
+assert("engine is alpha.12",E.ENGINE_VERSION==="5.0-alpha.13");
 
 {
  const a=E.analyze(base({aspirations:["travel more"]}));
@@ -43,7 +43,7 @@ assert("engine is alpha.12",E.ENGINE_VERSION==="5.0-alpha.12");
   legacyNaturalBenefitValue:{southwest_priority:229,venture:0}
  }));
  assert("legacy valued Southwest card is protected",E.legacyBenefitProtectionIds(p).includes("southwest_priority"));
- assert("candidate portfolios cannot silently drop protected Southwest card",E.candidatePortfolios(p).every(x=>x.includes("southwest_priority")));
+ assert("legacy value no longer forces a permanent portfolio lock",E.candidatePortfolios(p).some(x=>!x.includes("southwest_priority")));
  const r=E.analyze(p);
  assert("recommended wallet retains protected Southwest card",r.recommended.portfolio.includes("southwest_priority"),r.recommended.id);
  assert("missing benefit detail is surfaced",r.current.quality.issues.some(x=>x.code==="legacy_benefit_detail_missing"&&x.detail==="southwest_priority"));
@@ -87,9 +87,9 @@ assert("engine is alpha.12",E.ENGINE_VERSION==="5.0-alpha.12");
  });
  const n=E.normalizeProfile(p),r=E.analyze(n);
  assert("untyped $900 Platinum benefit total is not treated as benefit detail",E.cardBenefitDetailKnown(n,"amex_platinum")===false);
- assert("untyped $900 Platinum benefit total protects Platinum from removal",E.legacyBenefitProtectionIds(n).includes("amex_platinum")&&E.candidatePortfolios(n).every(x=>x.includes("amex_platinum")));
+ assert("untyped $900 Platinum benefit total remains visible but does not force Platinum to stay",E.legacyBenefitProtectionIds(n).includes("amex_platinum")&&E.candidatePortfolios(n).some(x=>!x.includes("amex_platinum")));
  assert("untyped Platinum dollars still count in economics",r.current.economics.naturalBenefitValue===900,JSON.stringify(r.current.economics.benefitLedger));
- assert("high-spend low-travel case keeps Platinum and can add Gold",r.recommended.portfolio.includes("amex_platinum")&&r.recommended.portfolio.includes("amex_gold"),r.recommended.id);
+ assert("high-spend low-travel case can add Gold without blindly protecting Platinum",r.recommended.portfolio.includes("amex_gold"),r.recommended.id); assert("unresolved Platinum is flagged for review before removal",r.recommended.portfolio.includes("amex_platinum")||r.recommended.actions.some(x=>x.cardId==="amex_platinum"&&x.action==="manual_review_before_removal"),JSON.stringify(r.recommended.actions));
 }
 
 {
@@ -269,16 +269,78 @@ assert("Southwest Priority remains 2500 TQP per $5000",E.RULES.cards.southwest_p
 {
  const p=base({spend:{dining:0,grocery:0,online_grocery:0,gas_ev:0,online_retail:0,vacation_home:0,airfare:5000,hotel:5000,general:140000},currentCards:["amex_platinum"],currentRouting:{...emptyRouting(),airfare:[{card:"amex_platinum",amount:5000}],hotel:[{card:"amex_platinum",amount:5000}],general:[{card:"amex_platinum",amount:140000}]},remainingYear:{cardSpend:{airfare:1000,hotel:1000,general:40000},delta:{mqd:0},hotel:{qualifyingNights:1}},primaryAirlineShare:.3,annualOneWayFlights:4,statusProgress:{delta:{mqd:0},hotel:{qualifyingNights:2}},currencyUtility:{amex_mr:1,chase_ur:.3,capital_one_miles:1},benefitValueByType:{lounge:0},cardUniqueBenefitValue:{amex_platinum:900},legacyNaturalBenefitValue:{}});
  const adds=E.analyze(p).recommended.actions.filter(x=>x.action==="add").map(x=>x.cardId);
- assert("2x-everywhere opportunity remains possible",adds.includes("venture")||adds.includes("venture_x"),adds.join(","));
+ assert("primary ecosystem prevents unrelated 2x patch",!adds.includes("venture")&&!adds.includes("venture_x"),adds.join(","));
 }
 
 {
  const r=E.analyze(base({routeFit:{}}));
  assert("missing route fit remains visible",r.current.quality.issues.some(x=>x.code==="route_fit_not_independently_verified"));
- assert("alpha.12 integrity flags are present",r.integrity.legacyBenefitRichCurrentCardsProtected===true&&r.integrity.untypedCardBenefitTotalsProtected===true&&r.integrity.partialCardBenefitTotalsRemainProtected===true&&r.integrity.aggregateBenefitValuesDoNotDoubleCountTypedBreakdowns===true&&r.integrity.unresolvedCrossCardBenefitOverlapIsConservative===true&&r.integrity.benefitProtectionIsCardSpecific===true&&r.integrity.legacyBenefitValuePreservedWithPartialDetail===true&&r.integrity.nonIncrementalStatusSpendMovesRemoved===true&&r.integrity.reportedAndProjectedStatusSeparated===true&&r.integrity.statusTargetsComparedToProjectedCurrentSetup===true);
+ assert("alpha.13 integrity flags are present",r.integrity.travelStrategyPrecedesCards===true&&r.integrity.primaryFlexibleEcosystem===true&&r.integrity.ongoingAndTemporaryRoutingSeparated===true&&r.integrity.temporaryJobsHaveExplicitHandoffs===true&&r.integrity.statusOpportunityRemainsDiscoverable===true&&r.integrity.existingCardRemovalEvaluated===true&&r.integrity.feeSavingsExposed===true&&r.integrity.aggregateBenefitValuesDoNotDoubleCountTypedBreakdowns===true&&r.integrity.unresolvedCrossCardBenefitOverlapIsConservative===true&&r.integrity.benefitProtectionIsCardSpecific===true&&r.integrity.nonIncrementalStatusSpendMovesRemoved===true&&r.integrity.reportedAndProjectedStatusSeparated===true&&r.integrity.statusTargetsComparedToProjectedCurrentSetup===true);
+}
+
+
+{
+ const p=E.normalizeProfile(base({home_airport:"SDF",frequent_destinations:"ATL, JFK, LAS",point_balances:{amex_mr:250000,chase_ur:50000},willing_to_concentrate:"maybe"}));
+ assert("alpha.13 restores home airport",p.homeAirport==="SDF");
+ assert("alpha.13 restores frequent destinations",same(p.frequentDestinations,["ATL","JFK","LAS"]));
+ assert("alpha.13 restores point balances",p.pointBalances.amex_mr===250000&&p.pointBalances.chase_ur===50000);
+ assert("alpha.13 restores concentration preference",p.preferences.willingnessToConcentrate==="maybe");
+}
+
+{
+ const r=E.analyze(base({currentCards:["amex_gold","amex_platinum"],currentRouting:{...emptyRouting(),dining:[{card:"amex_gold",amount:20000}],grocery:[{card:"amex_gold",amount:15000}],gas_ev:[{card:"amex_platinum",amount:5000}],online_retail:[{card:"amex_platinum",amount:5000}],airfare:[{card:"amex_platinum",amount:12000}],hotel:[{card:"amex_platinum",amount:10000}],general:[{card:"amex_platinum",amount:83000}]},primaryAirline:"",primaryAirlineShare:0,primaryHotel:"",primaryHotelShare:0,annualOneWayFlights:4,statusProgress:{hotel:{qualifyingNights:4}},remainingYear:{cardSpend:{dining:5000,grocery:4000,airfare:2000,hotel:2000,general:15000},hotel:{qualifyingNights:1}},cardUniqueBenefitValue:{amex_platinum:900,amex_gold:250},legacyNaturalBenefitValue:{}}));
+ assert("coherent Amex wallet does not add Capital One",!r.recommended.portfolio.includes("venture")&&!r.recommended.portfolio.includes("venture_x"),r.recommended.id);
+ assert("Amex wallet selects one primary flexible ecosystem",r.rewardsStrategy.primaryCurrency==="amex_mr",r.rewardsStrategy.primaryCurrency);
+}
+
+{
+ const p=base({
+  spend:{dining:18000,grocery:12000,online_grocery:0,gas_ev:4000,online_retail:5000,vacation_home:0,airfare:6000,hotel:12000,general:43000},
+  currentCards:["hilton_surpass","amex_gold"],
+  currentRouting:{...emptyRouting(),dining:[{card:"amex_gold",amount:18000}],grocery:[{card:"amex_gold",amount:12000}],gas_ev:[{card:"hilton_surpass",amount:4000}],online_retail:[{card:"hilton_surpass",amount:5000}],airfare:[{card:"hilton_surpass",amount:6000}],hotel:[{card:"hilton_surpass",amount:12000}],general:[{card:"hilton_surpass",amount:43000}]},
+  primaryAirline:"",primaryAirlineShare:0,annualOneWayFlights:4,primaryHotel:"hilton",primaryHotelShare:.75,currentHotelStatus:"Gold",
+  statusProgress:{hotel:{qualifyingNights:12,qualifyingStays:7,qualifyingSpend:3500}},
+  remainingYear:{cardSpend:{dining:4000,grocery:3000,hotel:3000,general:10000},hotel:{qualifyingNights:4,qualifyingStays:2,qualifyingSpend:1500}},
+  cardSpendYTD:{hilton_surpass:12000},cardUniqueBenefitValue:{hilton_surpass:250,amex_gold:250},legacyNaturalBenefitValue:{},constraints:{maxNewCards:0}
+ });
+ const r=E.analyze(p),job=r.recommended.temporaryJobs.find(j=>j.type==="spend_reward"&&j.cardId==="hilton_surpass");
+ assert("Surpass $15k reward becomes independent temporary job",!!job,JSON.stringify(r.recommended.temporaryJobs));
+ assert("Surpass job requires only remaining $3k",job?.spendRequired===3000,String(job?.spendRequired));
+ assert("temporary job has explicit post-threshold handoff",Array.isArray(job?.postThresholdRouting)&&job.postThresholdRouting.length>0,JSON.stringify(job?.postThresholdRouting));
+ assert("nearer Surpass reward prevents automatic $40k Diamond chase",!r.recommended.strategy.hotelStatusTarget,JSON.stringify(r.recommended.strategy.hotelStatusTarget));
+}
+
+{
+ const p=base({
+  spend:{dining:50000,grocery:30000,online_grocery:0,gas_ev:0,online_retail:0,vacation_home:0,airfare:10000,hotel:10000,general:50000},
+  currentCards:["amex_gold","amex_platinum","delta_reserve"],
+  currentRouting:{...emptyRouting(),dining:[{card:"amex_gold",amount:50000}],grocery:[{card:"amex_gold",amount:30000}],airfare:[{card:"amex_platinum",amount:10000}],hotel:[{card:"amex_platinum",amount:10000}],general:[{card:"amex_platinum",amount:50000}]},
+  primaryAirline:"delta",primaryAirlineShare:.85,routeFit:{delta:.95},annualOneWayFlights:28,currentAirlineStatus:"Gold Medallion",
+  statusProgress:{delta:{mqd:10500},hotel:{qualifyingNights:8}},
+  remainingYear:{cardSpend:{dining:18000,grocery:12000,airfare:4000,hotel:3000,general:15000},delta:{mqd:1000},hotel:{qualifyingNights:2}},
+  cardSpendYTD:{delta_reserve:0},cardUniqueBenefitValue:{amex_platinum:900,amex_gold:250,delta_reserve:650},
+  explicitBenefitUse:{amex_platinum:{lounge_access:true,premium_hotel:true},delta_reserve:{upgrade_priority:true,lounge_access:true}},
+  benefitValueByType:{lounge:300,premium_hotel_booking:400,upgrade_priority:300},legacyNaturalBenefitValue:{},constraints:{maxNewCards:0}
+ });
+ const rec=E.strategyRecord(E.normalizeProfile(p),["amex_gold","amex_platinum","delta_reserve"],"base"),job=rec.temporaryJobs.find(j=>j.type==="airline_status");
+ assert("expensive reachable status path remains discoverable",!!job,JSON.stringify(rec.temporaryJobs));
+ assert("status temporary job also has explicit handoff",Array.isArray(job?.postThresholdRouting)&&job.postThresholdRouting.length>0,JSON.stringify(job?.postThresholdRouting));
+}
+
+{
+ const p=base({
+  currentCards:["amex_platinum","chase_reserve","venture_x"],
+  currentRouting:{...emptyRouting(),dining:[{card:"chase_reserve",amount:20000}],grocery:[{card:"venture_x",amount:15000}],gas_ev:[{card:"venture_x",amount:5000}],online_retail:[{card:"venture_x",amount:5000}],airfare:[{card:"amex_platinum",amount:12000}],hotel:[{card:"amex_platinum",amount:10000}],general:[{card:"venture_x",amount:83000}]},
+  primaryAirline:"delta",primaryAirlineShare:.75,routeFit:{delta:.9},annualOneWayFlights:16,currentAirlineStatus:"Gold Medallion",
+  cardUniqueBenefitValue:{amex_platinum:900,chase_reserve:0,venture_x:0},legacyNaturalBenefitValue:{},
+  explicitBenefitUse:{amex_platinum:{lounge_access:true,premium_hotel:true}},benefitValueByType:{lounge:300,premium_hotel_booking:400},constraints:{maxNewCards:1}
+ });
+ const r=E.analyze(p);
+ assert("overbuilt flexible wallet can shrink",r.recommended.portfolio.length<p.currentCards.length+1,JSON.stringify(r.recommended.portfolio));
+ assert("fee savings are exposed",typeof r.recommended.feeSummary.annualSavings==="number",JSON.stringify(r.recommended.feeSummary));
 }
 
 console.log("\n------------------------------");
-console.log(`V5 alpha.12 harness: ${pass} passed, ${fail} failed`);
+console.log(`V5 alpha.13 harness: ${pass} passed, ${fail} failed`);
 if(failures.length)console.log(JSON.stringify(failures,null,2));
 process.exitCode=fail?1:0;
