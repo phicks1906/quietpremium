@@ -90,7 +90,7 @@ function factPayloadV14(record){
   const out={};for(const[k,val]of Object.entries(record))if(!FACT_META_KEYS.has(k))out[k]=clone(val);return out;
 }
 const COMPLETE_VOLATILE_FIELDS_V14=Object.freeze({
-  cards:["annualFee","earn","bookingEarn","caps","capGroups","groupCaps","postCapEarn","benefitTags","recurringCredits","multiYearCredits","annualBonusPoints","hotelStatus","hotelStatusByProgram","status","transferRules","verified"],
+  cards:["annualFee","earn","bookingEarn","caps","capGroups","groupCaps","postCapEarn","benefitTags","recurringCredits","multiYearCredits","annualBonusPoints","hotelStatus","hotelStatusByProgram","status","transferRules","spendRewards","verified"],
   airlines:["thresholds","flightThresholds","minimumUnitedSegments"],
   hotels:["thresholds","diamondReserve"]
 });
@@ -176,7 +176,7 @@ function marginalRate(card,p,cat,catAssigned,groupAssigned){return capRemaining(
 function pointDollarValue(p,id,scenario,portfolio){const c=RULES.cards[id];return c?currencyPointValue(p,c.currency,scenario,portfolio):0;}
 function routeAnnual(p,portfolio,scenario){const out=Object.fromEntries(CATS.map(c=>[c,[]])),catAssigned={},groupAssigned={};for(const id of portfolio){catAssigned[id]={};groupAssigned[id]={};}for(const cat of CATS){let remaining=p.spend[cat]||0;while(remaining>0){let best=null,bestV=-Infinity;for(const id of portfolio){const card=RULES.cards[id];if(!card)continue;const ca=catAssigned[id][cat]||0,gk=capKey(card,cat),ga=gk?(groupAssigned[id][gk]||0):0,v=marginalRate(card,p,cat,ca,ga)*pointDollarValue(p,id,scenario,portfolio);if(v>bestV+1e-12){bestV=v;best=id;}}if(!best)break;const card=RULES.cards[best],ca=catAssigned[best][cat]||0,gk=capKey(card,cat),ga=gk?(groupAssigned[best][gk]||0):0,rem=capRemaining(card,cat,ca,ga);let chunk=Math.min(remaining,rem>0?rem:remaining);if(!Number.isFinite(chunk)||chunk<=0)chunk=remaining;const row=out[cat].find(r=>r.card===best);if(row)row.amount=round(row.amount+chunk);else out[cat].push({card:best,amount:round(chunk)});catAssigned[best][cat]=ca+chunk;if(gk)groupAssigned[best][gk]=ga+chunk;remaining-=chunk;}}return out;}
 function pointsFromRouting(p,routing,portfolio,scenario){const byCurrency={},byCard={},catAssigned={},groupAssigned={};for(const id of portfolio){catAssigned[id]={};groupAssigned[id]={};}for(const cat of CATS)for(const row of routing[cat]||[]){const card=RULES.cards[row.card];if(!card)continue;catAssigned[row.card]??={};groupAssigned[row.card]??={};let remaining=row.amount,pts=0;while(remaining>0){const ca=catAssigned[row.card][cat]||0,gk=capKey(card,cat),ga=gk?(groupAssigned[row.card][gk]||0):0,rate=marginalRate(card,p,cat,ca,ga),rem=capRemaining(card,cat,ca,ga);let chunk=Math.min(remaining,rem>0?rem:remaining);if(!Number.isFinite(chunk)||chunk<=0)chunk=remaining;pts+=chunk*rate;catAssigned[row.card][cat]=ca+chunk;if(gk)groupAssigned[row.card][gk]=ga+chunk;remaining-=chunk;}byCurrency[card.currency]=(byCurrency[card.currency]||0)+pts;byCard[row.card]=(byCard[row.card]||0)+pts;}let gross=0;for(const[id,pts]of Object.entries(byCard)){const c=RULES.cards[id];gross+=pts*currencyPointValue(p,c.currency,scenario,portfolio);}return{pointsByCurrency:Object.fromEntries(Object.entries(byCurrency).map(([k,v])=>[k,round(v)])),pointsByCard:Object.fromEntries(Object.entries(byCard).map(([k,v])=>[k,round(v)])),grossTravelValue:round(gross)};}
-function visibleBenefits(portfolio){const out=[];for(const id of portfolio){const c=RULES.cards[id];if(!c)continue;for(const b of c.benefitTags||[])out.push({cardId:id,benefit:b});if(c.hotelStatus?.automaticTier)out.push({cardId:id,benefit:"automatic_hotel_status",program:c.hotel,detail:c.hotelStatus.automaticTier});if(c.hotelStatus?.spendTier)out.push({cardId:id,benefit:"spend_to_hotel_status",program:c.hotel,detail:c.hotelStatus.spendTier});for(const reward of c.hotelStatus?.spendRewards||[])out.push({cardId:id,benefit:reward.benefit,detail:{spendRequired:reward.amount}});for(const[program,tier]of Object.entries(c.hotelStatusByProgram||{}))out.push({cardId:id,benefit:"automatic_hotel_status",program,detail:tier});if(c.airline&&c.status)out.push({cardId:id,benefit:"status_earning_mechanism",detail:c.airline});}return out;}
+function visibleBenefits(portfolio){const out=[];for(const id of portfolio){const c=RULES.cards[id];if(!c)continue;for(const b of c.benefitTags||[])out.push({cardId:id,benefit:b});if(c.hotelStatus?.automaticTier)out.push({cardId:id,benefit:"automatic_hotel_status",program:c.hotel,detail:c.hotelStatus.automaticTier});if(c.hotelStatus?.spendTier)out.push({cardId:id,benefit:"spend_to_hotel_status",program:c.hotel,detail:c.hotelStatus.spendTier});for(const reward of cardSpendRewardsV15(id))out.push({cardId:id,benefit:reward.benefit,detail:{spendRequired:reward.amount}});for(const[program,tier]of Object.entries(c.hotelStatusByProgram||{}))out.push({cardId:id,benefit:"automatic_hotel_status",program,detail:tier});if(c.airline&&c.status)out.push({cardId:id,benefit:"status_earning_mechanism",detail:c.airline});}return out;}
 function canonicalVisibleSet(portfolio){const set=new Set();for(const b of visibleBenefits(portfolio))set.add(canonicalBenefit(b.benefit));return set;}
 function cardVisibleBenefitSet(id){return canonicalVisibleSet([id]);}
 function canonicalTrue(obj,key){for(const[k,v]of Object.entries(obj||{}))if(v===true&&canonicalBenefit(k)===key)return true;return false;}
@@ -368,10 +368,19 @@ function rewardsStrategyV13(p,travel=travelStrategyV13(p)){
 }
 
 function hasExplicitCardBenefitV13(p,id){return Object.values(p.explicitBenefitUse?.[id]||{}).some(Boolean)||Object.values(p.benefitEvidence?.[id]||{}).some(Boolean);}
+function cardSpendRewardsV15(id){
+  const c=RULES.cards[id];return[...(c?.spendRewards||[]),...(c?.hotelStatus?.spendRewards||[])];
+}
+function spendRewardModeledValueV15(p,portfolio,reward,scenario){
+  const cash=n(reward?.cashValue);if(cash>0)return cash;
+  const pts=n(reward?.points),currency=s(reward?.currency);if(pts>0&&currency)return round(pts*currencyPointValue(p,currency,scenario,portfolio));
+  return 0;
+}
 function reachableSpendRewardV13(p,id){
-  const h=RULES.cards[id]?.hotelStatus;if(!h?.spendRewards?.length||!p.remainingYear.known)return false;
+  const rewards=cardSpendRewardsV15(id);if(!rewards.length||!p.remainingYear.known)return false;
   const ytd=p.currentCards.includes(id)?maybeNum(p.cardSpendYTD[id]):0;if(ytd==null)return false;
-  const available=sum(Object.values(p.remainingYear.cardSpend||{}));return h.spendRewards.some(r=>r.amount>ytd&&r.amount-ytd<=available);
+  const available=sum(Object.values(p.remainingYear.cardSpend||{}));
+  return rewards.some(r=>r.amount>ytd&&r.amount-ytd<=available&&spendRewardModeledValueV15(p,uniq([...p.currentCards,id]),r,"conservative")>0);
 }
 const NON_DOLLAR_JOB_TAGS_V14=new Set(["checked_bag","priority_boarding","boarding_benefits","seat_benefits","upgrade_eligibility","companion_certificate_renewal","free_night_reward_annual","free_night_award_35k","free_night_award_85k","free_night_reward_15k","travel_protections","lifestyle_collection","award_discount_threshold","united_travel_benefits"]);
 function cardHasUniqueNonDollarJobV14(portfolio,id){
@@ -451,8 +460,8 @@ function shiftV13(p,r,target,need,scenario,portfolio){
   return left>0?null:{routing:out,shifted:round(moved),opportunityCost:round(cost),moves};
 }
 function nextSpendRewardGapV13(p,id){
-  const h=RULES.cards[id]?.hotelStatus;if(!h?.spendRewards?.length)return null;const ytd=p.currentCards.includes(id)?maybeNum(p.cardSpendYTD[id]):0;if(ytd==null)return null;
-  return h.spendRewards.map(r=>({reward:r,gap:Math.max(0,r.amount-ytd)})).filter(x=>x.gap>0).sort((a,b)=>a.gap-b.gap)[0]||null;
+  const rewards=cardSpendRewardsV15(id);if(!rewards.length)return null;const ytd=p.currentCards.includes(id)?maybeNum(p.cardSpendYTD[id]):0;if(ytd==null)return null;
+  return rewards.map(r=>({reward:r,gap:Math.max(0,r.amount-ytd)})).filter(x=>x.gap>0).sort((a,b)=>a.gap-b.gap)[0]||null;
 }
 function hotelNeedV13(p,portfolio,id,organic,baseRouting){
   const pr=p.hotel.primary,c=RULES.cards[id],h=c?.hotelStatus;if(!pr||!h||c.hotel!==pr||!hotelStatusUsefulness(p))return null;
@@ -490,9 +499,18 @@ function naturalMovesToCardV13(routing,target,need){
 }
 function spendRewardJobsV13(p,portfolio,annual,scenario){
   if(!p.remainingYear.known)return[];const jobs=[],base=routingForBudget(p,annual,p.remainingYear),available=sum(Object.values(p.remainingYear.cardSpend||{}));
-  for(const id of portfolio){const h=RULES.cards[id]?.hotelStatus;if(!h?.spendRewards?.length)continue;const ytd=p.currentCards.includes(id)?maybeNum(p.cardSpendYTD[id]):0;if(ytd==null)continue;
-    for(const reward of h.spendRewards){const gap=Math.max(0,reward.amount-ytd);if(!gap||gap>available)continue;const natural=naturalMovesToCardV13(base,id,gap);let moves=natural.moves,opportunityCost=0,fulfilled=gap-natural.left;if(natural.left>0){const shifted=shiftV13(p,base,id,natural.left,scenario,portfolio);if(!shifted)continue;moves=moves.concat(shifted.moves);opportunityCost=shifted.opportunityCost;fulfilled+=shifted.shifted;}if(fulfilled+1e-6<gap)continue;
-      jobs.push({id:"spend_reward:"+id+":"+reward.benefit,type:"spend_reward",cardId:id,purpose:reward.benefit,spendRequired:round(gap),stopCondition:{type:"card_year_spend",amount:reward.amount,benefit:reward.benefit},opportunityCost:round(opportunityCost),moves,postThresholdRouting:ongoingDestinationsV13(annual,moves)});
+  for(const id of portfolio){const rewards=cardSpendRewardsV15(id);if(!rewards.length)continue;const ytd=p.currentCards.includes(id)?maybeNum(p.cardSpendYTD[id]):0;if(ytd==null)continue;
+    for(const reward of rewards){
+      const gap=Math.max(0,n(reward.amount)-ytd);if(!gap||gap>available)continue;
+      const natural=naturalMovesToCardV13(base,id,gap),modeledValue=spendRewardModeledValueV15(p,portfolio,reward,scenario);
+      let moves=natural.moves,opportunityCost=0,fulfilled=gap-natural.left;
+      if(natural.left>0){
+        if(modeledValue<=0)continue;
+        const shifted=shiftV13(p,base,id,natural.left,scenario,portfolio);if(!shifted||shifted.opportunityCost>=modeledValue)continue;
+        moves=moves.concat(shifted.moves);opportunityCost=shifted.opportunityCost;fulfilled+=shifted.shifted;
+      }
+      if(fulfilled+1e-6<gap)continue;
+      jobs.push({id:"spend_reward:"+id+":"+reward.benefit,type:"spend_reward",cardId:id,purpose:reward.benefit,spendRequired:round(gap),modeledValue:round(modeledValue),stopCondition:{type:"card_year_spend",amount:reward.amount,benefit:reward.benefit},opportunityCost:round(opportunityCost),moves,postThresholdRouting:ongoingDestinationsV13(annual,moves)});
     }
   }
   return jobs;
