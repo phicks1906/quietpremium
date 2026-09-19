@@ -1,10 +1,10 @@
 export const ENTITY_SOURCES = Object.freeze({
   cards: Object.freeze({
-    amex_gold: { urls: ['https://www.americanexpress.com/us/credit-cards/card/gold-card/'], required: ['annualFee','earn','benefitTags'] },
+    amex_gold: { urls: ['https://www.americanexpress.com/us/credit-cards/card/gold-card/'], required: ['annualFee','earn','bookingEarn','caps','groupCaps','postCapEarn','benefitTags','recurringCredits'] },
     amex_platinum: { urls: ['https://www.americanexpress.com/us/credit-cards/card/platinum/','https://www.americanexpress.com/en-us/credit-cards/credit-intel/platinum-fee/'], required: ['annualFee','earn','benefitTags'] },
-    chase_preferred: { urls: ['https://creditcards.chase.com/rewards-credit-cards/sapphire/preferred','https://www.chase.com/sapphire-cards/personal/preferred'], required: ['annualFee','earn','benefitTags','transferRules'] },
+    chase_preferred: { urls: ['https://creditcards.chase.com/rewards-credit-cards/sapphire/preferred','https://www.chase.com/sapphire-cards/personal/preferred'], required: ['annualFee','earn','bookingEarn','benefitTags','recurringCredits','multiYearCredits','transferRules'] },
     chase_reserve: { urls: ['https://creditcards.chase.com/rewards-credit-cards/sapphire/reserve','https://www.chase.com/sapphire-cards/personal/reserve'], required: ['annualFee','earn','benefitTags','transferRules'] },
-    venture: { urls: ['https://www.capitalone.com/credit-cards/venture/'], required: ['annualFee','earn','benefitTags'] },
+    venture: { urls: ['https://www.capitalone.com/credit-cards/venture/'], required: ['annualFee','earn','bookingEarn','benefitTags','multiYearCredits'] },
     venture_x: { urls: ['https://www.capitalone.com/credit-cards/venture-x/'], required: ['annualFee','earn','benefitTags','annualBonusPoints'] },
     delta_platinum: { urls: ['https://www.americanexpress.com/us/credit-cards/card/delta-skymiles-platinum-american-express-card/'], required: ['annualFee','earn','benefitTags','status'] },
     delta_reserve: { urls: ['https://www.americanexpress.com/us/credit-cards/card/delta-skymiles-reserve-american-express-card/'], required: ['annualFee','earn','benefitTags','status'] },
