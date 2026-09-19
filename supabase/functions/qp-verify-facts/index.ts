@@ -1,7 +1,7 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { ENTITY_SOURCES, ALLOWED_CARD_IDS, ALLOWED_AIRLINE_IDS, ALLOWED_HOTEL_IDS } from "./sources.ts";
 
-const ORIGINS=new Set(["https://quietpremium.com","https://www.quietpremium.com"]);
+const ORIGINS=new Set(["https://quietpremium.com","https://www.quietpremium.com"]);\nconst PUBLIC_BROWSER_KEY="sb_publishable_BETG0zmWAEmPByBsKyEUzA_yPCOkh5F";
 const MAX_ENTITIES=12,MAX_BYTES=2000000,TIMEOUT=9000,SCHEMA="qp-verified-facts-v1";
 const uniq=(a:any[])=>[...new Set((a||[]).filter(Boolean))];
 const amount=(v:any)=>{const n=Number(String(v??"").replace(/[$,%\s,]/g,""));return Number.isFinite(n)?n:null};
@@ -9,7 +9,7 @@ const cleanText=(h:string)=>String(h||"").replace(/<script\b[^>]*>[\s\S]*?<\/scr
 const has=(o:any,p:string)=>{let x=o;for(const k of p.split(".")){if(!x||!Object.prototype.hasOwnProperty.call(x,k))return false;x=x[k]}if(x==null)return false;if(Array.isArray(x))return x.length>0;if(typeof x==="object")return Object.keys(x).length>0;return true};
 function j(body:any,status=200,origin=""){const h:any={"Content-Type":"application/json; charset=utf-8","Cache-Control":"no-store"};if(origin&&ORIGINS.has(origin)){h["Access-Control-Allow-Origin"]=origin;h["Vary"]="Origin"}return new Response(JSON.stringify(body),{status,headers:h})}
 function preflight(origin:string){if(!ORIGINS.has(origin))return new Response(null,{status:403});return new Response(null,{status:204,headers:{"Access-Control-Allow-Origin":origin,"Access-Control-Allow-Headers":"apikey, content-type, x-client-info","Access-Control-Allow-Methods":"POST, OPTIONS","Access-Control-Max-Age":"86400","Vary":"Origin"}})}
-function keys(){const out:string[]=[];try{const x=JSON.parse(Deno.env.get("SUPABASE_PUBLISHABLE_KEYS")||"{}");for(const v of Object.values(x))if(typeof v==="string"&&v)out.push(v)}catch{}const a=Deno.env.get("SUPABASE_ANON_KEY");if(a)out.push(a);return new Set(out)}
+function keys(){const out:string[]=[PUBLIC_BROWSER_KEY];try{const x=JSON.parse(Deno.env.get("SUPABASE_PUBLISHABLE_KEYS")||"{}");for(const v of Object.values(x))if(typeof v==="string"&&v)out.push(v)}catch{}const a=Deno.env.get("SUPABASE_ANON_KEY");if(a)out.push(a);return new Set(out)}
 function auth(req:Request){const k=req.headers.get("apikey")||"";return !!k&&keys().has(k)}
 async function digest(s:string){const b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(s));return[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join("")}
 async function get(url:string){const c=new AbortController(),t=setTimeout(()=>c.abort(),TIMEOUT),retrievedAt=new Date().toISOString();try{const r=await fetch(url,{redirect:"follow",signal:c.signal,headers:{"Accept":"text/html,application/xhtml+xml,text/plain;q=0.9,*/*;q=0.5","Accept-Language":"en-US,en;q=0.8","User-Agent":"Mozilla/5.0 (compatible; QuietPremiumVerifier/1.0; +https://quietpremium.com)"}});const raw=(await r.text()).slice(0,MAX_BYTES);return{url,finalUrl:r.url||url,ok:r.ok,status:r.status,retrievedAt,bytesRead:raw.length,fingerprint:await digest(raw),text:cleanText(raw)}}catch(e){return{url,finalUrl:url,ok:false,status:0,retrievedAt,bytesRead:0,fingerprint:"",text:"",error:String((e as Error)?.message||e)}}finally{clearTimeout(t)}}
