@@ -380,6 +380,35 @@ assert("Southwest Priority remains 2500 TQP per $5000",E.RULES.cards.southwest_p
 }
 {assert("$300 material cash threshold is removed",E.MODEL.materialCashImprovement===undefined&&E.MODEL.sameEcosystemIncrementalValueFloor===750,JSON.stringify(E.MODEL));}
 
+
+{
+ const existing=E.normalizeProfile(base({currentCards:["amex_gold"],currentRouting:{...emptyRouting(),general:[{card:"amex_gold",amount:10000}]},spend:{dining:0,grocery:0,online_grocery:0,gas_ev:0,online_retail:0,vacation_home:0,airfare:0,hotel:0,general:10000},primaryAirline:"",primaryAirlineShare:0,primaryHotel:"",primaryHotelShare:0,annualOneWayFlights:0,statusProgress:{hotel:{qualifyingNights:0}},remainingYear:{cardSpend:{}},legacyNaturalBenefitValue:{}}));
+ const proposed=E.normalizeProfile(base({currentCards:[],currentRouting:emptyRouting(),spend:{dining:0,grocery:0,online_grocery:0,gas_ev:0,online_retail:0,vacation_home:0,airfare:0,hotel:0,general:10000},primaryAirline:"",primaryAirlineShare:0,primaryHotel:"",primaryHotelShare:0,annualOneWayFlights:0,statusProgress:{hotel:{qualifyingNights:0}},remainingYear:{cardSpend:{}},legacyNaturalBenefitValue:{}}));
+ const a=E.portfolioRecurringBenefitValue(existing,["amex_gold"]),b=E.portfolioRecurringBenefitValue(proposed,["amex_gold"]);
+ assert("existing and proposed identical card have identical built-in recurring benefit value",a.totalValue===b.totalValue&&a.totalValue===424,JSON.stringify({a,b}));
+}
+{
+ const p=E.normalizeProfile(base({currentCards:["venture_x"],currentRouting:{...emptyRouting(),general:[{card:"venture_x",amount:10000}]},spend:{dining:0,grocery:0,online_grocery:0,gas_ev:0,online_retail:0,vacation_home:0,airfare:0,hotel:0,general:10000},primaryAirline:"",primaryAirlineShare:0,primaryHotel:"",primaryHotelShare:0,annualOneWayFlights:0,statusProgress:{hotel:{qualifyingNights:0}},remainingYear:{cardSpend:{}},legacyNaturalBenefitValue:{}}));
+ const r=E.currentRecord(p,"conservative");
+ assert("existing Venture X gets recurring annual travel credit",r.economics.recurringBenefitValue>=300,JSON.stringify(r.economics));
+ assert("existing Venture X gets anniversary miles in recurring economics",r.economics.annualBonusTravelValue===95,JSON.stringify(r.economics));
+}
+{
+ const p=E.normalizeProfile(base({currentCards:["amex_platinum"],currentRouting:{...emptyRouting(),general:[{card:"amex_platinum",amount:10000}]},spend:{dining:0,grocery:0,online_grocery:0,gas_ev:0,online_retail:0,vacation_home:0,airfare:0,hotel:0,general:10000},primaryAirline:"",primaryAirlineShare:0,primaryHotel:"",primaryHotelShare:0,annualOneWayFlights:0,statusProgress:{hotel:{qualifyingNights:0}},remainingYear:{cardSpend:{}},cardUniqueBenefitValue:{amex_platinum:900},legacyNaturalBenefitValue:{},benefitValueByType:{}}));
+ const x=E.portfolioRecurringBenefitValue(p,["amex_platinum"]);
+ assert("legacy aggregate does not stack on top of larger known card benefits",x.totalValue===3114,JSON.stringify(x));
+}
+{
+ const p=E.normalizeProfile(base({currentCards:["amex_platinum","chase_reserve"],currentRouting:{...emptyRouting(),general:[{card:"amex_platinum",amount:5000},{card:"chase_reserve",amount:5000}]},spend:{dining:0,grocery:0,online_grocery:0,gas_ev:0,online_retail:0,vacation_home:0,airfare:0,hotel:0,general:10000},primaryAirline:"",primaryAirlineShare:0,primaryHotel:"",primaryHotelShare:0,annualOneWayFlights:0,statusProgress:{hotel:{qualifyingNights:0}},remainingYear:{cardSpend:{}},legacyNaturalBenefitValue:{},benefitValueByType:{}}));
+ const x=E.portfolioRecurringBenefitValue(p,["amex_platinum","chase_reserve"]);
+ assert("shared multi-year trusted traveler benefit is counted once",x.byType.trusted_traveler===30,JSON.stringify(x));
+}
+{
+ const p=E.normalizeProfile(base({currentCards:["amex_platinum"],currentRouting:{...emptyRouting(),general:[{card:"amex_platinum",amount:10000}]},spend:{dining:0,grocery:0,online_grocery:0,gas_ev:0,online_retail:0,vacation_home:0,airfare:0,hotel:0,general:10000},primaryAirline:"",primaryAirlineShare:0,primaryHotel:"",primaryHotelShare:0,annualOneWayFlights:0,statusProgress:{hotel:{qualifyingNights:0}},remainingYear:{cardSpend:{}},legacyNaturalBenefitValue:{},constraints:{maxNewCards:0}}));
+ const s=E.selectForScenario(p,"base");
+ assert("unchanged existing benefits create zero Quiet Premium economic improvement",s.recommended.economics.netEconomicValue-s.current.economics.netEconomicValue===0,JSON.stringify({current:s.current.economics.netEconomicValue,recommended:s.recommended.economics.netEconomicValue}));
+}
+
 console.log("\n------------------------------");
 console.log(`V5 alpha.14 harness: ${pass} passed, ${fail} failed`);
 if(failures.length)console.log(JSON.stringify(failures,null,2));
