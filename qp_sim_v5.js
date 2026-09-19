@@ -1,5 +1,5 @@
 /**
- * Quiet Premium V5 isolated travel-strategy engine — 5.0-alpha.12 (2026-09-18)
+ * Quiet Premium V5 isolated travel-strategy engine — 5.0-alpha.13 (2026-09-19)
  * NOT wired to diagnostic.html or any customer-facing page.
  *
  * LOCKED
@@ -16,7 +16,7 @@
 })(typeof globalThis!=="undefined"?globalThis:this,function(){
 "use strict";
 
-const ENGINE_VERSION="5.0-alpha.12";
+const ENGINE_VERSION="5.0-alpha.13";
 const RULES_AS_OF="2026-09-17";
 const CATS=["dining","grocery","online_grocery","gas_ev","online_retail","vacation_home","airfare","hotel","general"];
 const AIRLINES=["delta","united","american","southwest"];
@@ -182,5 +182,266 @@ function allMaterialOpportunities(p,current,records){const out={};for(const r of
 function presentationOrder(p){const base=["travelCapacity","flightQuality","airportExperience","hotelExperience","reliability","cashEfficiency","complexity"],map={"travel more":["travelCapacity","cashEfficiency"],"fly & airport better":["flightQuality","airportExperience","reliability"],"fly and airport better":["flightQuality","airportExperience","reliability"],"stay better":["hotelExperience"],"get more travel from what i already spend":["travelCapacity","cashEfficiency"],"show me everything":[]},first=[];for(const a of p.aspirations)for(const k of map[a]||[])if(!first.includes(k))first.push(k);return[...first,...base.filter(k=>!first.includes(k))];}
 function recommendationFingerprint(x){const r=x.recommended||x;return JSON.stringify({portfolio:r.portfolio.slice().sort(),annualRouting:r.annualRouting,airlineQualificationRouting:r.airlineQualificationRouting,hotelQualificationRouting:r.hotelQualificationRouting,airlineStatusTarget:r.strategy.airlineStatusTarget,hotelStatusTarget:r.strategy.hotelStatusTarget});}
 function analyze(raw){const p=raw?.__normalizedV5?raw:normalizeProfile(raw),c=selectForScenario(p,"conservative"),b=selectForScenario(p,"base"),u=selectForScenario(p,"upper"),fps=[c,b,u].map(x=>recommendationFingerprint(x.recommended)),opps=allMaterialOpportunities(p,b.current,b.records),order=presentationOrder(p);return{engineVersion:ENGINE_VERSION,rulesAsOf:RULES_AS_OF,profile:p,current:b.current,recommended:b.recommended,candidatesEvaluated:b.records.length,currentBenefits:b.current.visibleBenefits,visibleBenefits:b.recommended.visibleBenefits,allMaterialOpportunities:opps,presentation:{aspirations:p.aspirations,order,opportunityKeys:opps.map(x=>x.key).sort((a,z)=>order.indexOf(a)-order.indexOf(z))},sensitivity:{strategyStable:new Set(fps).size===1,recommendationIds:{conservative:c.recommended.id,base:b.recommended.id,upper:u.recommended.id}},integrity:{aspirationsUsedInRecommendationSelection:false,benefitVisibilitySeparatedFromRecommendationCredit:true,allMaterialOpportunitiesIndependentOfAspirations:true,detailedBenefitValuesDedupedByCanonicalType:true,benefitProtectionIsCardSpecific:true,legacyBenefitValuePreservedWithPartialDetail:true,nonIncrementalStatusSpendMovesRemoved:true,annualAndQualificationRoutingSeparated:true,americanUsesMarFebQualificationInput:true,unitedDualQualificationPaths:true,unitedFourSegmentMinimumModeled:true,currentProgressAssumedToContainExistingCardStatusCredits:true,reportedStatusAuthoritative:true,reportedAndProjectedStatusSeparated:true,statusTargetsComparedToProjectedCurrentSetup:true,statusDifferencesOnlyDriveRecommendationWhenUsefulAndDataReady:true,unverifiedCurrentCardsProtected:true,legacyBenefitRichCurrentCardsProtected:true,untypedCardBenefitTotalsProtected:true,partialCardBenefitTotalsRemainProtected:true,aggregateBenefitValuesDoNotDoubleCountTypedBreakdowns:true,unresolvedCrossCardBenefitOverlapIsConservative:true,coBrandAdditionsRequireConcreteJob:true,bookingMethodAware:true,partnerSpecificTransferValuation:true,sharedCapAware:true,postCapEarnAware:true,groceryInputUsesTotalWithOnlineSubset:true,richerSpendTaxonomy:true,hiltonSpendStatusModeled:true,postHotelAirlineTargetRevalidated:true}};}
-return Object.freeze({ENGINE_VERSION,RULES_AS_OF,RULES,VALUATIONS,MODEL,BENEFIT_CANONICAL,canonicalBenefit,matchCard,normalizeProfile,transferRatio,portfolioTransferRatio,currencyPointValue,airlineStatusUsefulness,hotelStatusUsefulness,airlineQualificationDataReady,visibleBenefits,benefitLedger,recommendationCredit,cardBenefitDetailKnown,legacyBenefitProtectionIds,candidatePortfolios,routeAnnual,reachableAirlineJob,reachableHotelJob,airlineProjection:airProjection,hotelProjection,projectedCurrentStatusBaseline,strategyRecord,currentRecord,materialComparison:compare,paretoSurvivors,allMaterialOpportunities,selectForScenario,analyze,recommendationFingerprint});
+
+
+// ---------------------------------------------------------------------------
+// Alpha.13 travel-first architecture overlay
+// Travel behavior -> rewards strategy -> card roles -> temporary jobs -> routing.
+// The alpha.12 qualification and benefit-accounting mechanics remain underneath.
+// ---------------------------------------------------------------------------
+
+const FLEX_CURRENCIES_V13=Object.freeze(["amex_mr","chase_ur","capital_one_miles"]);
+const FLEX_CARDS_V13=Object.freeze({
+  amex_mr:["amex_gold","amex_platinum"],
+  chase_ur:["chase_preferred","chase_reserve"],
+  capital_one_miles:["venture","venture_x"]
+});
+
+function normalizeProfileV13(raw={}){
+  const p=raw&&raw.__normalizedV5?clone(raw):normalizeProfile(raw);
+  const pb=raw.pointBalances||raw.point_balances||p.pointBalances||{};
+  p.pointBalances=Object.fromEntries(Object.entries(pb).map(([k,v])=>[lc(k),n(v)]).filter(([,v])=>v>0));
+  p.homeAirport=s(raw.homeAirport??raw.home_airport??p.homeAirport??p.travel?.homeAirport);
+  const fd=raw.frequentDestinations??raw.frequent_destinations??p.frequentDestinations??p.travel?.frequentDestinations??[];
+  p.frequentDestinations=uniq((Array.isArray(fd)?fd:String(fd||"").split(/[\n,;]+/)).map(s).filter(Boolean)).slice(0,5);
+  p.travel={...(p.travel||{}),homeAirport:p.homeAirport,frequentDestinations:p.frequentDestinations};
+  p.preferences={...(p.preferences||{}),willingnessToConcentrate:lc(raw.willingnessToConcentrate??raw.willing_to_concentrate??p.preferences?.willingnessToConcentrate??"yes")||"yes"};
+  p.welcomeOffers=Array.isArray(raw.welcomeOffers)?clone(raw.welcomeOffers):Array.isArray(raw.welcome_offers)?clone(raw.welcome_offers):Array.isArray(p.welcomeOffers)?clone(p.welcomeOffers):[];
+  p.__normalizedV5=true;
+  return p;
+}
+
+function flexCurrencyV13(id){
+  const c=RULES.cards[id];
+  return c?.kind==="flex"&&FLEX_CURRENCIES_V13.includes(c.currency)?c.currency:"";
+}
+function flexCardsForCurrencyV13(currency){return FLEX_CARDS_V13[currency]||[];}
+function controlsTravelV13(p){return !/(limited|employer|none)/.test(lc(p.travel?.bookingControl));}
+function premiumBookingAccessV13(p){return p.currentCards.includes("amex_platinum")||hasBenefitEvidence(p,"amex_platinum","premium_hotel");}
+
+function travelStrategyV13(p){
+  const willingness=lc(p.preferences?.willingnessToConcentrate||"yes");
+  const canConcentrate=willingness!=="no";
+  const airPrimary=AIRLINES.includes(p.airline.primary)?p.airline.primary:"";
+  const hotelPrimary=HOTELS.includes(p.hotel.primary)?p.hotel.primary:"";
+  const airlineMode=!airPrimary?"flexible":(canConcentrate&&controlsTravelV13(p)?"primary_with_exceptions":"preferred_without_concentration");
+  let hotelMode="flexible";
+  if(hotelPrimary&&canConcentrate)hotelMode=premiumBookingAccessV13(p)?"chain_plus_premium_booking":"chain_default";
+  else if(premiumBookingAccessV13(p))hotelMode="premium_booking";
+  return{
+    airline:{mode:airlineMode,primary:airPrimary,routeFitEstablished:!!airPrimary&&p.airline.routeFit[airPrimary]!=null,statusUseful:airlineStatusUsefulness(p),rule:airPrimary?"favor_when_itinerary_and_price_are_competitive":"choose_best_itinerary",exceptionRule:airPrimary?"break_loyalty_for_materially_better_nonstop_schedule_or_fare":"none"},
+    hotel:{mode:hotelMode,primary:hotelPrimary,statusUseful:hotelStatusUsefulness(p),routineRule:hotelPrimary&&canConcentrate?"default_to_primary_chain_when_property_and_price_are_competitive":"choose_best_property",premiumRule:premiumBookingAccessV13(p)?"check_fhr_first_for_premium_stays":"check_premium_booking_options_when_they_materially_improve_the_stay"},
+    willingnessToConcentrate:willingness,homeAirport:p.homeAirport||"",frequentDestinations:p.frequentDestinations||[]
+  };
+}
+
+function currentFlexSpendV13(p,currency){
+  let total=0;for(const cat of CATS)for(const row of p.currentRouting[cat]||[])if(flexCurrencyV13(row.card)===currency)total+=row.amount;return total;
+}
+function standaloneEcosystemNetV13(p,currency){
+  const rep={amex_mr:"amex_gold",chase_ur:"chase_preferred",capital_one_miles:"venture"}[currency],c=RULES.cards[rep];if(!c)return-Infinity;
+  let value=0;for(const cat of CATS)value+=(p.spend[cat]||0)*baseRate(c,p,cat)*(VALUATIONS.base[currency]||0)*(p.currencyUtility?.[currency]??1);
+  return value-(c.annualFee||0);
+}
+function rewardsStrategyV13(p,travel=travelStrategyV13(p)){
+  let primary="",reason="";
+  if(travel.hotel.primary==="hyatt"&&travel.hotel.mode!=="flexible"){primary="chase_ur";reason="hyatt_travel_strategy";}
+  else if(travel.airline.primary==="delta"&&travel.airline.mode!=="flexible"){primary="amex_mr";reason="delta_travel_strategy";}
+  else if(["united","southwest"].includes(travel.airline.primary)&&travel.airline.mode!=="flexible"){primary="chase_ur";reason=travel.airline.primary+"_travel_strategy";}
+  const current=uniq(p.currentCards.map(flexCurrencyV13).filter(Boolean));
+  if(!primary&&current.length===1){primary=current[0];reason="existing_wallet_continuity";}
+  if(!primary&&current.length>1){
+    const ranked=current.map(c=>({c,spend:currentFlexSpendV13(p,c),balance:n(p.pointBalances?.[c])})).sort((a,b)=>b.spend-a.spend||b.balance-a.balance);
+    if(ranked[0]&&(ranked[0].spend>(ranked[1]?.spend||0)||ranked[0].balance>(ranked[1]?.balance||0))){primary=ranked[0].c;reason="existing_wallet_concentration";}
+  }
+  if(!primary){
+    const balances=FLEX_CURRENCIES_V13.map(c=>({c,v:n(p.pointBalances?.[c])})).sort((a,b)=>b.v-a.v);
+    if(balances[0]?.v>0){primary=balances[0].c;reason="existing_balance_continuity";}
+  }
+  if(!primary){
+    primary=FLEX_CURRENCIES_V13.map(c=>({c,v:standaloneEcosystemNetV13(p,c)})).sort((a,b)=>b.v-a.v)[0]?.c||"amex_mr";
+    reason="spend_fit_after_travel_strategy";
+  }
+  return{primaryCurrency:primary,reason,primaryCards:flexCardsForCurrencyV13(primary),existingBalances:clone(p.pointBalances||{}),concentrationRule:"one_primary_flexible_ecosystem",secondFlexibleEcosystemRule:"only_for_a_distinct_material_travel_capability"};
+}
+
+function hasExplicitCardBenefitV13(p,id){return Object.values(p.explicitBenefitUse?.[id]||{}).some(Boolean)||Object.values(p.benefitEvidence?.[id]||{}).some(Boolean);}
+function reachableSpendRewardV13(p,id){
+  const h=RULES.cards[id]?.hotelStatus;if(!h?.spendRewards?.length||!p.remainingYear.known)return false;
+  const ytd=p.currentCards.includes(id)?maybeNum(p.cardSpendYTD[id]):0;if(ytd==null)return false;
+  const available=sum(Object.values(p.remainingYear.cardSpend||{}));return h.spendRewards.some(r=>r.amount>ytd&&r.amount-ytd<=available);
+}
+function coBrandHasJobV13(p,id){
+  const c=RULES.cards[id];if(!c||c.kind==="flex"||p.currentCards.includes(id))return true;
+  if(n(p.cardUniqueBenefitValue[id])>0||n(p.legacyNaturalBenefitValue[id])>0||hasExplicitCardBenefitV13(p,id))return true;
+  if(c.airline)return reachableAirlineJob(p,id);
+  if(c.hotel){
+    if(reachableHotelJob(p,id)||reachableSpendRewardV13(p,id))return true;
+    const auto=c.hotelStatus?.automaticTier;if(auto&&c.hotel===p.hotel.primary&&tierIndex(c.hotel,auto)>tierIndex(c.hotel,hotelBaselineStatus(p,c.hotel)))return true;
+  }
+  return false;
+}
+function protectedCurrentIdsV13(p){return uniq(p.currentCards.filter(id=>!RULES.cards[id]||RULES.cards[id]?.verified!==true));}
+function relevantCardsV13(p,rewards=rewardsStrategyV13(p)){
+  const flex=flexCardsForCurrencyV13(rewards.primaryCurrency),air={delta:["delta_platinum","delta_reserve"],united:["united_explorer","united_quest","united_club"],american:["aa_executive"],southwest:["southwest_priority"]}[p.airline.primary]||[],hotel={hyatt:["hyatt_consumer"],marriott:["marriott_boundless","marriott_brilliant"],hilton:["hilton_no_fee","hilton_surpass","hilton_aspire"]}[p.hotel.primary]||[];
+  return uniq([...p.currentCards,...p.constraints.requiredCards,...flex,...air,...hotel]).filter(id=>!p.constraints.prohibitedCards.includes(id));
+}
+function candidatePortfoliosV13(p,rewards=rewardsStrategyV13(p)){
+  const relevant=relevantCardsV13(p,rewards),protectedIds=protectedCurrentIdsV13(p),out=[],max=Math.min(relevant.length,Math.max(MODEL.maxPortfolioCards,p.currentCards.length+p.constraints.maxNewCards));
+  const needsFlexibleSupport=sum(["dining","grocery","online_grocery","gas_ev","online_retail","vacation_home","general"].map(c=>p.spend[c]||0))>0;
+  for(const set of combinations(relevant,max)){
+    if(!set.length&&p.totalSpend)continue;
+    if(p.constraints.requiredCards.some(id=>!set.includes(id))||protectedIds.some(id=>!set.includes(id)))continue;
+    const adds=set.filter(id=>!p.currentCards.includes(id));
+    if((p.constraints.noNewCards&&adds.length)||adds.length>p.constraints.maxNewCards||adds.some(id=>!coBrandHasJobV13(p,id))||badHotelStack(p,set)||!brilliantAllowed(p,set))continue;
+    if(needsFlexibleSupport&&rewards.primaryCurrency&&!set.some(id=>flexCurrencyV13(id)===rewards.primaryCurrency))continue;
+    out.push(set);
+  }
+  const cur=JSON.stringify(p.currentCards.slice().sort());if(!out.some(x=>JSON.stringify(x.slice().sort())===cur))out.push(p.currentCards.slice());return out;
+}
+
+function ongoingEligibleV13(p,id,cat,rewards){
+  const c=RULES.cards[id];if(!c)return false;const fc=flexCurrencyV13(id);
+  if(fc)return fc===rewards.primaryCurrency;
+  if(c.airline)return c.airline===p.airline.primary&&cat==="airfare";
+  if(c.hotel)return c.hotel===p.hotel.primary&&cat==="hotel";
+  return false;
+}
+function routeAnnualV13(p,portfolio,scenario,rewards=rewardsStrategyV13(p)){
+  const out=Object.fromEntries(CATS.map(c=>[c,[]])),catAssigned={},groupAssigned={};for(const id of portfolio){catAssigned[id]={};groupAssigned[id]={};}
+  for(const cat of CATS){
+    let remaining=p.spend[cat]||0;
+    while(remaining>0){
+      let best=null,bestV=-Infinity;const eligible=portfolio.filter(id=>RULES.cards[id]&&ongoingEligibleV13(p,id,cat,rewards)),pool=eligible.length?eligible:portfolio.filter(id=>RULES.cards[id]);
+      for(const id of pool){const card=RULES.cards[id],ca=catAssigned[id][cat]||0,gk=capKey(card,cat),ga=gk?(groupAssigned[id][gk]||0):0,v=marginalRate(card,p,cat,ca,ga)*pointDollarValue(p,id,scenario,portfolio);if(v>bestV+1e-12){bestV=v;best=id;}}
+      if(!best)break;const card=RULES.cards[best],ca=catAssigned[best][cat]||0,gk=capKey(card,cat),ga=gk?(groupAssigned[best][gk]||0):0,rem=capRemaining(card,cat,ca,ga);let chunk=Math.min(remaining,rem>0?rem:remaining);if(!Number.isFinite(chunk)||chunk<=0)chunk=remaining;
+      const row=out[cat].find(r=>r.card===best);if(row)row.amount=round(row.amount+chunk);else out[cat].push({card:best,amount:round(chunk)});catAssigned[best][cat]=ca+chunk;if(gk)groupAssigned[best][gk]=ga+chunk;remaining-=chunk;
+    }
+  }
+  return out;
+}
+
+function shiftV13(p,r,target,need,scenario,portfolio){
+  const out=clone(r),choices=[];
+  for(const cat of CATS){const rows=out[cat]||[],avail=sum(rows.filter(x=>x.card!==target).map(x=>x.amount));if(!avail)continue;const normal=rows.filter(x=>x.card!==target).sort((a,b)=>b.amount-a.amount)[0]?.card;choices.push({cat,avail,normal,loss:Math.max(0,catValue(p,normal,cat,scenario,portfolio)-catValue(p,target,cat,scenario,portfolio))});}
+  choices.sort((a,b)=>a.loss-b.loss);let left=need,cost=0,moved=0;const moves=[];
+  for(const q of choices){if(left<=0)break;const take=Math.min(q.avail,left),rows=out[q.cat],from=[];let x=take;
+    for(const row of rows){if(row.card===target)continue;const z=Math.min(row.amount,x);if(z>0)from.push({card:row.card,amount:round(z)});row.amount=round(row.amount-z);x-=z;if(x<=0)break;}
+    const actual=round(take-x);if(actual<=0)continue;const t=rows.find(r=>r.card===target);if(t)t.amount=round(t.amount+actual);else rows.push({card:target,amount:actual});out[q.cat]=rows.filter(r=>r.amount>0);left-=actual;moved+=actual;cost+=actual*q.loss;moves.push({category:q.cat,amount:actual,from,toCard:target});
+  }
+  return left>0?null:{routing:out,shifted:round(moved),opportunityCost:round(cost),moves};
+}
+function nextSpendRewardGapV13(p,id){
+  const h=RULES.cards[id]?.hotelStatus;if(!h?.spendRewards?.length)return null;const ytd=p.currentCards.includes(id)?maybeNum(p.cardSpendYTD[id]):0;if(ytd==null)return null;
+  return h.spendRewards.map(r=>({reward:r,gap:Math.max(0,r.amount-ytd)})).filter(x=>x.gap>0).sort((a,b)=>a.gap-b.gap)[0]||null;
+}
+function hotelNeedV13(p,portfolio,id,organic,baseRouting){
+  const pr=p.hotel.primary,c=RULES.cards[id],h=c?.hotelStatus;if(!pr||!h||c.hotel!==pr||!hotelStatusUsefulness(p))return null;
+  const baselineIdx=tierIndex(pr,organic.effectiveTier),ytd=p.currentCards.includes(id)?maybeNum(p.cardSpendYTD[id]):0,already=cardTotals(baseRouting)[id]||0,rewardGap=nextSpendRewardGapV13(p,id);
+  if(h.spendTier&&tierIndex(pr,h.spendTier.tier)>baselineIdx){
+    if(ytd==null)return null;const fullGap=Math.max(0,h.spendTier.amount-ytd);if(rewardGap&&rewardGap.gap<fullGap)return null;
+    const gap=Math.max(0,h.spendTier.amount-ytd-already);if(gap>0)return{spend:gap,target:{tier:h.spendTier.tier},type:"upgrade",mechanism:"spendTier"};
+  }
+  if(pr!=="hilton"&&h.spendBlock&&h.nightsPerBlock){const rules=RULES.hotels[pr].thresholds,target=rules.find(x=>tierIndex(pr,x.tier)>baselineIdx);if(!target)return null;const gapNights=Math.max(0,target.nights-organic.qualifyingNights);if(gapNights>0)return{spend:Math.ceil(gapNights/h.nightsPerBlock)*h.spendBlock,target,type:"upgrade",mechanism:"eliteNights"};}
+  return null;
+}
+function statusPlanV13(p,portfolio,annual,scenario){
+  const airline=p.airline.primary,airBudget=airline?airlineBudget(p,airline):{known:false,cardSpend:normalizeSpendShape({})},calendar=p.remainingYear,currentProjected=projectedCurrentStatusBaseline(p);
+  let airRouting=airBudget.known?routingForBudget(p,annual,airBudget):emptyRouting(),hotelRouting=calendar.known?routingForBudget(p,annual,calendar):emptyRouting(),airlineTarget=null,hotelTarget=null,airCost=0,hotelCost=0,airBeforeHotel=null;
+  if(airline&&airlineQualificationDataReady(p,airline,portfolio)){
+    const baseline=airProjection(p,airline,airRouting,portfolio);let best=null;
+    for(const id of portfolio.filter(id=>RULES.cards[id]?.airline===airline)){const need=statusNeedFromBaseline(p,airline,id,baseline);if(!need||need.achievedOrganically||!Number.isFinite(need.spend)||need.spend<=0)continue;if(need.type==="upgrade"&&tierIndex(airline,need.target.tier)<=tierIndex(airline,currentProjected.airline.effectiveStatus))continue;const shifted=shiftV13(p,airRouting,id,need.spend,scenario,portfolio);if(!shifted)continue;const projected=airProjection(p,airline,shifted.routing,portfolio);if(tierIndex(airline,projected.tier)<tierIndex(airline,need.target.tier))continue;if(!best||shifted.opportunityCost<best.shifted.opportunityCost)best={id,need,shifted,projected};}
+    if(best){airRouting=best.shifted.routing;airCost=best.shifted.opportunityCost;airlineTarget={airline,tier:best.need.target.tier,type:best.need.type,cardId:best.id,spendDirected:best.shifted.shifted,projectedTier:best.projected.tier,opportunityCost:best.shifted.opportunityCost,moves:best.shifted.moves};}
+    airBeforeHotel=airProjection(p,airline,airRouting,portfolio);
+  }
+  if(calendar.known&&hotelStatusUsefulness(p)&&p.hotel.primary){
+    const sharedWithAirline=airline&&airline!=="american"&&airlineQualificationDataReady(p,airline,portfolio);if(sharedWithAirline)hotelRouting=clone(airRouting);const organic=hotelProjection(p,portfolio,hotelRouting);let best=null;
+    for(const id of portfolio.filter(id=>RULES.cards[id]?.hotel===p.hotel.primary&&RULES.cards[id]?.hotelStatus)){const need=hotelNeedV13(p,portfolio,id,organic,hotelRouting);if(!need||need.spend<=0)continue;if(need.type==="upgrade"&&tierIndex(p.hotel.primary,need.target.tier)<=tierIndex(p.hotel.primary,currentProjected.hotel.effectiveStatus))continue;const shifted=shiftV13(p,hotelRouting,id,need.spend,scenario,portfolio);if(!shifted)continue;const projected=hotelProjection(p,portfolio,shifted.routing);if(tierIndex(p.hotel.primary,projected.effectiveTier)<tierIndex(p.hotel.primary,need.target.tier))continue;if(sharedWithAirline&&airBeforeHotel){const airAfter=airProjection(p,airline,shifted.routing,portfolio);if(tierIndex(airline,airAfter.tier)<tierIndex(airline,airBeforeHotel.tier))continue;if(airlineTarget&&tierIndex(airline,airAfter.tier)<tierIndex(airline,airlineTarget.tier))continue;}if(!best||shifted.opportunityCost<best.shifted.opportunityCost)best={id,need,shifted,projected};}
+    if(best){hotelRouting=best.shifted.routing;hotelCost=best.shifted.opportunityCost;hotelTarget={program:p.hotel.primary,tier:best.need.target.tier,type:best.need.type,mechanism:best.need.mechanism,cardId:best.id,spendDirected:best.shifted.shifted,projectedTier:best.projected.effectiveTier,opportunityCost:best.shifted.opportunityCost,moves:best.shifted.moves};if(sharedWithAirline)airRouting=clone(hotelRouting);}
+  }
+  if(airline&&airlineTarget){const finalAir=airProjection(p,airline,airRouting,portfolio);if(tierIndex(airline,finalAir.tier)<tierIndex(airline,airlineTarget.tier))airlineTarget=null;else airlineTarget.projectedTier=finalAir.tier;}
+  return{airlineRouting:airRouting,hotelRouting,airlineTarget,hotelTarget,opportunityCost:round(airCost+hotelCost)};
+}
+
+function ongoingDestinationsV13(annual,moveList){const cats=uniq((moveList||[]).map(m=>m.category));return cats.map(category=>({category,routes:(annual[category]||[]).map(r=>({card:r.card,annualAmount:r.amount}))}));}
+function naturalMovesToCardV13(routing,target,need){
+  let left=need;const moves=[],preferred=[...CATS].sort((a,b)=>((RULES.cards[target]?.hotel&&a==="hotel")?-1:0)-((RULES.cards[target]?.hotel&&b==="hotel")?-1:0));
+  for(const cat of preferred){if(left<=0)break;const row=(routing[cat]||[]).find(r=>r.card===target);if(!row?.amount)continue;const take=Math.min(left,row.amount);moves.push({category:cat,amount:round(take),from:[{card:target,amount:round(take)}],toCard:target,alreadyRouted:true});left-=take;}
+  return{moves,left};
+}
+function spendRewardJobsV13(p,portfolio,annual,scenario){
+  if(!p.remainingYear.known)return[];const jobs=[],base=routingForBudget(p,annual,p.remainingYear),available=sum(Object.values(p.remainingYear.cardSpend||{}));
+  for(const id of portfolio){const h=RULES.cards[id]?.hotelStatus;if(!h?.spendRewards?.length)continue;const ytd=p.currentCards.includes(id)?maybeNum(p.cardSpendYTD[id]):0;if(ytd==null)continue;
+    for(const reward of h.spendRewards){const gap=Math.max(0,reward.amount-ytd);if(!gap||gap>available)continue;const natural=naturalMovesToCardV13(base,id,gap);let moves=natural.moves,opportunityCost=0,fulfilled=gap-natural.left;if(natural.left>0){const shifted=shiftV13(p,base,id,natural.left,scenario,portfolio);if(!shifted)continue;moves=moves.concat(shifted.moves);opportunityCost=shifted.opportunityCost;fulfilled+=shifted.shifted;}if(fulfilled+1e-6<gap)continue;
+      jobs.push({id:"spend_reward:"+id+":"+reward.benefit,type:"spend_reward",cardId:id,purpose:reward.benefit,spendRequired:round(gap),stopCondition:{type:"card_year_spend",amount:reward.amount,benefit:reward.benefit},opportunityCost:round(opportunityCost),moves,postThresholdRouting:ongoingDestinationsV13(annual,moves)});
+    }
+  }
+  return jobs;
+}
+function welcomeOfferJobsV13(p,portfolio,annual,scenario){
+  if(!p.remainingYear.known||!p.welcomeOffers?.length)return[];const jobs=[],base=routingForBudget(p,annual,p.remainingYear),available=sum(Object.values(p.remainingYear.cardSpend||{}));
+  for(const o of p.welcomeOffers){const id=matchCard(o.cardId||o.card_id)||s(o.cardId||o.card_id);if(!id||!portfolio.includes(id)||p.currentCards.includes(id)||o.eligible===false||lc(o.eligible)==="false")continue;const need=n(o.minimumSpend??o.minimum_spend);if(!need||need>available)continue;const shifted=shiftV13(p,base,id,need,scenario,portfolio);if(!shifted)continue;jobs.push({id:"welcome_offer:"+id,type:"welcome_offer",cardId:id,purpose:"confirmed_welcome_offer",spendRequired:round(need),stopCondition:{type:"minimum_spend",amount:need},opportunityCost:round(shifted.opportunityCost),moves:shifted.moves,postThresholdRouting:ongoingDestinationsV13(annual,shifted.moves),eligibility:lc(o.eligible||"confirmed")});}
+  return jobs;
+}
+function temporaryJobsV13(p,portfolio,annual,plan,scenario){
+  const jobs=[];
+  if(plan.airlineTarget)jobs.push({id:"airline_status:"+plan.airlineTarget.airline+":"+plan.airlineTarget.tier,type:"airline_status",cardId:plan.airlineTarget.cardId,purpose:plan.airlineTarget.tier,spendRequired:plan.airlineTarget.spendDirected,stopCondition:{type:"airline_status",program:plan.airlineTarget.airline,tier:plan.airlineTarget.tier},opportunityCost:n(plan.airlineTarget.opportunityCost),moves:clone(plan.airlineTarget.moves||[]),postThresholdRouting:ongoingDestinationsV13(annual,plan.airlineTarget.moves||[])});
+  if(plan.hotelTarget)jobs.push({id:"hotel_status:"+plan.hotelTarget.program+":"+plan.hotelTarget.tier,type:"hotel_status",cardId:plan.hotelTarget.cardId,purpose:plan.hotelTarget.tier,spendRequired:plan.hotelTarget.spendDirected,stopCondition:{type:"hotel_status",program:plan.hotelTarget.program,tier:plan.hotelTarget.tier},opportunityCost:n(plan.hotelTarget.opportunityCost),moves:clone(plan.hotelTarget.moves||[]),postThresholdRouting:ongoingDestinationsV13(annual,plan.hotelTarget.moves||[])});
+  const statusCards=new Set(jobs.map(j=>j.cardId));
+  for(const j of spendRewardJobsV13(p,portfolio,annual,scenario)){if(statusCards.has(j.cardId)&&jobs.some(x=>x.cardId===j.cardId&&x.spendRequired>=j.spendRequired))continue;jobs.push(j);}
+  jobs.push(...welcomeOfferJobsV13(p,portfolio,annual,scenario));let seq=0;for(const j of jobs){j.sequence=++seq;j.nextStep=j.postThresholdRouting;}return jobs;
+}
+
+function cardRolesV13(p,portfolio,rewards,jobs){
+  const inPlan=new Set(portfolio),jobCards=new Set((jobs||[]).map(j=>j.cardId)),out=[];
+  for(const id of uniq([...p.currentCards,...portfolio])){const c=RULES.cards[id];
+    if(!inPlan.has(id)){const unresolved=!!c&&cardAggregateBenefitValue(p,id)>0&&!cardBenefitDetailKnown(p,id);out.push({cardId:id,role:!c||c.verified!==true||unresolved?"manual_review":"remove_or_downgrade"});continue;}
+    const fc=flexCurrencyV13(id);if(fc===rewards.primaryCurrency){out.push({cardId:id,role:jobCards.has(id)?"ongoing_rewards_plus_temporary_job":"ongoing_rewards"});continue;}
+    if(fc){const useful=hasExplicitCardBenefitV13(p,id)||cardAggregateBenefitValue(p,id)>=(c?.annualFee||0);out.push({cardId:id,role:useful?"travel_benefit":"no_job"});continue;}
+    if(jobCards.has(id)){out.push({cardId:id,role:"temporary_job"});continue;}
+    if(c?.airline===p.airline.primary||c?.hotel===p.hotel.primary){out.push({cardId:id,role:"specialty_travel"});continue;}out.push({cardId:id,role:"no_job"});
+  }return out;
+}
+function actionsV13(p,portfolio,roles){
+  const by=Object.fromEntries((roles||[]).map(r=>[r.cardId,r.role])),out=[];
+  for(const id of p.currentCards){const c=RULES.cards[id],role=by[id],unresolved=!!c&&cardAggregateBenefitValue(p,id)>0&&!cardBenefitDetailKnown(p,id);let action;
+    if(!c||c.verified!==true)action="manual_review";else if(portfolio.includes(id))action="keep";else if(unresolved)action="manual_review_before_removal";else action="remove_or_downgrade_after_review";
+    out.push({cardId:id,action,role:role||""});
+  }
+  for(const id of portfolio)if(!p.currentCards.includes(id))out.push({cardId:id,action:"add",role:by[id]||""});return out;
+}
+function feeSummaryV13(p,portfolio){const current=sum(p.currentCards.map(id=>RULES.cards[id]?.annualFee||0)),recommended=sum(portfolio.map(id=>RULES.cards[id]?.annualFee||0));return{currentAnnualFees:round(current),recommendedAnnualFees:round(recommended),annualSavings:round(Math.max(0,current-recommended)),annualIncrease:round(Math.max(0,recommended-current))};}
+function compatAirStrategyV13(travel){return{type:travel.airline.mode,airline:travel.airline.primary,statusUseful:travel.airline.statusUseful,routeFitEstablished:travel.airline.routeFitEstablished};}
+function compatHotelStrategyV13(travel){return{type:travel.hotel.mode,program:travel.hotel.primary};}
+
+function strategyRecordV13(p,portfolio,scenario="base",travel=travelStrategyV13(p),rewards=rewardsStrategyV13(p,travel)){
+  const annual=routeAnnualV13(p,portfolio,scenario,rewards),eco0=economics(p,annual,portfolio,scenario),plan=suppressNonIncrementalUpgradeTargets(p,statusPlanV13(p,portfolio,annual,scenario)),jobs=temporaryJobsV13(p,portfolio,annual,plan,scenario),tempCost=round(sum(jobs.map(j=>n(j.opportunityCost)))),eco={...eco0,temporaryOpportunityCost:tempCost,netEconomicValue:round(eco0.netEconomicValue-tempCost)};
+  const airline=p.airline.primary,air=airline&&airlineQualificationDataReady(p,airline,portfolio)?airProjection(p,airline,plan.airlineRouting,portfolio):{tier:"",uncertainties:[]},hot=p.remainingYear.known?hotelProjection(p,portfolio,plan.hotelRouting):{projectedTier:"",effectiveTier:hotelBaselineStatus(p,p.hotel.primary),spendRewards:[]},credit=recommendationCredit(p,portfolio),effectiveAir=airline?maxTier(airline,p.airline.reportedStatus,air.tier):"",ri=airline?tierIndex(airline,p.airline.reportedStatus):-1,pi=airline?tierIndex(airline,air.tier):-1,roles=cardRolesV13(p,portfolio,rewards,jobs),fees=feeSummaryV13(p,portfolio);
+  const rec={profileRef:p,id:portfolio.slice().sort().join("+")||"no_cards",portfolio,annualRouting:annual,ongoingRouting:clone(annual),temporaryJobs:jobs,cardRoles:roles,feeSummary:fees,airlineQualificationRouting:plan.airlineRouting,hotelQualificationRouting:plan.hotelRouting,economics:eco,strategy:{travelStrategy:travel,rewardsStrategy:rewards,airlineStrategy:compatAirStrategyV13(travel),hotelStrategy:compatHotelStrategyV13(travel),airlineStatusTarget:plan.airlineTarget,hotelStatusTarget:plan.hotelTarget},outcomes:{travelCapacity:{annualTravelValue:round(Math.max(0,eco0.grossTravelValue-tempCost)),pointsByCurrency:eco0.pointsByCurrency,ongoingPointsByCurrency:eco0.pointsByCurrency},flightQuality:{reportedStatus:p.airline.reportedStatus||"",projectedStatus:air.tier||"",effectiveStatus:effectiveAir,statusUseful:airlineStatusUsefulness(p)},hotelExperience:{reportedStatus:p.hotel.reportedStatus||"",projectedStatus:hot.projectedTier||"",effectiveStatus:hot.effectiveTier||"",statusUseful:hotelStatusUsefulness(p),spendRewards:hot.spendRewards||[]},reliability:{preservesCurrentAirlineStatus:ri<0||pi>=ri},cashEfficiency:{netEconomicValue:eco.netEconomicValue,annualFeeSavings:fees.annualSavings},complexity:complexity(p,portfolio)},visibleBenefits:visibleBenefits(portfolio),recommendationCredit:credit,actions:actionsV13(p,portfolio,roles)};rec.quality=dataQuality(p,eco,portfolio);return rec;
+}
+function currentRecordV13(p,scenario="base",travel=travelStrategyV13(p),rewards=rewardsStrategyV13(p,travel)){
+  const eco=economics(p,p.currentRouting,p.currentCards,scenario),annual=p.currentRouting,airBudget=p.airline.primary?airlineBudget(p,p.airline.primary):{known:false,cardSpend:normalizeSpendShape({})},airRoute=airBudget.known?routingForBudget(p,annual,airBudget):emptyRouting(),hotelRoute=p.remainingYear.known?routingForBudget(p,annual,p.remainingYear):emptyRouting(),airline=p.airline.primary,air=airline&&airlineQualificationDataReady(p,airline,p.currentCards)?airProjection(p,airline,airRoute,p.currentCards):{tier:""},hot=p.remainingYear.known?hotelProjection(p,p.currentCards,hotelRoute):{projectedTier:"",effectiveTier:hotelBaselineStatus(p,p.hotel.primary),spendRewards:[]},credit=recommendationCredit(p,p.currentCards),ri=airline?tierIndex(airline,p.airline.reportedStatus):-1,pi=airline?tierIndex(airline,air.tier):-1,roles=cardRolesV13(p,p.currentCards,rewards,[]),fees=feeSummaryV13(p,p.currentCards);
+  const rec={profileRef:p,id:"current",portfolio:p.currentCards,annualRouting:clone(p.currentRouting),ongoingRouting:clone(p.currentRouting),temporaryJobs:[],cardRoles:roles,feeSummary:fees,airlineQualificationRouting:airRoute,hotelQualificationRouting:hotelRoute,economics:eco,strategy:{travelStrategy:travel,rewardsStrategy:rewards,airlineStrategy:compatAirStrategyV13(travel),hotelStrategy:compatHotelStrategyV13(travel),airlineStatusTarget:null,hotelStatusTarget:null},outcomes:{travelCapacity:{annualTravelValue:eco.grossTravelValue,pointsByCurrency:eco.pointsByCurrency,ongoingPointsByCurrency:eco.pointsByCurrency},flightQuality:{reportedStatus:p.airline.reportedStatus||"",projectedStatus:air.tier||"",effectiveStatus:airline?maxTier(airline,p.airline.reportedStatus,air.tier):"",statusUseful:airlineStatusUsefulness(p)},hotelExperience:{reportedStatus:p.hotel.reportedStatus||"",projectedStatus:hot.projectedTier||"",effectiveStatus:hot.effectiveTier||"",statusUseful:hotelStatusUsefulness(p),spendRewards:hot.spendRewards||[]},reliability:{preservesCurrentAirlineStatus:ri<0||pi>=ri},cashEfficiency:{netEconomicValue:eco.netEconomicValue,annualFeeSavings:0},complexity:complexity(p,p.currentCards)},visibleBenefits:visibleBenefits(p.currentCards),recommendationCredit:credit,actions:actionsV13(p,p.currentCards,roles)};rec.quality=dataQuality(p,eco,p.currentCards);return rec;
+}
+function noJobCountV13(r){return(r.cardRoles||[]).filter(x=>r.portfolio.includes(x.cardId)&&x.role==="no_job").length;}
+function planActionableV13(r,current){return (r.temporaryJobs||[]).length>0||r.feeSummary?.annualSavings>0||JSON.stringify(r.ongoingRouting||r.annualRouting)!==JSON.stringify(current.ongoingRouting||current.annualRouting)||JSON.stringify(r.portfolio.slice().sort())!==JSON.stringify(current.portfolio.slice().sort());}
+function viableAgainstCurrentV13(r,current){
+  const c=compare(r,current),protectedKeys=protectedRegressionKeys();if(c.regressions.some(k=>protectedKeys.has(k)))return null;if(!c.improvements.length&&!planActionableV13(r,current))return null;return c;
+}
+function chooseV13(p,records,current){
+  if(current.quality.precisionSuppressed)return current;
+  const viable=records.map(r=>({r,c:viableAgainstCurrentV13(r,current)})).filter(x=>x.c);
+  viable.sort((x,y)=>{const xn=noJobCountV13(x.r),yn=noJobCountV13(y.r);if(xn!==yn)return xn-yn;const nd=y.r.economics.netEconomicValue-x.r.economics.netEconomicValue;if(Math.abs(nd)>=MODEL.materialCashImprovement)return nd;const xt=x.c.improvements.filter(k=>["flightQuality","hotelExperience","airportExperience","reliability","benefitContinuity"].includes(k)).length,yt=y.c.improvements.filter(k=>["flightQuality","hotelExperience","airportExperience","reliability","benefitContinuity"].includes(k)).length;if(yt!==xt)return yt-xt;if(x.r.feeSummary.recommendedAnnualFees!==y.r.feeSummary.recommendedAnnualFees)return x.r.feeSummary.recommendedAnnualFees-y.r.feeSummary.recommendedAnnualFees;if(x.r.outcomes.complexity.burden!==y.r.outcomes.complexity.burden)return x.r.outcomes.complexity.burden-y.r.outcomes.complexity.burden;return nd;});
+  return viable[0]?.r||current;
+}
+function selectForScenarioV13(p,scenario){
+  const travel=travelStrategyV13(p),rewards=rewardsStrategyV13(p,travel),current=currentRecordV13(p,scenario,travel,rewards),records=candidatePortfoliosV13(p,rewards).map(set=>strategyRecordV13(p,set,scenario,travel,rewards)),recommended=chooseV13(p,records,current);return{current,records,recommended,pareto:paretoSurvivors(records),travelStrategy:travel,rewardsStrategy:rewards};
+}
+function recommendationFingerprintV13(x){const r=x.recommended||x;return JSON.stringify({portfolio:r.portfolio.slice().sort(),primaryCurrency:r.strategy?.rewardsStrategy?.primaryCurrency||"",ongoingRouting:r.ongoingRouting||r.annualRouting,temporaryJobs:(r.temporaryJobs||[]).map(j=>({type:j.type,cardId:j.cardId,spendRequired:j.spendRequired,stopCondition:j.stopCondition,postThresholdRouting:j.postThresholdRouting})),airlineStatusTarget:r.strategy.airlineStatusTarget,hotelStatusTarget:r.strategy.hotelStatusTarget});}
+function analyzeV13(raw){
+  const p=normalizeProfileV13(raw),c=selectForScenarioV13(p,"conservative"),b=selectForScenarioV13(p,"base"),u=selectForScenarioV13(p,"upper"),fps=[c,b,u].map(x=>recommendationFingerprintV13(x.recommended)),opps=allMaterialOpportunities(p,b.current,b.records),order=presentationOrder(p);
+  return{engineVersion:ENGINE_VERSION,rulesAsOf:RULES_AS_OF,profile:p,current:b.current,recommended:b.recommended,candidatesEvaluated:b.records.length,currentBenefits:b.current.visibleBenefits,visibleBenefits:b.recommended.visibleBenefits,allMaterialOpportunities:opps,travelStrategy:b.travelStrategy,rewardsStrategy:b.rewardsStrategy,storedPointBalances:clone(p.pointBalances||{}),presentation:{aspirations:p.aspirations,order,opportunityKeys:opps.map(x=>x.key).sort((a,z)=>order.indexOf(a)-order.indexOf(z))},sensitivity:{strategyStable:new Set(fps).size===1,recommendationIds:{conservative:c.recommended.id,base:b.recommended.id,upper:u.recommended.id}},integrity:{aspirationsUsedInRecommendationSelection:false,benefitVisibilitySeparatedFromRecommendationCredit:true,allMaterialOpportunitiesIndependentOfAspirations:true,detailedBenefitValuesDedupedByCanonicalType:true,benefitProtectionIsCardSpecific:true,legacyBenefitValuePreservedWithPartialDetail:true,nonIncrementalStatusSpendMovesRemoved:true,annualAndQualificationRoutingSeparated:true,americanUsesMarFebQualificationInput:true,unitedDualQualificationPaths:true,unitedFourSegmentMinimumModeled:true,currentProgressAssumedToContainExistingCardStatusCredits:true,reportedStatusAuthoritative:true,reportedAndProjectedStatusSeparated:true,statusTargetsComparedToProjectedCurrentSetup:true,statusDifferencesOnlyDriveRecommendationWhenUsefulAndDataReady:true,unverifiedCurrentCardsProtected:true,legacyBenefitRichCurrentCardsProtected:false,untypedCardBenefitTotalsProtected:false,partialCardBenefitTotalsRemainProtected:false,aggregateBenefitValuesDoNotDoubleCountTypedBreakdowns:true,unresolvedCrossCardBenefitOverlapIsConservative:true,coBrandAdditionsRequireConcreteJob:true,bookingMethodAware:true,partnerSpecificTransferValuation:true,sharedCapAware:true,postCapEarnAware:true,groceryInputUsesTotalWithOnlineSubset:true,richerSpendTaxonomy:true,hiltonSpendStatusModeled:true,postHotelAirlineTargetRevalidated:true,travelStrategyPrecedesCards:true,primaryFlexibleEcosystem:true,ongoingAndTemporaryRoutingSeparated:true,temporaryJobsHaveExplicitHandoffs:true,statusOpportunityRemainsDiscoverable:true,existingCardRemovalEvaluated:true,feeSavingsExposed:true}};
+}
+
+return Object.freeze({ENGINE_VERSION,RULES_AS_OF,RULES,VALUATIONS,MODEL,BENEFIT_CANONICAL,canonicalBenefit,matchCard,normalizeProfile:normalizeProfileV13,transferRatio,portfolioTransferRatio,currencyPointValue,airlineStatusUsefulness,hotelStatusUsefulness,airlineQualificationDataReady,visibleBenefits,benefitLedger,recommendationCredit,cardBenefitDetailKnown,legacyBenefitProtectionIds,candidatePortfolios:candidatePortfoliosV13,routeAnnual:routeAnnualV13,reachableAirlineJob,reachableHotelJob,airlineProjection:airProjection,hotelProjection,projectedCurrentStatusBaseline,strategyRecord:strategyRecordV13,currentRecord:currentRecordV13,materialComparison:compare,paretoSurvivors,allMaterialOpportunities,selectForScenario:selectForScenarioV13,analyze:analyzeV13,recommendationFingerprint:recommendationFingerprintV13,travelStrategy:travelStrategyV13,rewardsStrategy:rewardsStrategyV13,temporaryJobs:temporaryJobsV13,cardRoles:cardRolesV13});
 });
