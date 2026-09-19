@@ -511,6 +511,23 @@ assert("Southwest Priority remains 2500 TQP per $5000",E.RULES.cards.southwest_p
  assert("unique recurring non-dollar co-brand benefit creates retention job",role?.role==="travel_benefit",JSON.stringify(s.current.cardRoles));
 }
 
+
+{
+ const complete=(annualFee,earn,benefitTags,status={})=>({verificationStatus:"verified",complete:true,verifiedAt:"2026-09-19",sources:["issuer"],facts:{annualFee,earn,bookingEarn:{},caps:{},capGroups:{},groupCaps:{},postCapEarn:{},benefitTags,recurringCredits:{},multiYearCredits:{},annualBonusPoints:0,hotelStatus:{},hotelStatusByProgram:{},status,transferRules:{},verified:true}});
+ const p=E.normalizeProfile(base({
+  currentCards:["amex_platinum","delta_platinum"],
+  currentRouting:{...emptyRouting(),dining:[{card:"amex_platinum",amount:20000}],grocery:[{card:"amex_platinum",amount:15000}],airfare:[{card:"amex_platinum",amount:12000}],hotel:[{card:"amex_platinum",amount:10000}],general:[{card:"amex_platinum",amount:93000}]},
+  primaryAirline:"delta",primaryAirlineShare:.8,routeFit:{delta:.9},annualOneWayFlights:4,statusProgress:{delta:{mqd:0},hotel:{qualifyingNights:0}},remainingYear:{cardSpend:{},delta:{mqd:0}},
+  primaryHotel:"",primaryHotelShare:0,constraints:{maxNewCards:0},
+  verifiedFacts:{snapshotId:"delta-upgrade-eligibility",verifiedAt:"2026-09-19",sources:["issuer"],cards:{
+   amex_platinum:complete(895,{dining:1,grocery:1,online_grocery:1,gas_ev:1,online_retail:1,vacation_home:1,airfare:5,hotel:1,general:1},["lounge"]),
+   delta_platinum:complete(350,{dining:1,grocery:1,online_grocery:1,gas_ev:1,online_retail:1,vacation_home:1,airfare:1,hotel:1,general:1},["upgrade_eligibility"],{})
+  },airlines:{delta:{verificationStatus:"verified",complete:true,verifiedAt:"2026-09-19",sources:["delta"],thresholds:[{tier:"Silver Medallion",amount:5000},{tier:"Gold Medallion",amount:10000},{tier:"Platinum Medallion",amount:15000},{tier:"Diamond Medallion",amount:28000}]}},hotels:{}}
+ }));
+ const s=E.selectForScenario(p,"base"),role=s.current.cardRoles.find(x=>x.cardId==="delta_platinum");
+ assert("Delta upgrade-list eligibility is a retention capability without claiming upgrade priority",role?.role==="travel_benefit"&&E.recommendationCredit(p,p.currentCards).upgradePriority===0,JSON.stringify({role,credit:E.recommendationCredit(p,p.currentCards)}));
+}
+
 console.log("\n------------------------------");
 console.log(`V5 alpha.14 harness: ${pass} passed, ${fail} failed`);
 if(failures.length)console.log(JSON.stringify(failures,null,2));
