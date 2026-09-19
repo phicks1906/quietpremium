@@ -373,14 +373,29 @@ function reachableSpendRewardV13(p,id){
   const ytd=p.currentCards.includes(id)?maybeNum(p.cardSpendYTD[id]):0;if(ytd==null)return false;
   const available=sum(Object.values(p.remainingYear.cardSpend||{}));return h.spendRewards.some(r=>r.amount>ytd&&r.amount-ytd<=available);
 }
+const NON_DOLLAR_JOB_TAGS_V14=new Set(["checked_bag","priority_boarding","boarding_benefits","seat_benefits","companion_certificate_renewal","free_night_reward_annual","free_night_award_35k","free_night_award_85k","free_night_reward_15k","travel_protections","lifestyle_collection","award_discount_threshold","united_travel_benefits"]);
+function cardHasUniqueNonDollarJobV14(portfolio,id){
+  const own=(RULES.cards[id]?.benefitTags||[]).map(canonicalBenefit).filter(x=>NON_DOLLAR_JOB_TAGS_V14.has(x)),others=new Set();
+  for(const other of portfolio)if(other!==id)for(const tag of RULES.cards[other]?.benefitTags||[])others.add(canonicalBenefit(tag));
+  return own.some(x=>!others.has(x));
+}
+function hotelAutoStatusJobV14(p,portfolio,id){
+  const c=RULES.cards[id],pr=c?.hotel,auto=c?.hotelStatus?.automaticTier;if(!pr||!auto)return false;
+  let other=p.hotel.reportedStatus||"";
+  for(const otherId of portfolio){if(otherId===id)continue;const o=RULES.cards[otherId];if(o?.hotel===pr&&o.hotelStatus?.automaticTier)other=maxTier(pr,other,o.hotelStatus.automaticTier);if(o?.hotelStatusByProgram?.[pr])other=maxTier(pr,other,o.hotelStatusByProgram[pr]);}
+  return tierIndex(pr,auto)>tierIndex(pr,other);
+}
+function coBrandBenefitJobV14(p,portfolio,id,scenario="conservative"){
+  const c=RULES.cards[id];if(!c||c.kind==="flex")return false;
+  const ret=cardRetentionValueV14(p,portfolio,id,scenario),recurring=ret.benefitValue+ret.annualBonusValue>0;
+  return recurring||cardUniqueCapabilityV14(p,portfolio,id)||cardHasUniqueNonDollarJobV14(portfolio,id)||hotelAutoStatusJobV14(p,portfolio,id);
+}
 function coBrandHasJobV13(p,id){
   const c=RULES.cards[id];if(!c||c.kind==="flex"||p.currentCards.includes(id))return true;
-  if(n(p.cardUniqueBenefitValue[id])>0||n(p.legacyNaturalBenefitValue[id])>0||hasExplicitCardBenefitV13(p,id))return true;
+  const portfolio=uniq([...p.currentCards,id]);
+  if(n(p.cardUniqueBenefitValue[id])>0||n(p.legacyNaturalBenefitValue[id])>0||hasExplicitCardBenefitV13(p,id)||coBrandBenefitJobV14(p,portfolio,id))return true;
   if(c.airline)return reachableAirlineJob(p,id);
-  if(c.hotel){
-    if(reachableHotelJob(p,id)||reachableSpendRewardV13(p,id))return true;
-    const auto=c.hotelStatus?.automaticTier;if(auto&&c.hotel===p.hotel.primary&&tierIndex(c.hotel,auto)>tierIndex(c.hotel,hotelBaselineStatus(p,c.hotel)))return true;
-  }
+  if(c.hotel)return reachableHotelJob(p,id)||reachableSpendRewardV13(p,id);
   return false;
 }
 function protectedCurrentIdsV13(p){return uniq(p.currentCards.filter(id=>!RULES.cards[id]||RULES.cards[id]?.verified!==true||(RULES.cards[id]?.annualFee||0)===0));}
@@ -504,7 +519,11 @@ function cardRolesV13(p,portfolio,rewards,jobs,routing={},scenario="conservative
       if(jobCards.has(id)){out.push({cardId:id,role:"temporary_job"});continue;}
       out.push({cardId:id,role:benefitJob?"travel_benefit":"no_job"});continue;}
     if(jobCards.has(id)){out.push({cardId:id,role:"temporary_job"});continue;}
-    if(c?.airline===p.airline.primary||c?.hotel===p.hotel.primary){out.push({cardId:id,role:"specialty_travel"});continue;}out.push({cardId:id,role:"no_job"});
+    const specialtySpend=!!((c?.airline===p.airline.primary&&(routing.airfare||[]).some(x=>x.card===id&&n(x.amount)>0))||(c?.hotel===p.hotel.primary&&(routing.hotel||[]).some(x=>x.card===id&&n(x.amount)>0)));
+    const benefitJob=coBrandBenefitJobV14(p,portfolio,id,scenario),statusJob=!!(c?.airline===p.airline.primary&&c?.status&&airlineStatusUsefulness(p));
+    if(specialtySpend){out.push({cardId:id,role:benefitJob||statusJob?"specialty_travel":"specialty_rewards"});continue;}
+    if(benefitJob||statusJob){out.push({cardId:id,role:"travel_benefit"});continue;}
+    out.push({cardId:id,role:"no_job"});
   }return out;
 }
 function actionsV13(p,portfolio,roles){
