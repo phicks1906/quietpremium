@@ -1,7 +1,8 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { ENTITY_SOURCES, ALLOWED_CARD_IDS, ALLOWED_AIRLINE_IDS, ALLOWED_HOTEL_IDS } from "./sources.ts";
 
-const ORIGINS=new Set(["https://quietpremium.com","https://www.quietpremium.com"]);\nconst PUBLIC_BROWSER_KEY="sb_publishable_BETG0zmWAEmPByBsKyEUzA_yPCOkh5F";
+const ORIGINS=new Set(["https://quietpremium.com","https://www.quietpremium.com"]);
+const PUBLIC_BROWSER_KEY="sb_publishable_BETG0zmWAEmPByBsKyEUzA_yPCOkh5F";
 const MAX_ENTITIES=12,MAX_BYTES=2000000,TIMEOUT=9000,SCHEMA="qp-verified-facts-v1";
 const uniq=(a:any[])=>[...new Set((a||[]).filter(Boolean))];
 const amount=(v:any)=>{const n=Number(String(v??"").replace(/[$,%\s,]/g,""));return Number.isFinite(n)?n:null};
