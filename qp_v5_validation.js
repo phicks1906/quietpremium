@@ -336,8 +336,10 @@ assert("Southwest Priority remains 2500 TQP per $5000",E.RULES.cards.southwest_p
   explicitBenefitUse:{amex_platinum:{lounge_access:true,premium_hotel:true}},benefitValueByType:{lounge:300,premium_hotel_booking:400},constraints:{maxNewCards:1}
  });
  const r=E.analyze(p);
- assert("overbuilt flexible wallet can shrink",r.recommended.portfolio.length<p.currentCards.length+1,JSON.stringify(r.recommended.portfolio));
- assert("fee savings are exposed",typeof r.recommended.feeSummary.annualSavings==="number",JSON.stringify(r.recommended.feeSummary));
+ const secondarySpend=Object.values(r.recommended.ongoingRouting).flat().filter(x=>["chase_reserve","venture_x"].includes(x.card)).reduce((a,x)=>a+x.amount,0);
+ assert("secondary flexible ecosystems do not receive routine spend",secondarySpend===0,JSON.stringify(r.recommended.ongoingRouting));
+ assert("secondary premium cards must have a real retention job if kept",["chase_reserve","venture_x"].filter(id=>r.recommended.portfolio.includes(id)).every(id=>r.recommended.cardRoles.find(x=>x.cardId===id)?.role==="travel_benefit"),JSON.stringify(r.recommended.cardRoles));
+ assert("fee impact is exposed",typeof r.recommended.feeSummary.annualSavings==="number",JSON.stringify(r.recommended.feeSummary));
 }
 
 
@@ -407,6 +409,33 @@ assert("Southwest Priority remains 2500 TQP per $5000",E.RULES.cards.southwest_p
  const p=E.normalizeProfile(base({currentCards:["amex_platinum"],currentRouting:{...emptyRouting(),general:[{card:"amex_platinum",amount:10000}]},spend:{dining:0,grocery:0,online_grocery:0,gas_ev:0,online_retail:0,vacation_home:0,airfare:0,hotel:0,general:10000},primaryAirline:"",primaryAirlineShare:0,primaryHotel:"",primaryHotelShare:0,annualOneWayFlights:0,statusProgress:{hotel:{qualifyingNights:0}},remainingYear:{cardSpend:{}},legacyNaturalBenefitValue:{},constraints:{maxNewCards:0}}));
  const s=E.selectForScenario(p,"base");
  assert("unchanged existing benefits create zero Quiet Premium economic improvement",s.recommended.economics.netEconomicValue-s.current.economics.netEconomicValue===0,JSON.stringify({current:s.current.economics.netEconomicValue,recommended:s.recommended.economics.netEconomicValue}));
+}
+
+
+{
+ const p=E.normalizeProfile(base({
+  currentCards:["amex_platinum","venture"],
+  currentRouting:{...emptyRouting(),dining:[{card:"venture",amount:20000}],grocery:[{card:"venture",amount:15000}],gas_ev:[{card:"venture",amount:5000}],online_retail:[{card:"venture",amount:5000}],airfare:[{card:"amex_platinum",amount:12000}],hotel:[{card:"amex_platinum",amount:10000}],general:[{card:"venture",amount:83000}]},
+  primaryAirline:"delta",primaryAirlineShare:.8,routeFit:{delta:.9},annualOneWayFlights:12,statusProgress:{delta:{mqd:5000},hotel:{qualifyingNights:0}},remainingYear:{cardSpend:{},delta:{mqd:1000}},
+  primaryHotel:"",primaryHotelShare:0,legacyNaturalBenefitValue:{},constraints:{maxNewCards:0}
+ }));
+ const s=E.selectForScenario(p,"base"),currentVenture=s.current.cardRoles.find(x=>x.cardId==="venture");
+ assert("paid secondary-ecosystem card without sufficient job is no-job",currentVenture?.role==="no_job",JSON.stringify(s.current.cardRoles));
+ assert("paid no-job card is removed when fee is saved",!s.recommended.portfolio.includes("venture")&&s.recommended.actions.some(x=>x.cardId==="venture"&&x.action==="remove_or_downgrade_after_review"),JSON.stringify({portfolio:s.recommended.portfolio,actions:s.recommended.actions}));
+ const routed=Object.values(s.recommended.ongoingRouting).flat().filter(x=>x.card==="venture").reduce((a,x)=>a+x.amount,0);
+ assert("removed secondary ecosystem gets no routine spend",routed===0,JSON.stringify(s.recommended.ongoingRouting));
+}
+{
+ const p=E.normalizeProfile(base({
+  currentCards:["amex_platinum","hilton_no_fee"],
+  currentRouting:{...emptyRouting(),dining:[{card:"hilton_no_fee",amount:20000}],grocery:[{card:"hilton_no_fee",amount:15000}],airfare:[{card:"amex_platinum",amount:12000}],hotel:[{card:"amex_platinum",amount:10000}],general:[{card:"hilton_no_fee",amount:93000}]},
+  primaryAirline:"delta",primaryAirlineShare:.8,routeFit:{delta:.9},annualOneWayFlights:12,statusProgress:{delta:{mqd:5000},hotel:{qualifyingNights:0}},remainingYear:{cardSpend:{},delta:{mqd:1000}},
+  primaryHotel:"",primaryHotelShare:0,legacyNaturalBenefitValue:{},constraints:{maxNewCards:0}
+ }));
+ const s=E.selectForScenario(p,"base"),role=s.recommended.cardRoles.find(x=>x.cardId==="hilton_no_fee"),routed=Object.values(s.recommended.ongoingRouting).flat().filter(x=>x.card==="hilton_no_fee").reduce((a,x)=>a+x.amount,0);
+ assert("zero-fee no-job card is retained",s.recommended.portfolio.includes("hilton_no_fee"),JSON.stringify(s.recommended.portfolio));
+ assert("zero-fee no-job card receives no routine spend",routed===0,JSON.stringify(s.recommended.ongoingRouting));
+ assert("zero-fee retained card can remain no-job",role?.role==="no_job",JSON.stringify(role));
 }
 
 console.log("\n------------------------------");
