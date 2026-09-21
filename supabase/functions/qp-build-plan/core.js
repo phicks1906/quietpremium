@@ -1,6 +1,6 @@
 export const FLEX_CARDS=Object.freeze({
   amex_mr:["amex_gold","amex_platinum"],
-  chase_ur:["chase_preferred","chase_reserve"],
+  chase_ur:["chase_preferred","chase_freedom_unlimited","chase_reserve"],
   capital_one_miles:["venture","venture_x"]
 });
 export const AIRLINE_CARDS=Object.freeze({

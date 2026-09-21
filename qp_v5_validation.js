@@ -1,4 +1,4 @@
-/** Quiet Premium V5 validation harness — 5.0-alpha.15 */
+/** Quiet Premium V5 validation harness — 5.0-alpha.16 */
 "use strict";
 const E=require("./qp_sim_v5.js");
 let pass=0,fail=0;const failures=[];
@@ -16,7 +16,7 @@ function base(overrides={}){return{
  currencyUtility:{amex_mr:1,chase_ur:.75,capital_one_miles:.95,hyatt_points:1},legacyNaturalBenefitValue:{amex_platinum:700},
  bookingMethod:{airfare:"direct_airline",hotel:"direct_hotel"},constraints:{maxNewCards:2},aspirations:["travel more"],...overrides};}
 
-assert("engine is alpha.15",E.ENGINE_VERSION==="5.0-alpha.15");
+assert("engine is alpha.16",E.ENGINE_VERSION==="5.0-alpha.16");
 
 {
  const a=E.analyze(base({aspirations:["travel more"]}));
@@ -592,7 +592,42 @@ assert("Southwest Priority remains 2500 TQP per $5000",E.RULES.cards.southwest_p
  assert("Globe Flight Streak annual cap holds beyond 12 qualifying segments",a.flightStreakBonus===15000,JSON.stringify(a));
 }
 
+{
+ const verifiedFacts={snapshotId:"cfu-general-spend",verifiedAt:"2026-09-21",sources:["chase"],cards:{
+  chase_preferred:{verificationStatus:"verified",complete:true,verifiedAt:"2026-09-21",sources:["chase"],facts:{annualFee:95,earn:{dining:3,grocery:1,online_grocery:3,gas_ev:3,online_retail:1,vacation_home:3,airfare:2,hotel:2,general:1},bookingEarn:{airfare:{chase_travel:5},hotel:{chase_travel:5}},caps:{},capGroups:{},groupCaps:{},postCapEarn:{},benefitTags:["travel_protections"],recurringCredits:{chase_travel_hotel_credit:100},multiYearCredits:{trusted_traveler:{amount:120,years:4}},annualBonusPoints:0,hotelStatus:{},hotelStatusByProgram:{},status:{},transferRules:{hyatt:{defaultRatio:.75,grandfatherBefore:"2026-06-15",grandfatherRatio:1,grandfatherThrough:"2026-09-30"}},transferAccess:{canPool:true,directPartnerTransfer:true},spendRewards:[],statusMilestoneRewards:[],companionCertificate:{},verified:true}},
+  chase_freedom_unlimited:{verificationStatus:"verified",complete:true,verifiedAt:"2026-09-21",sources:["chase"],facts:{annualFee:0,earn:{dining:3,grocery:1.5,online_grocery:1.5,gas_ev:1.5,online_retail:1.5,vacation_home:1.5,airfare:1.5,hotel:1.5,general:1.5},bookingEarn:{airfare:{chase_travel:5},hotel:{chase_travel:5}},caps:{},capGroups:{},groupCaps:{},postCapEarn:{},benefitTags:["travel_protections"],recurringCredits:{},multiYearCredits:{},annualBonusPoints:0,hotelStatus:{},hotelStatusByProgram:{},status:{},transferRules:{},transferAccess:{canPool:true,directPartnerTransfer:false},spendRewards:[],statusMilestoneRewards:[],companionCertificate:{},verified:true}}
+ },airlines:{},hotels:{}};
+ const p=E.normalizeProfile(base({
+  spend:{dining:0,grocery:0,online_grocery:0,gas_ev:0,online_retail:0,vacation_home:0,airfare:0,hotel:0,general:100000},
+  currentCards:["chase_preferred"],currentRouting:{...emptyRouting(),general:[{card:"chase_preferred",amount:100000}]},
+  primaryAirline:"",primaryAirlineShare:0,annualOneWayFlights:2,primaryHotel:"",primaryHotelShare:0,statusProgress:{hotel:{qualifyingNights:0}},
+  remainingYear:{cardSpend:{}},redemptionPartner:"hyatt",cardOpenDate:{chase_preferred:"2026-01-01"},
+  currencyUtility:{chase_ur:1,hyatt_points:1,amex_mr:.2,capital_one_miles:.2},legacyNaturalBenefitValue:{},cardUniqueBenefitValue:{},benefitValueByType:{},
+  explicitBenefitUse:{},constraints:{maxNewCards:1},verifiedFacts
+ }));
+ const travel=E.travelStrategy(p),rewards=E.rewardsStrategy(p,travel);
+ const preferred=E.strategyRecord(p,["chase_preferred"],"base",travel,rewards);
+ const combo=E.strategyRecord(p,["chase_preferred","chase_freedom_unlimited"],"base",travel,rewards);
+ const prefGeneral=(preferred.annualRouting.general||[]).find(x=>x.card==="chase_preferred")?.amount||0;
+ const cfuGeneral=(combo.annualRouting.general||[]).find(x=>x.card==="chase_freedom_unlimited")?.amount||0;
+ assert("Freedom Unlimited alias is recognized",E.matchCard("Chase Freedom Unlimited")==="chase_freedom_unlimited");
+ assert("Freedom Unlimited is present in Chase candidate portfolios",E.candidatePortfolios(p,rewards).some(x=>x.includes("chase_freedom_unlimited")));
+ assert("Preferred-only routes $100K general spend at 1X",prefGeneral===100000,JSON.stringify(preferred.annualRouting.general));
+ assert("Preferred plus Freedom Unlimited routes $100K general spend to CFU at 1.5X",cfuGeneral===100000,JSON.stringify(combo.annualRouting.general));
+ assert("CFU increases Chase UR production from 100K to 150K",preferred.economics.pointsByCurrency.chase_ur===100000&&combo.economics.pointsByCurrency.chase_ur===150000,JSON.stringify({preferred:preferred.economics.pointsByCurrency,combo:combo.economics.pointsByCurrency}));
+ const cfuOnly=E.normalizeProfile(base({
+  spend:{dining:0,grocery:0,online_grocery:0,gas_ev:0,online_retail:0,vacation_home:0,airfare:0,hotel:0,general:100000},
+  currentCards:["chase_freedom_unlimited"],currentRouting:{...emptyRouting(),general:[{card:"chase_freedom_unlimited",amount:100000}]},
+  primaryAirline:"",primaryAirlineShare:0,annualOneWayFlights:2,primaryHotel:"",primaryHotelShare:0,statusProgress:{hotel:{qualifyingNights:0}},remainingYear:{cardSpend:{}},
+  redemptionPartner:"hyatt",currencyUtility:{chase_ur:1,hyatt_points:1},constraints:{maxNewCards:0},verifiedFacts
+ }));
+ const cfuValue=E.currencyPointValue(cfuOnly,"chase_ur","base",["chase_freedom_unlimited"]);
+ const pooledValue=E.currencyPointValue(p,"chase_ur","base",["chase_preferred","chase_freedom_unlimited"]);
+ assert("Freedom Unlimited alone does not receive Hyatt-transfer valuation",Math.abs(cfuValue-E.VALUATIONS.base.chase_ur)<1e-12,JSON.stringify({cfuValue}));
+ assert("Freedom Unlimited points can use Sapphire transfer capability when pooled",Math.abs(pooledValue-E.VALUATIONS.base.hyatt_points)<1e-12,JSON.stringify({pooledValue}));
+}
+
 console.log("\n------------------------------");
-console.log(`V5 alpha.15 harness: ${pass} passed, ${fail} failed`);
+console.log(`V5 alpha.16 harness: ${pass} passed, ${fail} failed`);
 if(failures.length)console.log(JSON.stringify(failures,null,2));
 process.exitCode=fail?1:0;
