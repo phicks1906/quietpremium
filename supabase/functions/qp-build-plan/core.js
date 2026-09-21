@@ -6,7 +6,7 @@ export const FLEX_CARDS=Object.freeze({
 export const AIRLINE_CARDS=Object.freeze({
   delta:["delta_platinum","delta_reserve"],
   united:["united_explorer","united_quest","united_club"],
-  american:["aa_executive"],
+  american:["aa_executive","aa_globe"],
   southwest:["southwest_priority"]
 });
 export const HOTEL_CARDS=Object.freeze({

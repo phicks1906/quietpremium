@@ -1,4 +1,4 @@
-/** Quiet Premium V5 validation harness — 5.0-alpha.14 */
+/** Quiet Premium V5 validation harness — 5.0-alpha.15 */
 "use strict";
 const E=require("./qp_sim_v5.js");
 let pass=0,fail=0;const failures=[];
@@ -16,7 +16,7 @@ function base(overrides={}){return{
  currencyUtility:{amex_mr:1,chase_ur:.75,capital_one_miles:.95,hyatt_points:1},legacyNaturalBenefitValue:{amex_platinum:700},
  bookingMethod:{airfare:"direct_airline",hotel:"direct_hotel"},constraints:{maxNewCards:2},aspirations:["travel more"],...overrides};}
 
-assert("engine is alpha.14",E.ENGINE_VERSION==="5.0-alpha.14");
+assert("engine is alpha.15",E.ENGINE_VERSION==="5.0-alpha.15");
 
 {
  const a=E.analyze(base({aspirations:["travel more"]}));
@@ -564,7 +564,35 @@ assert("Southwest Priority remains 2500 TQP per $5000",E.RULES.cards.southwest_p
  assert("American milestone already below current reported progress is not double counted",a.metric===55000&&a.statusMilestoneBonus===0,JSON.stringify(a));
 }
 
+{
+ const verifiedFacts={snapshotId:"aa-globe-flight-streak",verifiedAt:"2026-09-21",sources:["citi","aa"],cards:{
+  aa_executive:{verificationStatus:"verified",complete:true,verifiedAt:"2026-09-21",sources:["citi"],facts:{annualFee:695,earn:{dining:1,grocery:1,online_grocery:1,gas_ev:1,online_retail:1,vacation_home:1,airfare:4,hotel:1,general:1},bookingEarn:{},caps:{},capGroups:{},groupCaps:{},postCapEarn:{},benefitTags:["lounge","priority_airport","loyalty_point_bonus_milestones"],recurringCredits:{},multiYearCredits:{},annualBonusPoints:0,hotelStatus:{},hotelStatusByProgram:{},status:{lpPerEligiblePurchaseDollar:1},transferRules:{},spendRewards:[],statusMilestoneRewards:[{metric:"loyaltyPoints",threshold:50000,bonus:10000},{metric:"loyaltyPoints",threshold:90000,bonus:10000},{metric:"loyaltyPoints",threshold:165000,bonus:10000},{metric:"loyaltyPoints",threshold:240000,bonus:10000}],companionCertificate:{},verified:true}},
+  aa_globe:{verificationStatus:"verified",complete:true,verifiedAt:"2026-09-21",sources:["citi","aa"],facts:{annualFee:350,earn:{dining:2,grocery:1,online_grocery:1,gas_ev:1,online_retail:1,vacation_home:1,airfare:3,hotel:1,general:1},bookingEarn:{},caps:{},capGroups:{},groupCaps:{},postCapEarn:{},benefitTags:["lounge_passes","checked_bag","boarding_benefits","companion_certificate_renewal","global_entry_tsa","travel_protections"],recurringCredits:{turo_credit:240,inflight_credit:100,splurge_credit:100},multiYearCredits:{trusted_traveler:{amount:120,years:4}},annualBonusPoints:0,hotelStatus:{},hotelStatusByProgram:{},status:{lpPerEligiblePurchaseDollar:1,flightStreakBlock:4,flightStreakBonus:5000,flightStreakAnnualCap:15000},transferRules:{},spendRewards:[],statusMilestoneRewards:[],companionCertificate:{usesPerYear:1,tripType:"round_trip",cabin:"main_cabin",geography:"domestic",ticketingFee:99,renewalRequired:true},verified:true}}
+ },airlines:{american:{verificationStatus:"verified",complete:true,verifiedAt:"2026-09-21",sources:["aa"],facts:{thresholds:[{tier:"AAdvantage Gold",amount:40000},{tier:"AAdvantage Platinum",amount:75000},{tier:"AAdvantage Platinum Pro",amount:125000},{tier:"AAdvantage Executive Platinum",amount:200000}]}}},hotels:{}};
+ const p=E.normalizeProfile(base({
+  spend:{dining:0,grocery:0,online_grocery:0,gas_ev:0,online_retail:0,vacation_home:0,airfare:20000,hotel:0,general:130000},
+  currentCards:["aa_executive","venture"],currentRouting:{...emptyRouting(),airfare:[{card:"aa_executive",amount:20000}],general:[{card:"venture",amount:130000}]},
+  primaryAirline:"american",primaryAirlineShare:.9,routeFit:{american:.95},annualOneWayFlights:24,currentAirlineStatus:"",
+  statusProgress:{american:{loyaltyPoints:0},hotel:{qualifyingNights:0}},
+  americanQualification:{cardSpend:{},loyaltyPoints:100000,qualifyingSegments:12},
+  primaryHotel:"",primaryHotelShare:0,legacyNaturalBenefitValue:{},cardUniqueBenefitValue:{},benefitValueByType:{},explicitBenefitUse:{},constraints:{maxNewCards:1},verifiedFacts
+ }));
+ const without=E.airlineProjection(p,"american",emptyRouting(),["aa_executive"]);
+ const withGlobe=E.airlineProjection(p,"american",emptyRouting(),["aa_executive","aa_globe"]);
+ assert("Globe alias is recognized",E.matchCard("Citi / AAdvantage Globe Mastercard")==="aa_globe");
+ assert("American portfolio without Globe remains Platinum at 120K LP",without.metric===120000&&without.tier==="AAdvantage Platinum",JSON.stringify(without));
+ assert("Globe Flight Streak adds capped 15K LP and reaches Platinum Pro",withGlobe.metric===135000&&withGlobe.flightStreakBonus===15000&&withGlobe.tier==="AAdvantage Platinum Pro",JSON.stringify(withGlobe));
+ assert("Globe is present in American candidate portfolios",E.candidatePortfolios(p).some(x=>x.includes("aa_globe")));
+ const r=E.strategyRecord(p,["aa_executive","aa_globe","venture"],"base");
+ assert("Executive Platinum is not manufactured when protected American qualification spend is zero",!r.strategy.airlineStatusTarget||r.strategy.airlineStatusTarget.tier!=="AAdvantage Executive Platinum",JSON.stringify(r.strategy.airlineStatusTarget));
+}
+{
+ const p=E.normalizeProfile(base({primaryAirline:"american",primaryAirlineShare:.9,routeFit:{american:.95},annualOneWayFlights:32,statusProgress:{american:{loyaltyPoints:0},hotel:{qualifyingNights:0}},americanQualification:{cardSpend:{},loyaltyPoints:0,qualifyingSegments:16},primaryHotel:"",primaryHotelShare:0,currentCards:[],currentRouting:emptyRouting(),constraints:{maxNewCards:1},verifiedFacts:{snapshotId:"globe-cap",verifiedAt:"2026-09-21",sources:["citi"],cards:{aa_globe:{verificationStatus:"verified",complete:true,verifiedAt:"2026-09-21",sources:["citi"],facts:{annualFee:350,earn:{dining:2,grocery:1,online_grocery:1,gas_ev:1,online_retail:1,vacation_home:1,airfare:3,hotel:1,general:1},bookingEarn:{},caps:{},capGroups:{},groupCaps:{},postCapEarn:{},benefitTags:["companion_certificate_renewal"],recurringCredits:{turo_credit:240,inflight_credit:100,splurge_credit:100},multiYearCredits:{trusted_traveler:{amount:120,years:4}},annualBonusPoints:0,hotelStatus:{},hotelStatusByProgram:{},status:{lpPerEligiblePurchaseDollar:1,flightStreakBlock:4,flightStreakBonus:5000,flightStreakAnnualCap:15000},transferRules:{},spendRewards:[],statusMilestoneRewards:[],companionCertificate:{usesPerYear:1,tripType:"round_trip",cabin:"main_cabin",geography:"domestic",ticketingFee:99},verified:true}}},airlines:{american:{verificationStatus:"verified",complete:true,verifiedAt:"2026-09-21",sources:["aa"],facts:{thresholds:[{tier:"AAdvantage Gold",amount:40000},{tier:"AAdvantage Platinum",amount:75000},{tier:"AAdvantage Platinum Pro",amount:125000},{tier:"AAdvantage Executive Platinum",amount:200000}]}}},hotels:{}}}));
+ const a=E.airlineProjection(p,"american",emptyRouting(),["aa_globe"]);
+ assert("Globe Flight Streak annual cap holds beyond 12 qualifying segments",a.flightStreakBonus===15000,JSON.stringify(a));
+}
+
 console.log("\n------------------------------");
-console.log(`V5 alpha.14 harness: ${pass} passed, ${fail} failed`);
+console.log(`V5 alpha.15 harness: ${pass} passed, ${fail} failed`);
 if(failures.length)console.log(JSON.stringify(failures,null,2));
 process.exitCode=fail?1:0;
