@@ -1,4 +1,4 @@
-/** Quiet Premium V5 validation harness — 5.0-alpha.20 */
+/** Quiet Premium V5 validation harness — 5.0-alpha.21 */
 "use strict";
 const E=require("./qp_sim_v5.js");
 let pass=0,fail=0;const failures=[];
@@ -19,7 +19,7 @@ function base(overrides={}){return{
  currencyUtility:{amex_mr:1,chase_ur:.75,capital_one_miles:.95,hyatt_points:1},legacyNaturalBenefitValue:{amex_platinum:700},
  bookingMethod:{airfare:"direct_airline",hotel:"direct_hotel"},constraints:{maxNewCards:2},aspirations:["travel more"],...overrides};}
 
-assert("engine is alpha.20",E.ENGINE_VERSION==="5.0-alpha.20");
+assert("engine is alpha.21",E.ENGINE_VERSION==="5.0-alpha.21");
 
 {
  const a=E.analyze(base({aspirations:["travel more"]}));
@@ -278,7 +278,7 @@ assert("Southwest Priority remains 2500 TQP per $5000",E.RULES.cards.southwest_p
 {
  const r=E.analyze(base({routeFit:{}}));
  assert("missing route fit remains visible",r.current.quality.issues.some(x=>x.code==="route_fit_not_independently_verified"));
- assert("alpha.20 integrity flags are present",r.integrity.travelStrategyPrecedesCards===true&&r.integrity.primaryFlexibleEcosystem===true&&r.integrity.ongoingAndTemporaryRoutingSeparated===true&&r.integrity.temporaryJobsHaveExplicitHandoffs===true&&r.integrity.statusOpportunityRemainsDiscoverable===true&&r.integrity.existingCardRemovalEvaluated===true&&r.integrity.feeSavingsExposed===true&&r.integrity.aggregateBenefitValuesDoNotDoubleCountTypedBreakdowns===true&&r.integrity.unresolvedCrossCardBenefitOverlapIsConservative===true&&r.integrity.benefitProtectionIsCardSpecific===true&&r.integrity.fullAirlineStatusLadder===true&&r.integrity.projectedStatusCanBePreservedEfficiently===true&&r.integrity.protectedMultiplierSpend===true&&r.integrity.universalNewCardBands===true&&r.integrity.noSystemPortfolioCardCap===true&&r.integrity.singleApprovedValuationSnapshot===true);
+ assert("alpha.21 integrity flags are present",r.integrity.travelStrategyPrecedesCards===true&&r.integrity.primaryFlexibleEcosystem===true&&r.integrity.ongoingAndTemporaryRoutingSeparated===true&&r.integrity.temporaryJobsHaveExplicitHandoffs===true&&r.integrity.statusOpportunityRemainsDiscoverable===true&&r.integrity.existingCardRemovalEvaluated===true&&r.integrity.feeSavingsExposed===true&&r.integrity.aggregateBenefitValuesDoNotDoubleCountTypedBreakdowns===true&&r.integrity.unresolvedCrossCardBenefitOverlapIsConservative===true&&r.integrity.benefitProtectionIsCardSpecific===true&&r.integrity.fullAirlineStatusLadder===true&&r.integrity.projectedStatusCanBePreservedEfficiently===true&&r.integrity.protectedMultiplierSpend===true&&r.integrity.universalNewCardBands===true&&r.integrity.noSystemPortfolioCardCap===true&&r.integrity.singleApprovedValuationSnapshot===true);
 }
 
 
@@ -417,7 +417,7 @@ assert("Southwest Priority remains 2500 TQP per $5000",E.RULES.cards.southwest_p
 {
  const p=E.normalizeProfile(base({currentCards:["amex_platinum"],currentRouting:{...emptyRouting(),general:[{card:"amex_platinum",amount:10000}]},spend:{dining:0,grocery:0,online_grocery:0,gas_ev:0,online_retail:0,vacation_home:0,airfare:0,hotel:0,general:10000},primaryAirline:"",primaryAirlineShare:0,primaryHotel:"",primaryHotelShare:0,annualOneWayFlights:0,statusProgress:{hotel:{qualifyingNights:0}},remainingYear:{cardSpend:{}},cardUniqueBenefitValue:{amex_platinum:900},legacyNaturalBenefitValue:{},benefitValueByType:{}}));
  const x=E.portfolioRecurringBenefitValue(p,["amex_platinum"]);
- assert("legacy aggregate does not stack on top of larger known card benefits",x.totalValue===3114,JSON.stringify(x));
+ assert("legacy aggregate does not stack or reintroduce excluded lifestyle value",x.totalValue===1639&&x.excludedByScope.some(v=>v.benefit==="digital_entertainment_credit"),JSON.stringify(x));
 }
 {
  const p=E.normalizeProfile(base({currentCards:["amex_platinum","chase_reserve"],currentRouting:{...emptyRouting(),general:[{card:"amex_platinum",amount:5000},{card:"chase_reserve",amount:5000}]},spend:{dining:0,grocery:0,online_grocery:0,gas_ev:0,online_retail:0,vacation_home:0,airfare:0,hotel:0,general:10000},primaryAirline:"",primaryAirlineShare:0,primaryHotel:"",primaryHotelShare:0,annualOneWayFlights:0,statusProgress:{hotel:{qualifyingNights:0}},remainingYear:{cardSpend:{}},legacyNaturalBenefitValue:{},benefitValueByType:{}}));
@@ -786,10 +786,75 @@ function deltaTierFactsV20({complete=true,verifiedFixed=true}={}){
 }
 {
  const r=E.analyze(base({constraints:{maxNewCards:0}}));
- assert("alpha.20 fixed-status integrity flags are present",r.integrity.verifiedFixedStatusComponentsOnly===true&&r.integrity.statusFixedBenefitIncludedInRecurringEconomics===true&&r.integrity.deltaTierBenefitCoverageRequired===true,JSON.stringify(r.integrity));
+ assert("alpha.21 fixed-status integrity flags are present",r.integrity.verifiedFixedStatusComponentsOnly===true&&r.integrity.statusFixedBenefitIncludedInRecurringEconomics===true&&r.integrity.deltaTierBenefitCoverageRequired===true,JSON.stringify(r.integrity));
+}
+
+
+{
+ const p=E.normalizeProfile(base({currentCards:["amex_platinum"],currentRouting:emptyRouting(),primaryAirline:"",primaryAirlineShare:0,routeFit:{},annualOneWayFlights:0,primaryHotel:"",primaryHotelShare:0,remainingYear:{cardSpend:{},hotel:{qualifyingNights:0}},statusProgress:{hotel:{qualifyingNights:0}}}));
+ const x=E.portfolioRecurringBenefitValue(p,["amex_platinum"]),visible=E.visibleBenefits(["amex_platinum"],p).map(v=>v.benefit);
+ assert("travel-first scope excludes Platinum lifestyle credits while retaining in-scope travel value",x.totalValue===1639&&x.excludedByScope.some(v=>v.benefit==="digital_entertainment_credit")&&x.excludedByScope.some(v=>v.benefit==="lululemon_credit"),JSON.stringify(x));
+ assert("out-of-scope Platinum perks remain visible qualitatively",visible.includes("digital_entertainment_credit"),JSON.stringify(visible));
+}
+{
+ const p=E.normalizeProfile(base({benefitValueByType:{digital_entertainment_credit:9999,hotel_credit:100},currentCards:["amex_platinum"],currentRouting:emptyRouting(),primaryAirline:"",primaryAirlineShare:0,routeFit:{},annualOneWayFlights:0,primaryHotel:"",primaryHotelShare:0,remainingYear:{cardSpend:{},hotel:{qualifyingNights:0}},statusProgress:{hotel:{qualifyingNights:0}}}));
+ const x=E.portfolioRecurringBenefitValue(p,["amex_platinum"]);
+ assert("typed lifestyle values cannot bypass the travel-first economic scope",!Object.prototype.hasOwnProperty.call(x.byType,"digital_entertainment_credit")&&x.totalValue===1639,JSON.stringify(x));
+}
+{
+ const p=E.normalizeProfile(base({cardUniqueBenefitValue:{amex_platinum:4000},currentCards:["amex_platinum"],currentRouting:emptyRouting(),primaryAirline:"",primaryAirlineShare:0,annualOneWayFlights:0,primaryHotel:"",primaryHotelShare:0,remainingYear:{cardSpend:{}},statusProgress:{hotel:{qualifyingNights:0}}}));
+ const x=E.portfolioRecurringBenefitValue(p,["amex_platinum"]);
+ assert("unscoped legacy aggregate is retained as uncertainty but cannot enter recurring economics",x.totalValue===1639&&x.residualValue===0&&x.unresolvedResidualValue===2361&&x.residualByCard.amex_platinum===2361,JSON.stringify(x));
+}
+{
+ const cert={usesPerYear:1,tripType:"round_trip",cabin:"main_cabin",geography:"domestic",domesticEligible:true,domesticMaxTaxesFees:80,renewalRequired:true};
+ const vf=companionFacts([["delta_platinum",cert]]);
+ const p=E.normalizeProfile(base({verifiedFacts:vf,companionTravelIntent:"Yes",companionTravelFrequency:"1"}));
+ const x=E.companionCertificatePortfolioValue(p,["amex_gold","amex_platinum","delta_platinum"]);
+ assert("non-companion cards never appear as unresolved companion certificates",x.unresolved.length===0&&Object.keys(x.byCard).length===1&&x.byCard.delta_platinum.value===442,JSON.stringify(x));
+}
+{
+ const cert={usesPerYear:1,tripType:"round_trip",cabin:"main_cabin",geography:"domestic",domesticEligible:true,domesticMaxTaxesFees:80,renewalRequired:true};
+ const vf=companionFacts([["delta_platinum",cert]]);
+ const p=E.normalizeProfile(base({verifiedFacts:vf,benefitValueByType:{companion_certificate_renewal:999}}));
+ const x=E.portfolioRecurringBenefitValue(p,["delta_platinum"]);
+ assert("unanswered companion intake cannot inherit a legacy quantitative certificate value",x.companion.totalValue===0&&!Object.prototype.hasOwnProperty.call(x.byType,"companion_certificate_renewal"),JSON.stringify(x));
+}
+function deltaFullFactsV21(){
+ const vf=deltaTierFactsV20(),one={dining:1,grocery:1,online_grocery:1,drugstore:1,gas_ev:1,transit:1,online_retail:1,vacation_home:1,airfare:1,hotel:1,general:1};
+ const rec=(facts)=>({verificationStatus:"verified",complete:true,verifiedAt:"2026-09-21",sources:["issuer"],facts:{...facts,verified:true}});
+ vf.cards={
+  delta_reserve:rec({annualFee:650,currency:"skymiles",earn:{...one,airfare:3},benefitTags:["lounge","upgrade_priority","upgrade_eligibility","checked_bag","companion_certificate_renewal","global_entry_tsa","award_discount","boarding_benefits","inflight_savings"],recurringCredits:{rideshare_credit:120,resy_credit:240,delta_stays_credit:200},multiYearCredits:{trusted_traveler:{amount:120,years:4}},status:{headstart:2500,spendDivisor:10},companionCertificate:{usesPerYear:1,tripType:"round_trip",cabin:"first_premium_select_comfort_main",geography:"us_mexico_caribbean_central_america",domesticEligible:true,domesticMaxTaxesFees:80,renewalRequired:true}}),
+  delta_platinum:rec({annualFee:350,currency:"skymiles",earn:{...one,airfare:3,hotel:3,dining:2,grocery:2,online_grocery:2},benefitTags:["upgrade_eligibility","checked_bag","companion_certificate_renewal","global_entry_tsa","award_discount","boarding_benefits","inflight_savings"],recurringCredits:{rideshare_credit:120,resy_credit:120,delta_stays_credit:150},multiYearCredits:{trusted_traveler:{amount:120,years:4}},status:{headstart:2500,spendDivisor:20},companionCertificate:{usesPerYear:1,tripType:"round_trip",cabin:"main_cabin",geography:"us_mexico_caribbean_central_america",domesticEligible:true,domesticMaxTaxesFees:80,renewalRequired:true}})
+ };
+ return vf;
+}
+function deltaAcquisitionV21(freq){
+ const p=E.normalizeProfile(base({
+  verifiedFacts:deltaFullFactsV21(),spend:{dining:45000,grocery:25000,online_grocery:0,drugstore:0,gas_ev:0,transit:0,online_retail:0,vacation_home:0,airfare:4500,hotel:0,general:125500},
+  currentCards:["amex_gold","amex_platinum","delta_reserve"],currentRouting:{...emptyRouting(),dining:[{card:"amex_gold",amount:45000}],grocery:[{card:"amex_gold",amount:25000}],airfare:[{card:"amex_platinum",amount:4500}],general:[{card:"delta_reserve",amount:125500}]},
+  primaryAirline:"delta",primaryAirlineShare:.9,routeFit:{delta:.95},annualOneWayFlights:12,currentAirlineStatus:"",statusProgress:{delta:{mqd:7000},hotel:{qualifyingNights:0}},
+  remainingYear:{cardSpend:{dining:45000,grocery:25000,airfare:4500,general:125500},delta:{mqd:0},hotel:{qualifyingNights:0}},primaryHotel:"",primaryHotelShare:0,
+  companionTravelIntent:"Yes",companionTravelFrequency:freq,legacyNaturalBenefitValue:{},constraints:{maxNewCards:1}
+ }));
+ const t=E.travelStrategy(p),r=E.rewardsStrategy(p,t),without=E.strategyRecord(p,["amex_gold","amex_platinum","delta_reserve"],"base",t,r),withP=E.strategyRecord(p,["amex_gold","amex_platinum","delta_reserve","delta_platinum"],"base",t,r);
+ const delta=roundForTest(withP.economics.netEconomicValue-without.economics.netEconomicValue);
+ return{delta,className:E.classifyNewCardValue(delta),without,withP};
+}
+{
+ const x=deltaAcquisitionV21("1");
+ assert("Delta full-benefit expert case: one expected companion trip makes Platinum a $240 Consider",x.delta===240&&x.className==="consider"&&x.withP.economics.temporaryOpportunityCost===440&&x.without.economics.temporaryOpportunityCost===640,JSON.stringify({delta:x.delta,className:x.className,without:x.without.economics,withP:x.withP.economics}));
+}
+{
+ const x=deltaAcquisitionV21("2-3");
+ assert("Delta full-benefit expert case: second realistic companion trip makes Platinum a $682 Recommended",x.delta===682&&x.className==="recommended"&&x.withP.economics.portfolioRecurringBenefits.companion.totalValue===884&&x.without.economics.portfolioRecurringBenefits.companion.totalValue===442,JSON.stringify({delta:x.delta,className:x.className,without:x.without.economics,withP:x.withP.economics}));
+}
+{
+ const r=E.analyze(base({constraints:{maxNewCards:0}}));
+ assert("alpha.21 scope and companion integrity flags are present",r.integrity.travelFirstBenefitScopeEnforced===true&&r.integrity.unscopedLegacyBenefitTotalsExcludedFromEconomics===true&&r.integrity.unansweredCompanionCannotUseLegacyValue===true,JSON.stringify(r.integrity));
 }
 
 console.log("\n------------------------------");
-console.log(`V5 alpha.20 harness: ${pass} passed, ${fail} failed`);
+console.log(`V5 alpha.21 harness: ${pass} passed, ${fail} failed`);
 if(failures.length)console.log(JSON.stringify(failures,null,2));
 process.exitCode=fail?1:0;
