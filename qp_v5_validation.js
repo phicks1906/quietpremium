@@ -1315,6 +1315,26 @@ function hiltonFactsV30({tierComplete=true,milestonesComplete=true,reserveComple
  assert("alpha.31 flexible closeout integrity flags are present",r.integrity.flexibleRewardsCrossEcosystemCompared&&r.integrity.oneActiveFlexibleEcosystemPerPortfolio&&r.integrity.replacementFeeSavingsExcludedFromNewCardHurdle&&r.integrity.temporaryTransferValueExcludedFromRecurringEconomics&&r.integrity.vacationRentalBookingMethodAware&&r.integrity.flexibleRewardsFamilyEconomicsClosed,JSON.stringify(r.integrity));
 }
 
+
+{
+ const p=E.normalizeProfile(base({currentCards:["chase_reserve"],constraints:{maxNewCards:0}})),visible=E.visibleBenefits(["chase_reserve"],p),economic=E.portfolioRecurringBenefitValue(p,["chase_reserve"]),temp=visible.filter(x=>x.detail?.temporary===true);
+ const ids=new Set(temp.map(x=>x.benefit));
+ assert("Reserve dated partner benefits remain visible as temporary only",["apple_tv_music_temporary","dashpass_membership_temporary","doordash_promos_temporary","stubhub_credit_temporary","lyft_credit_5x_temporary","peloton_credit_10x_temporary"].every(x=>ids.has(x))&&temp.every(x=>x.detail.recurringEconomicValue===0),JSON.stringify(temp));
+ assert("temporary Reserve benefits never enter recurring benefit economics",!Object.keys(economic.byType).some(k=>/apple|dashpass|doordash|stubhub|lyft|peloton/.test(k)),JSON.stringify(economic.byType));
+}
+{
+ const p=E.normalizeProfile(base({currentCards:["chase_preferred"],constraints:{maxNewCards:0}})),visible=E.visibleBenefits(["chase_preferred"],p),temp=visible.filter(x=>x.detail?.temporary===true),ids=new Set(temp.map(x=>x.benefit));
+ assert("Preferred dated partner promotions stay visible without recurring value",["apple_tv_subscription_temporary","dashpass_membership_temporary","lyft_5x_temporary","peloton_5x_temporary"].every(x=>ids.has(x))&&temp.every(x=>x.detail.recurringEconomicValue===0),JSON.stringify(temp));
+}
+{
+ const gold=new Set(E.visibleBenefits(["amex_gold"]).map(x=>x.benefit)),green=new Set(E.visibleBenefits(["amex_green"]).map(x=>x.benefit)),venture=new Set(E.visibleBenefits(["venture"]).map(x=>x.benefit)),one=new Set(E.visibleBenefits(["venture_one"]).map(x=>x.benefit)),vx=new Set(E.visibleBenefits(["venture_x"]).map(x=>x.benefit));
+ assert("durable flexible-card travel capabilities remain visible qualitatively",gold.has("premium_hotel_booking")&&gold.has("hertz_five_star")&&gold.has("travel_protections")&&green.has("travel_protections")&&venture.has("hertz_five_star")&&venture.has("travel_protections")&&one.has("hertz_five_star")&&one.has("travel_protections")&&vx.has("hertz_status")&&vx.has("travel_protections"),JSON.stringify({gold:[...gold],green:[...green],venture:[...venture],one:[...one],vx:[...vx]}));
+}
+{
+ const r=E.analyze(base({constraints:{maxNewCards:0}}));
+ assert("temporary-benefit visibility is explicitly separated from recurring economics",r.integrity.temporaryCardBenefitsVisibilityOnly===true,JSON.stringify(r.integrity));
+}
+
 console.log("\n------------------------------");
 console.log(`V5 alpha.27 harness: ${pass} passed, ${fail} failed`);
 if(failures.length)console.log(JSON.stringify(failures,null,2));
