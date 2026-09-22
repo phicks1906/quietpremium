@@ -176,11 +176,31 @@ function airlineTierBenefits(id:string,t:string){
     if(/A-List status benefits/i.test(t)&&/25% earning bonus/i.test(t))put("A-List",{earningBonusPct:25,checkedBags:/1 checked bag free/i.test(t)?1:null,boardingGroup:/boarding in Group 1/i.test(t)?"Group 1":null,seating:/Preferred or Standard seat at the time of booking/i.test(t)?"preferred_at_booking_extra_legroom_48h":null});
     if(/A-List Preferred status benefits/i.test(t)&&/100% earning bonus/i.test(t))put("A-List Preferred",{earningBonusPct:100,checkedBags:/Two free checked bags/i.test(t)?2:null,boardingGroup:/before Group 1|boarding Group 1/i.test(t)?"before_group_1":null,seating:/Extra Legroom[^.]{0,180}time of booking/i.test(t)?"extra_legroom_at_booking":null});
   }else if(id==="united"){
-    const silver=/Premier Silver Members[\s\S]{0,900}?7 award miles for every dollar/i.test(t),gold=/Premier Gold Members[\s\S]{0,900}?8 award miles for every dollar/i.test(t);
-    if(silver)put("Premier Silver",{earningRate:7,upgradeWindowHours:/Premier Silver Members[\s\S]{0,1200}?day of departure/i.test(t)?0:null,seating:/Premier Silver Members[\s\S]{0,1200}?Economy Plus[^.]{0,100}check-in/i.test(t)?"economy_plus_at_checkin":null});
-    if(gold)put("Premier Gold",{earningRate:8,upgradeWindowHours:/Premier Gold Members[\s\S]{0,1200}?48 hours before departure/i.test(t)?48:null,checkedBags:/Premier Gold Members[\s\S]{0,1200}?Two complimentary checked bags/i.test(t)?2:null,seating:/Premier Gold Members[\s\S]{0,1200}?Economy Plus[^.]{0,100}booking/i.test(t)?"economy_plus_at_booking":null});
-    const platinum=t.match(/Premier Platinum[^.]{0,240}(\d+)\s+award miles?[^.]{0,100}(?:dollar|\$1)/i);if(platinum)put("Premier Platinum",{earningRate:amount(platinum[1])});
-    const oneK=t.match(/Premier 1K[^.]{0,240}(\d+)\s+award miles?[^.]{0,100}(?:dollar|\$1)/i);if(oneK)put("Premier 1K",{earningRate:amount(oneK[1])});
+    // April 2026 changed Premier flight-mile earning. Do not use the retired
+    // 7x/8x/9x/11x table as a status-value input.
+    const silverSeating=/Premier Silver Members[\s\S]{0,1400}?Economy Plus[^.]{0,140}check-in/i.test(t)||/Economy Plus[^.]{0,160}check-in[^.]{0,220}(?:Premier Silver|Silver)/i.test(t);
+    const silverUpgrade=/Premier Silver Members[\s\S]{0,1400}?(?:day of departure|24 hours before departure)/i.test(t)||/(?:Premier Silver|Silver)[^\n]{0,240}(?:day of departure|24 hours before departure)/i.test(t);
+    const silverAccess=/Premier Access[^.]{0,180}(?:check-in|baggage handling|security screening|boarding)/i.test(t);
+    put("Premier Silver",{upgradeWindowHours:/24 hours before departure/i.test(t)?24:0,seating:"economy_plus_at_checkin",premierAccess:true,coverageComplete:silverSeating&&silverUpgrade&&silverAccess});
+
+    const goldSeating=/Premier Gold Members[\s\S]{0,1400}?Economy Plus[^.]{0,140}booking/i.test(t)||/Economy Plus[^.]{0,160}booking[^.]{0,220}(?:Premier Gold|Gold)/i.test(t);
+    const goldUpgrade=/Premier Gold Members[\s\S]{0,1400}?48 hours before departure/i.test(t)||/(?:Premier Gold|Gold)[^\n]{0,240}48 hours before departure/i.test(t);
+    const goldBags=/Premier Gold Members[\s\S]{0,1400}?Two complimentary checked bags/i.test(t)||/(?:Premier Gold|Gold)[^\n]{0,300}(?:two|2) (?:complimentary|free) checked bags/i.test(t);
+    put("Premier Gold",{upgradeWindowHours:48,seating:"economy_plus_at_booking_one_companion",checkedBags:2,boardingGroup:"group_1",starAllianceStatus:"gold",coverageComplete:goldSeating&&goldUpgrade&&goldBags});
+
+    const platinum=/Premier Platinum/i.test(t);
+    const platinumUpgrade=platinum&&/72 hours before departure/i.test(t);
+    const platinumSeating=platinum&&/Economy Plus[\s\S]{0,260}(?:up to )?8 companions|(?:up to )?8 companions[\s\S]{0,260}Economy Plus/i.test(t);
+    const platinumBags=platinum&&/(?:three|3) (?:complimentary|free) checked bags/i.test(t);
+    const platinumPlus=platinum&&/40 PlusPoints/i.test(t);
+    put("Premier Platinum",{upgradeWindowHours:72,seating:"economy_plus_at_booking_up_to_8_companions",checkedBags:3,boardingGroup:"group_1",plusPoints:40,coverageComplete:platinumUpgrade&&platinumSeating&&platinumBags&&platinumPlus});
+
+    const oneK=/Premier 1K|Premier 1K®/i.test(t);
+    const oneKUpgrade=oneK&&/96 hours before departure/i.test(t);
+    const oneKBags=oneK&&/(?:three|3) (?:complimentary|free) checked bags/i.test(t);
+    const oneKPlus=oneK&&/280 PlusPoints/i.test(t);
+    const oneKPreboard=oneK&&/preboarding|pre-board/i.test(t);
+    put("Premier 1K",{upgradeWindowHours:96,seating:"economy_plus_at_booking_up_to_8_companions",checkedBags:3,boardingGroup:"preboarding",plusPoints:320,additionalPlusPointsAt1K:280,coverageComplete:oneKUpgrade&&oneKBags&&oneKPlus&&oneKPreboard});
   }
   return rows;
 }
@@ -212,7 +232,7 @@ if(kind==="airlines"&&id==="delta"){
     ["Premier Platinum",[/Platinum[^.]{0,220}([\d,]+)\s+PQP\s*\+\s*([\d,]+)\s+PQF[^.]{0,160}or[^.]{0,80}([\d,]+)\s+PQP/i]],
     ["Premier 1K",[/1K[^.]{0,220}([\d,]+)\s+PQP\s*\+\s*([\d,]+)\s+PQF[^.]{0,160}or[^.]{0,80}([\d,]+)\s+PQP/i]]
   ];
-  for(const[tier,res]of defs){const m=first(t,res);if(m)f.thresholds.push({tier,pqfPqp:amount(m[1]),pqf:amount(m[2]),amount:amount(m[3])})}
+  for(const[tier,res]of defs){const m=first(t,res);if(m)f.thresholds.push({tier,pqpWithPQF:amount(m[1]),pqf:amount(m[2]),pqpOnly:amount(m[3]),amount:amount(m[3])})}
   const seg=first(t,[/minimum of\s+(\d+)\s+(?:paid )?(?:flight )?segments?/i,/(\d+)\s+(?:paid )?(?:flight )?segments?[^.]{0,100}(?:United|United Express)/i]);if(seg)f.minimumUnitedSegments=amount(seg[1]);
 }else if(kind==="hotels"){
   f.thresholds=[];
@@ -225,7 +245,7 @@ function complete(spec:any,f:any,t:string,kind:string,id:string){
   const missing=(spec.required||[]).filter((p:string)=>!has(f,p)),unmapped=kind==="cards"?materialUnmapped(t,f):[];
   if(kind==="airlines"&&(spec.required||[]).includes("tierBenefits")&&Array.isArray(f.thresholds)){
     const benefits=Array.isArray(f.tierBenefits)?f.tierBenefits:[];
-    const covered=new Set(benefits.filter((x:any)=>x&&(id==="delta"?x.coverageComplete===true:Object.keys(x).some(k=>k!=="tier"&&k!=="verified"))).map((x:any)=>String(x.tier||"").toLowerCase()));
+    const covered=new Set(benefits.filter((x:any)=>x&&(["delta","united"].includes(id)?x.coverageComplete===true:Object.keys(x).some(k=>k!=="tier"&&k!=="verified"))).map((x:any)=>String(x.tier||"").toLowerCase()));
     const uncovered=f.thresholds.map((x:any)=>String(x.tier||"")).filter((tier:string)=>tier&&!covered.has(tier.toLowerCase()));
     for(const tier of uncovered)missing.push("tierBenefits."+tier);
   }

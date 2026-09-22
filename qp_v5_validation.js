@@ -1,4 +1,4 @@
-/** Quiet Premium V5 validation harness — 5.0-alpha.22 */
+/** Quiet Premium V5 validation harness — 5.0-alpha.23 */
 "use strict";
 const E=require("./qp_sim_v5.js");
 let pass=0,fail=0;const failures=[];
@@ -19,7 +19,7 @@ function base(overrides={}){return{
  currencyUtility:{amex_mr:1,chase_ur:.75,capital_one_miles:.95,hyatt_points:1},legacyNaturalBenefitValue:{amex_platinum:700},
  bookingMethod:{airfare:"direct_airline",hotel:"direct_hotel"},constraints:{maxNewCards:2},aspirations:["travel more"],...overrides};}
 
-assert("engine is alpha.22",E.ENGINE_VERSION==="5.0-alpha.22");
+assert("engine is alpha.23",E.ENGINE_VERSION==="5.0-alpha.23");
 
 {
  const a=E.analyze(base({aspirations:["travel more"]}));
@@ -278,7 +278,7 @@ assert("Southwest Priority remains 2500 TQP per $5000",E.RULES.cards.southwest_p
 {
  const r=E.analyze(base({routeFit:{}}));
  assert("missing route fit remains visible",r.current.quality.issues.some(x=>x.code==="route_fit_not_independently_verified"));
- assert("alpha.22 integrity flags are present",r.integrity.travelStrategyPrecedesCards===true&&r.integrity.primaryFlexibleEcosystem===true&&r.integrity.ongoingAndTemporaryRoutingSeparated===true&&r.integrity.temporaryJobsHaveExplicitHandoffs===true&&r.integrity.statusOpportunityRemainsDiscoverable===true&&r.integrity.existingCardRemovalEvaluated===true&&r.integrity.feeSavingsExposed===true&&r.integrity.aggregateBenefitValuesDoNotDoubleCountTypedBreakdowns===true&&r.integrity.unresolvedCrossCardBenefitOverlapIsConservative===true&&r.integrity.benefitProtectionIsCardSpecific===true&&r.integrity.fullAirlineStatusLadder===true&&r.integrity.projectedStatusCanBePreservedEfficiently===true&&r.integrity.protectedMultiplierSpend===true&&r.integrity.universalNewCardBands===true&&r.integrity.noSystemPortfolioCardCap===true&&r.integrity.singleApprovedValuationSnapshot===true);
+ assert("alpha.23 integrity flags are present",r.integrity.travelStrategyPrecedesCards===true&&r.integrity.primaryFlexibleEcosystem===true&&r.integrity.ongoingAndTemporaryRoutingSeparated===true&&r.integrity.temporaryJobsHaveExplicitHandoffs===true&&r.integrity.statusOpportunityRemainsDiscoverable===true&&r.integrity.existingCardRemovalEvaluated===true&&r.integrity.feeSavingsExposed===true&&r.integrity.aggregateBenefitValuesDoNotDoubleCountTypedBreakdowns===true&&r.integrity.unresolvedCrossCardBenefitOverlapIsConservative===true&&r.integrity.benefitProtectionIsCardSpecific===true&&r.integrity.fullAirlineStatusLadder===true&&r.integrity.projectedStatusCanBePreservedEfficiently===true&&r.integrity.protectedMultiplierSpend===true&&r.integrity.universalNewCardBands===true&&r.integrity.noSystemPortfolioCardCap===true&&r.integrity.singleApprovedValuationSnapshot===true);
 }
 
 
@@ -786,7 +786,7 @@ function deltaTierFactsV20({complete=true,verifiedFixed=true}={}){
 }
 {
  const r=E.analyze(base({constraints:{maxNewCards:0}}));
- assert("alpha.22 fixed-status integrity flags are present",r.integrity.verifiedFixedStatusComponentsOnly===true&&r.integrity.statusFixedBenefitIncludedInRecurringEconomics===true&&r.integrity.deltaTierBenefitCoverageRequired===true,JSON.stringify(r.integrity));
+ assert("alpha.23 fixed-status integrity flags are present",r.integrity.verifiedFixedStatusComponentsOnly===true&&r.integrity.statusFixedBenefitIncludedInRecurringEconomics===true&&r.integrity.deltaTierBenefitCoverageRequired===true,JSON.stringify(r.integrity));
 }
 
 
@@ -851,7 +851,7 @@ function deltaAcquisitionV21(freq){
 }
 {
  const r=E.analyze(base({constraints:{maxNewCards:0}}));
- assert("alpha.22 scope and companion integrity flags are present",r.integrity.travelFirstBenefitScopeEnforced===true&&r.integrity.unscopedLegacyBenefitTotalsExcludedFromEconomics===true&&r.integrity.unansweredCompanionCannotUseLegacyValue===true,JSON.stringify(r.integrity));
+ assert("alpha.23 scope and companion integrity flags are present",r.integrity.travelFirstBenefitScopeEnforced===true&&r.integrity.unscopedLegacyBenefitTotalsExcludedFromEconomics===true&&r.integrity.unansweredCompanionCannotUseLegacyValue===true,JSON.stringify(r.integrity));
 }
 
 
@@ -868,10 +868,70 @@ function deltaAcquisitionV21(freq){
 }
 {
  const r=E.analyze(base({constraints:{maxNewCards:0}}));
- assert("alpha.22 repeatable Delta Choice Benefit integrity flag is present",r.integrity.deltaRepeatableChoiceBenefitFloor===true,JSON.stringify(r.integrity));
+ assert("alpha.23 repeatable Delta Choice Benefit integrity flag is present",r.integrity.deltaRepeatableChoiceBenefitFloor===true,JSON.stringify(r.integrity));
+}
+
+
+function unitedTierFactsV23({complete=true}={}){
+ const rows=[
+  {tier:"Premier Silver",upgradeWindowHours:0,seating:"economy_plus_at_checkin",premierAccess:true,coverageComplete:complete,verified:true},
+  {tier:"Premier Gold",upgradeWindowHours:48,seating:"economy_plus_at_booking_one_companion",checkedBags:2,boardingGroup:"group_1",starAllianceStatus:"gold",coverageComplete:complete,verified:true},
+  {tier:"Premier Platinum",upgradeWindowHours:72,seating:"economy_plus_at_booking_up_to_8_companions",checkedBags:3,boardingGroup:"group_1",plusPoints:40,coverageComplete:complete,verified:true},
+  {tier:"Premier 1K",upgradeWindowHours:96,seating:"economy_plus_at_booking_up_to_8_companions",checkedBags:3,boardingGroup:"preboarding",plusPoints:320,additionalPlusPointsAt1K:280,coverageComplete:complete,verified:true}
+ ];
+ return{snapshotId:"united-tier-v23",verifiedAt:"2026-09-22",sources:["united"],airlines:{united:{verificationStatus:"verified",complete:true,verifiedAt:"2026-09-22",sources:["united"],facts:{minimumUnitedSegments:4,thresholds:[
+  {tier:"Premier Silver",pqpWithPQF:5000,pqf:15,pqpOnly:6000,amount:6000},{tier:"Premier Gold",pqpWithPQF:10000,pqf:30,pqpOnly:12000,amount:12000},{tier:"Premier Platinum",pqpWithPQF:15000,pqf:45,pqpOnly:18000,amount:18000},{tier:"Premier 1K",pqpWithPQF:22000,pqf:60,pqpOnly:28000,amount:28000}
+ ],tierBenefits:rows}}}};
+}
+{
+ const p=E.normalizeProfile(base({verifiedFacts:unitedTierFactsV23(),primaryAirline:"united",primaryAirlineShare:.9,routeFit:{united:.95},annualOneWayFlights:12,currentAirlineStatus:"",currentCards:[],currentRouting:emptyRouting(),statusProgress:{united:{pqp:9000,pqf:25,unitedSegments:2},hotel:{qualifyingNights:0}},remainingYear:{cardSpend:{},united:{pqp:1000,pqf:5,unitedSegments:2},hotel:{qualifyingNights:0}},primaryHotel:"",primaryHotelShare:0,constraints:{maxNewCards:0}}));
+ const a=E.airlineProjection(p,"united",emptyRouting(),[]);
+ assert("United verified threshold schema reaches Gold through the 30-PQF plus 10,000-PQP path",a.tier==="Premier Gold"&&a.metric===10000&&a.pqf===30&&a.unitedSegments===4,JSON.stringify(a));
+}
+{
+ const p=E.normalizeProfile(base({verifiedFacts:unitedTierFactsV23(),primaryAirline:"united",primaryAirlineShare:.9,routeFit:{united:.95},annualOneWayFlights:12,currentAirlineStatus:"",currentCards:[],currentRouting:emptyRouting(),statusProgress:{united:{pqp:9000,pqf:24,unitedSegments:2},hotel:{qualifyingNights:0}},remainingYear:{cardSpend:{},united:{pqp:1000,pqf:5,unitedSegments:2},hotel:{qualifyingNights:0}},primaryHotel:"",primaryHotelShare:0,constraints:{maxNewCards:0}}));
+ const a=E.airlineProjection(p,"united",emptyRouting(),[]);
+ assert("United falls back to the PQP-only path when the PQF requirement is not met",a.tier==="Premier Silver"&&a.metric===10000&&a.pqf===29,JSON.stringify(a));
+}
+{
+ const p=E.normalizeProfile(base({verifiedFacts:unitedTierFactsV23(),primaryAirline:"united",primaryAirlineShare:.9,routeFit:{united:.95},annualOneWayFlights:12,currentAirlineStatus:"",currentCards:[],currentRouting:emptyRouting(),statusProgress:{united:{pqp:12000,pqf:30,unitedSegments:2},hotel:{qualifyingNights:0}},remainingYear:{cardSpend:{},united:{pqp:0,pqf:0,unitedSegments:1},hotel:{qualifyingNights:0}},primaryHotel:"",primaryHotelShare:0,constraints:{maxNewCards:0}}));
+ const a=E.airlineProjection(p,"united",emptyRouting(),[]);
+ assert("United four-operated-segment minimum blocks Premier status even when PQP and PQF thresholds are met",a.tier===""&&a.unitedSegments===3&&a.unitedSegmentsKnown===true,JSON.stringify(a));
+}
+{
+ const p=E.normalizeProfile(base({verifiedFacts:unitedTierFactsV23(),primaryAirline:"united",primaryAirlineShare:.9,routeFit:{united:.95},annualOneWayFlights:12,currentAirlineStatus:"",currentCards:[],currentRouting:emptyRouting(),statusProgress:{united:{pqp:12000,pqf:30},hotel:{qualifyingNights:0}},remainingYear:{cardSpend:{},united:{pqp:0,pqf:0},hotel:{qualifyingNights:0}},primaryHotel:"",primaryHotelShare:0,constraints:{maxNewCards:0}}));
+ const a=E.airlineProjection(p,"united",emptyRouting(),[]);
+ assert("unknown United-operated segment count does not invent Premier status",a.tier===""&&a.unitedSegmentsKnown===false,JSON.stringify(a));
+}
+{
+ const common={verifiedFacts:unitedTierFactsV23(),primaryAirline:"united",primaryAirlineShare:.9,routeFit:{united:.95},annualOneWayFlights:4,currentAirlineStatus:"",currentCards:["united_quest"],currentRouting:emptyRouting(),statusProgress:{united:{pqp:4000,pqf:15,unitedSegments:4},hotel:{qualifyingNights:0}},cardStatusProgressYTD:{united_quest:{pqp:0}},remainingYear:{cardSpend:{},united:{pqp:0,pqf:0,unitedSegments:0},hotel:{qualifyingNights:0}},primaryHotel:"",primaryHotelShare:0,constraints:{maxNewCards:0}};
+ const yes=E.normalizeProfile(base({...common,cardTenure:{united_quest:{futureAnnualBonusEligible:true}}})),no=E.normalizeProfile(base({...common,cardTenure:{united_quest:{futureAnnualBonusEligible:false}}}));
+ const ay=E.airlineProjection(yes,"united",emptyRouting(),["united_quest"]),an=E.airlineProjection(no,"united",emptyRouting(),["united_quest"]);
+ assert("United Quest annual Card Bonus PQP is counted only when future annual-bonus eligibility is established",ay.metric===5000&&ay.tier==="Premier Silver"&&an.metric===4000&&an.tier==="",JSON.stringify({eligible:ay,ineligible:an}));
+}
+{
+ const p=E.normalizeProfile(base({verifiedFacts:unitedTierFactsV23(),primaryAirline:"united",primaryAirlineShare:.9,routeFit:{united:.95},annualOneWayFlights:4,currentAirlineStatus:"",currentCards:["united_explorer"],currentRouting:emptyRouting(),statusProgress:{united:{pqp:4900,pqf:15,unitedSegments:4},hotel:{qualifyingNights:0}},cardStatusProgressYTD:{united_explorer:{pqp:900}},remainingYear:{cardSpend:{general:10000},united:{pqp:0,pqf:0,unitedSegments:0},hotel:{qualifyingNights:0}},primaryHotel:"",primaryHotelShare:0,constraints:{maxNewCards:0}}));
+ const a=E.airlineProjection(p,"united",{...emptyRouting(),general:[{card:"united_explorer",amount:10000}]},["united_explorer"]);
+ assert("United card PQP annual cap subtracts already-earned YTD card PQP",a.metric===5000&&a.tier==="Premier Silver",JSON.stringify(a));
+}
+{
+ const p=E.normalizeProfile(base({verifiedFacts:unitedTierFactsV23(),primaryAirline:"united",primaryAirlineShare:.9,routeFit:{united:.95},annualOneWayFlights:4,currentAirlineStatus:"",currentCards:["united_explorer"],currentRouting:emptyRouting(),statusProgress:{united:{pqp:4900,pqf:15,unitedSegments:4},hotel:{qualifyingNights:0}},remainingYear:{cardSpend:{general:20000},united:{pqp:0,pqf:0,unitedSegments:0},hotel:{qualifyingNights:0}},primaryHotel:"",primaryHotelShare:0,constraints:{maxNewCards:0}}));
+ const a=E.airlineProjection(p,"united",{...emptyRouting(),general:[{card:"united_explorer",amount:20000}]},["united_explorer"]),r=E.strategyRecord(p,["united_explorer"],"base");
+ assert("missing existing-card United PQP progress fails card-spend qualification closed",a.metric===4900&&a.uncertainties.includes("united_card_pqp_progress_missing:united_explorer")&&r.quality.issues.some(x=>x.code==="united_card_pqp_progress_missing"),JSON.stringify({projection:a,quality:r.quality}));
+}
+{
+ const shared={primaryAirline:"united",primaryAirlineShare:.9,routeFit:{united:.95},annualOneWayFlights:4,currentAirlineStatus:"Premier Silver",currentCards:["amex_gold","united_quest"],currentRouting:{...emptyRouting(),general:[{card:"amex_gold",amount:83000}]},statusProgress:{united:{pqp:6000,pqf:15,unitedSegments:4},hotel:{qualifyingNights:0}},cardStatusProgressYTD:{united_quest:{pqp:0}},remainingYear:{cardSpend:{general:120000},united:{pqp:0,pqf:0,unitedSegments:0},hotel:{qualifyingNights:0}},primaryHotel:"",primaryHotelShare:0,legacyNaturalBenefitValue:{},constraints:{maxNewCards:0}};
+ const bad=E.normalizeProfile(base({...shared,verifiedFacts:unitedTierFactsV23({complete:false})})),bt=E.travelStrategy(bad),br=E.rewardsStrategy(bad,bt),rb=E.strategyRecord(bad,["amex_gold","united_quest"],"base",bt,br),goldBad=rb.strategy.airlineStatusLadder.rows.find(x=>x.tier==="Premier Gold");
+ assert("incomplete decision-sensitive United tier inventory fails a spend-driven Gold move closed",goldBad?.reachable===true&&goldBad?.opportunityCost>0&&goldBad?.selected===false&&goldBad?.stopReason==="tier_benefits_unresolved"&&rb.strategy.airlineStatusLadder.benefitFactsComplete===false&&rb.quality.issues.some(x=>x.code==="airline_tier_benefits_unresolved"),JSON.stringify({gold:goldBad,ladder:rb.strategy.airlineStatusLadder,quality:rb.quality}));
+ const good=E.normalizeProfile(base({...shared,verifiedFacts:unitedTierFactsV23()})),gt=E.travelStrategy(good),gr=E.rewardsStrategy(good,gt),rg=E.strategyRecord(good,["amex_gold","united_quest"],"base",gt,gr),goldGood=rg.strategy.airlineStatusLadder.rows.find(x=>x.tier==="Premier Gold");
+ assert("complete United tier inventory is decision-ready but does not invent cash value for qualitative status benefits",rg.strategy.airlineStatusLadder.benefitFactsComplete===true&&goldGood?.reachable===true&&goldGood?.opportunityCost>0&&goldGood?.selected===false&&goldGood?.stopReason==="incremental_quantified_value_below_opportunity_cost"&&!rg.quality.issues.some(x=>x.code==="airline_tier_benefits_unresolved"),JSON.stringify({gold:goldGood,ladder:rg.strategy.airlineStatusLadder,quality:rg.quality}));
+}
+{
+ const r=E.analyze(base({constraints:{maxNewCards:0}}));
+ assert("alpha.23 United validation integrity flags are present",r.integrity.unitedDecisionSensitiveTierInventory===true&&r.integrity.unitedVerifiedThresholdSchema===true&&r.integrity.unitedStalePremierEarnRatesExcluded===true,JSON.stringify(r.integrity));
 }
 
 console.log("\n------------------------------");
-console.log(`V5 alpha.22 harness: ${pass} passed, ${fail} failed`);
+console.log(`V5 alpha.23 harness: ${pass} passed, ${fail} failed`);
 if(failures.length)console.log(JSON.stringify(failures,null,2));
 process.exitCode=fail?1:0;
