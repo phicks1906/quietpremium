@@ -37,10 +37,10 @@ export const ENTITY_SOURCES = Object.freeze({
     hilton_aspire: { urls: ['https://www.americanexpress.com/us/credit-cards/card/hilton-honors-aspire/'], required: ['annualFee','earn','hotelStatus','benefitTags'] }
   }),
   airlines: Object.freeze({
-    delta: { urls: ['https://www.delta.com/us/en/skymiles/medallion-program/how-to-qualify','https://news.delta.com/booking-benefits-and-beyond-map-out-your-next-journey-skymiles-and-app'], required: ['thresholds'] },
-    united: { urls: ['https://www.united.com/en/us/fly/mileageplus/premier/qualify.html'], required: ['thresholds','minimumUnitedSegments'] },
-    american: { urls: ['https://www.aa.com/web/i18n/aadvantage-program/loyalty-points/index.html','https://news.aa.com/news/news-details/2026/American-Airlines-maintains-AAdvantage-status-and-reward-levels-for-third-year-in-a-row-AADV-01/default.aspx'], required: ['thresholds'] },
-    southwest: { urls: ['https://www.southwest.com/rapid-rewards/tiers/a-list/','https://www.southwest.com/rapid-rewards/tiers/a-list-preferred/'], required: ['thresholds','flightThresholds'] }
+    delta: { urls: ['https://www.delta.com/us/en/skymiles/medallion-program/how-to-qualify','https://www.delta.com/us/en/skymiles/medallion-program/medallion-benefits'], required: ['thresholds','tierBenefits'] },
+    united: { urls: ['https://www.united.com/en/us/fly/mileageplus/premier/qualify.html','https://www.united.com/en/us/fly/mileageplus/premier.html','https://unitedperksplus.united.com/chart.aspx'], required: ['thresholds','minimumUnitedSegments','tierBenefits'] },
+    american: { urls: ['https://www.aa.com/web/i18n/aadvantage-program/loyalty-points/index.html','https://www.aa.com/web/i18n/aadvantage-program/answers-support/upgrades-for-status-members.html','https://news.aa.com/news/news-details/2026/American-Airlines-maintains-AAdvantage-status-and-reward-levels-for-third-year-in-a-row-AADV-01/default.aspx'], required: ['thresholds','tierBenefits'] },
+    southwest: { urls: ['https://www.southwest.com/rapid-rewards/tiers/a-list/','https://www.southwest.com/rapid-rewards/tiers/a-list-preferred/'], required: ['thresholds','flightThresholds','tierBenefits'] }
   }),
   hotels: Object.freeze({
     hyatt: { urls: ['https://world.hyatt.com/content/gp/en/tiers-and-benefits.html'], required: ['thresholds'] },
