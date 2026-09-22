@@ -1,11 +1,12 @@
-/** Quiet Premium V5 validation harness — 5.0-alpha.18 */
+/** Quiet Premium V5 validation harness — 5.0-alpha.19 */
 "use strict";
 const E=require("./qp_sim_v5.js");
 let pass=0,fail=0;const failures=[];
 function assert(name,cond,detail=""){if(cond){pass++;console.log("PASS "+name);}else{fail++;failures.push({name,detail});console.error("FAIL "+name+(detail?" — "+detail:""));}}
 function same(a,b){return JSON.stringify(a)===JSON.stringify(b);}
+function roundForTest(x){return Math.round((Number(x)||0)*100)/100;}
 function emptyRouting(){return Object.fromEntries(["dining","grocery","online_grocery","drugstore","gas_ev","transit","online_retail","vacation_home","airfare","hotel","general"].map(x=>[x,[]]));}
-const VALIDATION_VALUATION=Object.freeze({snapshotId:"validation-v1",effectiveDate:"2026-09-21",approved:true,method:"phase3_fixture",sources:["validation"],values:{amex_mr:.020,chase_ur:.020,capital_one_miles:.017,skymiles:.015,united_miles:.017,aadvantage:.018,southwest_points:.014,hyatt_points:.022,marriott_points:.009,hilton_points:.008}});
+const VALIDATION_VALUATION=E.CURRENT_QP_VALUATION_SNAPSHOT;
 function base(overrides={}){return{
  asOfDate:"2026-09-17",
  valuationSnapshot:VALIDATION_VALUATION,
@@ -18,7 +19,7 @@ function base(overrides={}){return{
  currencyUtility:{amex_mr:1,chase_ur:.75,capital_one_miles:.95,hyatt_points:1},legacyNaturalBenefitValue:{amex_platinum:700},
  bookingMethod:{airfare:"direct_airline",hotel:"direct_hotel"},constraints:{maxNewCards:2},aspirations:["travel more"],...overrides};}
 
-assert("engine is alpha.18",E.ENGINE_VERSION==="5.0-alpha.18");
+assert("engine is alpha.19",E.ENGINE_VERSION==="5.0-alpha.19");
 
 {
  const a=E.analyze(base({aspirations:["travel more"]}));
@@ -277,7 +278,7 @@ assert("Southwest Priority remains 2500 TQP per $5000",E.RULES.cards.southwest_p
 {
  const r=E.analyze(base({routeFit:{}}));
  assert("missing route fit remains visible",r.current.quality.issues.some(x=>x.code==="route_fit_not_independently_verified"));
- assert("alpha.18 integrity flags are present",r.integrity.travelStrategyPrecedesCards===true&&r.integrity.primaryFlexibleEcosystem===true&&r.integrity.ongoingAndTemporaryRoutingSeparated===true&&r.integrity.temporaryJobsHaveExplicitHandoffs===true&&r.integrity.statusOpportunityRemainsDiscoverable===true&&r.integrity.existingCardRemovalEvaluated===true&&r.integrity.feeSavingsExposed===true&&r.integrity.aggregateBenefitValuesDoNotDoubleCountTypedBreakdowns===true&&r.integrity.unresolvedCrossCardBenefitOverlapIsConservative===true&&r.integrity.benefitProtectionIsCardSpecific===true&&r.integrity.fullAirlineStatusLadder===true&&r.integrity.projectedStatusCanBePreservedEfficiently===true&&r.integrity.protectedMultiplierSpend===true&&r.integrity.universalNewCardBands===true&&r.integrity.noSystemPortfolioCardCap===true&&r.integrity.singleApprovedValuationSnapshot===true);
+ assert("alpha.19 integrity flags are present",r.integrity.travelStrategyPrecedesCards===true&&r.integrity.primaryFlexibleEcosystem===true&&r.integrity.ongoingAndTemporaryRoutingSeparated===true&&r.integrity.temporaryJobsHaveExplicitHandoffs===true&&r.integrity.statusOpportunityRemainsDiscoverable===true&&r.integrity.existingCardRemovalEvaluated===true&&r.integrity.feeSavingsExposed===true&&r.integrity.aggregateBenefitValuesDoNotDoubleCountTypedBreakdowns===true&&r.integrity.unresolvedCrossCardBenefitOverlapIsConservative===true&&r.integrity.benefitProtectionIsCardSpecific===true&&r.integrity.fullAirlineStatusLadder===true&&r.integrity.projectedStatusCanBePreservedEfficiently===true&&r.integrity.protectedMultiplierSpend===true&&r.integrity.universalNewCardBands===true&&r.integrity.noSystemPortfolioCardCap===true&&r.integrity.singleApprovedValuationSnapshot===true);
 }
 
 
@@ -411,7 +412,7 @@ assert("Southwest Priority remains 2500 TQP per $5000",E.RULES.cards.southwest_p
  const p=E.normalizeProfile(base({currentCards:["venture_x"],currentRouting:{...emptyRouting(),general:[{card:"venture_x",amount:10000}]},spend:{dining:0,grocery:0,online_grocery:0,gas_ev:0,online_retail:0,vacation_home:0,airfare:0,hotel:0,general:10000},primaryAirline:"",primaryAirlineShare:0,primaryHotel:"",primaryHotelShare:0,annualOneWayFlights:0,statusProgress:{hotel:{qualifyingNights:0}},remainingYear:{cardSpend:{}},legacyNaturalBenefitValue:{}}));
  const r=E.currentRecord(p,"conservative");
  assert("existing Venture X gets recurring annual travel credit",r.economics.recurringBenefitValue>=300,JSON.stringify(r.economics));
- assert("existing Venture X gets anniversary miles from the one approved valuation snapshot",r.economics.annualBonusTravelValue===170,JSON.stringify(r.economics));
+ assert("existing Venture X gets anniversary miles from the one approved valuation snapshot",r.economics.annualBonusTravelValue===roundForTest(10000*p.valuationSnapshot.values.capital_one_miles),JSON.stringify(r.economics));
 }
 {
  const p=E.normalizeProfile(base({currentCards:["amex_platinum"],currentRouting:{...emptyRouting(),general:[{card:"amex_platinum",amount:10000}]},spend:{dining:0,grocery:0,online_grocery:0,gas_ev:0,online_retail:0,vacation_home:0,airfare:0,hotel:0,general:10000},primaryAirline:"",primaryAirlineShare:0,primaryHotel:"",primaryHotelShare:0,annualOneWayFlights:0,statusProgress:{hotel:{qualifyingNights:0}},remainingYear:{cardSpend:{}},cardUniqueBenefitValue:{amex_platinum:900},legacyNaturalBenefitValue:{},benefitValueByType:{}}));
@@ -700,7 +701,48 @@ assert("Southwest Priority remains 2500 TQP per $5000",E.RULES.cards.southwest_p
  assert("missing decision-sensitive tier benefits fails higher-status selection closed",ladder.rows.find(x=>x.tier==="Diamond Medallion")?.reachable===true&&ladder.decisionSensitiveBenefitFactsMissing===true&&r.quality.issues.some(x=>x.code==="airline_tier_benefits_unresolved")&&ladder.selected?.tier==="Silver Medallion",JSON.stringify(ladder));
 }
 
+
+{
+ const v=E.CURRENT_QP_VALUATION_SNAPSHOT;
+ assert("approved September 2026 valuation snapshot is locked",v.snapshotId==="qp-valuations-2026-09-21-v1"&&v.reviewStatus==="approved"&&v.approved===true&&v.effectiveDate==="2026-09-21");
+ assert("September 2026 currency values match reviewed benchmark",v.values.amex_mr===.020&&v.values.chase_ur===.0205&&v.values.capital_one_miles===.0185&&v.values.skymiles===.012&&v.values.united_miles===.012&&v.values.aadvantage===.0145&&v.values.southwest_points===.0125&&v.values.hyatt_points===.0165&&v.values.marriott_points===.0075&&v.values.hilton_points===.004,JSON.stringify(v.values));
+ assert("domestic companion benchmark uses latest published round-trip average",v.companionBenchmarks.domesticRoundTripFare===522&&v.companionBenchmarks.variableChargeMethod==="use_verified_max_when_bounded",JSON.stringify(v.companionBenchmarks));
+}
+function companionFacts(cards){
+ return{snapshotId:"companion-v19",verifiedAt:"2026-09-21",sources:["issuer"],cards:Object.fromEntries(cards.map(([id,cert])=>[id,{verificationStatus:"verified",complete:true,verifiedAt:"2026-09-21",sources:["issuer"],facts:{...E.RULES.cards[id],companionCertificate:cert,verified:true}}]))};
+}
+{
+ const vf=companionFacts([["delta_platinum",{usesPerYear:1,tripType:"round_trip",cabin:"main_cabin",geography:"us_mexico_caribbean_central_america",domesticEligible:true,domesticMaxTaxesFees:80,renewalRequired:true}]]);
+ const yes=E.normalizeProfile(base({verifiedFacts:vf,companionTravelIntent:"Yes",companionTravelFrequency:"1 round trip/year"})),high=E.normalizeProfile(base({verifiedFacts:vf,companionTravelIntent:"Yes",companionTravelFrequency:"7+"}));
+ const a=E.companionCertificatePortfolioValue(yes,["delta_platinum"]),b=E.companionCertificatePortfolioValue(high,["delta_platinum"]);
+ assert("Delta one-use companion certificate values at conservative $442 domestic benchmark",a.totalValue===442&&a.uses===1,JSON.stringify(a));
+ assert("one-use companion certificate is not multiplied by higher expected frequency",b.totalValue===442&&b.uses===1,JSON.stringify(b));
+}
+{
+ const vf=companionFacts([["delta_platinum",{usesPerYear:1,tripType:"round_trip",cabin:"main_cabin",geography:"domestic",domesticEligible:true,domesticMaxTaxesFees:80,renewalRequired:true}]]);
+ const no=E.normalizeProfile(base({verifiedFacts:vf,companionTravelIntent:"No",benefitValueByType:{companion_certificate_renewal:999}})),unsure=E.normalizeProfile(base({verifiedFacts:vf,companionTravelIntent:"Not sure",benefitValueByType:{companion_certificate_renewal:999}}));
+ const n=E.portfolioRecurringBenefitValue(no,["delta_platinum"]),u=E.portfolioRecurringBenefitValue(unsure,["delta_platinum"]);
+ assert("No future companion use forces quantitative certificate value to zero",n.totalValue===0&&n.companion.totalValue===0,JSON.stringify(n));
+ assert("Not sure leaves companion certificate qualitative with zero quantitative value",u.totalValue===0&&u.companion.totalValue===0,JSON.stringify(u));
+}
+{
+ const cert={usesPerYear:1,tripType:"round_trip",geography:"domestic",domesticEligible:true,domesticMaxTaxesFees:80,renewalRequired:true};
+ const vf=companionFacts([["delta_platinum",{...cert,cabin:"main_cabin"}],["delta_reserve",{...cert,cabin:"first_premium_select_comfort_main"}]]);
+ const one=E.normalizeProfile(base({verifiedFacts:vf,companionTravelIntent:"Yes",companionTravelFrequency:"1"})),two=E.normalizeProfile(base({verifiedFacts:vf,companionTravelIntent:"Yes",companionTravelFrequency:"2-3"}));
+ const a=E.companionCertificatePortfolioValue(one,["delta_platinum","delta_reserve"]),b=E.companionCertificatePortfolioValue(two,["delta_platinum","delta_reserve"]);
+ assert("two certificates do not double-count one expected companion trip",a.totalValue===442&&a.uses===1,JSON.stringify(a));
+ assert("two distinct one-use certificates can cover two expected trips but each remains capped at one use",b.totalValue===884&&b.uses===2&&Object.values(b.byCard).every(x=>x.uses===1),JSON.stringify(b));
+}
+{
+ const vf=companionFacts([["aa_globe",{usesPerYear:1,tripType:"round_trip",cabin:"main_cabin",geography:"domestic",domesticEligible:true,ticketingFee:99,renewalRequired:true}]]);
+ const p=E.normalizeProfile(base({verifiedFacts:vf,companionTravelIntent:"Yes",companionTravelFrequency:"1"})),x=E.companionCertificatePortfolioValue(p,["aa_globe"]);
+ assert("variable unbounded companion taxes remain quantitatively unresolved",x.totalValue===0&&x.unresolved.some(y=>y.cardId==="aa_globe"&&y.reason==="mandatory_companion_charges_unresolved"),JSON.stringify(x));
+}
+{
+ const p=E.normalizeProfile(base({companionTravelIntent:"Yes",companionTravelFrequency:"4-6"}));
+ assert("future companion intake normalizes frequency without multiplying a one-use certificate",p.companionTravel.intent==="yes"&&p.companionTravel.frequency==="4_6"&&p.companionTravel.minimumExpectedRoundTrips===4,JSON.stringify(p.companionTravel));
+}
 console.log("\n------------------------------");
-console.log(`V5 alpha.18 harness: ${pass} passed, ${fail} failed`);
+console.log(`V5 alpha.19 harness: ${pass} passed, ${fail} failed`);
 if(failures.length)console.log(JSON.stringify(failures,null,2));
 process.exitCode=fail?1:0;
