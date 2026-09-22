@@ -56,6 +56,9 @@ function cardRecurringCredits(t:string,id:string){
     const wm=namedAnnualCredit(t,[/\$\s*([\d,]+)\s+Walmart\+ Credit/i]);
     if(wm!=null)o.walmart_plus_credit=wm;
     else{const m=t.match(/\$\s*([\d.]+)[^$.]{0,100}Walmart\+[^.]{0,100}(?:each month|monthly)|Walmart\+[^$]{0,120}\$\s*([\d.]+)[^.]{0,100}(?:each month|monthly)/i);if(m){const monthly=amount(m[1]||m[2]);if(monthly!=null)o.walmart_plus_credit=Math.round(monthly*12*100)/100}}
+  }else if(id==="chase_preferred"){
+    delete o.hotel_credit;
+    put("chase_travel_hotel_credit",[/\$\s*([\d,]+)\s+Chase Travel hotel credit/i,/Chase Travel hotel credit[^$]{0,140}\$\s*([\d,]+)/i,/\$\s*([\d,]+)[^.]{0,160}(?:statement credits?)[^.]{0,120}hotel stays?[^.]{0,120}Chase Travel/i]);
   }else if(id==="chase_reserve"){
     put("travel_credit",[/\$\s*([\d,]+)\s+(?:annual )?travel credit/i,/travel credit[^$]{0,120}\$\s*([\d,]+)/i]);
     put("edit_credit",[/\$\s*([\d,]+)\s+(?:credit for stays with )?The Edit/i,/The Edit[^$]{0,140}\$\s*([\d,]+)[^.]{0,100}(?:annually|annual)/i]);
