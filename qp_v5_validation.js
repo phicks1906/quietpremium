@@ -1,4 +1,4 @@
-/** Quiet Premium V5 validation harness — 5.0-alpha.23 */
+/** Quiet Premium V5 validation harness — 5.0-alpha.24 */
 "use strict";
 const E=require("./qp_sim_v5.js");
 let pass=0,fail=0;const failures=[];
@@ -19,7 +19,7 @@ function base(overrides={}){return{
  currencyUtility:{amex_mr:1,chase_ur:.75,capital_one_miles:.95,hyatt_points:1},legacyNaturalBenefitValue:{amex_platinum:700},
  bookingMethod:{airfare:"direct_airline",hotel:"direct_hotel"},constraints:{maxNewCards:2},aspirations:["travel more"],...overrides};}
 
-assert("engine is alpha.23",E.ENGINE_VERSION==="5.0-alpha.23");
+assert("engine is alpha.24",E.ENGINE_VERSION==="5.0-alpha.24");
 
 {
  const a=E.analyze(base({aspirations:["travel more"]}));
@@ -278,7 +278,7 @@ assert("Southwest Priority remains 2500 TQP per $5000",E.RULES.cards.southwest_p
 {
  const r=E.analyze(base({routeFit:{}}));
  assert("missing route fit remains visible",r.current.quality.issues.some(x=>x.code==="route_fit_not_independently_verified"));
- assert("alpha.23 integrity flags are present",r.integrity.travelStrategyPrecedesCards===true&&r.integrity.primaryFlexibleEcosystem===true&&r.integrity.ongoingAndTemporaryRoutingSeparated===true&&r.integrity.temporaryJobsHaveExplicitHandoffs===true&&r.integrity.statusOpportunityRemainsDiscoverable===true&&r.integrity.existingCardRemovalEvaluated===true&&r.integrity.feeSavingsExposed===true&&r.integrity.aggregateBenefitValuesDoNotDoubleCountTypedBreakdowns===true&&r.integrity.unresolvedCrossCardBenefitOverlapIsConservative===true&&r.integrity.benefitProtectionIsCardSpecific===true&&r.integrity.fullAirlineStatusLadder===true&&r.integrity.projectedStatusCanBePreservedEfficiently===true&&r.integrity.protectedMultiplierSpend===true&&r.integrity.universalNewCardBands===true&&r.integrity.noSystemPortfolioCardCap===true&&r.integrity.singleApprovedValuationSnapshot===true);
+ assert("alpha.24 integrity flags are present",r.integrity.travelStrategyPrecedesCards===true&&r.integrity.primaryFlexibleEcosystem===true&&r.integrity.ongoingAndTemporaryRoutingSeparated===true&&r.integrity.temporaryJobsHaveExplicitHandoffs===true&&r.integrity.statusOpportunityRemainsDiscoverable===true&&r.integrity.existingCardRemovalEvaluated===true&&r.integrity.feeSavingsExposed===true&&r.integrity.aggregateBenefitValuesDoNotDoubleCountTypedBreakdowns===true&&r.integrity.unresolvedCrossCardBenefitOverlapIsConservative===true&&r.integrity.benefitProtectionIsCardSpecific===true&&r.integrity.fullAirlineStatusLadder===true&&r.integrity.projectedStatusCanBePreservedEfficiently===true&&r.integrity.protectedMultiplierSpend===true&&r.integrity.universalNewCardBands===true&&r.integrity.noSystemPortfolioCardCap===true&&r.integrity.singleApprovedValuationSnapshot===true);
 }
 
 
@@ -298,7 +298,7 @@ assert("Southwest Priority remains 2500 TQP per $5000",E.RULES.cards.southwest_p
 
 {
  const p=base({
-  spend:{dining:18000,grocery:12000,online_grocery:0,gas_ev:4000,online_retail:5000,vacation_home:0,airfare:6000,hotel:12000,general:43000},
+  spend:{dining:18000,grocery:12000,online_grocery:0,gas_ev:4000,online_retail:5000,vacation_home:0,airfare:6000,hotel:15000,general:40000},
   currentCards:["hilton_surpass","amex_gold"],
   currentRouting:{...emptyRouting(),dining:[{card:"amex_gold",amount:18000}],grocery:[{card:"amex_gold",amount:12000}],gas_ev:[{card:"hilton_surpass",amount:4000}],online_retail:[{card:"hilton_surpass",amount:5000}],airfare:[{card:"hilton_surpass",amount:6000}],hotel:[{card:"hilton_surpass",amount:12000}],general:[{card:"hilton_surpass",amount:43000}]},
   primaryAirline:"",primaryAirlineShare:0,annualOneWayFlights:4,primaryHotel:"hilton",primaryHotelShare:.75,currentHotelStatus:"Gold",
@@ -306,10 +306,10 @@ assert("Southwest Priority remains 2500 TQP per $5000",E.RULES.cards.southwest_p
   remainingYear:{cardSpend:{dining:4000,grocery:3000,hotel:3000,general:10000},hotel:{qualifyingNights:4,qualifyingStays:2,qualifyingSpend:1500}},
   cardSpendYTD:{hilton_surpass:12000},cardUniqueBenefitValue:{hilton_surpass:250,amex_gold:250},legacyNaturalBenefitValue:{},constraints:{maxNewCards:0}
  });
- const r=E.analyze(p),job=r.recommended.temporaryJobs.find(j=>j.type==="spend_reward"&&j.cardId==="hilton_surpass");
- assert("Surpass $15k reward becomes independent temporary job",!!job,JSON.stringify(r.recommended.temporaryJobs));
+ const r=E.analyze(p),job=r.recommended.recurringJobs.find(j=>j.type==="annual_threshold"&&j.cardId==="hilton_surpass");
+ assert("Surpass $15k reward is represented as a recurring annual-threshold job",!!job,JSON.stringify(r.recommended.recurringJobs));
  assert("Surpass job requires only remaining $3k",job?.spendRequired===3000,String(job?.spendRequired));
- assert("temporary job has explicit post-threshold handoff",Array.isArray(job?.postThresholdRouting)&&job.postThresholdRouting.length>0,JSON.stringify(job?.postThresholdRouting));
+ assert("recurring annual-threshold job keeps an explicit annual reset",job?.stopCondition?.resetsAnnually===true&&job?.annualSpendRequired===15000,JSON.stringify(job));
  assert("nearer Surpass reward prevents automatic $40k Diamond chase",!r.recommended.strategy.hotelStatusTarget,JSON.stringify(r.recommended.strategy.hotelStatusTarget));
 }
 
@@ -550,25 +550,25 @@ assert("Southwest Priority remains 2500 TQP per $5000",E.RULES.cards.southwest_p
 
 {
  const p=E.normalizeProfile(base({currentCards:["united_explorer"],currentRouting:{...emptyRouting(),general:[{card:"united_explorer",amount:10000}]},spend:{dining:0,grocery:0,online_grocery:0,gas_ev:0,online_retail:0,vacation_home:0,airfare:0,hotel:0,general:10000},primaryAirline:"united",primaryAirlineShare:.8,annualOneWayFlights:4,primaryHotel:"",primaryHotelShare:0,cardSpendYTD:{united_explorer:9000},remainingYear:{cardSpend:{general:1000},united:{pqp:0,pqf:0,unitedSegments:0}},statusProgress:{united:{pqp:0,pqf:0,unitedSegments:0},hotel:{qualifyingNights:0}},constraints:{maxNewCards:0},verifiedFacts:{snapshotId:"generic-natural",verifiedAt:"2026-09-19",sources:["issuer"],cards:{united_explorer:{verificationStatus:"verified",complete:true,verifiedAt:"2026-09-19",sources:["issuer"],annualFee:150,earn:{dining:1,grocery:1,online_grocery:1,gas_ev:1,online_retail:1,vacation_home:1,airfare:1,hotel:1,general:1},bookingEarn:{},caps:{},capGroups:{},groupCaps:{},postCapEarn:{},benefitTags:["checked_bag"],recurringCredits:{},multiYearCredits:{},annualBonusPoints:0,hotelStatus:{},hotelStatusByProgram:{},status:{},transferRules:{},spendRewards:[{amount:10000,benefit:"united_travelbank_100"}],verified:true}},airlines:{united:{verificationStatus:"verified",complete:true,verifiedAt:"2026-09-19",sources:["united"],thresholds:[{tier:"Premier Silver",amount:6000,pqpOnly:6000,pqpWithPQF:5000,pqf:15}],minimumUnitedSegments:4}},hotels:{}}}));
- const annual={...emptyRouting(),general:[{card:"united_explorer",amount:10000}]};const jobs=E.temporaryJobs(p,["united_explorer"],annual,{airlineTarget:null,hotelTarget:null},"base");
- assert("unpriced conditional reward may surface when natural spend reaches it",jobs.some(x=>x.purpose==="united_travelbank_100"&&x.opportunityCost===0),JSON.stringify(jobs));
+ const annual={...emptyRouting(),general:[{card:"united_explorer",amount:10000}]};const jobs=E.recurringJobs(p,["united_explorer"],annual,"base",{baseRouting:annual,optimizations:[]});
+ assert("unpriced annual threshold may surface as recurring when natural spend reaches it",jobs.some(x=>x.purpose==="united_travelbank_100"&&x.recurring===true&&x.modeledValue===0),JSON.stringify(jobs));
 }
 {
  const p=E.normalizeProfile(base({currentCards:["amex_platinum","united_explorer"],currentRouting:{...emptyRouting(),general:[{card:"amex_platinum",amount:10000}]},spend:{dining:0,grocery:0,online_grocery:0,gas_ev:0,online_retail:0,vacation_home:0,airfare:0,hotel:0,general:10000},primaryAirline:"united",primaryAirlineShare:.8,annualOneWayFlights:4,primaryHotel:"",primaryHotelShare:0,cardSpendYTD:{united_explorer:9000},remainingYear:{cardSpend:{general:1000},united:{pqp:0,pqf:0,unitedSegments:0}},statusProgress:{united:{pqp:0,pqf:0,unitedSegments:0},hotel:{qualifyingNights:0}},constraints:{maxNewCards:0},verifiedFacts:{snapshotId:"generic-unpriced-shift",verifiedAt:"2026-09-19",sources:["issuer"],cards:{amex_platinum:{verificationStatus:"verified",complete:true,verifiedAt:"2026-09-19",sources:["issuer"],annualFee:895,earn:{dining:1,grocery:1,online_grocery:1,gas_ev:1,online_retail:1,vacation_home:1,airfare:1,hotel:1,general:2},bookingEarn:{},caps:{},capGroups:{},groupCaps:{},postCapEarn:{},benefitTags:[],recurringCredits:{},multiYearCredits:{},annualBonusPoints:0,hotelStatus:{},hotelStatusByProgram:{},status:{},transferRules:{},spendRewards:[],verified:true},united_explorer:{verificationStatus:"verified",complete:true,verifiedAt:"2026-09-19",sources:["issuer"],annualFee:150,earn:{dining:1,grocery:1,online_grocery:1,gas_ev:1,online_retail:1,vacation_home:1,airfare:1,hotel:1,general:1},bookingEarn:{},caps:{},capGroups:{},groupCaps:{},postCapEarn:{},benefitTags:["checked_bag"],recurringCredits:{},multiYearCredits:{},annualBonusPoints:0,hotelStatus:{},hotelStatusByProgram:{},status:{},transferRules:{},spendRewards:[{amount:10000,benefit:"united_travelbank_100"}],verified:true}},airlines:{united:{verificationStatus:"verified",complete:true,verifiedAt:"2026-09-19",sources:["united"],thresholds:[{tier:"Premier Silver",amount:6000,pqpOnly:6000,pqpWithPQF:5000,pqf:15}],minimumUnitedSegments:4}},hotels:{}}}));
- const annual={...emptyRouting(),general:[{card:"amex_platinum",amount:10000}]};const jobs=E.temporaryJobs(p,["amex_platinum","united_explorer"],annual,{airlineTarget:null,hotelTarget:null},"base");
- assert("unpriced conditional reward does not redirect spend",!jobs.some(x=>x.purpose==="united_travelbank_100"),JSON.stringify(jobs));
+ const annual={...emptyRouting(),general:[{card:"amex_platinum",amount:10000}]};const jobs=E.recurringJobs(p,["amex_platinum","united_explorer"],annual,"base",{baseRouting:annual,optimizations:[]});
+ assert("unpriced annual threshold does not redirect spend",!jobs.some(x=>x.purpose==="united_travelbank_100"),JSON.stringify(jobs));
 }
 {
  const p=E.normalizeProfile(base({currentCards:["amex_platinum","united_explorer"],currentRouting:{...emptyRouting(),general:[{card:"amex_platinum",amount:10000}]},spend:{dining:0,grocery:0,online_grocery:0,gas_ev:0,online_retail:0,vacation_home:0,airfare:0,hotel:0,general:10000},primaryAirline:"united",primaryAirlineShare:.8,annualOneWayFlights:4,primaryHotel:"",primaryHotelShare:0,cardSpendYTD:{united_explorer:9000},remainingYear:{cardSpend:{general:1000},united:{pqp:0,pqf:0,unitedSegments:0}},statusProgress:{united:{pqp:0,pqf:0,unitedSegments:0},hotel:{qualifyingNights:0}},constraints:{maxNewCards:0},verifiedFacts:{snapshotId:"generic-valued-shift",verifiedAt:"2026-09-19",sources:["issuer"],cards:{amex_platinum:{verificationStatus:"verified",complete:true,verifiedAt:"2026-09-19",sources:["issuer"],annualFee:895,earn:{dining:1,grocery:1,online_grocery:1,gas_ev:1,online_retail:1,vacation_home:1,airfare:1,hotel:1,general:1.01},bookingEarn:{},caps:{},capGroups:{},groupCaps:{},postCapEarn:{},benefitTags:[],recurringCredits:{},multiYearCredits:{},annualBonusPoints:0,hotelStatus:{},hotelStatusByProgram:{},status:{},transferRules:{},spendRewards:[],verified:true},united_explorer:{verificationStatus:"verified",complete:true,verifiedAt:"2026-09-19",sources:["issuer"],annualFee:150,earn:{dining:1,grocery:1,online_grocery:1,gas_ev:1,online_retail:1,vacation_home:1,airfare:1,hotel:1,general:1},bookingEarn:{},caps:{},capGroups:{},groupCaps:{},postCapEarn:{},benefitTags:["checked_bag"],recurringCredits:{},multiYearCredits:{},annualBonusPoints:0,hotelStatus:{},hotelStatusByProgram:{},status:{},transferRules:{},spendRewards:[{amount:10000,benefit:"united_travelbank_100",cashValue:100}],verified:true}},airlines:{united:{verificationStatus:"verified",complete:true,verifiedAt:"2026-09-19",sources:["united"],thresholds:[{tier:"Premier Silver",amount:6000,pqpOnly:6000,pqpWithPQF:5000,pqf:15}],minimumUnitedSegments:4}},hotels:{}}}));
- const annual={...emptyRouting(),general:[{card:"amex_platinum",amount:10000}]};const jobs=E.temporaryJobs(p,["amex_platinum","united_explorer"],annual,{airlineTarget:null,hotelTarget:null},"base");
- assert("valued conditional reward may redirect spend only when value exceeds opportunity cost",jobs.some(x=>x.purpose==="united_travelbank_100"&&x.modeledValue===100&&x.opportunityCost<100),JSON.stringify(jobs));
+ const annual=E.routeAnnual(p,["amex_platinum","united_explorer"],"base",{primaryCurrency:"amex_mr",primaryCards:["amex_platinum"]}),jobs=E.recurringJobs(p,["amex_platinum","united_explorer"],annual,"base",{baseRouting:{...emptyRouting(),general:[{card:"amex_platinum",amount:10000}]},optimizations:[]});
+ assert("valued annual threshold may redirect spend only when value exceeds opportunity cost",(annual.general||[]).some(x=>x.card==="united_explorer"&&x.amount===10000)&&jobs.some(x=>x.purpose==="united_travelbank_100"&&x.modeledValue===100),JSON.stringify({annual,jobs}));
 }
 
 
 {
  const p=E.normalizeProfile(base({currentCards:["united_quest"],currentRouting:{...emptyRouting(),general:[{card:"united_quest",amount:20000}]},spend:{dining:0,grocery:0,online_grocery:0,gas_ev:0,online_retail:0,vacation_home:0,airfare:0,hotel:0,general:20000},primaryAirline:"united",primaryAirlineShare:.8,annualOneWayFlights:4,primaryHotel:"",primaryHotelShare:0,cardSpendYTD:{united_quest:19000},remainingYear:{cardSpend:{general:1000},united:{pqp:0,pqf:0,unitedSegments:0}},statusProgress:{united:{pqp:0,pqf:0,unitedSegments:0},hotel:{qualifyingNights:0}},constraints:{maxNewCards:0},verifiedFacts:{snapshotId:"value-points",verifiedAt:"2026-09-19",sources:["issuer"],cards:{united_quest:{verificationStatus:"verified",complete:true,verifiedAt:"2026-09-19",sources:["issuer"],annualFee:350,earn:{dining:1,grocery:1,online_grocery:1,gas_ev:1,online_retail:1,vacation_home:1,airfare:1,hotel:1,general:1},bookingEarn:{},caps:{},capGroups:{},groupCaps:{},postCapEarn:{},benefitTags:["checked_bag"],recurringCredits:{},multiYearCredits:{},annualBonusPoints:0,hotelStatus:{},hotelStatusByProgram:{},status:{},transferRules:{},spendRewards:[{amount:20000,benefit:"award_discount_10k",valuePoints:10000,currency:"united_miles"}],verified:true}},airlines:{united:{verificationStatus:"verified",complete:true,verifiedAt:"2026-09-19",sources:["united"],thresholds:[{tier:"Premier Silver",amount:6000,pqpOnly:6000,pqpWithPQF:5000,pqf:15}],minimumUnitedSegments:4}},hotels:{}}}));
- const annual={...emptyRouting(),general:[{card:"united_quest",amount:20000}]};const jobs=E.temporaryJobs(p,["united_quest"],annual,{airlineTarget:null,hotelTarget:null},"base");
- assert("conditional award discount uses currency-equivalent value without pretending points are earned",jobs.some(x=>x.purpose==="award_discount_10k"&&x.modeledValue>0),JSON.stringify(jobs));
+ const annual={...emptyRouting(),general:[{card:"united_quest",amount:20000}]},jobs=E.recurringJobs(p,["united_quest"],annual,"base",{baseRouting:annual,optimizations:[]}),value=E.portfolioAnnualSpendRewardValue(p,["united_quest"],annual,"base");
+ assert("annual award discount uses currency-equivalent value without pretending certificate points are earned",jobs.some(x=>x.purpose==="award_discount_10k"&&x.modeledValue===120)&&value.totalValue===120,JSON.stringify({jobs,value}));
 }
 
 
@@ -786,7 +786,7 @@ function deltaTierFactsV20({complete=true,verifiedFixed=true}={}){
 }
 {
  const r=E.analyze(base({constraints:{maxNewCards:0}}));
- assert("alpha.23 fixed-status integrity flags are present",r.integrity.verifiedFixedStatusComponentsOnly===true&&r.integrity.statusFixedBenefitIncludedInRecurringEconomics===true&&r.integrity.deltaTierBenefitCoverageRequired===true,JSON.stringify(r.integrity));
+ assert("alpha.24 fixed-status integrity flags are present",r.integrity.verifiedFixedStatusComponentsOnly===true&&r.integrity.statusFixedBenefitIncludedInRecurringEconomics===true&&r.integrity.deltaTierBenefitCoverageRequired===true,JSON.stringify(r.integrity));
 }
 
 
@@ -851,7 +851,7 @@ function deltaAcquisitionV21(freq){
 }
 {
  const r=E.analyze(base({constraints:{maxNewCards:0}}));
- assert("alpha.23 scope and companion integrity flags are present",r.integrity.travelFirstBenefitScopeEnforced===true&&r.integrity.unscopedLegacyBenefitTotalsExcludedFromEconomics===true&&r.integrity.unansweredCompanionCannotUseLegacyValue===true,JSON.stringify(r.integrity));
+ assert("alpha.24 scope and companion integrity flags are present",r.integrity.travelFirstBenefitScopeEnforced===true&&r.integrity.unscopedLegacyBenefitTotalsExcludedFromEconomics===true&&r.integrity.unansweredCompanionCannotUseLegacyValue===true,JSON.stringify(r.integrity));
 }
 
 
@@ -868,7 +868,7 @@ function deltaAcquisitionV21(freq){
 }
 {
  const r=E.analyze(base({constraints:{maxNewCards:0}}));
- assert("alpha.23 repeatable Delta Choice Benefit integrity flag is present",r.integrity.deltaRepeatableChoiceBenefitFloor===true,JSON.stringify(r.integrity));
+ assert("alpha.24 repeatable Delta Choice Benefit integrity flag is present",r.integrity.deltaRepeatableChoiceBenefitFloor===true,JSON.stringify(r.integrity));
 }
 
 
@@ -928,10 +928,56 @@ function unitedTierFactsV23({complete=true}={}){
 }
 {
  const r=E.analyze(base({constraints:{maxNewCards:0}}));
- assert("alpha.23 United validation integrity flags are present",r.integrity.unitedDecisionSensitiveTierInventory===true&&r.integrity.unitedVerifiedThresholdSchema===true&&r.integrity.unitedStalePremierEarnRatesExcluded===true,JSON.stringify(r.integrity));
+ assert("alpha.24 United validation integrity flags are present",r.integrity.unitedDecisionSensitiveTierInventory===true&&r.integrity.unitedVerifiedThresholdSchema===true&&r.integrity.unitedStalePremierEarnRatesExcluded===true,JSON.stringify(r.integrity));
+}
+
+
+function unitedCardFactsV24(){
+ const mk=(id,facts)=>[id,{verificationStatus:"verified",complete:true,verifiedAt:"2026-09-22",sources:["chase"],facts:{...facts,bookingEarn:{},caps:{},capGroups:{},groupCaps:{},postCapEarn:{},hotelStatus:{},hotelStatusByProgram:{},transferRules:{},transferAccess:{},rotatingBonus:{},statusMilestoneRewards:[],companionCertificate:{},verified:true}}];
+ return{snapshotId:"united-card-v24",verifiedAt:"2026-09-22",sources:["chase"],cards:Object.fromEntries([
+  mk("united_explorer",{annualFee:150,earn:{dining:2,grocery:1,online_grocery:1,drugstore:1,gas_ev:1,transit:1,online_retail:1,vacation_home:1,airfare:3,hotel:2,general:1},benefitTags:["priority_boarding","checked_bag"],recurringCredits:{united_hotels_credit:100,rideshare_credit:60,avis_budget_credit:100,instacart_credit:120,jsx_credit:100},multiYearCredits:{trusted_traveler:{amount:120,years:4}},annualBonusPoints:0,annualPointCertificates:[],status:{spendDivisor:20,annualCap:1000},spendRewards:[{amount:10000,benefit:"united_travelbank_100",cashValue:100},{amount:20000,benefit:"award_discount_10k",valuePoints:10000,currency:"united_miles"}]}),
+  mk("united_quest",{annualFee:350,earn:{dining:2,grocery:1,online_grocery:1,drugstore:1,gas_ev:1,transit:1,online_retail:1,vacation_home:1,airfare:4,hotel:2,general:1},benefitTags:["united_travel_benefits","award_discount_annual"],recurringCredits:{united_travel_credit:200,renowned_hotels_credit:150,rideshare_credit:100,avis_budget_credit:80,instacart_credit:180,jsx_credit:150},multiYearCredits:{trusted_traveler:{amount:120,years:4}},annualBonusPoints:0,annualPointCertificates:[{benefit:"award_discount_10k_annual",capPoints:10000,currency:"united_miles",renewalRequired:true}],status:{spendDivisor:20,annualCap:18000,annualBonus:1000,bonusRequiresPriorYearOpen:true},spendRewards:[{amount:20000,benefit:"award_discount_10k",valuePoints:10000,currency:"united_miles"},{amount:40000,benefit:"economy_plus_upgrades_2"}]})
+ ]),airlines:unitedTierFactsV23().airlines,hotels:{}};
+}
+{
+ const p=E.normalizeProfile(base({verifiedFacts:unitedCardFactsV24(),primaryAirline:"united",primaryAirlineShare:.9,routeFit:{united:.95},annualOneWayFlights:8,currentAirlineStatus:"",currentCards:["amex_gold"],currentRouting:{...emptyRouting(),general:[{card:"amex_gold",amount:30000}]},spend:{dining:0,grocery:0,online_grocery:0,drugstore:0,gas_ev:0,transit:0,online_retail:0,vacation_home:0,airfare:0,hotel:0,general:30000},statusProgress:{united:{pqp:0,pqf:0,unitedSegments:4},hotel:{qualifyingNights:0}},remainingYear:{cardSpend:{general:30000},united:{pqp:0,pqf:0,unitedSegments:0},hotel:{qualifyingNights:0}},primaryHotel:"",primaryHotelShare:0,constraints:{maxNewCards:1}}));
+ const travel=E.travelStrategy(p),rewards=E.rewardsStrategy(p,travel),r=E.strategyRecord(p,["amex_gold","united_explorer"],"base",travel,rewards),onExplorer=(r.annualRouting.general||[]).find(x=>x.card==="united_explorer")?.amount||0;
+ assert("Explorer annual thresholds optimize recurring routing only when reward value exceeds lost rewards",onExplorer===20000&&r.economics.annualSpendRewardValue===220,JSON.stringify({routing:r.annualRouting.general,economics:r.economics,recurringJobs:r.recurringJobs}));
+ assert("Explorer annual threshold rewards are recurring jobs, not temporary jobs",r.recurringJobs.filter(j=>j.cardId==="united_explorer").length===2&&!r.temporaryJobs.some(j=>j.cardId==="united_explorer"&&j.type==="spend_reward"),JSON.stringify({recurring:r.recurringJobs,temporary:r.temporaryJobs}));
+}
+{
+ const p=E.normalizeProfile(base({verifiedFacts:unitedCardFactsV24(),primaryAirline:"united",primaryAirlineShare:.9,routeFit:{united:.95},annualOneWayFlights:8,currentAirlineStatus:"",currentCards:["amex_gold"],currentRouting:{...emptyRouting(),dining:[{card:"amex_gold",amount:15000}]},spend:{dining:15000,grocery:0,online_grocery:0,drugstore:0,gas_ev:0,transit:0,online_retail:0,vacation_home:0,airfare:0,hotel:0,general:0},statusProgress:{united:{pqp:0,pqf:0,unitedSegments:4},hotel:{qualifyingNights:0}},remainingYear:{cardSpend:{dining:15000},united:{pqp:0,pqf:0,unitedSegments:0},hotel:{qualifyingNights:0}},primaryHotel:"",primaryHotelShare:0,constraints:{maxNewCards:1}}));
+ const travel=E.travelStrategy(p),rewards=E.rewardsStrategy(p,travel),r=E.strategyRecord(p,["amex_gold","united_explorer"],"base",travel,rewards),spend=(r.annualRouting.dining||[]).find(x=>x.card==="united_explorer")?.amount||0;
+ assert("annual-threshold optimizer does not sacrifice protected multiplier spend",spend===0&&r.economics.annualSpendRewardValue===0,JSON.stringify({routing:r.annualRouting.dining,economics:r.economics}));
+}
+{
+ const p=E.normalizeProfile(base({verifiedFacts:unitedCardFactsV24(),primaryAirline:"united",primaryAirlineShare:.9,routeFit:{united:.95},annualOneWayFlights:8,currentAirlineStatus:"",currentCards:[],currentRouting:emptyRouting(),spend:{dining:0,grocery:0,online_grocery:0,drugstore:0,gas_ev:0,transit:0,online_retail:0,vacation_home:0,airfare:0,hotel:0,general:0},statusProgress:{united:{pqp:0,pqf:0,unitedSegments:4},hotel:{qualifyingNights:0}},remainingYear:{cardSpend:{},united:{pqp:0,pqf:0,unitedSegments:0},hotel:{qualifyingNights:0}},primaryHotel:"",primaryHotelShare:0,constraints:{maxNewCards:1}}));
+ const travel=E.travelStrategy(p),rewards=E.rewardsStrategy(p,travel),cert=E.portfolioAnnualPointCertificateValue(p,["united_quest"],"base"),r=E.strategyRecord(p,["united_quest"],"base",travel,rewards);
+ assert("Quest automatic anniversary 10,000-mile award discount contributes exactly $120 recurring value",cert.totalValue===120&&r.economics.annualPointCertificateValue===120,JSON.stringify({cert,economics:r.economics}));
+ assert("Quest award-discount certificate is not misreported as earned miles",!r.economics.pointsByCurrency.united_miles&&r.economics.annualBonusTravelValue===0,JSON.stringify(r.economics));
+}
+{
+ const p=E.normalizeProfile(base({verifiedFacts:unitedCardFactsV24(),primaryAirline:"united",primaryAirlineShare:.9,routeFit:{united:.95},annualOneWayFlights:8,currentAirlineStatus:"",currentCards:[],currentRouting:emptyRouting(),spend:{dining:0,grocery:0,online_grocery:0,drugstore:0,gas_ev:0,transit:0,online_retail:0,vacation_home:0,airfare:0,hotel:0,general:0},statusProgress:{united:{pqp:0,pqf:0,unitedSegments:4},hotel:{qualifyingNights:0}},remainingYear:{cardSpend:{},united:{pqp:0,pqf:0,unitedSegments:0},hotel:{qualifyingNights:0}},primaryHotel:"",primaryHotelShare:0,constraints:{maxNewCards:1}}));
+ const x=E.portfolioRecurringBenefitValue(p,["united_quest"]);
+ assert("Instacart remains visible but is excluded from travel-first recurring economics",x.excludedByScope.some(y=>y.cardId==="united_quest"&&y.benefit==="instacart_credit"&&y.value===180)&&x.totalValue===710,JSON.stringify(x));
+}
+{
+ const p=E.normalizeProfile(base({verifiedFacts:unitedCardFactsV24(),primaryAirline:"united",primaryAirlineShare:.9,routeFit:{united:.95},annualOneWayFlights:4,currentAirlineStatus:"",currentCards:["chase_reserve"],currentRouting:emptyRouting(),spend:{dining:0,grocery:0,online_grocery:0,drugstore:0,gas_ev:0,transit:0,online_retail:0,vacation_home:0,airfare:0,hotel:0,general:0},statusProgress:{united:{pqp:0,pqf:0,unitedSegments:4},hotel:{qualifyingNights:0}},remainingYear:{cardSpend:{},united:{pqp:0,pqf:0,unitedSegments:0},hotel:{qualifyingNights:0}},primaryHotel:"",primaryHotelShare:0,constraints:{maxNewCards:1}}));
+ const sel=E.selectForScenario(p,"base"),q=sel.newCardClassifications.find(x=>x.cardId==="united_quest");
+ assert("United Quest is Consider when its verified recurring improvement over the best United alternative is $200-$349",q?.classification==="consider"&&q.incrementalRecurringValue>=200&&q.incrementalRecurringValue<350,JSON.stringify({q,recommended:sel.recommended.id}));
+}
+{
+ const facts=unitedCardFactsV24();facts.cards.united_quest.facts.recurringCredits={instacart_credit:180};facts.cards.united_quest.facts.multiYearCredits={};facts.cards.united_quest.facts.annualPointCertificates=[];facts.cards.united_quest.facts.benefitTags=[];facts.cards.united_quest.facts.status={};facts.cards.united_quest.facts.spendRewards=[];
+ const p=base({verifiedFacts:facts,primaryAirline:"",primaryAirlineShare:0,annualOneWayFlights:0,currentCards:["united_quest"],currentRouting:emptyRouting(),spend:{dining:0,grocery:0,online_grocery:0,drugstore:0,gas_ev:0,transit:0,online_retail:0,vacation_home:0,airfare:0,hotel:0,general:0},primaryHotel:"",primaryHotelShare:0,statusProgress:{hotel:{qualifyingNights:0}},remainingYear:{cardSpend:{},hotel:{qualifyingNights:0}},constraints:{maxNewCards:0}});
+ const r=E.analyze(p);
+ assert("out-of-scope Instacart credit alone does not prevent removing a negative-value United card",!r.recommended.portfolio.includes("united_quest")&&r.recommended.actions.some(x=>x.cardId==="united_quest"&&x.action==="remove_or_downgrade_after_review"),JSON.stringify({recommended:r.recommended.id,actions:r.recommended.actions,economics:r.current.economics}));
+}
+{
+ const r=E.analyze(base({constraints:{maxNewCards:0}}));
+ assert("alpha.24 annual-threshold and certificate integrity flags are present",r.integrity.annualThresholdsAreRecurringEconomics===true&&r.integrity.annualThresholdRoutingOptimizedByNetValue===true&&r.integrity.automaticPointCertificatesSeparatedFromPointsEarned===true&&r.integrity.instacartExcludedFromTravelEconomics===true,JSON.stringify(r.integrity));
 }
 
 console.log("\n------------------------------");
-console.log(`V5 alpha.23 harness: ${pass} passed, ${fail} failed`);
+console.log(`V5 alpha.24 harness: ${pass} passed, ${fail} failed`);
 if(failures.length)console.log(JSON.stringify(failures,null,2));
 process.exitCode=fail?1:0;
