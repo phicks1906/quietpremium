@@ -37,7 +37,7 @@ export const ENTITY_SOURCES = Object.freeze({
     hilton_aspire: { urls: ['https://www.americanexpress.com/us/credit-cards/card/hilton-honors-aspire/'], required: ['annualFee','earn','hotelStatus','benefitTags'] }
   }),
   airlines: Object.freeze({
-    delta: { urls: ['https://www.delta.com/us/en/skymiles/medallion-program/how-to-qualify','https://www.delta.com/us/en/skymiles/medallion-program/medallion-benefits'], required: ['thresholds','tierBenefits'] },
+    delta: { urls: ['https://www.delta.com/us/en/skymiles/medallion-program/how-to-qualify','https://www.delta.com/us/en/skymiles/medallion-program/medallion-benefits','https://www.delta.com/content/www/en_US/skymiles/medallion-program/choice-benefits/choice-benefits.html'], required: ['thresholds','tierBenefits'] },
     united: { urls: ['https://www.united.com/en/us/fly/mileageplus/premier/qualify.html','https://www.united.com/en/us/fly/mileageplus/premier.html','https://unitedperksplus.united.com/chart.aspx'], required: ['thresholds','minimumUnitedSegments','tierBenefits'] },
     american: { urls: ['https://www.aa.com/web/i18n/aadvantage-program/loyalty-points/index.html','https://www.aa.com/web/i18n/aadvantage-program/answers-support/upgrades-for-status-members.html','https://news.aa.com/news/news-details/2026/American-Airlines-maintains-AAdvantage-status-and-reward-levels-for-third-year-in-a-row-AADV-01/default.aspx'], required: ['thresholds','tierBenefits'] },
     southwest: { urls: ['https://www.southwest.com/rapid-rewards/tiers/a-list/','https://www.southwest.com/rapid-rewards/tiers/a-list-preferred/'], required: ['thresholds','flightThresholds','tierBenefits'] }
