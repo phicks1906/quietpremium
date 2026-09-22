@@ -1,4 +1,4 @@
-/** Quiet Premium V5 validation harness — 5.0-alpha.29 */
+/** Quiet Premium V5 validation harness — 5.0-alpha.30 */
 "use strict";
 const E=require("./qp_sim_v5.js");
 let pass=0,fail=0;const failures=[];
@@ -19,7 +19,7 @@ function base(overrides={}){return{
  currencyUtility:{amex_mr:1,chase_ur:.75,capital_one_miles:.95,hyatt_points:1},legacyNaturalBenefitValue:{amex_platinum:700},
  bookingMethod:{airfare:"direct_airline",hotel:"direct_hotel"},constraints:{maxNewCards:2},aspirations:["travel more"],...overrides};}
 
-assert("engine is alpha.29",E.ENGINE_VERSION==="5.0-alpha.29");
+assert("engine is alpha.30",E.ENGINE_VERSION==="5.0-alpha.30");
 
 {
  const a=E.analyze(base({aspirations:["travel more"]}));
@@ -306,11 +306,10 @@ assert("Southwest Priority remains 2500 TQP per $5000",E.RULES.cards.southwest_p
   remainingYear:{cardSpend:{dining:4000,grocery:3000,hotel:3000,general:10000},hotel:{qualifyingNights:4,qualifyingStays:2,qualifyingSpend:1500}},
   cardSpendYTD:{hilton_surpass:12000},cardUniqueBenefitValue:{hilton_surpass:250,amex_gold:250},legacyNaturalBenefitValue:{},constraints:{maxNewCards:0}
  });
- const r=E.analyze(p),job=r.recommended.recurringJobs.find(j=>j.type==="annual_threshold"&&j.cardId==="hilton_surpass");
- assert("Surpass $15k reward is represented as a recurring annual-threshold job",!!job,JSON.stringify(r.recommended.recurringJobs));
- assert("Surpass job requires only remaining $3k",job?.spendRequired===3000,String(job?.spendRequired));
- assert("recurring annual-threshold job keeps an explicit annual reset",job?.stopCondition?.resetsAnnually===true&&job?.annualSpendRequired===15000,JSON.stringify(job));
- assert("nearer Surpass reward prevents automatic $40k Diamond chase",!r.recommended.strategy.hotelStatusTarget,JSON.stringify(r.recommended.strategy.hotelStatusTarget));
+ const r=E.analyze(p),job=r.recommended.recurringJobs.find(j=>j.type==="annual_threshold"&&j.cardId==="hilton_surpass"),visible=E.visibleBenefits(["hilton_surpass"]);
+ assert("Surpass $15k Free Night Reward remains visible but unquantified",visible.some(x=>x.benefit==="free_night_reward_15k"&&x.detail?.spendRequired===15000&&x.detail?.quantified===false),JSON.stringify(visible));
+ assert("unpriced Surpass Free Night Reward does not manufacture a quantified annual-threshold job",!job,JSON.stringify(r.recommended.recurringJobs));
+ assert("unreachable $40k Surpass Diamond threshold creates no status chase",!r.recommended.strategy.hotelStatusTarget,JSON.stringify(r.recommended.strategy.hotelStatusTarget));
 }
 
 {
@@ -379,10 +378,10 @@ assert("Southwest Priority remains 2500 TQP per $5000",E.RULES.cards.southwest_p
  assert("universal new-card band starts Consider at $200",E.classifyNewCardValue(200)==="consider");
  assert("universal new-card band keeps $349 in Consider",E.classifyNewCardValue(349)==="consider");
  assert("universal new-card band starts Recommended at $350",E.classifyNewCardValue(350)==="recommended");
- const consider=E.analyze(base({spend:{dining:15000,grocery:0,online_grocery:0,gas_ev:0,online_retail:0,vacation_home:0,airfare:0,hotel:0,general:0},currentCards:["amex_platinum"],currentRouting:{...emptyRouting(),dining:[{card:"amex_platinum",amount:15000}]},primaryAirline:"",primaryAirlineShare:0,annualOneWayFlights:0,primaryHotel:"",primaryHotelShare:0,statusProgress:{hotel:{qualifyingNights:0}},remainingYear:{cardSpend:{}},legacyNaturalBenefitValue:{},constraints:{maxNewCards:1,requiredCards:["amex_platinum"]}}));
+ const consider=E.analyze(base({spend:{dining:4000,grocery:0,online_grocery:0,gas_ev:0,online_retail:0,vacation_home:0,airfare:0,hotel:0,general:0},currentCards:["amex_platinum"],currentRouting:{...emptyRouting(),dining:[{card:"amex_platinum",amount:4000}]},primaryAirline:"",primaryAirlineShare:0,annualOneWayFlights:0,primaryHotel:"",primaryHotelShare:0,statusProgress:{hotel:{qualifyingNights:0}},remainingYear:{cardSpend:{}},legacyNaturalBenefitValue:{},constraints:{maxNewCards:1,requiredCards:["amex_platinum"]}}));
  const c=consider.newCardClassifications.find(x=>x.cardId==="amex_gold");
  assert("Consider card is surfaced but cannot be core recommendation",c?.classification==="consider"&&!consider.recommended.portfolio.includes("amex_gold")&&consider.considerCards.some(x=>x.cardId==="amex_gold"),JSON.stringify({c,rec:consider.recommended.id}));
- const recommended=E.analyze(base({spend:{dining:16000,grocery:0,online_grocery:0,gas_ev:0,online_retail:0,vacation_home:0,airfare:0,hotel:0,general:0},currentCards:["amex_platinum"],currentRouting:{...emptyRouting(),dining:[{card:"amex_platinum",amount:16000}]},primaryAirline:"",primaryAirlineShare:0,annualOneWayFlights:0,primaryHotel:"",primaryHotelShare:0,statusProgress:{hotel:{qualifyingNights:0}},remainingYear:{cardSpend:{}},legacyNaturalBenefitValue:{},constraints:{maxNewCards:1,requiredCards:["amex_platinum"]}}));
+ const recommended=E.analyze(base({spend:{dining:5550,grocery:0,online_grocery:0,gas_ev:0,online_retail:0,vacation_home:0,airfare:0,hotel:0,general:0},currentCards:["amex_platinum"],currentRouting:{...emptyRouting(),dining:[{card:"amex_platinum",amount:5550}]},primaryAirline:"",primaryAirlineShare:0,annualOneWayFlights:0,primaryHotel:"",primaryHotelShare:0,statusProgress:{hotel:{qualifyingNights:0}},remainingYear:{cardSpend:{}},legacyNaturalBenefitValue:{},constraints:{maxNewCards:1,requiredCards:["amex_platinum"]}}));
  assert("Recommended card can enter core at $350 recurring delta",recommended.newCardClassifications.find(x=>x.cardId==="amex_gold")?.classification==="recommended"&&recommended.recommended.portfolio.includes("amex_gold"),JSON.stringify({classes:recommended.newCardClassifications,rec:recommended.recommended.id}));
 }
 {
@@ -1228,6 +1227,49 @@ function hyattFactsV29({tierComplete=true,milestonesComplete=true}={}){
  const p=E.normalizeProfile(base({verifiedFacts:hyattFactsV29(),spend:{dining:0,grocery:0,online_grocery:0,drugstore:0,gas_ev:0,transit:0,online_retail:0,vacation_home:0,airfare:0,hotel:0,general:0},currentCards:["hyatt_consumer"],currentRouting:emptyRouting(),remainingYear:{cardSpend:{},hotel:{qualifyingNights:0,basePoints:0}},primaryAirline:"",primaryAirlineShare:0,primaryHotel:"",primaryHotelShare:0,currentHotelStatus:"",statusProgress:{hotel:{qualifyingNights:0,basePoints:0}},constraints:{maxNewCards:0}})),s=E.selectForScenario(p,"base");assert("Existing Hyatt category certificate is protected from automatic removal while unpriced",s.recommended.portfolio.includes("hyatt_consumer"),JSON.stringify(s.recommended.portfolio));
 }
 {const r=E.analyze(base({verifiedFacts:hyattFactsV29(),constraints:{maxNewCards:0}}));assert("alpha.29 Hyatt closeout integrity flags are present",r.integrity.hyattTierBenefitCoverageRequired&&r.integrity.hyattMilestoneInventoryRequired&&r.integrity.hyattBasePointsQualificationModeled&&r.integrity.hyattCategoryCertificatesRemainQualitative&&r.integrity.hyattPartialSpendBlockProgressModeled&&r.integrity.hyattFamilyEconomicsClosed,JSON.stringify(r.integrity));}
+
+function hiltonFactsV30({tierComplete=true,milestonesComplete=true,reserveComplete=true}={}){
+ const mk=(id,facts)=>[id,{verificationStatus:"verified",complete:true,verifiedAt:"2026-09-22",sources:["issuer"],facts:{...facts,bookingEarn:{},caps:{},capGroups:{},groupCaps:{},postCapEarn:{},multiYearCredits:{},annualBonusPoints:0,annualPointCertificates:[],annualCategoryCertificates:[],annualQualitativeCertificates:facts.annualQualitativeCertificates||[],hotelStatusByProgram:{},status:{},transferRules:{},spendRewards:[],statusMilestoneRewards:[],companionCertificate:{},transferAccess:{},rotatingBonus:{},verified:true}}];
+ const tierBenefits=[{tier:"Silver",earningBonusPct:20,fifthNightFree:true,coverageComplete:tierComplete,verified:true},{tier:"Gold",earningBonusPct:80,roomUpgrade:"space_available_up_to_executive_floor",foodBeverageOrBreakfast:true,coverageComplete:tierComplete,verified:true},{tier:"Diamond",earningBonusPct:100,loungeAccess:true,guaranteedAvailabilityHours:48,coverageComplete:tierComplete,verified:true},{tier:"Diamond Reserve",earningBonusPct:120,lateCheckoutHour:16,confirmableUpgrade:true,premiumClubAccess:true,coverageComplete:tierComplete&&reserveComplete,verified:true}];
+ const milestoneRewards=[];for(let nights=40;nights<=180;nights+=10){let row={nights,bonusPoints:10000};if(nights===60)row={...row,bonusPoints:40000,statusGift:"Gold"};if(nights===100)row={...row,statusGift:"Diamond"};if(nights===120)row={...row,choice:"confirmable_upgrade_or_30000_points",selectablePointFloor:30000};milestoneRewards.push({...row,coverageComplete:milestonesComplete,verified:true});}
+ return{snapshotId:"hilton-v30",verifiedAt:"2026-09-22",sources:["amex","hilton"],cards:Object.fromEntries([
+ mk("hilton_no_fee",{annualFee:0,earn:{dining:5,grocery:5,online_grocery:5,drugstore:3,gas_ev:5,transit:3,online_retail:3,vacation_home:3,airfare:3,hotel:7,general:3},benefitTags:["hotel_status"],recurringCredits:{},qualitativeSpendRewards:[],hotelStatus:{automaticTier:"Silver",spendTier:{amount:20000,tier:"Gold"}}}),
+ mk("hilton_surpass",{annualFee:150,earn:{dining:6,grocery:6,online_grocery:6,drugstore:3,gas_ev:6,transit:3,online_retail:4,vacation_home:3,airfare:3,hotel:12,general:3},benefitTags:["hotel_status","hilton_credit","free_night_reward_15k","national_executive_status"],recurringCredits:{hilton_credit:200},qualitativeSpendRewards:[{amount:15000,benefit:"free_night_reward_15k",quantified:false}],hotelStatus:{automaticTier:"Gold",spendTier:{amount:40000,tier:"Diamond"}}}),
+ mk("hilton_aspire",{annualFee:550,earn:{dining:7,grocery:3,online_grocery:3,drugstore:3,gas_ev:3,transit:3,online_retail:3,vacation_home:3,airfare:7,hotel:14,general:3},benefitTags:["hotel_status","hilton_resort_credit","flight_credit","clear","free_night_reward_annual","free_night_reward_30k","free_night_reward_60k","hilton_property_credit","national_executive_status"],recurringCredits:{hilton_resort_credit:400,flight_credit:200,clear:219},annualQualitativeCertificates:[{benefit:"free_night_reward_annual",renewalRequired:true,quantified:false}],qualitativeSpendRewards:[{amount:30000,benefit:"free_night_reward_30k",quantified:false},{amount:60000,benefit:"free_night_reward_60k",quantified:false}],hotelStatus:{automaticTier:"Diamond"}})
+ ]),airlines:{},hotels:{hilton:{verificationStatus:"verified",complete:true,verifiedAt:"2026-09-22",sources:["hilton"],facts:{thresholds:[{tier:"Silver",nights:10,stays:4,spend:2500},{tier:"Gold",nights:25,stays:15,spend:6000},{tier:"Diamond",nights:50,stays:25,spend:11500}],diamondReserve:{tier:"Diamond Reserve",nights:80,stays:40,spend:18000},tierBenefits,milestoneRewards}}}};
+}
+{
+ const p=E.normalizeProfile(base({verifiedFacts:hiltonFactsV30(),primaryAirline:"",primaryAirlineShare:0,primaryHotel:"hilton",primaryHotelShare:.9,currentHotelStatus:"",currentCards:[],currentRouting:emptyRouting(),statusProgress:{hotel:{qualifyingNights:0}},remainingYear:{cardSpend:{},hotel:{qualifyingNights:0}},constraints:{maxNewCards:0}})),c=E.RULES.cards;
+ assert("Hilton current card economics are modeled",c.hilton_no_fee.hotelStatus.spendTier.amount===20000&&c.hilton_surpass.recurringCredits.hilton_credit===200&&c.hilton_surpass.earn.online_retail===4&&c.hilton_aspire.recurringCredits.hilton_resort_credit===400&&c.hilton_aspire.recurringCredits.flight_credit===200&&c.hilton_aspire.recurringCredits.clear===219&&!c.hilton_aspire.benefitTags.includes("premium_hotel_benefits"));
+ assert("Hilton free-night rewards stay visible and unpriced",E.portfolioAnnualPointCertificateValue(p,["hilton_aspire"],"base").totalValue===0&&E.visibleBenefits(["hilton_aspire"]).some(x=>x.benefit==="free_night_reward_annual"&&x.detail?.quantified===false));
+ assert("Hilton tier and milestone inventories include Diamond Reserve",E.hotelTierBenefitsComplete(p,"hilton")&&E.hotelMilestoneRewardsComplete(p,"hilton")&&E.hotelProgramFactsComplete(p,"hilton"));
+}
+{
+ const common={verifiedFacts:hiltonFactsV30(),primaryAirline:"",primaryAirlineShare:0,primaryHotel:"hilton",primaryHotelShare:.9,currentHotelStatus:"",currentCards:[],currentRouting:emptyRouting(),remainingYear:{cardSpend:{},hotel:{qualifyingNights:0,qualifyingStays:0,qualifyingSpend:0}},constraints:{maxNewCards:0}};
+ const n=E.hotelProjection(E.normalizeProfile(base({...common,statusProgress:{hotel:{qualifyingNights:80,qualifyingStays:0,qualifyingSpend:17000}}})),[],emptyRouting()),s=E.hotelProjection(E.normalizeProfile(base({...common,statusProgress:{hotel:{qualifyingNights:79,qualifyingStays:39,qualifyingSpend:18000}}})),[],emptyRouting()),rn=E.hotelProjection(E.normalizeProfile(base({...common,statusProgress:{hotel:{qualifyingNights:80,qualifyingStays:0,qualifyingSpend:18000}}})),[],emptyRouting()),rs=E.hotelProjection(E.normalizeProfile(base({...common,statusProgress:{hotel:{qualifyingNights:0,qualifyingStays:40,qualifyingSpend:18000}}})),[],emptyRouting());
+ assert("Hilton Diamond Reserve requires (80 nights OR 40 stays) AND $18K spend",n.projectedTier==="Diamond"&&s.projectedTier==="Diamond"&&rn.projectedTier==="Diamond Reserve"&&rs.projectedTier==="Diamond Reserve");
+ const aspire=E.hotelProjection(E.normalizeProfile(base({...common,currentCards:["hilton_aspire"],statusProgress:{hotel:{qualifyingNights:80,qualifyingStays:0,qualifyingSpend:18000}}})),["hilton_aspire"],emptyRouting());
+ assert("organic Diamond Reserve outranks Aspire automatic Diamond",aspire.effectiveTier==="Diamond Reserve",JSON.stringify(aspire));
+}
+{
+ const p=E.normalizeProfile(base({verifiedFacts:hiltonFactsV30(),primaryAirline:"",primaryAirlineShare:0,primaryHotel:"hilton",primaryHotelShare:.9,currentHotelStatus:"Diamond",currentCards:[],currentRouting:emptyRouting(),statusProgress:{hotel:{qualifyingNights:70,qualifyingStays:35,qualifyingSpend:15000}},remainingYear:{cardSpend:{},hotel:{qualifyingNights:0,qualifyingStays:0,qualifyingSpend:0}},constraints:{maxNewCards:0}})),r=E.strategyRecord(p,[],"base"),gap=r.travelActions.hotel.remainingGap;
+ assert("Diamond natural gap exposes Diamond Reserve dual requirement",gap?.tier==="Diamond Reserve"&&gap.nights===10&&gap.stays===5&&gap.spend===3000&&gap.qualification==="(nights_or_stays)_and_spend",JSON.stringify(gap));
+}
+{
+ const p=E.normalizeProfile(base({verifiedFacts:hiltonFactsV30(),primaryAirline:"",primaryAirlineShare:0,primaryHotel:"hilton",primaryHotelShare:.9,currentHotelStatus:"",currentCards:[],currentRouting:emptyRouting(),statusProgress:{hotel:{qualifyingNights:60}},remainingYear:{cardSpend:{},hotel:{qualifyingNights:0}},constraints:{maxNewCards:0}})),x=E.hotelProjection(p,[],emptyRouting()),benefits=E.portfolioRecurringBenefitValue(p,["amex_platinum","hilton_aspire"]);
+ assert("Hilton 60-night milestones total 60K points and $240",x.milestoneBonusPoints===60000&&x.milestoneBonusValue===240);
+ assert("Duplicate CLEAR credits use the higher verified credit",benefits.byType.clear===219);
+}
+{
+ const p=E.normalizeProfile(base({verifiedFacts:hiltonFactsV30({reserveComplete:false}),primaryAirline:"",primaryAirlineShare:0,primaryHotel:"hilton",primaryHotelShare:.9,currentHotelStatus:"Diamond",currentCards:[],currentRouting:emptyRouting(),statusProgress:{hotel:{qualifyingNights:70}},remainingYear:{cardSpend:{},hotel:{qualifyingNights:10}},constraints:{maxNewCards:0}})),r=E.strategyRecord(p,[],"base");
+ assert("Missing Diamond Reserve benefit coverage fails Hilton facts closed",!E.hotelTierBenefitsComplete(p,"hilton")&&r.quality.issues.some(x=>x.code==="hotel_tier_benefits_unresolved"));
+}
+{
+ const p=E.normalizeProfile(base({verifiedFacts:hiltonFactsV30({milestonesComplete:false}),primaryAirline:"",primaryAirlineShare:0,primaryHotel:"hilton",primaryHotelShare:.9,currentHotelStatus:"Silver",currentCards:["hilton_surpass"],currentRouting:emptyRouting(),cardSpendYTD:{hilton_surpass:0},statusProgress:{hotel:{qualifyingNights:0}},remainingYear:{cardSpend:{general:40000},hotel:{qualifyingNights:0}},constraints:{maxNewCards:0}})),r=E.strategyRecord(p,["hilton_surpass"],"base");
+ assert("Incomplete Hilton milestone inventory fails status intervention closed",!E.hotelMilestoneRewardsComplete(p,"hilton")&&r.strategy.hotelStatusTarget===null&&r.quality.issues.some(x=>x.code==="hotel_milestone_rewards_unresolved"));
+}
+{const r=E.analyze(base({verifiedFacts:hiltonFactsV30(),constraints:{maxNewCards:0}}));assert("alpha.30 Hilton integrity flags are present",r.integrity.hiltonTierBenefitCoverageRequired&&r.integrity.hiltonDualAndQualificationModeled&&r.integrity.hiltonReserveTierOrderingModeled&&r.integrity.hiltonMilestoneBonusesModeled&&r.integrity.hiltonFreeNightRewardsQualitative&&r.integrity.clearCreditOverlapDeduped&&r.integrity.hiltonFamilyEconomicsClosed);}
+
 console.log("\n------------------------------");
 console.log(`V5 alpha.27 harness: ${pass} passed, ${fail} failed`);
 if(failures.length)console.log(JSON.stringify(failures,null,2));
