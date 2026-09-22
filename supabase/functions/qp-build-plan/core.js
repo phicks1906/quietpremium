@@ -1,20 +1,21 @@
 export const FLEX_CARDS=Object.freeze({
-  amex_mr:["amex_gold","amex_platinum"],
-  chase_ur:["chase_preferred","chase_freedom_unlimited","chase_reserve"],
-  capital_one_miles:["venture","venture_x"]
+  amex_mr:["amex_green","amex_gold","amex_platinum"],
+  chase_ur:["chase_preferred","chase_freedom_unlimited","chase_freedom_flex","chase_reserve"],
+  capital_one_miles:["venture_one","venture","venture_x"]
 });
 export const AIRLINE_CARDS=Object.freeze({
-  delta:["delta_platinum","delta_reserve"],
-  united:["united_explorer","united_quest","united_club"],
-  american:["aa_executive","aa_globe"],
-  southwest:["southwest_priority"]
+  delta:["delta_blue","delta_gold","delta_platinum","delta_reserve"],
+  united:["united_gateway","united_explorer","united_quest","united_club"],
+  american:["aa_mileup","aa_platinum_select","aa_globe","aa_executive"],
+  southwest:["southwest_plus","southwest_premier","southwest_priority"]
 });
 export const HOTEL_CARDS=Object.freeze({
   hyatt:["hyatt_consumer"],
-  marriott:["marriott_boundless","marriott_brilliant"],
+  marriott:["marriott_bold","marriott_boundless","marriott_bountiful","marriott_bevy","marriott_brilliant"],
   hilton:["hilton_no_fee","hilton_surpass","hilton_aspire"]
 });
 export const STRATEGY_REPRESENTATIVES=Object.freeze(["amex_gold","chase_preferred","venture"]);
+export const EXISTING_ONLY_CARDS=Object.freeze(["chase_freedom_rise"]);
 
 const uniq=a=>[...new Set((a||[]).filter(Boolean))].sort();
 

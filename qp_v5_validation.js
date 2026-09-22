@@ -1,10 +1,10 @@
-/** Quiet Premium V5 validation harness — 5.0-alpha.16 */
+/** Quiet Premium V5 validation harness — 5.0-alpha.17 */
 "use strict";
 const E=require("./qp_sim_v5.js");
 let pass=0,fail=0;const failures=[];
 function assert(name,cond,detail=""){if(cond){pass++;console.log("PASS "+name);}else{fail++;failures.push({name,detail});console.error("FAIL "+name+(detail?" — "+detail:""));}}
 function same(a,b){return JSON.stringify(a)===JSON.stringify(b);}
-function emptyRouting(){return Object.fromEntries(["dining","grocery","online_grocery","gas_ev","online_retail","vacation_home","airfare","hotel","general"].map(x=>[x,[]]));}
+function emptyRouting(){return Object.fromEntries(["dining","grocery","online_grocery","drugstore","gas_ev","transit","online_retail","vacation_home","airfare","hotel","general"].map(x=>[x,[]]));}
 function base(overrides={}){return{
  asOfDate:"2026-09-17",
  spend:{dining:20000,grocery:15000,online_grocery:0,gas_ev:5000,online_retail:5000,vacation_home:0,airfare:12000,hotel:10000,general:83000},
@@ -16,7 +16,7 @@ function base(overrides={}){return{
  currencyUtility:{amex_mr:1,chase_ur:.75,capital_one_miles:.95,hyatt_points:1},legacyNaturalBenefitValue:{amex_platinum:700},
  bookingMethod:{airfare:"direct_airline",hotel:"direct_hotel"},constraints:{maxNewCards:2},aspirations:["travel more"],...overrides};}
 
-assert("engine is alpha.16",E.ENGINE_VERSION==="5.0-alpha.16");
+assert("engine is alpha.17",E.ENGINE_VERSION==="5.0-alpha.17");
 
 {
  const a=E.analyze(base({aspirations:["travel more"]}));
@@ -627,7 +627,35 @@ assert("Southwest Priority remains 2500 TQP per $5000",E.RULES.cards.southwest_p
  assert("Freedom Unlimited points can use Sapphire transfer capability when pooled",Math.abs(pooledValue-E.VALUATIONS.base.hyatt_points)<1e-12,JSON.stringify({pooledValue}));
 }
 
+{
+ const expected=["amex_green","chase_freedom_flex","venture_one","delta_blue","delta_gold","united_gateway","aa_mileup","aa_platinum_select","southwest_plus","southwest_premier","marriott_bold","marriott_bountiful","marriott_bevy"];
+ assert("alpha.17 catalog includes all 13 newly audited acquisition candidates",expected.every(id=>!!E.RULES.cards[id]&&E.CARD_COVERAGE_V17.candidate.includes(id)));
+ assert("Freedom Rise is existing-only",E.matchCard("Freedom Rise")==="chase_freedom_rise"&&E.EXISTING_ONLY_CARDS_V17.includes("chase_freedom_rise")&&!E.CARD_COVERAGE_V17.candidate.includes("chase_freedom_rise"));
+ assert("new card aliases resolve",E.matchCard("Amex Green")==="amex_green"&&E.matchCard("Freedom Flex")==="chase_freedom_flex"&&E.matchCard("VentureOne")==="venture_one"&&E.matchCard("Delta Gold")==="delta_gold"&&E.matchCard("United Gateway")==="united_gateway"&&E.matchCard("AAdvantage MileUp")==="aa_mileup"&&E.matchCard("Southwest Premier")==="southwest_premier"&&E.matchCard("Marriott Bonvoy Bevy")==="marriott_bevy");
+}
+{
+ const p=E.normalizeProfile(base({spend:{drugstore:4321,transit:8765,general:1000}})),q=E.normalizeProfile(base({spend:{general:1000}}));
+ assert("optional transit and drugstore spend normalize without breaking old profiles",p.spend.transit===8765&&p.spend.drugstore===4321&&q.spend.transit===0&&q.spend.drugstore===0);
+}
+{
+ const p=E.normalizeProfile(base({spend:{dining:30000,grocery:20000,transit:12000,vacation_home:10000,airfare:15000,hotel:25000,general:38000},currentCards:["amex_gold","amex_platinum"],currentRouting:emptyRouting(),primaryAirline:"",primaryAirlineShare:0,primaryHotel:"",primaryHotelShare:0,annualOneWayFlights:2,statusProgress:{hotel:{qualifyingNights:0}},remainingYear:{cardSpend:{}},currencyUtility:{amex_mr:1,chase_ur:.1,capital_one_miles:.1},constraints:{maxNewCards:1}}));
+ const rewards={primaryCurrency:"amex_mr",reason:"test",primaryCards:E.CANDIDATE_FAMILIES_V17.flex.amex_mr},r=E.routeAnnual(p,["amex_gold","amex_platinum","amex_green"],"base",rewards);
+ assert("Green captures supported broad travel and transit spend",(r.transit||[])[0]?.card==="amex_green"&&(r.hotel||[])[0]?.card==="amex_green"&&(r.vacation_home||[])[0]?.card==="amex_green");
+}
+{
+ const p=E.normalizeProfile(base({primaryAirline:"southwest",primaryAirlineShare:.9,annualOneWayFlights:24,statusProgress:{southwest:{tqp:50000,qualifyingFlights:0},hotel:{qualifyingNights:0}},remainingYear:{cardSpend:{general:10000},southwest:{tqp:0,qualifyingFlights:0},hotel:{qualifyingNights:0}},primaryHotel:"",primaryHotelShare:0}));
+ const a=E.airlineProjection(p,"southwest",{...emptyRouting(),general:[{card:"southwest_premier",amount:10000}]},["southwest_premier"]);
+ assert("Southwest Premier TQP spend mechanic works",a.metric===53000,JSON.stringify(a));
+}
+{
+ for(const id of ["aa_mileup","aa_platinum_select"]){
+  const p=E.normalizeProfile(base({primaryAirline:"american",primaryAirlineShare:.9,annualOneWayFlights:12,statusProgress:{american:{loyaltyPoints:50000},hotel:{qualifyingNights:0}},americanQualification:{cardSpend:{general:10000},loyaltyPoints:0,qualifyingSegments:0},primaryHotel:"",primaryHotelShare:0}));
+  const a=E.airlineProjection(p,"american",{...emptyRouting(),general:[{card:id,amount:10000}]},[id]);
+  assert(id+" Loyalty Point earning works",a.metric===60000,JSON.stringify(a));
+ }
+}
+
 console.log("\n------------------------------");
-console.log(`V5 alpha.16 harness: ${pass} passed, ${fail} failed`);
+console.log(`V5 alpha.17 harness: ${pass} passed, ${fail} failed`);
 if(failures.length)console.log(JSON.stringify(failures,null,2));
 process.exitCode=fail?1:0;
