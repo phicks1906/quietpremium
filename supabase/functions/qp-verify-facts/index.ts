@@ -194,8 +194,10 @@ function airlineTierBenefits(id:string,t:string){
     ];
     for(const[tier,facts]of defs)put(tier,facts);
   }else if(id==="southwest"){
-    if(/A-List status benefits/i.test(t)&&/25% earning bonus/i.test(t))put("A-List",{earningBonusPct:25,checkedBags:/1 checked bag free/i.test(t)?1:null,boardingGroup:/boarding in Group 1/i.test(t)?"Group 1":null,seating:/Preferred or Standard seat at the time of booking/i.test(t)?"preferred_at_booking_extra_legroom_48h":null});
-    if(/A-List Preferred status benefits/i.test(t)&&/100% earning bonus/i.test(t))put("A-List Preferred",{earningBonusPct:100,checkedBags:/Two free checked bags/i.test(t)?2:null,boardingGroup:/before Group 1|boarding Group 1/i.test(t)?"before_group_1":null,seating:/Extra Legroom[^.]{0,180}time of booking/i.test(t)?"extra_legroom_at_booking":null});
+    const aEarn=/A-List status benefits[\s\S]{0,700}?25% earning bonus/i.test(t),aBag=/1 checked bag free/i.test(t),aBoard=/boarding in Group 1/i.test(t),aSeat=/Preferred or Standard seat at the time of booking[\s\S]{0,260}?Extra Legroom seat within 48 hours/i.test(t),aStandby=/A-List status benefits[\s\S]{0,1200}?Same-day Standby/i.test(t),aPriority=/A-List status benefits[\s\S]{0,1500}?Priority Lane and Express Lane[\s\S]{0,500}?Priority phone support/i.test(t);
+    put("A-List",{earningBonusPct:25,checkedBags:1,boardingGroup:"Group 1",seating:"preferred_at_booking_extra_legroom_48h",sameDayStandby:true,priorityLanes:true,priorityPhone:true,coverageComplete:aEarn&&aBag&&aBoard&&aSeat&&aStandby&&aPriority});
+    const pEarn=/A-List Preferred status benefits[\s\S]{0,700}?100% earning bonus/i.test(t),pBag=/Two free checked bags/i.test(t),pBoard=/dedicated boarding before Group 1/i.test(t),pSeat=/Extra Legroom[^.]{0,180}time of booking/i.test(t),pDrinks=/Up to two premium drinks/i.test(t),pStandby=/A-List Preferred status benefits[\s\S]{0,1400}?Same-day standby/i.test(t),pPriority=/A-List Preferred status benefits[\s\S]{0,1800}?Priority Lane and Express Lane[\s\S]{0,500}?Priority phone support/i.test(t);
+    put("A-List Preferred",{earningBonusPct:100,checkedBags:2,boardingGroup:"before_group_1",seating:"extra_legroom_at_booking",premiumDrinks:2,sameDayStandby:true,priorityLanes:true,priorityPhone:true,coverageComplete:pEarn&&pBag&&pBoard&&pSeat&&pDrinks&&pStandby&&pPriority});
   }else if(id==="united"){
     // April 2026 changed Premier flight-mile earning. Do not use the retired
     // 7x/8x/9x/11x table as a status-value input.
@@ -244,7 +246,14 @@ if(kind==="airlines"&&id==="delta"){
   if(/200,000\s+Loyalty Points/i.test(t))f.thresholds.push({tier:"AAdvantage Executive Platinum",amount:200000});
 }else if(kind==="airlines"&&id==="southwest"){
   f.thresholds=[];f.flightThresholds=[];
-  for(const[tier,re]of [["A-List",/A-List[^.]{0,180}(\d+)\s+qualifying one-way flights?[^.]{0,120}([\d,]+)\s+tier qualifying points/i],["A-List Preferred",/A-List Preferred[^.]{0,180}(\d+)\s+qualifying one-way flights?[^.]{0,120}([\d,]+)\s+tier qualifying points/i]] as [string,RegExp][]) {const m=t.match(re);if(m){f.thresholds.push({tier,amount:amount(m[2])});f.flightThresholds.push({tier,flights:amount(m[1])})}}
+  const a=first(t,[/A-List status[^\n]{0,500}?fly\s+(\d+)\s+qualifying one-way flights?[^\n]{0,180}?earn\s+([\d,]+)\s+tier qualifying points/i,/A Member who flies\s+(\d+)\s+qualifying one-way flights?[^.]{0,180}?([\d,]+)\s+tier qualifying points[^.]{0,80}?A-List status/i]);
+  const ap=first(t,[/A-List Preferred status[^\n]{0,500}?fly\s+(\d+)\s+qualifying one-way flights?[^\n]{0,180}?earn\s+([\d,]+)\s+tier qualifying points/i,/A Member who flies\s+(\d+)\s+qualifying one-way flights?[^.]{0,180}?([\d,]+)\s+tier qualifying points[^.]{0,80}?A-List Preferred status/i]);
+  if(a){f.thresholds.push({tier:"A-List",amount:amount(a[2])});f.flightThresholds.push({tier:"A-List",flights:amount(a[1])})}
+  if(ap){f.thresholds.push({tier:"A-List Preferred",amount:amount(ap[2])});f.flightThresholds.push({tier:"A-List Preferred",flights:amount(ap[1])})}
+  const cp=first(t,[/fly\s+(\d+)\s+qualifying one-way flights?[^.]{0,180}?earn\s+([\d,]+)\s+(?:Companion Pass )?qualifying points/i,/Companion Pass[^\n]{0,600}?(\d+)\s+flights[^\n]{0,180}?([\d,]+)\s+points/i]);
+  const boost=first(t,[/one boost of\s+([\d,]+)\s+Companion Pass qualifying points each calendar year/i,/([\d,]+)\s+Companion Pass[^.]{0,100}qualifying points boost each year/i]);
+  const minFee=first(t,[/taxes and fees from\s+\$\s*([\d.]+)\s+one-way/i]);
+  if(cp)f.companionPass={qualifyingFlights:amount(cp[1]),qualifyingPoints:amount(cp[2]),cardBoost:boost?amount(boost[1]):null,unlimited:/unlimited times/i.test(t),taxesFeesMinOneWay:minFee?Number(minFee[1]):null};
 }else if(kind==="airlines"&&id==="united"){
   f.thresholds=[];
   const defs:[string,RegExp[]][]=[
@@ -266,7 +275,7 @@ function complete(spec:any,f:any,t:string,kind:string,id:string){
   const missing=(spec.required||[]).filter((p:string)=>!has(f,p)),unmapped=kind==="cards"?materialUnmapped(t,f):[];
   if(kind==="airlines"&&(spec.required||[]).includes("tierBenefits")&&Array.isArray(f.thresholds)){
     const benefits=Array.isArray(f.tierBenefits)?f.tierBenefits:[];
-    const covered=new Set(benefits.filter((x:any)=>x&&(["delta","united","american"].includes(id)?x.coverageComplete===true:Object.keys(x).some(k=>k!=="tier"&&k!=="verified"))).map((x:any)=>String(x.tier||"").toLowerCase()));
+    const covered=new Set(benefits.filter((x:any)=>x&&(["delta","united","american","southwest"].includes(id)?x.coverageComplete===true:Object.keys(x).some(k=>k!=="tier"&&k!=="verified"))).map((x:any)=>String(x.tier||"").toLowerCase()));
     const uncovered=f.thresholds.map((x:any)=>String(x.tier||"")).filter((tier:string)=>tier&&!covered.has(tier.toLowerCase()));
     for(const tier of uncovered)missing.push("tierBenefits."+tier);
   }

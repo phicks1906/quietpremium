@@ -1,4 +1,4 @@
-/** Quiet Premium V5 validation harness — 5.0-alpha.26 */
+/** Quiet Premium V5 validation harness — 5.0-alpha.27 */
 "use strict";
 const E=require("./qp_sim_v5.js");
 let pass=0,fail=0;const failures=[];
@@ -19,7 +19,7 @@ function base(overrides={}){return{
  currencyUtility:{amex_mr:1,chase_ur:.75,capital_one_miles:.95,hyatt_points:1},legacyNaturalBenefitValue:{amex_platinum:700},
  bookingMethod:{airfare:"direct_airline",hotel:"direct_hotel"},constraints:{maxNewCards:2},aspirations:["travel more"],...overrides};}
 
-assert("engine is alpha.26",E.ENGINE_VERSION==="5.0-alpha.26");
+assert("engine is alpha.27",E.ENGINE_VERSION==="5.0-alpha.27");
 
 {
  const a=E.analyze(base({aspirations:["travel more"]}));
@@ -278,7 +278,7 @@ assert("Southwest Priority remains 2500 TQP per $5000",E.RULES.cards.southwest_p
 {
  const r=E.analyze(base({routeFit:{}}));
  assert("missing route fit remains visible",r.current.quality.issues.some(x=>x.code==="route_fit_not_independently_verified"));
- assert("alpha.26 integrity flags are present",r.integrity.travelStrategyPrecedesCards===true&&r.integrity.primaryFlexibleEcosystem===true&&r.integrity.ongoingAndTemporaryRoutingSeparated===true&&r.integrity.temporaryJobsHaveExplicitHandoffs===true&&r.integrity.statusOpportunityRemainsDiscoverable===true&&r.integrity.existingCardRemovalEvaluated===true&&r.integrity.feeSavingsExposed===true&&r.integrity.aggregateBenefitValuesDoNotDoubleCountTypedBreakdowns===true&&r.integrity.unresolvedCrossCardBenefitOverlapIsConservative===true&&r.integrity.benefitProtectionIsCardSpecific===true&&r.integrity.fullAirlineStatusLadder===true&&r.integrity.projectedStatusCanBePreservedEfficiently===true&&r.integrity.protectedMultiplierSpend===true&&r.integrity.universalNewCardBands===true&&r.integrity.noSystemPortfolioCardCap===true&&r.integrity.singleApprovedValuationSnapshot===true);
+ assert("alpha.27 integrity flags are present",r.integrity.travelStrategyPrecedesCards===true&&r.integrity.primaryFlexibleEcosystem===true&&r.integrity.ongoingAndTemporaryRoutingSeparated===true&&r.integrity.temporaryJobsHaveExplicitHandoffs===true&&r.integrity.statusOpportunityRemainsDiscoverable===true&&r.integrity.existingCardRemovalEvaluated===true&&r.integrity.feeSavingsExposed===true&&r.integrity.aggregateBenefitValuesDoNotDoubleCountTypedBreakdowns===true&&r.integrity.unresolvedCrossCardBenefitOverlapIsConservative===true&&r.integrity.benefitProtectionIsCardSpecific===true&&r.integrity.fullAirlineStatusLadder===true&&r.integrity.projectedStatusCanBePreservedEfficiently===true&&r.integrity.protectedMultiplierSpend===true&&r.integrity.universalNewCardBands===true&&r.integrity.noSystemPortfolioCardCap===true&&r.integrity.singleApprovedValuationSnapshot===true);
 }
 
 
@@ -786,7 +786,7 @@ function deltaTierFactsV20({complete=true,verifiedFixed=true}={}){
 }
 {
  const r=E.analyze(base({constraints:{maxNewCards:0}}));
- assert("alpha.26 fixed-status integrity flags are present",r.integrity.verifiedFixedStatusComponentsOnly===true&&r.integrity.statusFixedBenefitIncludedInRecurringEconomics===true&&r.integrity.deltaTierBenefitCoverageRequired===true,JSON.stringify(r.integrity));
+ assert("alpha.27 fixed-status integrity flags are present",r.integrity.verifiedFixedStatusComponentsOnly===true&&r.integrity.statusFixedBenefitIncludedInRecurringEconomics===true&&r.integrity.deltaTierBenefitCoverageRequired===true,JSON.stringify(r.integrity));
 }
 
 
@@ -851,7 +851,7 @@ function deltaAcquisitionV21(freq){
 }
 {
  const r=E.analyze(base({constraints:{maxNewCards:0}}));
- assert("alpha.26 scope and companion integrity flags are present",r.integrity.travelFirstBenefitScopeEnforced===true&&r.integrity.unscopedLegacyBenefitTotalsExcludedFromEconomics===true&&r.integrity.unansweredCompanionCannotUseLegacyValue===true,JSON.stringify(r.integrity));
+ assert("alpha.27 scope and companion integrity flags are present",r.integrity.travelFirstBenefitScopeEnforced===true&&r.integrity.unscopedLegacyBenefitTotalsExcludedFromEconomics===true&&r.integrity.unansweredCompanionCannotUseLegacyValue===true,JSON.stringify(r.integrity));
 }
 
 
@@ -868,7 +868,7 @@ function deltaAcquisitionV21(freq){
 }
 {
  const r=E.analyze(base({constraints:{maxNewCards:0}}));
- assert("alpha.26 repeatable Delta Choice Benefit integrity flag is present",r.integrity.deltaRepeatableChoiceBenefitFloor===true,JSON.stringify(r.integrity));
+ assert("alpha.27 repeatable Delta Choice Benefit integrity flag is present",r.integrity.deltaRepeatableChoiceBenefitFloor===true,JSON.stringify(r.integrity));
 }
 
 
@@ -928,7 +928,7 @@ function unitedTierFactsV23({complete=true}={}){
 }
 {
  const r=E.analyze(base({constraints:{maxNewCards:0}}));
- assert("alpha.26 United validation integrity flags are present",r.integrity.unitedDecisionSensitiveTierInventory===true&&r.integrity.unitedVerifiedThresholdSchema===true&&r.integrity.unitedStalePremierEarnRatesExcluded===true,JSON.stringify(r.integrity));
+ assert("alpha.27 United validation integrity flags are present",r.integrity.unitedDecisionSensitiveTierInventory===true&&r.integrity.unitedVerifiedThresholdSchema===true&&r.integrity.unitedStalePremierEarnRatesExcluded===true,JSON.stringify(r.integrity));
 }
 
 
@@ -976,7 +976,7 @@ function unitedCardFactsV25(){
 }
 {
  const r=E.analyze(base({constraints:{maxNewCards:0}}));
- assert("alpha.26 annual-threshold and certificate integrity flags are present",r.integrity.annualThresholdsAreRecurringEconomics===true&&r.integrity.annualThresholdRoutingOptimizedByNetValue===true&&r.integrity.automaticPointCertificatesSeparatedFromPointsEarned===true&&r.integrity.instacartExcludedFromTravelEconomics===true,JSON.stringify(r.integrity));
+ assert("alpha.27 annual-threshold and certificate integrity flags are present",r.integrity.annualThresholdsAreRecurringEconomics===true&&r.integrity.annualThresholdRoutingOptimizedByNetValue===true&&r.integrity.automaticPointCertificatesSeparatedFromPointsEarned===true&&r.integrity.instacartExcludedFromTravelEconomics===true,JSON.stringify(r.integrity));
 }
 
 
@@ -1005,7 +1005,7 @@ function unitedCardFactsV25(){
 }
 {
  const r=E.analyze(base({constraints:{maxNewCards:0}}));
- assert("alpha.26 United method-aware closeout integrity flags are present",r.integrity.unitedRenownedHotelMethodAware===true&&r.integrity.unitedFamilyEconomicsClosed===true,JSON.stringify(r.integrity));
+ assert("alpha.27 United method-aware closeout integrity flags are present",r.integrity.unitedRenownedHotelMethodAware===true&&r.integrity.unitedFamilyEconomicsClosed===true,JSON.stringify(r.integrity));
 }
 
 function americanFactsV26(){
@@ -1073,10 +1073,75 @@ function americanFactsV26(){
 }
 {
  const r=E.analyze(base({verifiedFacts:americanFactsV26(),constraints:{maxNewCards:0}}));
- assert("alpha.26 American closeout integrity flags are present",r.integrity.americanDecisionSensitiveTierInventory===true&&r.integrity.americanBookingChannelsVerified===true&&r.integrity.americanFamilyEconomicsClosed===true,JSON.stringify(r.integrity));
+ assert("alpha.27 American closeout integrity flags are present",r.integrity.americanDecisionSensitiveTierInventory===true&&r.integrity.americanBookingChannelsVerified===true&&r.integrity.americanFamilyEconomicsClosed===true,JSON.stringify(r.integrity));
+}
+
+
+function southwestFactsV27(){
+ const mk=(id,facts)=>[id,{verificationStatus:"verified",complete:true,verifiedAt:"2026-09-22",sources:["chase"],facts:{...facts,bookingEarn:{},caps:facts.caps||{},capGroups:facts.capGroups||{},groupCaps:facts.groupCaps||{},postCapEarn:facts.postCapEarn||{},recurringCredits:{},multiYearCredits:{},hotelStatus:{},hotelStatusByProgram:{},transferRules:{},transferAccess:{},rotatingBonus:{},annualPointCertificates:[],statusMilestoneRewards:[],spendRewards:[],companionCertificate:{},verified:true}}];
+ const tierBenefits=[
+  {tier:"A-List",earningBonusPct:25,checkedBags:1,boardingGroup:"Group 1",seating:"preferred_at_booking_extra_legroom_48h",sameDayStandby:true,priorityLanes:true,priorityPhone:true,coverageComplete:true,verified:true},
+  {tier:"A-List Preferred",earningBonusPct:100,checkedBags:2,boardingGroup:"before_group_1",seating:"extra_legroom_at_booking",premiumDrinks:2,sameDayStandby:true,priorityLanes:true,priorityPhone:true,coverageComplete:true,verified:true}
+ ];
+ return{snapshotId:"sw-v27",verifiedAt:"2026-09-22",sources:["chase","southwest"],cards:Object.fromEntries([
+  mk("southwest_plus",{annualFee:99,earn:{dining:1,grocery:2,online_grocery:2,drugstore:1,gas_ev:2,transit:1,online_retail:1,vacation_home:1,airfare:2,hotel:1,general:1},capGroups:{grocery:"southwest_plus_gas_grocery",online_grocery:"southwest_plus_gas_grocery",gas_ev:"southwest_plus_gas_grocery"},groupCaps:{southwest_plus_gas_grocery:5000},postCapEarn:{grocery:1,online_grocery:1,gas_ev:1},benefitTags:["checked_bag","boarding_benefits","seat_benefits","companion_pass_boost","flight_discount_annual"],annualBonusPoints:3000,status:{companionPassBoost:10000}}),
+  mk("southwest_premier",{annualFee:149,earn:{dining:2,grocery:2,online_grocery:2,drugstore:1,gas_ev:1,transit:1,online_retail:1,vacation_home:1,airfare:3,hotel:1,general:1},capGroups:{dining:"southwest_premier_dining_grocery",grocery:"southwest_premier_dining_grocery",online_grocery:"southwest_premier_dining_grocery"},groupCaps:{southwest_premier_dining_grocery:8000},postCapEarn:{dining:1,grocery:1,online_grocery:1},benefitTags:["checked_bag","boarding_benefits","seat_benefits","companion_pass_boost","flight_discount_annual"],annualBonusPoints:6000,status:{spendBlock:5000,tqpPerBlock:1500,companionPassBoost:10000}}),
+  mk("southwest_priority",{annualFee:229,earn:{dining:2,grocery:1,online_grocery:1,drugstore:1,gas_ev:2,transit:1,online_retail:1,vacation_home:1,airfare:4,hotel:1,general:1},benefitTags:["checked_bag","boarding_benefits","seat_benefits","companion_pass_boost"],annualBonusPoints:7500,status:{spendBlock:5000,tqpPerBlock:2500,companionPassBoost:10000}})
+ ]),airlines:{southwest:{verificationStatus:"verified",complete:true,verifiedAt:"2026-09-22",sources:["southwest"],facts:{thresholds:[{tier:"A-List",amount:35000},{tier:"A-List Preferred",amount:70000}],flightThresholds:[{tier:"A-List",flights:20},{tier:"A-List Preferred",flights:40}],companionPass:{qualifyingPoints:135000,qualifyingFlights:100,cardBoost:10000,unlimited:true,taxesFeesMinOneWay:5.6},tierBenefits}}},hotels:{}};
+}
+{
+ const p=E.normalizeProfile(base({verifiedFacts:southwestFactsV27(),primaryAirline:"southwest",primaryAirlineShare:.9,routeFit:{southwest:.95}}));
+ assert("Southwest current status thresholds are 35K/70K TQP and 20/40 flights",same(E.RULES.airlines.southwest.thresholds.map(x=>x.amount),[35000,70000])&&same(E.RULES.airlines.southwest.flightThresholds.map(x=>x.flights),[20,40]));
+ assert("Southwest Companion Pass thresholds are 135K points or 100 flights",E.RULES.airlines.southwest.companionPass.qualifyingPoints===135000&&E.RULES.airlines.southwest.companionPass.qualifyingFlights===100&&E.RULES.airlines.southwest.companionPass.cardBoost===10000);
+ const plus=E.strategyRecord(p,["southwest_plus"],"base"),premier=E.strategyRecord(p,["southwest_premier"],"base"),priority=E.strategyRecord(p,["southwest_priority"],"base");
+ assert("Southwest anniversary points use approved valuation with normal whole-dollar economics rounding",plus.economics.annualBonusTravelValue===38&&premier.economics.annualBonusTravelValue===75&&priority.economics.annualBonusTravelValue===94,JSON.stringify({plus:plus.economics.annualBonusTravelValue,premier:premier.economics.annualBonusTravelValue,priority:priority.economics.annualBonusTravelValue}));
+}
+{
+ const p=E.normalizeProfile(base({verifiedFacts:southwestFactsV27(),primaryAirline:"southwest",primaryAirlineShare:.9,routeFit:{southwest:.95},statusProgress:{southwest:{tqp:0,qualifyingFlights:0}},remainingYear:{cardSpend:{general:10000},southwest:{tqp:0,qualifyingFlights:0},hotel:{qualifyingNights:0}}}));
+ assert("Southwest Premier remains 1500 TQP per $5000",E.airlineProjection(p,"southwest",{...emptyRouting(),general:[{card:"southwest_premier",amount:10000}]},["southwest_premier"]).metric===3000);
+ assert("Southwest Priority earns 2500 TQP per $5000",E.airlineProjection(p,"southwest",{...emptyRouting(),general:[{card:"southwest_priority",amount:10000}]},["southwest_priority"]).metric===5000);
+ assert("Southwest Plus does not invent card-spend TQP",E.airlineProjection(p,"southwest",{...emptyRouting(),general:[{card:"southwest_plus",amount:10000}]},["southwest_plus"]).metric===0);
+}
+{
+ const p=E.normalizeProfile(base({verifiedFacts:southwestFactsV27(),spend:{dining:0,grocery:0,online_grocery:0,drugstore:0,gas_ev:0,transit:0,online_retail:0,vacation_home:0,airfare:0,hotel:0,general:5000},primaryAirline:"southwest",primaryAirlineShare:.9,routeFit:{southwest:.95},companionTravel:{intent:"yes",frequency:"2-3"},southwestCompanionQualification:{currentQualifyingPoints:120000,currentQualifyingFlights:10,remainingNonCardQualifyingPoints:0,remainingQualifyingFlights:0,cardSpend:{general:5000},cardBoostIncluded:true},currentCards:[],currentRouting:emptyRouting()}));
+ const plus=E.southwestCompanionPassProjection(p,["southwest_plus"],{...emptyRouting(),general:[{card:"southwest_plus",amount:5000}]},"base");
+ assert("Southwest one-per-member card boost is added once and card purchase points qualify",plus.cardBoost===10000&&plus.cardQualifyingPoints===5000&&plus.qualifyingPoints===135000&&plus.reached===true,JSON.stringify(plus));
+ const stacked=E.southwestCompanionPassProjection(p,["southwest_plus","southwest_priority"],{...emptyRouting(),general:[{card:"southwest_plus",amount:2500},{card:"southwest_priority",amount:2500}]},"base");
+ assert("Multiple Southwest cards never stack the annual 10K Companion Pass boost",stacked.cardBoost===10000,JSON.stringify(stacked));
+ assert("Repeatable Companion Pass follows future-trip frequency but stays unpriced with unbounded taxes and fees",plus.benefit.demand===2&&plus.benefit.quantified===false&&plus.benefit.totalValue===0&&plus.benefit.reason==="mandatory_companion_charges_unbounded",JSON.stringify(plus.benefit));
+}
+{
+ const p=E.normalizeProfile(base({verifiedFacts:southwestFactsV27(),primaryAirline:"southwest",primaryAirlineShare:.9,routeFit:{southwest:.95},companionTravel:{intent:"yes",frequency:"1"},southwestCompanionQualification:{currentQualifyingPoints:125000,currentQualifyingFlights:0,remainingNonCardQualifyingPoints:0,remainingQualifyingFlights:0,cardSpend:{},cardBoostIncluded:true},currentCards:["southwest_premier"],currentRouting:emptyRouting()}));
+ const cp=E.southwestCompanionPassProjection(p,["southwest_premier"],emptyRouting(),"base");
+ assert("Existing Southwest card does not double count a Companion Pass boost already in current progress",cp.cardBoost===0&&cp.qualifyingPoints===125000&&!cp.reached,JSON.stringify(cp));
+}
+{
+ const vf=southwestFactsV27();vf.airlines.southwest.facts.tierBenefits[0].coverageComplete=false;
+ const p=E.normalizeProfile(base({verifiedFacts:vf,primaryAirline:"southwest",primaryAirlineShare:.9,routeFit:{southwest:.95},statusProgress:{southwest:{tqp:0,qualifyingFlights:0}},remainingYear:{cardSpend:{general:40000},southwest:{tqp:0,qualifyingFlights:0},hotel:{qualifyingNights:0}},currentCards:["southwest_priority"],currentRouting:{...emptyRouting(),general:[{card:"southwest_priority",amount:40000}]}}));
+ const ladder=E.airlineStatusLadder(p,["southwest_priority"],{...emptyRouting(),general:[{card:"southwest_priority",amount:40000}]},"base");
+ assert("Incomplete Southwest tier inventory fails status-benefit completeness closed",ladder.benefitFactsComplete===false,JSON.stringify(ladder));
+}
+{
+ const p=E.normalizeProfile(base({verifiedFacts:southwestFactsV27(),spend:{dining:0,grocery:0,online_grocery:0,drugstore:0,gas_ev:0,transit:0,online_retail:0,vacation_home:0,airfare:40000,hotel:0,general:0},currentCards:["venture"],currentRouting:{...emptyRouting(),airfare:[{card:"venture",amount:40000}]},remainingYear:{cardSpend:{airfare:40000},southwest:{tqp:0,qualifyingFlights:0},hotel:{qualifyingNights:0}},primaryAirline:"southwest",primaryAirlineShare:.9,routeFit:{southwest:.95},annualOneWayFlights:12,currentAirlineStatus:"",statusProgress:{southwest:{tqp:0,qualifyingFlights:0},hotel:{qualifyingNights:0}},primaryHotel:"",primaryHotelShare:0,currentHotelStatus:"",currencyUtility:{capital_one_miles:.95,southwest_points:1},legacyNaturalBenefitValue:{},constraints:{maxNewCards:1}}));
+ const s=E.selectForScenario(p,"base"),m=Object.fromEntries(s.newCardClassifications.filter(x=>x.cardId.startsWith("southwest_")).map(x=>[x.cardId,x]));
+ assert("Southwest cards do not clear acquisition bands on unpriced per-use benefits alone",m.southwest_plus.classification==="do_not_surface"&&m.southwest_premier.classification==="do_not_surface"&&m.southwest_priority.classification==="do_not_surface",JSON.stringify(m));
+}
+{
+ const p=E.normalizeProfile(base({verifiedFacts:southwestFactsV27(),spend:{dining:0,grocery:0,online_grocery:0,drugstore:0,gas_ev:0,transit:0,online_retail:0,vacation_home:0,airfare:0,hotel:0,general:11000},currentCards:["chase_preferred","southwest_plus"],currentRouting:{...emptyRouting(),general:[{card:"southwest_plus",amount:11000}]},remainingYear:{cardSpend:{general:11000},southwest:{tqp:0,qualifyingFlights:0},hotel:{qualifyingNights:0}},primaryAirline:"southwest",primaryAirlineShare:.9,routeFit:{southwest:.95},annualOneWayFlights:12,currentAirlineStatus:"",statusProgress:{southwest:{tqp:0,qualifyingFlights:0},hotel:{qualifyingNights:0}},southwestCompanionQualification:{currentQualifyingPoints:124000,currentQualifyingFlights:0,remainingNonCardQualifyingPoints:0,remainingQualifyingFlights:0,cardSpend:{general:11000},cardBoostIncluded:true},companionTravel:{intent:"yes",frequency:"1"},primaryHotel:"",primaryHotelShare:0,currentHotelStatus:"",legacyNaturalBenefitValue:{},constraints:{maxNewCards:0}}));
+ const s=E.selectForScenario(p,"base");
+ assert("A naturally reachable Companion Pass is preserved qualitatively even while its cash value is unresolved",s.current.outcomes.flightQuality.companionPassReached===true&&s.recommended.portfolio.includes("southwest_plus"),JSON.stringify({current:s.current.outcomes.flightQuality,recommended:s.recommended.id,portfolio:s.recommended.portfolio}));
+}
+{
+ const p=E.normalizeProfile(base({verifiedFacts:southwestFactsV27(),spend:{dining:0,grocery:0,online_grocery:0,drugstore:0,gas_ev:0,transit:0,online_retail:0,vacation_home:0,airfare:0,hotel:0,general:0},currentCards:["southwest_priority"],currentRouting:emptyRouting(),remainingYear:{cardSpend:{},delta:{mqd:0},hotel:{qualifyingNights:0}},primaryAirline:"delta",primaryAirlineShare:.9,routeFit:{delta:.95},annualOneWayFlights:10,currentAirlineStatus:"",statusProgress:{delta:{mqd:0},hotel:{qualifyingNights:0}},primaryHotel:"",primaryHotelShare:0,currentHotelStatus:"",legacyNaturalBenefitValue:{},constraints:{maxNewCards:0}}));
+ const s=E.selectForScenario(p,"base");
+ assert("Priority can be removed when Southwest travel is no longer relevant",s.recommended.id==="no_cards"&&s.recommended.cardRoles.some(x=>x.cardId==="southwest_priority"&&x.role==="remove_or_downgrade"),JSON.stringify({id:s.recommended.id,roles:s.recommended.cardRoles}));
+}
+{
+ const r=E.analyze(base({verifiedFacts:southwestFactsV27(),constraints:{maxNewCards:0}}));
+ assert("alpha.27 Southwest closeout integrity flags are present",r.integrity.southwestTierBenefitCoverageRequired===true&&r.integrity.southwestCompanionPassQualificationModeled===true&&r.integrity.southwestCompanionPassBoostDeduped===true&&r.integrity.southwestFamilyEconomicsClosed===true,JSON.stringify(r.integrity));
 }
 
 console.log("\n------------------------------");
-console.log(`V5 alpha.26 harness: ${pass} passed, ${fail} failed`);
+console.log(`V5 alpha.27 harness: ${pass} passed, ${fail} failed`);
 if(failures.length)console.log(JSON.stringify(failures,null,2));
 process.exitCode=fail?1:0;
