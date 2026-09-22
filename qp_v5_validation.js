@@ -1,4 +1,4 @@
-/** Quiet Premium V5 validation harness — 5.0-alpha.19 */
+/** Quiet Premium V5 validation harness — 5.0-alpha.20 */
 "use strict";
 const E=require("./qp_sim_v5.js");
 let pass=0,fail=0;const failures=[];
@@ -19,7 +19,7 @@ function base(overrides={}){return{
  currencyUtility:{amex_mr:1,chase_ur:.75,capital_one_miles:.95,hyatt_points:1},legacyNaturalBenefitValue:{amex_platinum:700},
  bookingMethod:{airfare:"direct_airline",hotel:"direct_hotel"},constraints:{maxNewCards:2},aspirations:["travel more"],...overrides};}
 
-assert("engine is alpha.19",E.ENGINE_VERSION==="5.0-alpha.19");
+assert("engine is alpha.20",E.ENGINE_VERSION==="5.0-alpha.20");
 
 {
  const a=E.analyze(base({aspirations:["travel more"]}));
@@ -278,7 +278,7 @@ assert("Southwest Priority remains 2500 TQP per $5000",E.RULES.cards.southwest_p
 {
  const r=E.analyze(base({routeFit:{}}));
  assert("missing route fit remains visible",r.current.quality.issues.some(x=>x.code==="route_fit_not_independently_verified"));
- assert("alpha.19 integrity flags are present",r.integrity.travelStrategyPrecedesCards===true&&r.integrity.primaryFlexibleEcosystem===true&&r.integrity.ongoingAndTemporaryRoutingSeparated===true&&r.integrity.temporaryJobsHaveExplicitHandoffs===true&&r.integrity.statusOpportunityRemainsDiscoverable===true&&r.integrity.existingCardRemovalEvaluated===true&&r.integrity.feeSavingsExposed===true&&r.integrity.aggregateBenefitValuesDoNotDoubleCountTypedBreakdowns===true&&r.integrity.unresolvedCrossCardBenefitOverlapIsConservative===true&&r.integrity.benefitProtectionIsCardSpecific===true&&r.integrity.fullAirlineStatusLadder===true&&r.integrity.projectedStatusCanBePreservedEfficiently===true&&r.integrity.protectedMultiplierSpend===true&&r.integrity.universalNewCardBands===true&&r.integrity.noSystemPortfolioCardCap===true&&r.integrity.singleApprovedValuationSnapshot===true);
+ assert("alpha.20 integrity flags are present",r.integrity.travelStrategyPrecedesCards===true&&r.integrity.primaryFlexibleEcosystem===true&&r.integrity.ongoingAndTemporaryRoutingSeparated===true&&r.integrity.temporaryJobsHaveExplicitHandoffs===true&&r.integrity.statusOpportunityRemainsDiscoverable===true&&r.integrity.existingCardRemovalEvaluated===true&&r.integrity.feeSavingsExposed===true&&r.integrity.aggregateBenefitValuesDoNotDoubleCountTypedBreakdowns===true&&r.integrity.unresolvedCrossCardBenefitOverlapIsConservative===true&&r.integrity.benefitProtectionIsCardSpecific===true&&r.integrity.fullAirlineStatusLadder===true&&r.integrity.projectedStatusCanBePreservedEfficiently===true&&r.integrity.protectedMultiplierSpend===true&&r.integrity.universalNewCardBands===true&&r.integrity.noSystemPortfolioCardCap===true&&r.integrity.singleApprovedValuationSnapshot===true);
 }
 
 
@@ -742,7 +742,54 @@ function companionFacts(cards){
  const p=E.normalizeProfile(base({companionTravelIntent:"Yes",companionTravelFrequency:"4-6"}));
  assert("future companion intake normalizes frequency without multiplying a one-use certificate",p.companionTravel.intent==="yes"&&p.companionTravel.frequency==="4_6"&&p.companionTravel.minimumExpectedRoundTrips===4,JSON.stringify(p.companionTravel));
 }
+
+function deltaTierFactsV20({complete=true,verifiedFixed=true}={}){
+ const rows=[
+  {tier:"Silver Medallion",earningRate:7,upgradeWindowHours:24,boardingGroup:"Zone 5",coverageComplete:complete,verified:true},
+  {tier:"Gold Medallion",earningRate:8,upgradeWindowHours:72,boardingGroup:"Zone 4",coverageComplete:complete,verified:true},
+  {tier:"Platinum Medallion",earningRate:9,upgradeWindowHours:120,boardingGroup:"Zone 4",choiceBenefitsCount:1,fixedAnnualValue:350,fixedAnnualValueVerified:verifiedFixed,coverageComplete:complete,verified:true},
+  {tier:"Diamond Medallion",earningRate:11,upgradeWindowHours:120,boardingGroup:"Zone 2",choiceBenefitsCount:3,fixedAnnualValue:550,fixedAnnualValueVerified:verifiedFixed,coverageComplete:complete,verified:true}
+ ];
+ return{snapshotId:"delta-tier-v20",verifiedAt:"2026-09-21",sources:["https://www.delta.com/us/en/skymiles/medallion-program/medallion-benefits"],airlines:{delta:{verificationStatus:"verified",complete:true,verifiedAt:"2026-09-21",sources:["https://www.delta.com/us/en/skymiles/medallion-program/medallion-benefits"],facts:{thresholds:[{tier:"Silver Medallion",amount:5000},{tier:"Gold Medallion",amount:10000},{tier:"Platinum Medallion",amount:15000},{tier:"Diamond Medallion",amount:28000}],tierBenefits:rows}}}};
+}
+{
+ const p=E.normalizeProfile(base({verifiedFacts:deltaTierFactsV20({complete:false}),primaryAirline:"delta",primaryAirlineShare:.9,routeFit:{delta:.95},annualOneWayFlights:4,currentCards:["amex_gold","delta_reserve"],currentRouting:emptyRouting(),primaryHotel:"",primaryHotelShare:0,statusProgress:{delta:{mqd:7000},hotel:{qualifyingNights:0}},remainingYear:{cardSpend:{general:250000},delta:{mqd:0},hotel:{qualifyingNights:0}},constraints:{maxNewCards:0}}));
+ const r=E.strategyRecord(p,["amex_gold","delta_reserve"],"base"),ladder=r.strategy.airlineStatusLadder;
+ assert("Delta earning-rate rows alone are not complete tier-benefit coverage",ladder.benefitFactsComplete===false&&ladder.decisionSensitiveBenefitFactsMissing===true&&r.quality.issues.some(x=>x.code==="airline_tier_benefits_unresolved"),JSON.stringify(ladder));
+}
+{
+ const p=E.normalizeProfile(base({verifiedFacts:deltaTierFactsV20(),primaryAirline:"delta",primaryAirlineShare:.9,routeFit:{delta:.95},annualOneWayFlights:4,currentCards:["amex_gold","delta_reserve"],currentRouting:emptyRouting(),primaryHotel:"",primaryHotelShare:0,statusProgress:{delta:{mqd:7000},hotel:{qualifyingNights:0}},remainingYear:{cardSpend:{general:250000},delta:{mqd:0},hotel:{qualifyingNights:0}},constraints:{maxNewCards:0}}));
+ const ladder=E.strategyRecord(p,["amex_gold","delta_reserve"],"base").strategy.airlineStatusLadder;
+ assert("covered Delta tier inventory satisfies the engine completeness gate",ladder.benefitFactsComplete===true&&ladder.decisionSensitiveBenefitFactsMissing===false,JSON.stringify(ladder));
+}
+{
+ const p=E.normalizeProfile(base({
+  verifiedFacts:deltaTierFactsV20(),spend:{dining:0,grocery:0,online_grocery:0,drugstore:0,gas_ev:0,transit:0,online_retail:0,vacation_home:0,airfare:120000,hotel:0,general:30000},
+  currentCards:["delta_platinum","venture"],currentRouting:{...emptyRouting(),airfare:[{card:"delta_platinum",amount:120000}],general:[{card:"venture",amount:30000}]},
+  currentAirlineStatus:"Gold Medallion",primaryAirline:"delta",primaryAirlineShare:.9,routeFit:{delta:.95},annualOneWayFlights:12,
+  statusProgress:{delta:{mqd:14500},hotel:{qualifyingNights:0}},remainingYear:{cardSpend:{airfare:110000},delta:{mqd:500},hotel:{qualifyingNights:0}},primaryHotel:"",primaryHotelShare:0,
+  companionTravelIntent:"No",legacyNaturalBenefitValue:{},constraints:{maxNewCards:1}
+ }));
+ const travel=E.travelStrategy(p),rewards=E.rewardsStrategy(p,travel),cur=E.currentRecord(p,"base",travel,rewards),diamond=E.strategyRecord(p,["delta_reserve","venture"],"base",travel,rewards);
+ assert("projected Platinum carries only the verified $350 fixed Choice Benefit floor",cur.outcomes.flightQuality.projectedStatus==="Platinum Medallion"&&cur.economics.statusBenefitValue===350,JSON.stringify(cur.economics));
+ assert("projected Diamond carries $550 fixed Choice Benefit floor and only $200 incremental versus Platinum",diamond.outcomes.flightQuality.projectedStatus==="Diamond Medallion"&&diamond.economics.statusBenefitValue===550&&diamond.economics.statusBenefitValue-cur.economics.statusBenefitValue===200,JSON.stringify({current:cur.economics,diamond:diamond.economics}));
+}
+{
+ const p=E.normalizeProfile(base({
+  verifiedFacts:deltaTierFactsV20({verifiedFixed:false}),spend:{dining:0,grocery:0,online_grocery:0,drugstore:0,gas_ev:0,transit:0,online_retail:0,vacation_home:0,airfare:120000,hotel:0,general:30000},
+  currentCards:["delta_platinum","venture"],currentRouting:{...emptyRouting(),airfare:[{card:"delta_platinum",amount:120000}],general:[{card:"venture",amount:30000}]},
+  currentAirlineStatus:"Gold Medallion",primaryAirline:"delta",primaryAirlineShare:.9,routeFit:{delta:.95},annualOneWayFlights:12,
+  statusProgress:{delta:{mqd:14500},hotel:{qualifyingNights:0}},remainingYear:{cardSpend:{airfare:110000},delta:{mqd:500},hotel:{qualifyingNights:0}},primaryHotel:"",primaryHotelShare:0,legacyNaturalBenefitValue:{}
+ }));
+ const r=E.currentRecord(p,"base");
+ assert("unverified status lump sums cannot enter recurring economics",r.economics.statusBenefitValue===0,JSON.stringify(r.economics));
+}
+{
+ const r=E.analyze(base({constraints:{maxNewCards:0}}));
+ assert("alpha.20 fixed-status integrity flags are present",r.integrity.verifiedFixedStatusComponentsOnly===true&&r.integrity.statusFixedBenefitIncludedInRecurringEconomics===true&&r.integrity.deltaTierBenefitCoverageRequired===true,JSON.stringify(r.integrity));
+}
+
 console.log("\n------------------------------");
-console.log(`V5 alpha.19 harness: ${pass} passed, ${fail} failed`);
+console.log(`V5 alpha.20 harness: ${pass} passed, ${fail} failed`);
 if(failures.length)console.log(JSON.stringify(failures,null,2));
 process.exitCode=fail?1:0;
