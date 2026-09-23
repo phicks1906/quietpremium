@@ -6,7 +6,7 @@ import { buildResultContract } from "./result-contract.ts";
 
 const ORIGINS=new Set(["https://quietpremium.com","https://www.quietpremium.com"]);
 const PUBLIC_BROWSER_KEY="sb_publishable_BETG0zmWAEmPByBsKyEUzA_yPCOkh5F";
-const VERIFIER="qp-verify-facts",OPTIMIZER="qp-optimize-shard",OPTIMIZER_SHARDS=64,OPTIMIZER_BATCH=4,MAX_PROFILE_BYTES=250000,MAX_STABILIZATION_PASSES=2;
+const VERIFIER="qp-verify-facts",OPTIMIZER="qp-optimize-shard",OPTIMIZER_SHARDS=64,OPTIMIZER_MAX_SHARDS=512,OPTIMIZER_BATCH=4,MAX_PROFILE_BYTES=250000,MAX_STABILIZATION_PASSES=2;
 const E=(globalThis as any).QuietPremiumEngineV5;
 
 function json(body:any,status=200,origin=""){
@@ -56,6 +56,18 @@ async function verifyRequest(request:any,stage:string){
   return mergeSnapshotParts(parts,snapshotId,verifiedAt);
 }
 
+function mergeShardChildren(a:any,b:any,payload:any){
+  const base={status:"ok",phase:payload.phase,engineVersion:a?.engineVersion||b?.engineVersion||E.ENGINE_VERSION,shardIndex:payload.shardIndex,shardCount:payload.shardCount,candidateCount:(Number(a?.candidateCount)||0)+(Number(b?.candidateCount)||0),totalShardCandidates:(Number(a?.totalShardCandidates)||0)+(Number(b?.totalShardCandidates)||0),adaptiveSplit:true};
+  if(payload.phase==="counterfactual"){
+    const keys=new Set([...Object.keys(a?.bestWith||{}),...Object.keys(b?.bestWith||{}),...Object.keys(a?.bestWithout||{}),...Object.keys(b?.bestWithout||{})]),bestWith:any={},bestWithout:any={};
+    for(const id of keys){bestWith[id]=betterSummary(a?.bestWith?.[id]||null,b?.bestWith?.[id]||null);bestWithout[id]=betterSummary(a?.bestWithout?.[id]||null,b?.bestWithout?.[id]||null);}
+    return{...base,bestWith,bestWithout};
+  }
+  const chosenSummary=betterSummary(a?.bestSummary||null,b?.bestSummary||null);
+  if(!chosenSummary)return{...base,best:null,bestSummary:null};
+  const fromA=chosenSummary===a?.bestSummary;
+  return{...base,best:fromA?a?.best||null:b?.best||null,bestSummary:chosenSummary};
+}
 async function optimizerRequest(payload:any){
   const base=Deno.env.get("SUPABASE_URL"),service=Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
   if(!base||!service)throw new Error("optimizer_backend_not_configured");
@@ -65,8 +77,14 @@ async function optimizerRequest(payload:any){
     body:JSON.stringify(payload)
   });
   let body:any=null;try{body=await res.json()}catch{}
-  if(!res.ok||body?.status!=="ok")throw new Error("optimizer_http_"+res.status+":"+String(payload?.phase||"")+"_"+String(payload?.shardIndex??"")+":"+(body?.error||body?.detail||"unknown"));
-  return body;
+  if(res.ok&&body?.status==="ok")return body;
+  if(res.status===546&&Number(payload?.shardCount||0)<OPTIMIZER_MAX_SHARDS){
+    const oldCount=Number(payload.shardCount)||OPTIMIZER_SHARDS,nextCount=oldCount*2,idx=Number(payload.shardIndex)||0;
+    const left={...payload,shardIndex:idx,shardCount:nextCount},right={...payload,shardIndex:idx+oldCount,shardCount:nextCount};
+    const [a,b]=await Promise.all([optimizerRequest(left),optimizerRequest(right)]);
+    return mergeShardChildren(a,b,payload);
+  }
+  throw new Error("optimizer_http_"+res.status+":"+String(payload?.phase||"")+"_"+String(payload?.shardIndex??"")+"_"+String(payload?.shardCount??"")+":"+(body?.error||body?.detail||"unknown"));
 }
 async function runShardPhase(profile:any,phase:string,extra:any={}){
   const out:any[]=[];
