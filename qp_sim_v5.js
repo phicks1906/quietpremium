@@ -16,7 +16,7 @@
 })(typeof globalThis!=="undefined"?globalThis:this,function(){
 "use strict";
 
-const ENGINE_VERSION="5.0-alpha.32";
+const ENGINE_VERSION="5.0-alpha.33";
 const RULES_AS_OF="2026-09-23";
 const CATS=["dining","grocery","online_grocery","drugstore","gas_ev","transit","online_retail","vacation_home","airfare","hotel","general"];
 const AIRLINES=["delta","united","american","southwest"];
@@ -593,20 +593,42 @@ function relevantCardsV13(p,rewards=rewardsStrategyV13(p)){
   return uniq([...p.currentCards,...p.constraints.requiredCards,...flex,...air,...hotel]).filter(id=>!p.constraints.prohibitedCards.includes(id));
 }
 function candidatePortfoliosV13(p,rewards=rewardsStrategyV13(p)){
-  const protectedIds=protectedCurrentIdsV13(p),air=AIRLINE_CARDS_V17[p.airline.primary]||[],hotel=HOTEL_CARDS_V17[p.hotel.primary]||[],needsFlexibleSupport=sum(["dining","grocery","online_grocery","drugstore","gas_ev","transit","online_retail","vacation_home","general"].map(c=>p.spend[c]||0))>0,out=[],seen=new Set();
+  const protectedIds=new Set(protectedCurrentIdsV13(p)),requiredIds=new Set(p.constraints.requiredCards||[]),
+        air=AIRLINE_CARDS_V17[p.airline.primary]||[],hotel=HOTEL_CARDS_V17[p.hotel.primary]||[],
+        needsFlexibleSupport=sum(["dining","grocery","online_grocery","drugstore","gas_ev","transit","online_retail","vacation_home","general"].map(c=>p.spend[c]||0))>0,
+        out=[],seen=new Set(),currentSet=new Set(p.currentCards||[]);
   for(const currency of FLEX_CURRENCIES_V13){
-    const relevant=uniq([...p.currentCards,...p.constraints.requiredCards,...flexCardsForCurrencyV13(currency),...air,...hotel]).filter(id=>!p.constraints.prohibitedCards.includes(id)),max=relevant.length;
-    for(const set of combinations(relevant,max)){
-      if(!set.length&&p.totalSpend)continue;
-      if(p.constraints.requiredCards.some(id=>!set.includes(id))||protectedIds.some(id=>!set.includes(id)))continue;
-      const adds=set.filter(id=>!p.currentCards.includes(id)),newFlex=uniq(adds.map(flexCurrencyV13).filter(Boolean));
-      if(newFlex.length>1||(newFlex.length===1&&newFlex[0]!==currency))continue;
-      if((p.constraints.noNewCards&&adds.length)||(p.constraints.maxNewCards!=null&&adds.length>p.constraints.maxNewCards))continue;
-      if(needsFlexibleSupport&&!set.some(id=>flexCurrencyV13(id)===currency))continue;
-      const key=set.slice().sort().join("|");if(!seen.has(key)){seen.add(key);out.push(set);}
+    const relevant=uniq([...p.currentCards,...p.constraints.requiredCards,...flexCardsForCurrencyV13(currency),...air,...hotel]).filter(id=>!p.constraints.prohibitedCards.includes(id));
+    const remainingTargetFlex=new Array(relevant.length+1).fill(0);
+    for(let i=relevant.length-1;i>=0;i--)remainingTargetFlex[i]=remainingTargetFlex[i+1]+(flexCurrencyV13(relevant[i])===currency?1:0);
+    const selected=[];
+    function emit(){
+      if(!selected.length&&p.totalSpend)return;
+      if(needsFlexibleSupport&&!selected.some(id=>flexCurrencyV13(id)===currency))return;
+      const key=selected.slice().sort().join("|");
+      if(!seen.has(key)){seen.add(key);out.push(selected.slice());}
     }
+    function go(i,newCount,hasTargetFlex){
+      if(p.constraints.maxNewCards!=null&&newCount>p.constraints.maxNewCards)return;
+      if(needsFlexibleSupport&&!hasTargetFlex&&remainingTargetFlex[i]===0)return;
+      if(i>=relevant.length){emit();return;}
+      const id=relevant[i],isNew=!currentSet.has(id),fc=flexCurrencyV13(id),
+            must=requiredIds.has(id)||protectedIds.has(id),
+            incompatibleNewFlex=isNew&&fc&&fc!==currency,
+            forbiddenNew=isNew&&p.constraints.noNewCards;
+      if(must){
+        if(incompatibleNewFlex||forbiddenNew)return;
+        selected.push(id);go(i+1,newCount+(isNew?1:0),hasTargetFlex||fc===currency);selected.pop();return;
+      }
+      go(i+1,newCount,hasTargetFlex);
+      if(incompatibleNewFlex||forbiddenNew)return;
+      selected.push(id);go(i+1,newCount+(isNew?1:0),hasTargetFlex||fc===currency);selected.pop();
+    }
+    go(0,0,false);
   }
-  const cur=JSON.stringify(p.currentCards.slice().sort());if(!out.some(x=>JSON.stringify(x.slice().sort())===cur))out.push(p.currentCards.slice());return out;
+  const cur=JSON.stringify(p.currentCards.slice().sort());
+  if(!out.some(x=>JSON.stringify(x.slice().sort())===cur))out.push(p.currentCards.slice());
+  return out;
 }
 function rewardsStrategyForPortfolioV31(p,portfolio,travel,baseRewards){
   const newFlex=uniq((portfolio||[]).filter(id=>!p.currentCards.includes(id)).map(flexCurrencyV13).filter(Boolean));
