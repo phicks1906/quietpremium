@@ -53,36 +53,62 @@ function actionCard(action,result,E){
 function titleCase(value){
   return String(value||"").replace(/[_-]+/g," ").replace(/\b\w/g,m=>m.toUpperCase()).trim();
 }
-function routeActionRows(rec,E,profile){
-  const out=[];
+const CATEGORY_LABELS=Object.freeze({
+  dining:"Dining",grocery:"Groceries",online_grocery:"Online groceries",drugstore:"Drugstores",
+  gas_ev:"Gas & EV charging",transit:"Transit",online_retail:"Online retail",vacation_home:"Vacation homes",
+  airfare:"Airfare",hotel:"Hotels",general:"Everything else"
+});
+const BENEFIT_LABELS=Object.freeze({
+  southwest_chase_travel_credit_500:"$500 Southwest Airlines Chase Travel credit",
+  hyatt_explorist_status_threshold:"World of Hyatt Explorist status",
+  ihg_diamond_status_threshold:"IHG One Rewards Diamond Elite status",
+  southwest_alist_status_threshold:"Southwest Rapid Rewards A-List status",
+  shops_at_chase_credit_250:"$250 Shops at Chase credit"
+});
+function categoryLabel(value){return CATEGORY_LABELS[value]||titleCase(value)}
+function benefitLabel(value){return BENEFIT_LABELS[value]||titleCase(value)}
+function fmtMoney(value){return "$"+Math.round(num(value)).toLocaleString("en-US")}
+function routeGroups(rec,E,profile){
+  const byCard=new Map();
   for(const [category,rows] of Object.entries(rec?.ongoingRouting||{})){
-    list(rows).forEach((row,index)=>{
-      if(!row?.card||num(row?.amount)<=0)return;
-      const card=cardFactsView(E,profile,row.card);
-      out.push({
-        id:"route:"+category+":"+row.card+":"+index,
-        type:"routing",
-        title:"Route "+titleCase(category)+" to "+card.label,
-        cardId:row.card,
-        category,
-        annualAmount:num(row.amount),
-        purpose:row?.purpose||"",
-        source:"recommended.ongoingRouting"
-      });
-    });
+    for(const row of list(rows)){
+      if(!row?.card||num(row?.amount)<=0)continue;
+      if(!byCard.has(row.card))byCard.set(row.card,{cardId:row.card,label:cardFactsView(E,profile,row.card).label,categories:[],annualAmount:0});
+      const group=byCard.get(row.card);group.categories.push({category,label:categoryLabel(category),annualAmount:num(row.amount)});group.annualAmount+=num(row.amount);
+    }
   }
-  return out;
+  return [...byCard.values()];
 }
-function thresholdAction(job,E,profile){
+function routeActionRows(rec,E,profile){
+  return routeGroups(rec,E,profile).map(group=>({
+    id:"route:"+group.cardId,
+    type:"routing",
+    title:"Use "+group.label+" for "+group.categories.map(x=>x.label).join(", "),
+    cardId:group.cardId,
+    categories:clone(group.categories),
+    annualAmount:num(group.annualAmount),
+    source:"recommended.ongoingRouting"
+  }));
+}
+function thresholdAction(job,E,profile,rec){
   const card=cardFactsView(E,profile,job?.cardId||"");
-  const remaining=job?.spendRequired==null?null:num(job.spendRequired);
+  const remaining=job?.spendRequired==null?null:num(job.spendRequired),required=num(job?.annualSpendRequired||job?.stopCondition?.amount),routine=routedAmount(rec?.ongoingRouting,job?.cardId||"");
+  const natural=required>0&&routine>=required&&num(job?.routingOpportunityCost)<=0&&num(job?.opportunityCost)<=0;
+  const label=benefitLabel(job?.purpose||"threshold");
   return{
     id:job?.id||("annual_threshold:"+job?.cardId),
     type:"recurring_threshold",
-    title:"Fund the annual "+titleCase(job?.purpose||"threshold")+" on "+card.label,
+    title:natural
+      ?"Your normal routing naturally clears the "+fmtMoney(required)+" annual spend target on "+card.label
+      :"Reach the "+fmtMoney(required)+" annual spend target on "+card.label+" only because "+label+" justifies it",
+    explanation:natural
+      ?"No extra spending or detour is required. That normal routing also unlocks "+label+"."
+      :"This is a justified recurring threshold, not a reason to spend more than planned.",
+    naturalThroughOngoingRouting:natural,
     cardId:job?.cardId||"",
     purpose:job?.purpose||"",
-    annualSpendRequired:num(job?.annualSpendRequired),
+    purposeLabel:label,
+    annualSpendRequired:required,
     currentYearSpendRemaining:remaining,
     modeledValue:num(job?.modeledValue),
     routingOpportunityCost:num(job?.routingOpportunityCost),
@@ -116,7 +142,7 @@ function buildImplementationPlan(result,E,parts){
   for(const x of parts.manualReviewBeforeRemoval||[])phase1.push({id:"manual_review:"+x.cardId,type:"manual_review",title:"Resolve the open facts on "+x.label+" before any removal",cardId:x.cardId,source:"recommended.actions"});
   phase1.push(...routeActionRows(rec,E,profile));
 
-  const recurring=list(rec?.recurringJobs).map(j=>thresholdAction(j,E,profile));
+  const recurring=list(rec?.recurringJobs).map(j=>thresholdAction(j,E,profile,rec));
   const finite=list(rec?.temporaryJobs).map(j=>interventionAction(j,E,profile));
   phase2.push(...finite,...recurring);
   if(!phase2.length)phase2.push({
@@ -130,7 +156,7 @@ function buildImplementationPlan(result,E,parts){
     if(list(job.nextStep).length)phase3.push({
       id:"handoff:"+job.id,
       type:"post_threshold",
-      title:"After "+titleCase(job.purpose)+" is complete, follow the steady-state routing",
+      title:"After "+benefitLabel(job.purpose)+" is complete, return to the steady-state routing",
       jobId:job.id,
       nextStep:clone(job.nextStep),
       source:job.source
