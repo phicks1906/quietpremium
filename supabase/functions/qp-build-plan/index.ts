@@ -6,7 +6,7 @@ import { buildResultContract } from "./result-contract.ts";
 
 const ORIGINS=new Set(["https://quietpremium.com","https://www.quietpremium.com"]);
 const PUBLIC_BROWSER_KEY="sb_publishable_BETG0zmWAEmPByBsKyEUzA_yPCOkh5F";
-const VERIFIER="qp-verify-facts",OPTIMIZER="qp-optimize-shard",OPTIMIZER_SHARDS=32,OPTIMIZER_BATCH=8,MAX_PROFILE_BYTES=250000,MAX_STABILIZATION_PASSES=2;
+const VERIFIER="qp-verify-facts",OPTIMIZER="qp-optimize-shard",OPTIMIZER_SHARDS=64,OPTIMIZER_BATCH=4,MAX_PROFILE_BYTES=250000,MAX_STABILIZATION_PASSES=2;
 const E=(globalThis as any).QuietPremiumEngineV5;
 
 function json(body:any,status=200,origin=""){
@@ -73,6 +73,7 @@ async function runShardPhase(profile:any,phase:string,extra:any={}){
   for(let start=0;start<OPTIMIZER_SHARDS;start+=OPTIMIZER_BATCH){
     const batch=[];for(let i=start;i<Math.min(start+OPTIMIZER_BATCH,OPTIMIZER_SHARDS);i++)batch.push(optimizerRequest({profile,phase,shardIndex:i,shardCount:OPTIMIZER_SHARDS,...extra}));
     out.push(...await Promise.all(batch));
+    if(start+OPTIMIZER_BATCH<OPTIMIZER_SHARDS)await new Promise(r=>setTimeout(r,250));
   }
   return out;
 }
