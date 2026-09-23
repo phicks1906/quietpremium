@@ -78,6 +78,13 @@ export function criticalStructureIssues(kind,id,facts){
     if(!(Number(e.general)===1&&Number(e.dining)===3&&Number(e.airfare)===4&&Number(e.hotel)===4))issues.push("earn.reserveCurrentStructure");
     if(!(Number(b.airfare?.chase_travel)===8&&Number(b.hotel?.chase_travel)===8))issues.push("bookingEarn.reserveCurrentStructure");
   }
+  if(kind==="cards"&&["marriott_boundless","marriott_bountiful","marriott_bevy","marriott_brilliant"].includes(id)){
+    const e=f.earn||{};
+    if(Number(e.general)>6||Number(e.grocery)>6||Number(e.dining)>6||Number(e.airfare)>6||Number(e.hotel)>6)issues.push("earn.compositeMarriottTotalNotAllowed");
+    if(id==="marriott_boundless"&&!(Number(e.general)===2&&Number(e.dining)===3&&Number(e.grocery)===3&&Number(e.gas_ev)===3&&Number(e.hotel)===6))issues.push("earn.boundlessCurrentStructure");
+    if((id==="marriott_bountiful"||id==="marriott_bevy")&&!(Number(e.general)===2&&Number(e.dining)===4&&Number(e.grocery)===4&&Number(e.hotel)===6))issues.push("earn.marriott642CurrentStructure");
+    if(id==="marriott_brilliant"&&!(Number(e.general)===2&&Number(e.dining)===3&&Number(e.airfare)===3&&Number(e.hotel)===6))issues.push("earn.brilliantCurrentStructure");
+  }
   if(kind==="airlines"&&id==="delta"){
     const expected=["silver medallion","gold medallion","platinum medallion","diamond medallion"],rows=Array.isArray(f.thresholds)?f.thresholds:[];
     if(rows.length!==4)issues.push("thresholds.completeLadder");
@@ -99,27 +106,63 @@ export function criticalStructureIssues(kind,id,facts){
 }
 
 
+export function parseMarriottCardRewards(text,id){
+  const t=String(text||"");
+  const base=(n)=>({dining:n,grocery:n,online_grocery:n,drugstore:n,gas_ev:n,transit:n,online_retail:n,vacation_home:n,airfare:n,hotel:n,general:n});
+  if(id==="marriott_boundless"){
+    const marriott=/Earn\s+6X\s+points[^.]{0,220}(?:hotels participating in Marriott Bonvoy|Marriott)/i.test(t);
+    const everyday=/Earn\s+3X\s+points[^.]{0,260}first\s+\$?6,?000[^.]{0,260}(?:grocery|gas)[^.]{0,220}dining/i.test(t)
+      ||/3X\s+points[^.]{0,260}(?:grocery|gas|dining)[\s\S]{0,500}\$?6,?000/i.test(t);
+    const other=/Earn\s+2X\s+points[^.]{0,180}all other purchases/i.test(t);
+    if(!(marriott&&everyday&&other))return null;
+    const e=base(2);e.dining=3;e.grocery=3;e.online_grocery=3;e.gas_ev=3;e.hotel=6;return e;
+  }
+  if(id==="marriott_bountiful"||id==="marriott_bevy"){
+    const marriott=/Earn\s+6X\s+points[^.]{0,220}(?:hotels participating in Marriott Bonvoy|Marriott)/i.test(t)
+      ||/6X\s+points[^.]{0,220}(?:hotels participating in Marriott Bonvoy|Marriott)/i.test(t);
+    const four=/4X\s+points[^.]{0,300}(?:first\s+\$?15,?000|up to\s+\$?15,?000)[^.]{0,300}(?:grocery|supermarkets?)[^.]{0,260}(?:dining|restaurants?)/i.test(t)
+      ||/4X\s+points[^.]{0,260}(?:restaurants?|dining)[^.]{0,180}(?:grocery|supermarkets?)[\s\S]{0,450}\$?15,?000/i.test(t);
+    const other=/2X\s+points[^.]{0,180}all other (?:eligible )?purchases/i.test(t);
+    if(!(marriott&&four&&other))return null;
+    const e=base(2);e.dining=4;e.grocery=4;e.online_grocery=4;e.hotel=6;return e;
+  }
+  if(id==="marriott_brilliant"){
+    const marriott=/Earn\s+6\s+(?:points|X points)[^.]{0,220}hotels participating in Marriott Bonvoy/i.test(t)
+      ||/6X\s+points[^.]{0,220}hotels participating in Marriott Bonvoy/i.test(t);
+    const three=/Earn\s+3\s+(?:points|X points)[^.]{0,220}restaurants worldwide[^.]{0,220}flights booked directly with airlines/i.test(t)
+      ||/3X\s+points[^.]{0,220}restaurants worldwide[^.]{0,220}flights booked directly with airlines/i.test(t);
+    const other=/Earn\s+2\s+(?:points|X points)[^.]{0,180}all other eligible purchases/i.test(t)
+      ||/2X\s+points[^.]{0,180}all other eligible purchases/i.test(t);
+    if(!(marriott&&three&&other))return null;
+    const e=base(2);e.dining=3;e.airfare=3;e.hotel=6;return e;
+  }
+  return null;
+}
+
 export function parseMarriottCardCriticalFacts(text,id){
   const t=String(text||""),out={};
   if(id==="marriott_boundless"){
-    if(/Free Night Award[\s\S]{0,260}every year[\s\S]{0,420}(?:35,?000|35K)\s+points?/i.test(t)
-      ||/(?:35,?000|35K)\s+points?[\s\S]{0,420}Free Night Award[\s\S]{0,260}(?:every year|account anniversary)/i.test(t)){
+    const fee=t.match(/(?:ANNUAL FEE|Annual Fee)[^$]{0,100}\$\s*(95)\b/i)||t.match(/\$\s*(95)\b[^.]{0,80}annual fee/i);
+    if(fee)out.annualFee=95;
+    if(/Free Night Award[\s\S]{0,420}(?:every year after your account anniversary|each account anniversary)[\s\S]{0,520}(?:35,?000|35K)\s+points?/i.test(t)
+      ||/(?:35,?000|35K)\s+points?[\s\S]{0,520}Free Night Award[\s\S]{0,320}(?:every year|account anniversary)/i.test(t)){
       out.annualPointCertificate={benefit:"free_night_award_35k",capPoints:35000,currency:"marriott_points",renewalRequired:true};
     }
   }
   if(id==="marriott_bountiful"){
-    if(/Automatic Gold Elite Status[\s\S]{0,180}(?:automatic )?Marriott Bonvoy Gold Elite status/i.test(t))out.automaticTier="Gold Elite";
+    if(/Automatic Gold Elite Status/i.test(t)||/automatically (?:receive|enjoy) (?:Marriott Bonvoy )?Gold Elite Status/i.test(t))out.automaticTier="Gold Elite";
   }
   if(id==="marriott_brilliant"){
-    if(/Free Night Award[\s\S]{0,320}every year after your Card renewal month[\s\S]{0,420}(?:85,?000|85K)\s+(?:Marriott Bonvoy )?points?/i.test(t)
-      ||/(?:85,?000|85K)\s+(?:Marriott Bonvoy )?points?[\s\S]{0,420}Free Night Award[\s\S]{0,260}(?:every year|renewal)/i.test(t)){
+    if(/Free Night Award[\s\S]{0,520}(?:every year after your Card renewal month|Card renewal month)[\s\S]{0,520}(?:85,?000|85K)\s+(?:Marriott Bonvoy )?points?/i.test(t)
+      ||/(?:85,?000|85K)\s+(?:Marriott Bonvoy )?points?[\s\S]{0,520}Free Night Award[\s\S]{0,320}(?:every year|renewal)/i.test(t)){
       out.annualPointCertificate={benefit:"free_night_award_85k",capPoints:85000,currency:"marriott_points",renewalRequired:true};
     }
-    if(/(?:\$\s*120)[\s\S]{0,520}(?:Global Entry|TSA PreCheck)[\s\S]{0,620}(?:4\s*year period|every\s+4\s+years)|(?:Global Entry|TSA PreCheck)[\s\S]{0,620}\$\s*120[\s\S]{0,620}(?:4\s*year period|every\s+4\s+years)/i.test(t)){
+    if(/(?:\$\s*120)[\s\S]{0,700}(?:Global Entry|TSA PreCheck)[\s\S]{0,800}(?:every\s+4\s+years|every four years|4\s*year period)/i.test(t)
+      ||/(?:Global Entry|TSA PreCheck)[\s\S]{0,800}\$\s*120[\s\S]{0,800}(?:every\s+4\s+years|every four years|4\s*year period)/i.test(t)){
       out.trustedTraveler={amount:120,years:4};
     }
-    const choice=/Brilliant Earned Choice Award[\s\S]{0,800}\$\s*60,?000|\$\s*60,?000[\s\S]{0,800}Brilliant Earned Choice Award/i.test(t);
-    const choice85=/Brilliant Earned Choice Award[\s\S]{0,5000}(?:85K|85,?000)[\s\S]{0,260}Free Night Award|Free Night Award[\s\S]{0,260}(?:85K|85,?000)[\s\S]{0,5000}Brilliant Earned Choice Award/i.test(t);
+    const choice=/Brilliant Earned Choice Award[\s\S]{0,1000}\$\s*60,?000|\$\s*60,?000[\s\S]{0,1000}Brilliant Earned Choice Award/i.test(t);
+    const choice85=/(?:Brilliant Earned Choice Award[\s\S]{0,8000})?(?:85K|85,?000)[\s\S]{0,300}Free Night Award|Free Night Award[\s\S]{0,300}(?:85K|85,?000)/i.test(t);
     if(choice&&choice85)out.spendReward={amount:60000,benefit:"brilliant_choice_free_night_award_85k",valuePoints:85000,currency:"marriott_points"};
   }
   return out;
