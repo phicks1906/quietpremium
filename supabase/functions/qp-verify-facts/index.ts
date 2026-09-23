@@ -371,7 +371,7 @@ function cardFacts(id:string,t:string){
   if(critical.automaticTier)hs.automaticTier=critical.automaticTier;
   const f:any={
     bookingEarn:bookingEarn(t,id),caps:cap.caps,capGroups:cap.capGroups,groupCaps:cap.groupCaps,postCapEarn:cap.postCapEarn,
-    benefitTags:derivedTags,recurringCredits:recurring,multiYearCredits:multi,annualBonusPoints:bonus(t),annualPointCertificates:pointCerts,
+    benefitTags:derivedTags,recurringCredits:recurring,multiYearCredits:multi,annualBonusPoints:bonus(t,id),annualPointCertificates:pointCerts,
     annualCategoryCertificates:annualCategory,annualQualitativeCertificates:annualQualitative,qualitativeSpendRewards:qualitativeSpend,
     temporaryBenefits:temporaryBenefits(t,id),hotelStatus:hs,hotelStatusByProgram:{},status:status(t,id),transferRules:transferRules(t,id),
     transferAccess:transferAccess(t,id),rotatingBonus:rb,spendRewards:spend,statusMilestoneRewards:statusMilestoneRewards(t,id),
