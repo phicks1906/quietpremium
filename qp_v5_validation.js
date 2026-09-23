@@ -19,7 +19,7 @@ function base(overrides={}){return{
  currencyUtility:{amex_mr:1,chase_ur:.75,capital_one_miles:.95,hyatt_points:1},legacyNaturalBenefitValue:{amex_platinum:700},
  bookingMethod:{airfare:"direct_airline",hotel:"direct_hotel"},constraints:{maxNewCards:2},aspirations:["travel more"],...overrides};}
 
-assert("engine is alpha.31",E.ENGINE_VERSION==="5.0-alpha.31");
+assert("engine is alpha.32",E.ENGINE_VERSION==="5.0-alpha.32");
 
 {
  const a=E.analyze(base({aspirations:["travel more"]}));
@@ -365,6 +365,11 @@ assert("Southwest Priority remains 2500 TQP per $5000",E.RULES.cards.southwest_p
  assert("Delta 45 percent four flights does not become concentration strategy",low.travelStrategy.airline.mode==="preferred_without_concentration"&&!low.travelStrategy.airline.relationshipEstablished,JSON.stringify(low.travelStrategy.airline));
  const high=E.analyze(base({primaryAirline:"delta",primaryAirlineShare:.80,annualOneWayFlights:4,currentAirlineStatus:"",statusProgress:{delta:{mqd:0},hotel:{qualifyingNights:0}},primaryHotel:"",primaryHotelShare:0,remainingYear:{cardSpend:{}},constraints:{maxNewCards:0}}));
  assert("Delta 80 percent four flights can support spend-driven status",high.travelStrategy.airline.relationshipEstablished===true&&high.travelStrategy.airline.statusUseful===true,JSON.stringify(high.travelStrategy.airline));
+ const unverified=E.analyze(base({primaryAirline:"delta",primaryAirlineShare:.80,routeFit:{},annualOneWayFlights:4,currentAirlineStatus:"Gold Medallion",statusProgress:{delta:{mqd:0},hotel:{qualifyingNights:0}},primaryHotel:"",primaryHotelShare:0,remainingYear:{cardSpend:{general:100000},delta:{mqd:0}},constraints:{maxNewCards:0}}));
+ assert("existing airline relationship survives missing route evidence",unverified.travelStrategy.airline.relationshipEstablished===true,JSON.stringify(unverified.travelStrategy.airline));
+ assert("missing route evidence does not endorse concentration",unverified.travelStrategy.airline.concentrationSupported===false&&unverified.travelStrategy.airline.mode==="existing_relationship_route_unverified"&&unverified.travelStrategy.airline.rule==="choose_best_itinerary",JSON.stringify(unverified.travelStrategy.airline));
+ assert("missing route evidence blocks spend-driven airline status intervention",!unverified.recommended.strategy.airlineStatusTarget,JSON.stringify(unverified.recommended.strategy.airlineStatusTarget));
+ assert("route-fit guardrail is explicit in engine integrity",unverified.integrity.airlineConcentrationRequiresRouteFit===true,JSON.stringify(unverified.integrity));
 }
 {
  const p=base({spend:{dining:10000,grocery:8000,online_grocery:0,gas_ev:2000,online_retail:2000,vacation_home:0,airfare:6000,hotel:12000,general:30000},currentCards:["hyatt_consumer"],currentRouting:{...emptyRouting(),dining:[{card:"hyatt_consumer",amount:10000}],grocery:[{card:"hyatt_consumer",amount:8000}],gas_ev:[{card:"hyatt_consumer",amount:2000}],online_retail:[{card:"hyatt_consumer",amount:2000}],airfare:[{card:"hyatt_consumer",amount:6000}],hotel:[{card:"hyatt_consumer",amount:12000}],general:[{card:"hyatt_consumer",amount:30000}]},primaryAirline:"",primaryAirlineShare:0,annualOneWayFlights:4,primaryHotel:"hyatt",primaryHotelShare:.80,currentHotelStatus:"Explorist",statusProgress:{hotel:{qualifyingNights:54,qualifyingStays:20,qualifyingSpend:9000}},remainingYear:{cardSpend:{hotel:6000},hotel:{qualifyingNights:6,qualifyingStays:3,qualifyingSpend:2500}},legacyNaturalBenefitValue:{},cardUniqueBenefitValue:{hyatt_consumer:250},constraints:{maxNewCards:1}});
