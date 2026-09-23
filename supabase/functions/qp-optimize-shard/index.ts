@@ -71,7 +71,7 @@ Deno.serve(async(req:Request)=>{
       for(const r of records)r.incrementalCardGate=E.recordAcquisitionGate(p,r,classifications);
       const chosen=E.choosePrepared(prepared.filter((x:any)=>x.c&&x.r.incrementalCardGate?.pass!==false),current);
       const entry=chosenEntry(prepared,chosen,current);
-      return json({status:"ok",phase,engineVersion:E.ENGINE_VERSION,shardIndex,shardCount,candidateCount:records.length,totalShardCandidates:allSets.length,best:entry?.r||null});
+      return json({status:"ok",phase,engineVersion:E.ENGINE_VERSION,shardIndex,shardCount,candidateCount:records.length,totalShardCandidates:allSets.length,best:entry?.r||null,bestSummary:preparedSummary(entry)});
     }
     return json({error:"invalid_phase"},400);
   }catch(e){
