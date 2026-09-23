@@ -1,6 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { ENTITY_SOURCES, ALLOWED_CARD_IDS, ALLOWED_AIRLINE_IDS, ALLOWED_HOTEL_IDS } from "./sources.ts";
-import { parseDeltaCardStatus, parseDeltaThresholds, parseChaseReserveRewards, parseMarriottThresholds, parseMarriottCardCriticalFacts, criticalStructureIssues } from "./critical-parsers.ts";
+import { parseDeltaCardStatus, parseDeltaThresholds, parseChaseReserveRewards, parseMarriottThresholds, parseMarriottCardRewards, parseMarriottCardCriticalFacts, criticalStructureIssues } from "./critical-parsers.ts";
 
 const ORIGINS=new Set(["https://quietpremium.com","https://www.quietpremium.com"]);
 const PUBLIC_BROWSER_KEY="sb_publishable_BETG0zmWAEmPByBsKyEUzA_yPCOkh5F";
@@ -345,7 +345,51 @@ function companionCertificate(t:string,id:string){
   return o;
 }
 function status(t:string,id:string){const o:any={};if(id.startsWith("delta_")){Object.assign(o,parseDeltaCardStatus(t,id))}else if(id.startsWith("united_")){const d=first(t,[/1\s+PQP[^.]{0,100}(?:for every|per)\s+\$\s*(\d+)/i]);if(d)o.spendDivisor=Number(d[1]);const c=first(t,[/up to\s+([\d,]+)\s+PQP/i]);if(c)o.annualCap=amount(c[1]);const b=first(t,[/([\d,]+)\s+Card Bonus PQP/i]);if(b){o.annualBonus=amount(b[1]);o.bonusRequiresPriorYearOpen=true}}else if(id.startsWith("southwest_")){const q=first(t,[/([\d,]+)\s+TQPs?\s+for each\s+\$\s*([\d,]+)/i]);if(q){o.tqpPerBlock=amount(q[1]);o.spendBlock=amount(q[2])}const cp=first(t,[/([\d,]+)\s+Companion Pass[^.]{0,120}qualifying points?[^.]{0,100}(?:boost|every year|annually)/i,/Companion Pass[^.]{0,140}(?:boost|qualifying points?)[^.]{0,100}([\d,]+)/i]);if(cp)o.companionPassBoost=amount(cp[1])}else if(id.startsWith("aa_")){if(/1\s+Loyalty Point[^.]{0,180}(?:\$?1|every 1 eligible AAdvantage.*mile earned from purchases)/i.test(t))o.lpPerEligiblePurchaseDollar=1;if(id==="aa_globe"){const fs=first(t,[/([\d,]+)\s+Loyalty Point bonus after every\s+(\d+)\s+qualifying American Airlines flights?[^.]{0,220}up to\s+([\d,]+)\s+additional Loyalty Points/i]);if(fs){o.flightStreakBonus=amount(fs[1]);o.flightStreakBlock=amount(fs[2]);o.flightStreakAnnualCap=amount(fs[3]);}else{const b=first(t,[/Flight Streak[^.]{0,180}(?:bonus of |earn |Earn a )?([\d,]+)\s+additional Loyalty Points/i,/Earn a\s+([\d,]+)\s+Loyalty Point bonus/i]),blk=first(t,[/after every\s+(\d+)\s+qualifying American Airlines flights?/i]),cap=first(t,[/up to\s+([\d,]+)\s+additional Loyalty Points each status qualification year/i]);if(b)o.flightStreakBonus=amount(b[1]);if(blk)o.flightStreakBlock=amount(blk[1]);if(cap)o.flightStreakAnnualCap=amount(cap[1]);}}}return o}
-function cardFacts(id:string,t:string){const recurring=cardRecurringCredits(t,id),annualCategory=annualCategoryCertificates(t,id),annualQualitative=annualQualitativeCertificates(t,id),qualitativeSpend=qualitativeSpendRewards(t,id),derivedTags=uniq([...tags(t),...Object.keys(recurring),...annualCategory.map((x:any)=>x.benefit),...annualQualitative.map((x:any)=>x.benefit),...qualitativeSpend.map((x:any)=>x.benefit),...(id.startsWith("hilton_")&&/(?:complimentary|enjoy) (?:Hilton Honors™? )?(?:Silver|Gold|Diamond) status/i.test(t)?["hotel_status"]:[]),...(id==="hilton_aspire"&&/\$\s*100\s+Property Credit/i.test(t)?["hilton_property_credit"]:[]),...((id==="hilton_surpass"||id==="hilton_aspire")&&/National Car Rental[\s\S]{0,180}Emerald Club Executive/i.test(t)?["national_executive_status"]:[]),...(id==="aa_globe"&&/Admirals Club[^.]{0,160}Globe[^.]{0,80}Passes/i.test(t)?["lounge_passes"]:[]),...(id==="marriott_brilliant"&&/\$100 Property Credit|Ritz-Carlton[^.]{0,180}St\. Regis/i.test(t)?["ritz_st_regis_property_credit"]:[]),...(id==="marriott_brilliant"&&/Brilliant Earned Choice Award/i.test(t)?["brilliant_earned_choice_award"]:[]),...((id==="marriott_bountiful"||id==="marriott_bevy")&&/1,000[^.]{0,120}bonus points[^.]{0,120}(?:per|each) eligible stay/i.test(t)?["paid_stay_bonus_1000"]:[]),...( /trip cancellation|trip interruption|auto rental collision|travel insurance|Trip Delay Insurance|Baggage Insurance/i.test(t)?["travel_protections"]:[]),...( /Lifestyle Collection/i.test(t)?["lifestyle_collection"]:[]),...( /Hertz(?:®|™)?\s*Five Star/i.test(t)?["hertz_five_star"]:[]),...( /Hertz[^.]{0,120}(?:status upgrade|Gold\+.*upgrade)/i.test(t)?["hertz_status"]:[]),...( /The Edit by Chase Travel/i.test(t)?["premium_hotel_booking"]:[])]),cap=flexibleCaps(t,id);const rb=rotatingBonus(t,id);if(rb.rate&&!derivedTags.includes("rotating_5x_categories"))derivedTags.push("rotating_5x_categories");const f:any={bookingEarn:bookingEarn(t,id),caps:cap.caps,capGroups:cap.capGroups,groupCaps:cap.groupCaps,postCapEarn:cap.postCapEarn,benefitTags:derivedTags,recurringCredits:recurring,multiYearCredits:multiYearCredits(t,id),annualBonusPoints:bonus(t,id),annualPointCertificates:annualPointCertificates(t,id),annualCategoryCertificates:annualCategory,annualQualitativeCertificates:annualQualitative,qualitativeSpendRewards:qualitativeSpend,temporaryBenefits:temporaryBenefits(t,id),hotelStatus:hotelStatus(t,id),hotelStatusByProgram:{},status:status(t,id),transferRules:transferRules(t,id),transferAccess:transferAccess(t,id),rotatingBonus:rb,spendRewards:genericSpendRewards(t,id),statusMilestoneRewards:statusMilestoneRewards(t,id),companionCertificate:companionCertificate(t,id),verified:true};const unresolved:string[]=[];const af=fee(t,id);if(af==null)unresolved.push("annualFee");else f.annualFee=af;const er=cardEarn(t,id);if(!er)unresolved.push("earn");else f.earn=er;if(id==="amex_platinum"&&/Marriott Bonvoy[^.]{0,100}Gold Elite/i.test(t))f.hotelStatusByProgram.marriott="Gold Elite";if(id==="amex_platinum"&&/Hilton Honors[^.]{0,100}Gold/i.test(t))f.hotelStatusByProgram.hilton="Gold";return{facts:f,unresolved}}
+function cardFacts(id:string,t:string){
+  const recurring=cardRecurringCredits(t,id),annualCategory=annualCategoryCertificates(t,id),annualQualitative=annualQualitativeCertificates(t,id),qualitativeSpend=qualitativeSpendRewards(t,id);
+  const derivedTags=uniq([
+    ...tags(t),...Object.keys(recurring),...annualCategory.map((x:any)=>x.benefit),...annualQualitative.map((x:any)=>x.benefit),...qualitativeSpend.map((x:any)=>x.benefit),
+    ...(id.startsWith("hilton_")&&/(?:complimentary|enjoy) (?:Hilton Honors™? )?(?:Silver|Gold|Diamond) status/i.test(t)?["hotel_status"]:[]),
+    ...(id==="hilton_aspire"&&/\$\s*100\s+Property Credit/i.test(t)?["hilton_property_credit"]:[]),
+    ...((id==="hilton_surpass"||id==="hilton_aspire")&&/National Car Rental[\s\S]{0,180}Emerald Club Executive/i.test(t)?["national_executive_status"]:[]),
+    ...(id==="aa_globe"&&/Admirals Club[^.]{0,160}Globe[^.]{0,80}Passes/i.test(t)?["lounge_passes"]:[]),
+    ...(id==="marriott_brilliant"&&/\$100 Property Credit|Ritz-Carlton[^.]{0,180}St\. Regis/i.test(t)?["ritz_st_regis_property_credit"]:[]),
+    ...(id==="marriott_brilliant"&&/Brilliant Earned Choice Award/i.test(t)?["brilliant_earned_choice_award"]:[]),
+    ...((id==="marriott_bountiful"||id==="marriott_bevy")&&/1,000[^.]{0,120}bonus points[^.]{0,120}(?:per|each) eligible stay/i.test(t)?["paid_stay_bonus_1000"]:[]),
+    ...(/trip cancellation|trip interruption|auto rental collision|travel insurance|Trip Delay Insurance|Baggage Insurance/i.test(t)?["travel_protections"]:[]),
+    ...(/Lifestyle Collection/i.test(t)?["lifestyle_collection"]:[]),
+    ...(/Hertz(?:®|™)?\s*Five Star/i.test(t)?["hertz_five_star"]:[]),
+    ...(/Hertz[^.]{0,120}(?:status upgrade|Gold\+.*upgrade)/i.test(t)?["hertz_status"]:[]),
+    ...(/The Edit by Chase Travel/i.test(t)?["premium_hotel_booking"]:[])
+  ]);
+  const cap=flexibleCaps(t,id),rb=rotatingBonus(t,id);
+  if(rb.rate&&!derivedTags.includes("rotating_5x_categories"))derivedTags.push("rotating_5x_categories");
+  const critical=parseMarriottCardCriticalFacts(t,id);
+  const pointCerts=annualPointCertificates(t,id);
+  if(critical.annualPointCertificate&&!pointCerts.some((x:any)=>x?.benefit===critical.annualPointCertificate.benefit))pointCerts.push(critical.annualPointCertificate);
+  const spend=genericSpendRewards(t,id);
+  if(critical.spendReward&&!spend.some((x:any)=>x?.benefit===critical.spendReward.benefit))spend.push(critical.spendReward);
+  const multi=multiYearCredits(t,id);
+  if(critical.trustedTraveler)multi.trusted_traveler=critical.trustedTraveler;
+  const hs=hotelStatus(t,id);
+  if(critical.automaticTier)hs.automaticTier=critical.automaticTier;
+  const f:any={
+    bookingEarn:bookingEarn(t,id),caps:cap.caps,capGroups:cap.capGroups,groupCaps:cap.groupCaps,postCapEarn:cap.postCapEarn,
+    benefitTags:derivedTags,recurringCredits:recurring,multiYearCredits:multi,annualBonusPoints:bonus(t),annualPointCertificates:pointCerts,
+    annualCategoryCertificates:annualCategory,annualQualitativeCertificates:annualQualitative,qualitativeSpendRewards:qualitativeSpend,
+    temporaryBenefits:temporaryBenefits(t,id),hotelStatus:hs,hotelStatusByProgram:{},status:status(t,id),transferRules:transferRules(t,id),
+    transferAccess:transferAccess(t,id),rotatingBonus:rb,spendRewards:spend,statusMilestoneRewards:statusMilestoneRewards(t,id),
+    companionCertificate:companionCertificate(t,id),verified:true
+  };
+  const unresolved:string[]=[];
+  const af=critical.annualFee??fee(t,id);
+  if(af==null)unresolved.push("annualFee");else f.annualFee=af;
+  const er=parseMarriottCardRewards(t,id)||cardEarn(t,id);
+  if(!er)unresolved.push("earn");else f.earn=er;
+  if(/Marriott Bonvoy[^.]{0,100}Gold Elite/i.test(t))f.hotelStatusByProgram.marriott="Gold Elite";
+  if(/Hilton Honors[^.]{0,100}Gold/i.test(t))f.hotelStatusByProgram.hilton="Gold";
+  return{facts:f,unresolved};
+}
 
 const FLEX_FACT_LIMITS:any={
   amex_green:{tags:["clear","travel_protections"],recurring:["clear"]},
