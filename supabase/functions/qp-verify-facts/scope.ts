@@ -23,35 +23,39 @@ function greenComparison(raw){
   return "";
 }
 function capitalOneProduct(raw,id){
-  const names={
-    venture_one:["ventureone rewards from capital one","ventureone rewards"],
-    venture:["venture rewards from capital one","venture rewards"],
-    venture_x:["venture x rewards from capital one","venture x rewards"]
-  };
-  const l=lower(raw),terms=names[id]||[];let start=-1;
-  for(const t of terms){const p=l.indexOf(t);if(p>=0&&(start<0||p<start))start=p}
+  const brand={venture_one:"ventureone",venture:"venture",venture_x:"venturex"}[id]||"";
+  const l=lower(raw);
+  let start=brand?l.indexOf('data-personalizationanalytics-brandcode="'+brand+'"'):-1;
+  if(start<0){
+    const names={venture_one:["ventureone rewards from capital one","ventureone rewards"],venture:["venture rewards from capital one","venture rewards"],venture_x:["venture x rewards from capital one","venture x rewards"]};
+    for(const t of names[id]||[]){const p=l.indexOf(t);if(p>=0&&(start<0||p<start))start=p}
+  }
   if(start<0)return "";
-  start=Math.max(0,start-12000);
+  start=Math.max(0,start-7000);
   const endMarker="not the right card for you?";
   const end=l.indexOf(endMarker,start);
-  return raw.slice(start,end>start?end:Math.min(raw.length,start+180000));
+  return raw.slice(start,end>start?end:Math.min(raw.length,start+120000));
 }
 export function sourceReadLimit(url,kind,id,defaultLimit=2000000){
   if(kind==="cards"&&id==="amex_green"&&/americanexpress\.com\/us\/credit-cards\/card\/green\/?/i.test(url))return 3500000;
   return defaultLimit;
 }
-export function scopeSourceHtml(raw,url,kind,id){
+export function scopeSourceHtml(raw,url,kind,id,finalUrl=""){
+  const loc=String(url||"")+" "+String(finalUrl||"");
   if(kind!=="cards")return raw;
-  if(id==="amex_green"&&/americanexpress\.com\/us\/credit-cards\/card\/green\/?/i.test(url)){
+  if(id==="amex_green"&&/americanexpress\.com\/us\/credit-cards\/card\/green\/?/i.test(loc)){
     return greenComparison(raw)||raw;
   }
-  if(/americanexpress\.com\/us\/credit-cards\/card\//i.test(url)){
+  if(/americanexpress\.com\/us\/credit-cards\/card\//i.test(loc)){
     return mainHtml(raw)||raw;
   }
-  if(/(?:creditcards\.chase\.com|chase\.com\/sapphire-cards|chase\.com\/personal\/credit-cards)/i.test(url)){
+  if(/(?:global\.americanexpress\.com\/card-benefits|americanexpress\.com\/en-us\/(?:travel\/benefits|credit-cards\/credit-intel))/i.test(loc)){
     return mainHtml(raw)||raw;
   }
-  if(/capitalone\.com\/credit-cards\/(?:ventureone|venture|venture-x)\/?/i.test(url)){
+  if(/(?:creditcards\.chase\.com|chase\.com\/sapphire-cards|chase\.com\/personal\/credit-cards)/i.test(loc)){
+    return mainHtml(raw)||raw;
+  }
+  if(/capitalone\.com\/credit-cards\/(?:ventureone|venture|venture-x)\/?/i.test(loc)){
     return capitalOneProduct(raw,id)||raw;
   }
   return raw;

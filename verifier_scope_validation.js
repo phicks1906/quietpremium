@@ -11,10 +11,13 @@ const chase='<header>Sapphire Reserve lounge</header><main><h1>Preferred</h1><p>
 const c=S.scopeSourceHtml(chase,"https://creditcards.chase.com/rewards-credit-cards/sapphire/preferred","cards","chase_preferred");
 ok("Chase product scope keeps main",c.includes("$95 annual fee")&&c.includes("3x dining"),c);
 ok("Chase product scope removes header/footer",!c.includes("Reserve"),c);
-const co='<nav>Venture X $395</nav><div>noise</div><section><h1>Venture Rewards from Capital One</h1><p>Unlimited 2X miles on every purchase</p><p>Annual Fee $95</p><p>5X hotels through Capital One Travel</p></section><h2>Not the right card for you?</h2><div>Venture X lounge</div>';
+const co='<nav>Venture X $395</nav><div>noise</div><section data-personalizationanalytics-brandcode="venture"><h1>Venture Rewards from Capital One</h1><p>Unlimited 2X miles on every purchase</p><p>Annual Fee $95</p><p>5X hotels through Capital One Travel</p></section><h2>Not the right card for you?</h2><div>Venture X lounge</div>';
 const v=S.scopeSourceHtml(co,"https://www.capitalone.com/credit-cards/venture/","cards","venture");
 ok("Capital One product scope keeps product facts",v.includes("Unlimited 2X")&&v.includes("Annual Fee $95"),v);
 ok("Capital One product scope removes cross-sell",!v.includes("Not the right card")&&!v.includes("Venture X lounge"),v);
+const globalAmex='<header>other cards</header><main><h1>Green Benefits</h1><p>Travel protections</p></main><footer>Platinum Diamond status</footer>';
+const ga=S.scopeSourceHtml(globalAmex,"https://www.americanexpress.com/en-us/account/get-started/green/set-up-and-payments","cards","amex_green","https://global.americanexpress.com/card-benefits/view-all/amex-green");
+ok("redirected global Amex benefits scope keeps main",ga.includes("Travel protections")&&!ga.includes("Platinum Diamond"),ga);
 const green='prefix F2A link noise F2A [[id fee text Annual Fee value $150],[id 3xOnTravel text 3X on Travel],[id 3xOnTransit text 3X on Transit],[id 3XAtRestaurants text 3X at Restaurants],[id clearpluscredit text CLEAR Plus Credit]] goldPlatinum cross-sell';
 const g=S.scopeSourceHtml(green,"https://www.americanexpress.com/us/credit-cards/card/green/","cards","amex_green");
 ok("Green listing isolates F2A comparison facts",g.includes("Annual Fee")&&g.includes("3X on Travel")&&g.includes("3X on Transit"),g);
