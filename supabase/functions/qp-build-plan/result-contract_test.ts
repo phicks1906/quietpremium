@@ -197,3 +197,35 @@ Deno.test("implementation plan does not invent a threshold when the engine has n
   assert(middle.actions.length===1&&middle.actions[0].type==="no_change","empty threshold phase manufactured work");
   assert(middle.actions[0].title.includes("No status or spend threshold intervention"),"no-change conclusion missing");
 });
+
+
+Deno.test("implementation plan groups routine routing by card and uses human category labels",()=>{
+  const result={
+    engineVersion:"5.0-alpha.32",rulesAsOf:"2026-09-23",factsSnapshot:{snapshotId:"f"},valuationSnapshot:{snapshotId:"v"},
+    factQuality:{productionReady:true,missingCriticalFacts:[]},profile:{constraints:{requiredCards:[]},companionTravel:{intent:"no",frequency:"",minimumExpectedRoundTrips:0}},
+    travelStrategy:{airline:{primary:"",mode:"flexible"},hotel:{primary:"",mode:"flexible"}},rewardsStrategy:{primaryCurrency:"chase_ur"},newCardClassifications:[],considerCards:[],
+    current:{economics:{netEconomicValue:0}},
+    recommended:{portfolio:["chase_reserve"],ongoingRouting:{dining:[{card:"chase_reserve",amount:24000}],gas_ev:[{card:"chase_reserve",amount:6000}],general:[{card:"chase_reserve",amount:90000}]},recurringJobs:[],temporaryJobs:[],actions:[],visibleBenefits:[],recommendationCredit:{},feeSummary:{currentAnnualFees:0,recommendedAnnualFees:795,annualSavings:0,annualIncrease:795},economics:{netEconomicValue:1000,portfolioRecurringBenefits:{companion:{totalValue:0,intent:"no"}}},travelActions:{airline:{},hotel:{}},outcomes:{travelCapacity:{},hotelExperience:{}},strategy:{airlineStatusTarget:null,hotelStatusTarget:null,southwestCompanionPass:null,airlineStatusLadder:{airline:"",benefitFactsComplete:true,selected:null,rows:[]}},quality:{issues:[]}}
+  };
+  const E={cardFacts:()=>({label:"Chase Sapphire Reserve",kind:"flex",annualFee:795,currency:"chase_ur"})};
+  const out=buildResultContract(result,E,{pass:true,errors:[],warnings:[]});
+  const routes=out.implementationPlan.phases.flatMap(p=>p.actions).filter(x=>x.type==="routing");
+  assert(routes.length===1,"routine routing should be grouped into one action per card");
+  assert(routes[0].title.includes("Dining")&&routes[0].title.includes("Gas & EV charging")&&routes[0].title.includes("Everything else"),"grouped routing is not human-readable");
+});
+
+Deno.test("natural recurring threshold is disclosed without manufacturing an intervention",()=>{
+  const result={
+    engineVersion:"5.0-alpha.32",rulesAsOf:"2026-09-23",factsSnapshot:{snapshotId:"f"},valuationSnapshot:{snapshotId:"v"},
+    factQuality:{productionReady:true,missingCriticalFacts:[]},profile:{constraints:{requiredCards:[]},companionTravel:{intent:"no",frequency:"",minimumExpectedRoundTrips:0}},
+    travelStrategy:{airline:{primary:"",mode:"flexible"},hotel:{primary:"",mode:"flexible"}},rewardsStrategy:{primaryCurrency:"chase_ur"},newCardClassifications:[],considerCards:[],
+    current:{economics:{netEconomicValue:0}},
+    recommended:{portfolio:["chase_reserve"],ongoingRouting:{general:[{card:"chase_reserve",amount:90000}]},recurringJobs:[{id:"annual_threshold:chase_reserve:southwest_chase_travel_credit_500",type:"annual_threshold",recurring:true,cardId:"chase_reserve",purpose:"southwest_chase_travel_credit_500",annualSpendRequired:75000,spendRequired:75000,modeledValue:500,routingOpportunityCost:0,opportunityCost:0,stopCondition:{type:"annual_card_spend",amount:75000,benefit:"southwest_chase_travel_credit_500",resetsAnnually:true},moves:[]}],temporaryJobs:[],actions:[],visibleBenefits:[],recommendationCredit:{},feeSummary:{currentAnnualFees:0,recommendedAnnualFees:795,annualSavings:0,annualIncrease:795},economics:{netEconomicValue:1000,portfolioRecurringBenefits:{companion:{totalValue:0,intent:"no"}}},travelActions:{airline:{},hotel:{}},outcomes:{travelCapacity:{},hotelExperience:{}},strategy:{airlineStatusTarget:null,hotelStatusTarget:null,southwestCompanionPass:null,airlineStatusLadder:{airline:"",benefitFactsComplete:true,selected:null,rows:[]}},quality:{issues:[]}}
+  };
+  const E={cardFacts:()=>({label:"Chase Sapphire Reserve",kind:"flex",annualFee:795,currency:"chase_ur"})};
+  const out=buildResultContract(result,E,{pass:true,errors:[],warnings:[]});
+  const threshold=out.implementationPlan.phases.flatMap(p=>p.actions).find(x=>x.type==="recurring_threshold");
+  assert(threshold.naturalThroughOngoingRouting===true,"natural threshold was mislabeled as an intervention");
+  assert(threshold.title.includes("normal routing naturally clears"),"natural threshold title is not customer-facing");
+  assert(threshold.purposeLabel==="$500 Southwest Airlines Chase Travel credit","raw threshold identifier leaked into customer label");
+});
