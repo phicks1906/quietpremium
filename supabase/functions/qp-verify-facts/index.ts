@@ -1,6 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { ENTITY_SOURCES, ALLOWED_CARD_IDS, ALLOWED_AIRLINE_IDS, ALLOWED_HOTEL_IDS } from "./sources.ts";
-import { parseDeltaCardStatus, parseDeltaThresholds, parseChaseReserveRewards, parseMarriottThresholds, criticalStructureIssues } from "./critical-parsers.ts";
+import { parseDeltaCardStatus, parseDeltaThresholds, parseChaseReserveRewards, parseMarriottThresholds, parseMarriottCardCriticalFacts, criticalStructureIssues } from "./critical-parsers.ts";
 
 const ORIGINS=new Set(["https://quietpremium.com","https://www.quietpremium.com"]);
 const PUBLIC_BROWSER_KEY="sb_publishable_BETG0zmWAEmPByBsKyEUzA_yPCOkh5F";
@@ -127,7 +127,7 @@ function bookingEarn(t:string,id:string){const o:any={};if(id==="chase_reserve")
       }
     }
   }return o}
-function multiYearCredits(t:string,id:string){const o:any={};
+function multiYearCredits(t:string,id:string){const o:any={};const critical=parseMarriottCardCriticalFacts(t,id);if(critical.trustedTraveler)o.trusted_traveler=critical.trustedTraveler;
   if(id==="amex_platinum"){
     const m=first(t,[/(?:Global Entry|TSA PreCheck)[\s\S]{0,900}?\$\s*(120)[\s\S]{0,1200}?every\s+(4)\s+years?/i,/\$\s*(120)[\s\S]{0,900}?(?:Global Entry|TSA PreCheck)[\s\S]{0,1200}?every\s+(4)\s+years?/i]);
     if(m)return{trusted_traveler:{amount:120,years:4}};
@@ -231,7 +231,7 @@ function unitedRecurringCredits(t:string,id:string){
   return o;
 }
 function genericSpendRewards(t:string,id:string){
-  const out:any[]=[];
+  const out:any[]=[];const critical=parseMarriottCardCriticalFacts(t,id);if(critical.spendReward)out.push(critical.spendReward);
   if(id==="united_explorer"){
     if(/\$100 United[^.]{0,80}travel credit[^.]{0,180}spend \$10,000/i.test(t)||/spend \$10,000[^.]{0,180}\$100[^.]{0,80}TravelBank/i.test(t))out.push({amount:10000,benefit:"united_travelbank_100",cashValue:100});
     if(/10,000-mile award flight discount[^.]{0,180}spending \$20,000/i.test(t))out.push({amount:20000,benefit:"award_discount_10k",valuePoints:10000,currency:"united_miles"});
@@ -246,7 +246,6 @@ function genericSpendRewards(t:string,id:string){
   if(id==="delta_gold"&&/(?:spend|after you spend)[^.]{0,80}\$10,?000[^.]{0,180}\$200[^.]{0,100}(?:Delta )?Flight Credit|\$200[^.]{0,100}(?:Delta )?Flight Credit[^.]{0,180}\$10,?000/i.test(t))out.push({amount:10000,benefit:"delta_flight_credit_200",cashValue:200});
   if(id==="aa_platinum_select"&&/(?:spend|after you spend)[^.]{0,80}\$20,?000[^.]{0,180}\$125[^.]{0,100}(?:American Airlines )?flight discount|\$125[^.]{0,100}flight discount[^.]{0,180}\$20,?000/i.test(t))out.push({amount:20000,benefit:"aa_flight_discount_125",cashValue:125,renewalRequired:true});
   if((id==="marriott_bountiful"||id==="marriott_bevy")&&/(?:Free Night Award)[^.]{0,240}\$15,?000|\$15,?000[^.]{0,240}Free Night Award/i.test(t))out.push({amount:15000,benefit:"free_night_award_50k",valuePoints:50000,currency:"marriott_points"});
-  if(id==="marriott_brilliant"&&(/Brilliant Earned Choice Award[\s\S]{0,700}\$60,?000|\$60,?000[\s\S]{0,700}Earned Choice Award/i.test(t))&&/(?:85K|85,?000)[^.]{0,180}Free Night Award|Free Night Award[^.]{0,180}(?:85K|85,?000)/i.test(t))out.push({amount:60000,benefit:"brilliant_choice_free_night_award_85k",valuePoints:85000,currency:"marriott_points"});
   if(id==="aa_executive"&&/spend \$150,000[^.]{0,180}5 AAdvantage[^.]{0,100}miles/i.test(t))out.push({amount:150000,benefit:"aa_5x_eligible_aa_remainder"});
   if(id==="chase_reserve"){const threshold=/spend \$\s*75,?000[^.]{0,160}(?:calendar year|each calendar year)|\$\s*75,?000[^.]{0,160}(?:calendar year|each calendar year)/i.test(t),sw=/\$\s*500[^.]{0,180}Southwest Airlines[^.]{0,120}(?:Chase Travel|statement credits?)|Southwest Airlines[^.]{0,180}\$\s*500[^.]{0,120}(?:Chase Travel|statement credits?)/i.test(t);if(threshold&&sw)out.push({amount:75000,benefit:"southwest_chase_travel_credit_500",cashValue:500});}
   return out;
@@ -262,8 +261,7 @@ function statusMilestoneRewards(t:string,id:string){
 function annualPointCertificates(t:string,id:string){
   const out:any[]=[];
   if(id==="united_quest"&&(/Starting with your first (?:Cardmember )?anniversary[^.]{0,300}(?:every anniversary thereafter|each anniversary)[^.]{0,360}10,000-mile (?:award flight )?discount/i.test(t)||/10,000-mile (?:award flight )?discount[^.]{0,360}(?:first (?:Cardmember )?anniversary|every anniversary thereafter)/i.test(t)))out.push({benefit:"award_discount_10k_annual",capPoints:10000,currency:"united_miles",renewalRequired:true});
-  if(id==="marriott_boundless"&&(/Free Night Award[\s\S]{0,320}(?:35,?000|35K)[\s\S]{0,320}(?:every year|account anniversary|renewal)/i.test(t)|/(?:35,?000|35K)[\s\S]{0,320}Free Night Award[\s\S]{0,320}(?:every year|anniversary|renewal)/i.test(t)))out.push({benefit:"free_night_award_35k",capPoints:35000,currency:"marriott_points",renewalRequired:true});
-  if(id==="marriott_brilliant"&&(/Free Night Award[\s\S]{0,320}(?:85,?000|85K)[\s\S]{0,320}(?:every year|Card renewal|renewal month)/i.test(t)|/(?:85,?000|85K)[\s\S]{0,320}Free Night Award[\s\S]{0,320}(?:every year|renewal)/i.test(t)))out.push({benefit:"free_night_award_85k",capPoints:85000,currency:"marriott_points",renewalRequired:true});
+  const critical=parseMarriottCardCriticalFacts(t,id);if(critical.annualPointCertificate)out.push(critical.annualPointCertificate);
   return out;
 }
 function annualCategoryCertificates(t:string,id:string){
@@ -313,7 +311,7 @@ function temporaryBenefits(t:string,id:string){
   return out;
 }
 function bonus(t:string){const m=first(t,[/(\d{1,3}(?:,\d{3})+)\s+anniversary\s+(?:miles|points)/i,/anniversary[^0-9]{0,80}(\d{1,3}(?:,\d{3})+)\s+(?:miles|points)/i,/(\d{1,3}(?:,\d{3})+)\s+points\s+every year[^.]{0,100}(?:Cardmember )?anniversary/i]);return m?amount(m[1]):0}
-function hotelStatus(t:string,id:string){const o:any={};for(const [tier,re]of [["Diamond",/complimentary (?:Hilton Honors )?Diamond status/i],["Gold",/complimentary (?:Hilton Honors )?Gold status/i],["Silver",/complimentary (?:Hilton Honors )?Silver status/i],["Platinum Elite",/complimentary (?:Marriott Bonvoy )?Platinum Elite status/i],["Gold Elite",/complimentary (?:Marriott Bonvoy )?Gold Elite status/i],["Silver Elite",/(?:automatic|complimentary) (?:Marriott Bonvoy )?Silver Elite status/i],["Discoverist",/(?:complimentary|receive) (?:World of Hyatt )?Discoverist status/i]] as [string,RegExp][])if(re.test(t)){o.automaticTier=tier;break}const n=first(t,[/(?:receive|get)\s+(\d+)\s+(?:elite |tier )?qualifying night credits?/i,/(\d+)\s+Elite Night Credits/i]);if(n)o.annualNights=Number(n[1]);const b=first(t,[/(?:one\s*\(\s*)?(\d+)\s*\)?\s+(?:additional )?Elite Night Credit[^.]{0,140}(?:for every|every time you spend)\s+\$\s*([\d,]+)/i,/(\d+)\s+(?:additional\s+)?(?:tier[- ]?)?qualifying night credits?[^.]{0,140}(?:for every|every time you spend)\s+\$\s*([\d,]+)/i]);if(b){o.nightsPerBlock=Number(b[1]);o.spendBlock=amount(b[2])}const st=first(t,[/spend\s+\$\s*([\d,]+)[^.]{0,180}(?:earn|upgrade to|receive)[^.]{0,80}(Silver|Gold|Diamond|Platinum)(?: Elite)? status/i]);if(st)o.spendTier={amount:amount(st[1]),tier:st[2]+(id.startsWith("marriott_")&&!/Elite/i.test(st[2])?" Elite":"")};return o}
+function hotelStatus(t:string,id:string){const o:any={};const critical=parseMarriottCardCriticalFacts(t,id);if(critical.automaticTier)o.automaticTier=critical.automaticTier;for(const [tier,re]of [["Diamond",/complimentary (?:Hilton Honors )?Diamond status/i],["Gold",/complimentary (?:Hilton Honors )?Gold status/i],["Silver",/complimentary (?:Hilton Honors )?Silver status/i],["Platinum Elite",/(?:automatic|complimentary) (?:Marriott Bonvoy )?Platinum Elite status/i],["Gold Elite",/(?:automatic|complimentary) (?:Marriott Bonvoy )?Gold Elite status/i],["Silver Elite",/(?:automatic|complimentary) (?:Marriott Bonvoy )?Silver Elite status/i],["Discoverist",/(?:complimentary|receive) (?:World of Hyatt )?Discoverist status/i]] as [string,RegExp][])if(!o.automaticTier&&re.test(t)){o.automaticTier=tier;break}const n=first(t,[/(?:receive|get)\s+(\d+)\s+(?:elite |tier )?qualifying night credits?/i,/(\d+)\s+Elite Night Credits/i]);if(n)o.annualNights=Number(n[1]);const b=first(t,[/(?:one\s*\(\s*)?(\d+)\s*\)?\s+(?:additional )?Elite Night Credit[^.]{0,140}(?:for every|every time you spend)\s+\$\s*([\d,]+)/i,/(\d+)\s+(?:additional\s+)?(?:tier[- ]?)?qualifying night credits?[^.]{0,140}(?:for every|every time you spend)\s+\$\s*([\d,]+)/i]);if(b){o.nightsPerBlock=Number(b[1]);o.spendBlock=amount(b[2])}const st=first(t,[/spend\s+\$\s*([\d,]+)[^.]{0,180}(?:earn|upgrade to|receive)[^.]{0,80}(Silver|Gold|Diamond|Platinum)(?: Elite)? status/i]);if(st)o.spendTier={amount:amount(st[1]),tier:st[2]+(id.startsWith("marriott_")&&!/Elite/i.test(st[2])?" Elite":"")};return o}
 function companionCertificate(t:string,id:string){
   const o:any={};
   if(id==="aa_globe"){
