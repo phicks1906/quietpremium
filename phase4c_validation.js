@@ -1,4 +1,10 @@
 const D=require("./assets/diagnostic-v5.js");
+globalThis.QP_AIRPORTS=[
+  {c:"SDF",n:"Louisville International Standiford Field",y:"Louisville",o:"United States"},
+  {c:"JFK",n:"John F Kennedy International Airport",y:"New York",o:"United States"},
+  {c:"LGA",n:"La Guardia Airport",y:"New York",o:"United States"},
+  {c:"ATL",n:"Hartsfield Jackson Atlanta International Airport",y:"Atlanta",o:"United States"}
+];
 
 let pass=0,fail=0;
 const failures=[];
@@ -65,6 +71,16 @@ ok("companion yes survives",p.companionTravelIntent==="yes"&&p.companionTravelFr
 ok("unknown remaining-year activity stays unknown",!("remainingYear" in p),JSON.stringify(p.remainingYear));
 ok("stored point balances survive",p.pointBalances.amex_mr===250000&&p.pointBalances.skymiles===150000,JSON.stringify(p.pointBalances));
 ok("old subjective benefit values are not mapped",!("benefitValueByType" in p)&&!("explicitBenefitUse" in p),JSON.stringify(p));
+eq("home airport is canonicalized",p.homeAirport,"SDF");
+eq("frequent destinations are canonicalized",p.frequentDestinations,["ATL","JFK"]);
+ok("valid airport code resolves",D.resolveAirport("SDF").ok===true&&D.resolveAirport("SDF").code==="SDF",JSON.stringify(D.resolveAirport("SDF")));
+ok("airport name resolves",D.resolveAirport("John F Kennedy International Airport").code==="JFK",JSON.stringify(D.resolveAirport("John F Kennedy International Airport")));
+ok("ambiguous city is rejected",D.resolveAirport("New York").reason==="ambiguous",JSON.stringify(D.resolveAirport("New York")));
+const badAirport={...base,home_airport:"ZZZ"};
+ok("invalid home airport is rejected",D.validationErrors(badAirport).some(x=>x.includes("valid home airport")),JSON.stringify(D.validationErrors(badAirport)));
+const ambiguousAirport={...base,home_airport:"New York"};
+ok("ambiguous home airport is rejected",D.validationErrors(ambiguousAirport).some(x=>x.includes("specific home airport")),JSON.stringify(D.validationErrors(ambiguousAirport)));
+
 
 const noComp={...base,companion_travel_intent:"no",companion_travel_frequency:""};
 const pn=D.buildProfileFromValues(noComp);
