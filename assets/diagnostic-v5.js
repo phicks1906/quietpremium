@@ -76,8 +76,43 @@ function resolveCard(v){
 function parseCardList(v){
   return unique(String(v||"").split(/[\n,;]+/).map(x=>x.trim()).filter(Boolean).map(resolveCard));
 }
+function airportRows(){return Array.isArray(globalThis.QP_AIRPORTS)?globalThis.QP_AIRPORTS:[];}
+function airportNorm(v){return String(v??"").toLowerCase().replace(/[^a-z0-9]+/g," ").trim();}
+function airportLabel(a){return a.c+" — "+a.n+" — "+a.y+", "+a.o;}
+function airportMatches(v,limit=12){
+  const q=airportNorm(v);if(q.length<2)return[];
+  const rows=airportRows(),exactCode=String(v||"").trim().toUpperCase();
+  const scored=[];
+  for(const a of rows){
+    const code=String(a.c||"").toUpperCase(),name=airportNorm(a.n),city=airportNorm(a.y),country=airportNorm(a.o);
+    let score=0;
+    if(code===exactCode)score=100;
+    else if(code.startsWith(exactCode)&&exactCode.length>=2)score=90;
+    else if(city===q)score=80;
+    else if(name===q)score=75;
+    else if(city.startsWith(q))score=65;
+    else if(name.startsWith(q))score=55;
+    else if((city+" "+name+" "+country).includes(q))score=35;
+    if(score)scored.push({a,score});
+  }
+  return scored.sort((x,y)=>y.score-x.score||String(x.a.c).localeCompare(String(y.a.c))).slice(0,limit).map(x=>x.a);
+}
+function resolveAirport(v){
+  const raw=String(v||"").trim();if(!raw)return{ok:false,reason:"empty",matches:[]};
+  const prefix=raw.match(/^([A-Za-z0-9]{3})\s*(?:—|-|$)/),code=(prefix?prefix[1]:raw).toUpperCase();
+  const rows=airportRows();
+  if(/^[A-Z0-9]{3}$/.test(code)){
+    const hit=rows.find(a=>String(a.c||"").toUpperCase()===code);
+    if(hit)return{ok:true,code:String(hit.c).toUpperCase(),airport:hit,matches:[hit]};
+  }
+  const q=airportNorm(raw),exact=rows.filter(a=>airportNorm(a.n)===q||airportNorm(a.y)===q||airportNorm(a.c)===q);
+  if(exact.length===1)return{ok:true,code:String(exact[0].c).toUpperCase(),airport:exact[0],matches:exact};
+  if(exact.length>1)return{ok:false,reason:"ambiguous",matches:exact.slice(0,12)};
+  return{ok:false,reason:"unrecognized",matches:airportMatches(raw,12)};
+}
+function destinationTokens(v){return unique(String(v||"").split(/[\n,;]+/).map(x=>x.trim()).filter(Boolean));}
 function parseDestinations(v){
-  return unique(String(v||"").split(/[\n,;]+/).map(x=>x.trim().toUpperCase()).filter(Boolean)).slice(0,5);
+  return unique(destinationTokens(v).map(x=>resolveAirport(x)).filter(x=>x.ok).map(x=>x.code)).slice(0,5);
 }
 function parseGoals(v){
   if(Array.isArray(v))return unique(v.map(x=>String(x).trim().toLowerCase()).filter(Boolean));
@@ -199,7 +234,7 @@ function buildProfileFromValues(v={}){
     currentHotelStatus:v.primary_hotel_status||"",
     annualOneWayFlights:num(v.flights_taken),
     bookingControl:bookingControl(v.booking_control),
-    homeAirport:String(v.home_airport||"").trim().toUpperCase(),
+    homeAirport:resolveAirport(v.home_airport).code||"",
     frequentDestinations:parseDestinations(v.frequent_destinations),
     bookingMethod:{airfare:airfareBooking(v.airfare_booking_method),hotel:hotelBooking(v.hotel_booking_method)},
     aspirations:parseGoals(v.desired_outcomes),
@@ -232,6 +267,14 @@ function buildProfileFromValues(v={}){
 }
 function validationErrors(v={}){
   const errors=[];
+  const home=resolveAirport(v.home_airport);
+  if(!home.ok)errors.push(home.reason==="ambiguous"?"Choose a specific home airport rather than a city with multiple airports.":"Choose a valid home airport from the airport suggestions.");
+  const destinationInputs=destinationTokens(v.frequent_destinations);
+  if(destinationInputs.length>5)errors.push("Enter no more than five frequent destinations.");
+  for(const token of destinationInputs){
+    const d=resolveAirport(token);
+    if(!d.ok){errors.push(d.reason==="ambiguous"?"Choose a specific airport for "+token+" rather than an ambiguous city.":"Quiet Premium could not identify the destination "+token+". Use an airport code or choose a specific airport.");break;}
+  }
   const total=num(v.total_spend),sum=num(v.dining_spend)+num(v.grocery_spend)+num(v.general_spend)+num(v.individual_airfare_spend)+num(v.hotel_spend);
   const tol=Math.max(1000,total*.05);
   if(total>0&&Math.abs(total-sum)>tol)errors.push("Your spending categories need to be within 5% of your annual total so Quiet Premium does not invent where the missing dollars went.");
@@ -289,6 +332,18 @@ function showError(message){
   box.textContent=message;
   const shell=document.querySelector("#assessment .shell");shell?.prepend(box);box.scrollIntoView({behavior:"smooth",block:"center"});
 }
+function bindAirportInputs(){
+  const home=document.getElementById("home_airport");if(!home)return;
+  let list=document.getElementById("qp-airport-list");
+  if(!list){list=document.createElement("datalist");list.id="qp-airport-list";document.body.appendChild(list);}
+  home.setAttribute("list","qp-airport-list");home.setAttribute("autocomplete","off");
+  const refresh=()=>{const matches=airportMatches(home.value,15);list.innerHTML=matches.map(a=>'<option value="'+String(airportLabel(a)).replace(/"/g,"&quot;")+'"></option>').join("");};
+  home.addEventListener("input",refresh);
+  home.addEventListener("change",()=>{const r=resolveAirport(home.value);if(r.ok)home.value=r.code;});
+  home.addEventListener("blur",()=>{const r=resolveAirport(home.value);if(r.ok)home.value=r.code;});
+  const dest=document.getElementById("frequent_destinations");
+  dest?.addEventListener("blur",()=>{const tokens=destinationTokens(dest.value),resolved=tokens.map(resolveAirport);if(tokens.length&&resolved.every(x=>x.ok))dest.value=unique(resolved.map(x=>x.code)).slice(0,5).join(", ");});
+}
 function syncConditionals(){
   const air=primaryAirline(document.getElementById("primary_airline_eco")?.value);
   document.querySelectorAll("[data-v5-air]").forEach(el=>el.classList.toggle("hidden",el.dataset.v5Air!==air));
@@ -327,7 +382,8 @@ function bind(){
   form.addEventListener("submit",submitV5,true);
   document.addEventListener("change",syncConditionals);
   document.addEventListener("input",syncConditionals);
+  bindAirportInputs();
   syncConditionals();
 }
-return Object.freeze({CARD_LABELS,resolveCard,parseCardList,parseGoals,parseCardAmountLines,parseCardPqpLines,buildProfileFromValues,validationErrors,bind});
+return Object.freeze({CARD_LABELS,resolveCard,parseCardList,parseGoals,parseCardAmountLines,parseCardPqpLines,resolveAirport,airportMatches,parseDestinations,buildProfileFromValues,validationErrors,bind});
 });
