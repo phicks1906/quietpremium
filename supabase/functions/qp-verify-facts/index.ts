@@ -4,7 +4,7 @@ import { parseDeltaCardStatus, parseDeltaThresholds, parseChaseReserveRewards, p
 
 const ORIGINS=new Set(["https://quietpremium.com","https://www.quietpremium.com"]);
 const PUBLIC_BROWSER_KEY="sb_publishable_BETG0zmWAEmPByBsKyEUzA_yPCOkh5F";
-const MAX_ENTITIES=12,MAX_BYTES=2000000,TIMEOUT=9000,SCHEMA="qp-verified-facts-v1";
+const MAX_ENTITIES=12,MAX_BYTES=2000000,TIMEOUT=15000,SCHEMA="qp-verified-facts-v1";
 const uniq=(a:any[])=>[...new Set((a||[]).filter(Boolean))];
 const amount=(v:any)=>{const n=Number(String(v??"").replace(/[$,%\s,]/g,""));return Number.isFinite(n)?n:null};
 const cleanText=(h:string)=>String(h||"").replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi," ").replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi," ").replace(/<[^>]+>/g," ").replace(/&nbsp;|&#160;/gi," ").replace(/&amp;/gi,"&").replace(/&quot;/gi,'"').replace(/&#39;|&apos;/gi,"'").replace(/\s+/g," ").trim();
@@ -39,7 +39,7 @@ function scopedRaw(raw:string,url:string){
   }
   return scoped;
 }
-async function get(url:string){
+async function getOnce(url:string){
   const c=new AbortController(),t=setTimeout(()=>c.abort(),TIMEOUT),retrievedAt=new Date().toISOString();
   try{
     const r=await fetch(url,{redirect:"follow",signal:c.signal,headers:{"Accept":"text/html,application/xhtml+xml,text/plain;q=0.9,*/*;q=0.5","Accept-Language":"en-US,en;q=0.8","User-Agent":"Mozilla/5.0 (compatible; QuietPremiumVerifier/1.0; +https://quietpremium.com)"}});
@@ -47,6 +47,13 @@ async function get(url:string){
     return{url,finalUrl,ok:r.ok,status:r.status,retrievedAt,bytesRead:raw.length,fingerprint:await digest(raw),text:cleanText(scoped)};
   }catch(e){return{url,finalUrl:url,ok:false,status:0,retrievedAt,bytesRead:0,fingerprint:"",text:"",error:String((e as Error)?.message||e)}}
   finally{clearTimeout(t)}
+}
+async function get(url:string){
+  const firstTry=await getOnce(url);
+  if(firstTry.ok||firstTry.status!==0)return firstTry;
+  await new Promise(r=>setTimeout(r,120));
+  const secondTry=await getOnce(url);
+  return secondTry.ok?secondTry:{...secondTry,firstAttemptError:firstTry.error||""};
 }
 function first(text:string,res:RegExp[]){for(const r of res){const m=text.match(r);if(m)return m}return null}
 function fee(t:string,id:string){
