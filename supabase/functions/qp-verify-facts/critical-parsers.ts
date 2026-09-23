@@ -16,9 +16,14 @@ export function parseDeltaCardStatus(text,id){
 export function parseDeltaThresholds(text){
   const t=String(text||"");
   const start=t.search(/MQD Thresholds for Status/i);
-  const end=start>=0?t.search(/Earn Medallion Qualification Dollars/i):-1;
-  const section=start>=0?t.slice(start,end>start?end:start+12000):t;
-  const vals=uniq([...section.matchAll(/\$\s*([\d,]+)\s*MQDs?/gi)].map(m=>amount(m[1])).filter(v=>v>=1000&&v<=100000));
+  let section=t;
+  if(start>=0){
+    const rel=t.slice(start);
+    const next=rel.slice(1).search(/Earn Medallion Qualification Dollars(?:\s*\(MQDs\))?/i);
+    section=next>=0?rel.slice(0,next+1):rel.slice(0,30000);
+  }
+  const ordered=section.match(/SILVER[\s\S]{0,1200}?GOLD[\s\S]{0,1200}?PLATINUM[\s\S]{0,1200}?DIAMOND[\s\S]{0,2400}?\$\s*([\d,]+)\s*MQDs?[\s\S]{0,500}?\$\s*([\d,]+)\s*MQDs?[\s\S]{0,500}?\$\s*([\d,]+)\s*MQDs?[\s\S]{0,500}?\$\s*([\d,]+)\s*MQDs?/i);
+  const vals=ordered?[amount(ordered[1]),amount(ordered[2]),amount(ordered[3]),amount(ordered[4])]:uniq([...section.matchAll(/\$\s*([\d,]+)\s*MQDs?/gi)].map(m=>amount(m[1])).filter(v=>v>=1000&&v<=100000));
   const tiers=["Silver Medallion","Gold Medallion","Platinum Medallion","Diamond Medallion"];
   if(vals.length>=4&&vals.slice(0,4).every((v,i,a)=>i===0||v>a[i-1]))return tiers.map((tier,i)=>({tier,amount:vals[i]}));
   const local=[
