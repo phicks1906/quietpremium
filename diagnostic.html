@@ -7,7 +7,7 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
 <meta name="theme-color" content="#090909"/>
-<title>The Architecture — Quiet Premium</title>
+<title>Full Analysis — Quiet Premium</title>
 <meta name="description" content="A free personalized analysis of whether your existing spending is producing the travel experience it should."/>
 
 <!-- Google Analytics: event names only. Assessment answers are not sent as GA parameters. -->
@@ -284,7 +284,7 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
   .metric-value,.result-card h3,.result-summary{color:black!important}
 }
 </style>
-</head>
+<link rel="stylesheet" href="assets/v250-brand.css?v=250"></head>
 
 <body>
 <nav>
@@ -292,7 +292,7 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
     <div class="mark"><div class="mark-inner">QP</div></div>
     <div class="wordmark">Quiet Premium</div>
   </div>
-  <div class="nav-label">The Architecture</div>
+  <div class="nav-label">Full Analysis</div>
 </nav>
 
 <main id="assessment">
@@ -731,7 +731,7 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
 <section class="results" id="results">
   <div class="result-shell">
     <div class="result-hero" data-result-section="conclusion">
-      <div class="eyebrow">Quiet Premium · The Architecture</div>
+      <div class="eyebrow">Quiet Premium · Full Analysis</div>
       <h1 id="result-title">Your spending has an answer.</h1>
       <p class="result-summary" id="result-summary"></p>
     </div>
@@ -760,13 +760,13 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
       <div class="section-block" data-result-section="current_vs_recommended">
         <div class="section-heading"><h2>Current vs. recommended.</h2><p>Maximum is the ceiling. Recommended is QP's prescription after value, experience, feasibility and simplicity are considered together.</p></div>
         <div class="before-after">
-          <div class="arch-panel"><div class="arch-label">Current Architecture</div><div class="arch-title" id="current-arch-title">—</div><div class="arch-stat"><span>Modeled annual net value</span><strong id="current-arch-value">—</strong></div><div class="arch-stat"><span>Airline position</span><strong id="current-airline">—</strong></div><div class="arch-stat"><span>Hotel position</span><strong id="current-hotel">—</strong></div></div>
-          <div class="arch-panel recommended"><div class="arch-label">Recommended Architecture</div><div class="arch-title" id="recommended-arch-title">—</div><div class="arch-stat"><span>Modeled annual net value</span><strong id="recommended-arch-value">—</strong></div><div class="arch-stat"><span>Airline position</span><strong id="recommended-airline">—</strong></div><div class="arch-stat"><span>Hotel position</span><strong id="recommended-hotel">—</strong></div></div>
+          <div class="arch-panel"><div class="arch-label">Current Setup</div><div class="arch-title" id="current-arch-title">—</div><div class="arch-stat"><span>Modeled annual net value</span><strong id="current-arch-value">—</strong></div><div class="arch-stat"><span>Airline position</span><strong id="current-airline">—</strong></div><div class="arch-stat"><span>Hotel position</span><strong id="current-hotel">—</strong></div></div>
+          <div class="arch-panel recommended"><div class="arch-label">Recommended Plan</div><div class="arch-title" id="recommended-arch-title">—</div><div class="arch-stat"><span>Modeled annual net value</span><strong id="recommended-arch-value">—</strong></div><div class="arch-stat"><span>Airline position</span><strong id="recommended-airline">—</strong></div><div class="arch-stat"><span>Hotel position</span><strong id="recommended-hotel">—</strong></div></div>
         </div>
       </div>
 
       <div class="section-block" data-result-section="travel_path">
-        <div class="section-heading"><h2>Your travel path.</h2><p>Status appears only when the recommended architecture actually supports a useful path.</p></div>
+        <div class="section-heading"><h2>Your travel path.</h2><p>Status appears only when the recommended plan actually supports a useful path.</p></div>
         <div class="path-grid">
           <div class="path-card"><div class="eyebrow">Airline</div><div class="path-name" id="airline-path-name">—</div><div class="path-status" id="airline-path-status">—</div><div class="path-copy" id="airline-path-copy"></div><div class="path-bar"><div class="path-fill" id="airline-path-fill"></div></div><div class="path-foot"><span id="airline-path-left"></span><span id="airline-path-right"></span></div></div>
           <div class="path-card"><div class="eyebrow">Hotel</div><div class="path-name" id="hotel-path-name">—</div><div class="path-status" id="hotel-path-status">—</div><div class="path-copy" id="hotel-path-copy"></div><div class="path-bar"><div class="path-fill" id="hotel-path-fill"></div></div><div class="path-foot"><span id="hotel-path-left"></span><span id="hotel-path-right"></span></div></div>
@@ -776,7 +776,7 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
       <div class="section-block" data-result-section="routing"><div class="section-heading"><h2>How to route the spend.</h2><p>Threshold spend stops at the useful breakpoint. The next dollar is re-evaluated.</p></div><div class="routing-map" id="routing-map"></div></div>
       <div class="section-block" data-result-section="corrections"><div class="section-heading"><h2>What changes first.</h2><p>Only differences between Current and Recommended become corrections.</p></div><div class="corrections" id="correction-list"></div></div>
 
-      <div class="section-block" data-result-section="first_year"><div class="section-heading"><h2>First 12 months.</h2><p>Welcome offers can change acquisition sequence without changing the mature architecture.</p></div><div class="result-card"><div class="eyebrow">First-year maximum</div><h3 id="year1-title">—</h3><p id="year1-copy"></p></div></div>
+      <div class="section-block" data-result-section="first_year"><div class="section-heading"><h2>First 12 months.</h2><p>Welcome offers can change acquisition sequence without changing the mature plan.</p></div><div class="result-card"><div class="eyebrow">First-year maximum</div><h3 id="year1-title">—</h3><p id="year1-copy"></p></div></div>
 
       <div class="section-block" data-result-section="maximum_calculation"><div class="section-heading"><h2>How Maximum is calculated.</h2><p>Annual cost is subtracted symmetrically. Existing point balances remain separate.</p></div><div class="value-table" id="value-table"></div></div>
 
@@ -787,12 +787,12 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
       
       <div class="infrastructure" data-result-section="save_share_feedback">
         <div class="section-heading">
-          <h2>Keep this Architecture.</h2>
-          <p>Your completed Architecture is securely stored by Quiet Premium, can be retrieved with a private link, saved on this device, shared, or exported as a PDF.</p>
+          <h2>Keep this analysis.</h2>
+          <p>Your completed analysis is securely stored by Quiet Premium, can be retrieved with a private link, saved on this device, shared, or exported as a PDF.</p>
         </div>
 
         <div class="arch-id">
-          <span>Architecture ID</span>
+          <span>Analysis ID</span>
           <strong id="architecture-id">—</strong>
         </div>
         <div class="saved-state" id="backend-state" aria-live="polite" style="margin:-4px 0 14px">Saving securely…</div>
@@ -800,15 +800,15 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
         <div class="delivery-grid">
           <div class="delivery-card">
             <h3>Private retrieval link</h3>
-            <p>Your result is stored in Quiet Premium's private data layer. The link contains an Architecture ID plus a high-entropy retrieval token. Anyone with the full link can read that one result.</p>
+            <p>Your result is stored in Quiet Premium's private data layer. The link contains an Analysis ID plus a high-entropy retrieval token. Anyone with the full link can read that one result.</p>
             <button type="button" class="btn btn-secondary" id="copy-private-link">Copy Private Link</button>
             <div class="saved-state" id="link-state" aria-live="polite">Not generated yet.</div>
           </div>
 
           <div class="delivery-card">
             <h3>Email a copy</h3>
-            <p>Your email is requested only here, after the result. If entered, it is saved with this Architecture when you choose Email / Share Result; your mail app then opens with the private link prepared.</p>
-            <label class="sr-only" for="result-email">Email address for this Architecture</label>
+            <p>Your email is requested only here, after the result. If entered, it is saved with this analysis when you choose Email / Share Result; your mail app then opens with the private link prepared.</p>
+            <label class="sr-only" for="result-email">Email address for this analysis</label>
             <input class="control" id="result-email" type="email" autocomplete="email" placeholder="you@example.com"/>
             <button type="button" class="btn btn-secondary" id="email-result">Email / Share Result</button>
             <div class="private-note">Quiet Premium does not send this email address to Google Analytics.</div>
@@ -816,14 +816,14 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
 
           <div class="delivery-card">
             <h3>Save on this device</h3>
-            <p>Stores the completed Architecture in this browser's IndexedDB. It is separate from the anonymous unfinished-draft storage.</p>
+            <p>Stores the completed analysis in this browser's IndexedDB. It is separate from the anonymous unfinished-draft storage.</p>
             <button type="button" class="btn btn-secondary" id="save-local-result">Save Private Copy</button>
             <div class="saved-state" id="save-state" aria-live="polite">Not saved.</div>
           </div>
 
           <div class="delivery-card">
             <h3>PDF report</h3>
-            <p>Creates a compact report containing your conclusion, metrics, recommended architecture, routing and corrections.</p>
+            <p>Creates a compact report containing your conclusion, metrics, recommended plan, routing and corrections.</p>
             <button type="button" class="btn btn-secondary" id="download-pdf">Download PDF</button>
             <div class="saved-state" id="pdf-state" aria-live="polite">Ready.</div>
           </div>
@@ -832,13 +832,13 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
         <div class="feedback-panel">
           <div class="eyebrow">Founding feedback</div>
           <h3>Did this feel useful?</h3>
-          <p>Your Architecture ID is attached to the feedback so the comment can be understood in context. Feedback is stored directly with the Architecture; no email app is required.</p>
+          <p>Your Analysis ID is attached to the feedback so the comment can be understood in context. Feedback is stored directly with your analysis; no email app is required.</p>
           <div class="feedback-reactions" id="feedback-reactions">
             <button type="button" data-reaction="Very useful">Very useful</button>
             <button type="button" data-reaction="Somewhat useful">Somewhat useful</button>
             <button type="button" data-reaction="Not useful yet">Not useful yet</button>
           </div>
-          <label class="sr-only" for="feedback-text">Feedback about this Architecture</label>
+          <label class="sr-only" for="feedback-text">Feedback about this analysis</label>
           <textarea class="control" id="feedback-text" placeholder="What was clear, wrong, surprising, or missing?"></textarea>
           <button type="button" class="btn btn-secondary btn-full" id="send-feedback">Send Feedback</button>
           <div class="saved-state" id="feedback-state" aria-live="polite"></div>
@@ -1399,7 +1399,7 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
   }
 
   async function saveActiveResult(){
-    if(!activeArchitecture?.result)throw new Error('No active Architecture');
+    if(!activeArchitecture?.result)throw new Error('No active analysis');
     const snapshot=resultSnapshot(activeArchitecture.result);
     await dbPut(QP_ARCH_STORE,{id:snapshot.id,createdAt:snapshot.createdAt,snapshot});
     return snapshot.id;
@@ -1407,8 +1407,8 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
 
   function pdfLines(result){
     const lines=[];
-    lines.push(['Quiet Premium — The Architecture',16]);
-    lines.push([`Architecture ID: ${activeArchitecture?.id||'—'}`,10]);
+    lines.push(['Quiet Premium — Full Analysis',16]);
+    lines.push([`Analysis ID: ${activeArchitecture?.id||'—'}`,10]);
     lines.push([`Maximum Potential Annual Value: ${fmtMoney(result.opportunity.maximumPotentialAnnualValue)}`,13]);
     lines.push([`Currently Captured: ${result.opportunity.currentlyCaptured==null?'Partial':fmtMoney(result.opportunity.currentlyCaptured)}`,11]);
     lines.push([`Unrealized Potential: ${result.opportunity.unrealizedPotential==null?'Not enough data':fmtMoney(result.opportunity.unrealizedPotential)}`,11]);
@@ -1452,7 +1452,7 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
       addPageIfNeeded(parts.length*(size+4));
       pdf.text(parts,margin,y);y+=parts.length*(size+4)+(text===''?3:5);
     }
-    pdf.save(`${activeArchitecture.id}-Quiet-Premium-Architecture.pdf`);
+    pdf.save(`${activeArchitecture.id}-Quiet-Premium-Travel-Strategy.pdf`);
   }
 
   async function shareResult(){
@@ -1467,8 +1467,8 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
       }
     }
 
-    const subject=`Quiet Premium Architecture ${activeArchitecture.id}`;
-    const text=`My Quiet Premium Architecture\n\n${link}\n\nThis private link opens only this Architecture. Anyone with the full link can read it.`;
+    const subject=`Quiet Premium Travel Strategy ${activeArchitecture.id}`;
+    const text=`My Quiet Premium Analysis\n\n${link}\n\nThis private link opens only this analysis. Anyone with the full link can read it.`;
     if(navigator.share){
       try{await navigator.share({title:subject,text,url:link});return;}catch(err){if(err?.name==='AbortError')return;}
     }
@@ -1522,7 +1522,7 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
         if(activeArchitecture.serverStored){
           const ok=await backendSubmitFeedback(activeReaction||null,body||null);
           if(!ok)throw new Error('Feedback was not accepted');
-          $('feedback-state').textContent='Thank you. Feedback saved with this Architecture.';
+          $('feedback-state').textContent='Thank you. Feedback saved with this analysis.';
           $('feedback-text').value='';
           track('feedback_submit');
           return;
@@ -1632,7 +1632,7 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
     const rows=[
       ['Annual redemption / points production',max?.rewards?.value||0],
       ['Modeled usable card benefits',max?.benefits?.value||0],
-      ['Annual architecture cost',-(max?.economics?.annualCost||0)]
+      ['Annual plan cost',-(max?.economics?.annualCost||0)]
     ];
     rows.forEach(([name,value])=>{
       const div=document.createElement('div');div.className='value-row';
@@ -1667,7 +1667,7 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
     const items=[
       ['What Maximum means','Maximum is the highest modeled ongoing net value among the feasible architectures QP tested. It does not assume additional baseline spending.'],
       ['What Recommended means',trade?.sameArchitecture
-        ?'Recommended and Maximum are the same architecture for this profile.'
+        ?'Recommended and Maximum are the same plan for this profile.'
         :`QP intentionally gives up ${fmtMoney(trade?.annualValueTradeoff||0)} of modeled annual value (${trade?.percentOfMaximumGivenUp||0}% of Maximum) to better fit the travel priorities and constraints you entered.`],
       ['Valuation method','Point values use the engine’s maximum-realistic fallback unless a user-specific value is available. Card benefits count only when supported by entered behavior or a confirmed routing condition.'],
       ['Status treatment','Status itself is not assigned a fake dollar value. QP monetizes supported economic components and keeps treatment, upgrades and recognition in the experience layer.'],
@@ -1699,7 +1699,7 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
       $('airline-path-copy').textContent=spend>0
         ?`${fmtMoney(spend)} of general spend is assigned to the airline rail only until the selected status breakpoint is reached.`
         :air?.tier
-          ?'The recommended architecture does not require additional general spend to establish the modeled airline position.'
+          ?'The recommended plan does not require additional general spend to establish the modeled airline position.'
           :'QP does not see a useful airline-status spend path from the inputs provided.';
       const next=air?.nextTier;
       const denom=next?.threshold||Math.max(air.metric||0,1);
@@ -1757,7 +1757,7 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
 
   function renderResult(r){
     const name=r.profile?.identity?.firstName;
-    $('result-title').textContent=name?`${name}, here is your Architecture.`:'Here is your Architecture.';
+    $('result-title').textContent=name?`${name}, here is your analysis.`:'Here is your analysis.';
 
     const gap=r.opportunity.gapScore;
     const unrealized=r.opportunity.unrealizedPotential;
@@ -1781,7 +1781,7 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
       :'Same valuation engine as Maximum.';
 
     const cs=r.recommendations?.corrections||[];
-    $('first-move').textContent=cs.length?cs[0].change:(already?'Keep the architecture.':'No forced move.');
+    $('first-move').textContent=cs.length?cs[0].change:(already?'Keep the plan.':'No forced move.');
     $('first-move-note').textContent=cs.length
       ?'This is the first difference QP identified between Current and Recommended.'
       :'QP does not see a high-confidence correction worth forcing.';
@@ -1802,8 +1802,8 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
 
     $('year1-title').textContent=fmtMoney(r.firstYear.maximumPotentialValue);
     $('year1-copy').textContent=r.firstYear.differsFromOngoingMaximum
-      ?`The strongest first-year path differs from the mature Architecture because a confirmed or conditional welcome offer changes the acquisition sequence. The mature Maximum remains ${architectureLabel(r.maximum)}.`
-      :'The first-year path does not materially change the mature Architecture with the offer information available to QP.';
+      ?`The strongest first-year path differs from the mature plan because a confirmed or conditional welcome offer changes the acquisition sequence. The mature Maximum remains ${architectureLabel(r.maximum)}.`
+      :'The first-year path does not materially change the mature plan with the offer information available to QP.';
 
     renderRoutingMap(r);
     renderCorrections(r);
@@ -1834,7 +1834,7 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
       if(!engineReady()){
         $('result-content').classList.add('hidden');
         $('engine-error').classList.remove('hidden');
-        $('engine-error').textContent='The Architecture engine is not available or is older than v4. Upload the current qp_sim.js beside diagnostic.html, then reload this page.';
+        $('engine-error').textContent='Full Analysis engine is not available or is older than v4. Upload the current qp_sim.js beside diagnostic.html, then reload this page.';
         return;
       }
 
@@ -1874,7 +1874,7 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
       }catch(err){
         $('result-content').classList.add('hidden');
         $('engine-error').classList.remove('hidden');
-        $('engine-error').textContent='QP could not complete this Architecture. Your answers were not submitted. Please reload and try again.';
+        $('engine-error').textContent='QP could not complete this analysis. Your answers were not submitted. Please reload and try again.';
         console.error(err);
       }
       window.scrollTo({top:0,behavior:'smooth'});
