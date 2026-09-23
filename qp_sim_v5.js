@@ -16,7 +16,7 @@
 })(typeof globalThis!=="undefined"?globalThis:this,function(){
 "use strict";
 
-const ENGINE_VERSION="5.0-alpha.33";
+const ENGINE_VERSION="5.0-alpha.34";
 const RULES_AS_OF="2026-09-23";
 const CATS=["dining","grocery","online_grocery","drugstore","gas_ev","transit","online_retail","vacation_home","airfare","hotel","general"];
 const AIRLINES=["delta","united","american","southwest"];
@@ -596,7 +596,12 @@ function candidatePortfoliosV13(p,rewards=rewardsStrategyV13(p)){
   const protectedIds=new Set(protectedCurrentIdsV13(p)),requiredIds=new Set(p.constraints.requiredCards||[]),
         air=AIRLINE_CARDS_V17[p.airline.primary]||[],hotel=HOTEL_CARDS_V17[p.hotel.primary]||[],
         needsFlexibleSupport=sum(["dining","grocery","online_grocery","drugstore","gas_ev","transit","online_retail","vacation_home","general"].map(c=>p.spend[c]||0))>0,
-        out=[],seen=new Set(),currentSet=new Set(p.currentCards||[]);
+        out=[],seen=new Set(),currentSet=new Set(p.currentCards||[]),coBrandJob=new Map();
+  const canAddCoBrand=(id)=>{
+    if(currentSet.has(id)||requiredIds.has(id)||RULES.cards[id]?.kind==="flex")return true;
+    if(!coBrandJob.has(id))coBrandJob.set(id,coBrandHasJobV13(p,id));
+    return coBrandJob.get(id)===true;
+  };
   for(const currency of FLEX_CURRENCIES_V13){
     const relevant=uniq([...p.currentCards,...p.constraints.requiredCards,...flexCardsForCurrencyV13(currency),...air,...hotel]).filter(id=>!p.constraints.prohibitedCards.includes(id));
     const remainingTargetFlex=new Array(relevant.length+1).fill(0);
@@ -605,8 +610,6 @@ function candidatePortfoliosV13(p,rewards=rewardsStrategyV13(p)){
     function emit(){
       if(!selected.length&&p.totalSpend)return;
       if(needsFlexibleSupport&&!selected.some(id=>flexCurrencyV13(id)===currency))return;
-      const adds=selected.filter(id=>!currentSet.has(id));
-      if(adds.some(id=>RULES.cards[id]?.kind!=="flex"&&!coBrandHasJobV13(p,id)))return;
       const key=selected.slice().sort().join("|");
       if(!seen.has(key)){seen.add(key);out.push(selected.slice());}
     }
@@ -617,13 +620,14 @@ function candidatePortfoliosV13(p,rewards=rewardsStrategyV13(p)){
       const id=relevant[i],isNew=!currentSet.has(id),fc=flexCurrencyV13(id),
             must=requiredIds.has(id)||protectedIds.has(id),
             incompatibleNewFlex=isNew&&fc&&fc!==currency,
-            forbiddenNew=isNew&&p.constraints.noNewCards;
+            forbiddenNew=isNew&&p.constraints.noNewCards,
+            noConcreteJob=isNew&&!canAddCoBrand(id);
       if(must){
-        if(incompatibleNewFlex||forbiddenNew)return;
+        if(incompatibleNewFlex||forbiddenNew||noConcreteJob)return;
         selected.push(id);go(i+1,newCount+(isNew?1:0),hasTargetFlex||fc===currency);selected.pop();return;
       }
       go(i+1,newCount,hasTargetFlex);
-      if(incompatibleNewFlex||forbiddenNew)return;
+      if(incompatibleNewFlex||forbiddenNew||noConcreteJob)return;
       selected.push(id);go(i+1,newCount+(isNew?1:0),hasTargetFlex||fc===currency);selected.pop();
     }
     go(0,0,false);
