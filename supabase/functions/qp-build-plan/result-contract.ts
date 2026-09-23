@@ -181,12 +181,13 @@ function buildImplementationPlan(result,E,parts){
     source:"recommended.ongoingRouting"
   });
 
+  const onlyNaturalThresholds=finite.length===0&&recurring.length>0&&recurring.every(x=>x.naturalThroughOngoingRouting===true);
   return{
     schema:"qp-implementation-plan-v1",
     principle:"Set it up once. Then let it run.",
     phases:[
       {id:"days_1_30",days:"Days 1–30",title:"Make the structural changes",objective:"Put the recommended card structure and routine routing in place.",actions:phase1,successState:phase1.length?"The recommended structure and routine routing are in place.":"No structural change is required."},
-      {id:"days_31_60",days:"Days 31–60",title:"Hit only the worthwhile targets",objective:"Execute only the recurring thresholds or finite interventions the engine justified.",actions:phase2,successState:(finite.length||recurring.length)?"The worthwhile targets are being tracked against their exact stop conditions.":"No unnecessary threshold chase has been introduced."},
+      {id:"days_31_60",days:"Days 31–60",title:onlyNaturalThresholds?"Let the plan do the work":"Hit only the worthwhile targets",objective:onlyNaturalThresholds?"Track the recurring benefits your normal routing reaches automatically.":"Execute only the recurring thresholds or finite interventions the engine justified.",actions:phase2,successState:onlyNaturalThresholds?"No extra spending or routing detour is required.":(finite.length||recurring.length)?"The worthwhile targets are being tracked against their exact stop conditions.":"No unnecessary threshold chase has been introduced."},
       {id:"days_61_90",days:"Days 61–90",title:"Move into steady state",objective:"End finite interventions at their stopping points and let the ongoing strategy run.",actions:phase3,successState:"Temporary interventions end when their stop conditions are met, and the ongoing routing remains in force."}
     ],
     day90:{
