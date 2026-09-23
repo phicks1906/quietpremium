@@ -1,0 +1,23 @@
+const fs=require("fs");
+const src=fs.readFileSync("supabase/functions/qp-verify-facts/critical-parsers.ts","utf8").replace(/export function /g,"function ");
+const P=(new Function(src+"\nreturn {parseDeltaCardStatus,parseDeltaThresholds,parseChaseReserveRewards,parseMarriottThresholds,criticalStructureIssues};"))();
+let pass=0,fail=0;const failures=[];function ok(name,cond,detail=""){if(cond)pass++;else{fail++;failures.push({name,detail})}}
+const ds="MQD Thresholds for Status SILVER GOLD PLATINUM DIAMOND $5,000 MQDs $10,000 MQDs $15,000 MQDs $28,000 MQDs Earn Medallion Qualification Dollars";
+const dt=P.parseDeltaThresholds(ds);
+ok("Delta four-tier ordered thresholds",JSON.stringify(dt.map(x=>x.amount))==="[5000,10000,15000,28000]",JSON.stringify(dt));
+const dr="MQD Headstart With MQD Headstart, you can receive $2,500 Medallion Qualification Dollars each Medallion Qualification Year. MQD Boost Get $1 Medallion Qualification Dollar for each $10 in purchases on your Delta SkyMiles Reserve American Express Card";
+ok("Delta Reserve Headstart parses 2500",P.parseDeltaCardStatus(dr,"delta_reserve").headstart===2500,JSON.stringify(P.parseDeltaCardStatus(dr,"delta_reserve")));
+ok("Delta Reserve MQD Boost divisor parses 10",P.parseDeltaCardStatus(dr,"delta_reserve").spendDivisor===10,JSON.stringify(P.parseDeltaCardStatus(dr,"delta_reserve")));
+const cr="8x points on all purchases through Chase Travel, including The Edit. 4x points on flights booked direct. 4x points on hotels booked direct. 3x points on dining worldwide. 1x points on all other purchases.";
+const cp=P.parseChaseReserveRewards(cr);
+ok("Reserve base spend remains 1x",cp?.earn?.general===1&&cp?.earn?.grocery===1&&cp?.earn?.gas_ev===1,JSON.stringify(cp));
+ok("Reserve direct flight/hotel earn is 4x",cp?.earn?.airfare===4&&cp?.earn?.hotel===4,JSON.stringify(cp));
+ok("Reserve Chase Travel earn is 8x",cp?.bookingEarn?.airfare?.chase_travel===8&&cp?.bookingEarn?.hotel?.chase_travel===8,JSON.stringify(cp));
+const mr="10 nights per year Silver Elite 25 nights per year Gold Elite 50 nights per year Platinum Elite 75 nights per year Titanium Elite 100 nights per yr + $23,000 USD Ambassador Elite";
+const mp=P.parseMarriottThresholds(mr);
+ok("Marriott full five-tier ladder",JSON.stringify(mp.map(x=>x.nights))==="[10,25,50,75,100]",JSON.stringify(mp));
+ok("Marriott Ambassador spend survives",mp[4]?.spend===23000,JSON.stringify(mp));
+ok("Delta duplicate thresholds fail structure",P.criticalStructureIssues("airlines","delta",{thresholds:[{tier:"Silver Medallion",amount:5000},{tier:"Gold Medallion",amount:5000},{tier:"Platinum Medallion",amount:5000},{tier:"Diamond Medallion",amount:5000}]}).includes("thresholds.strictlyIncreasing"));
+ok("Marriott partial ladder fails structure",P.criticalStructureIssues("hotels","marriott",{thresholds:[{tier:"Ambassador Elite",nights:100,spend:23000}]}).includes("thresholds.completeLadder"));
+ok("Reserve broad 4x false parse fails structure",P.criticalStructureIssues("cards","chase_reserve",{earn:{general:4,dining:3,airfare:8,hotel:8},bookingEarn:{airfare:{chase_travel:8},hotel:{chase_travel:8}}}).includes("earn.reserveCurrentStructure"));
+console.log(JSON.stringify({pass,fail,failures},null,2));if(fail)process.exitCode=1;
