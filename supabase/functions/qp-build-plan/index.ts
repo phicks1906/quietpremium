@@ -6,7 +6,7 @@ import { buildResultContract } from "./result-contract.ts";
 
 const ORIGINS=new Set(["https://quietpremium.com","https://www.quietpremium.com"]);
 const PUBLIC_BROWSER_KEY="sb_publishable_BETG0zmWAEmPByBsKyEUzA_yPCOkh5F";
-const VERIFIER="qp-verify-facts",MAX_PROFILE_BYTES=250000,MAX_STABILIZATION_PASSES=2;
+const VERIFIER="qp-verify-facts",OPTIMIZER="qp-optimize-shard",OPTIMIZER_SHARDS=256,OPTIMIZER_BATCH=32,MAX_PROFILE_BYTES=250000,MAX_STABILIZATION_PASSES=2;
 const E=(globalThis as any).QuietPremiumEngineV5;
 
 function json(body:any,status=200,origin=""){
@@ -54,6 +54,77 @@ async function verifyRequest(request:any,stage:string){
   const sig=parts.map(p=>p.snapshotId||"").sort().join("|")+"|"+stage+"|"+verifiedAt;
   const snapshotId="qpp_"+verifiedAt.replace(/\D/g,"").slice(0,14)+"_"+(await hash(sig)).slice(0,12);
   return mergeSnapshotParts(parts,snapshotId,verifiedAt);
+}
+
+async function optimizerRequest(payload:any){
+  const base=Deno.env.get("SUPABASE_URL"),service=Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+  if(!base||!service)throw new Error("optimizer_backend_not_configured");
+  const res=await fetch(base+"/functions/v1/"+OPTIMIZER,{
+    method:"POST",
+    headers:{"Content-Type":"application/json","apikey":service},
+    body:JSON.stringify(payload)
+  });
+  let body:any=null;try{body=await res.json()}catch{}
+  if(!res.ok||body?.status!=="ok")throw new Error("optimizer_http_"+res.status+":"+(body?.error||body?.detail||"unknown"));
+  return body;
+}
+async function runShardPhase(profile:any,phase:string,extra:any={}){
+  const out:any[]=[];
+  for(let start=0;start<OPTIMIZER_SHARDS;start+=OPTIMIZER_BATCH){
+    const batch=[];for(let i=start;i<Math.min(start+OPTIMIZER_BATCH,OPTIMIZER_SHARDS);i++)batch.push(optimizerRequest({profile,phase,shardIndex:i,shardCount:OPTIMIZER_SHARDS,...extra}));
+    out.push(...await Promise.all(batch));
+  }
+  return out;
+}
+const TRAVEL_IMPROVEMENTS=new Set(["flightQuality","hotelExperience","airportExperience","reliability","benefitContinuity"]);
+function betterSummary(a:any,b:any){
+  if(!a)return b;if(!b)return a;
+  if(Number(a.noJobCount)!==Number(b.noJobCount))return Number(a.noJobCount)<Number(b.noJobCount)?a:b;
+  const at=(a.improvements||[]).filter((x:string)=>TRAVEL_IMPROVEMENTS.has(x)).length,
+        bt=(b.improvements||[]).filter((x:string)=>TRAVEL_IMPROVEMENTS.has(x)).length;
+  if(at!==bt)return at>bt?a:b;
+  if(Number(a.netEconomicValue)!==Number(b.netEconomicValue))return Number(a.netEconomicValue)>Number(b.netEconomicValue)?a:b;
+  if(Number(a.recommendedAnnualFees)!==Number(b.recommendedAnnualFees))return Number(a.recommendedAnnualFees)<Number(b.recommendedAnnualFees)?a:b;
+  if(Number(a.complexityBurden)!==Number(b.complexityBurden))return Number(a.complexityBurden)<Number(b.complexityBurden)?a:b;
+  return String(a.id||"").localeCompare(String(b.id||""))<=0?a:b;
+}
+function summaryRecord(x:any,current:any){
+  if(!x)return current;
+  return{portfolio:x.portfolio||[],economics:{netEconomicValue:Number(x.netEconomicValue)||0},id:x.id||""};
+}
+async function distributedAnalyze(profile:any,candidateCardIds:any[]){
+  const p=E.normalizeProfile(profile),travel=E.travelStrategy(p),rewards=E.rewardsStrategy(p,travel),
+        current=E.currentRecord(p,"base",travel,rewards),
+        existingOnly=new Set(E.EXISTING_ONLY_CARDS_V17||[]),
+        ids=[...new Set((candidateCardIds||[]).filter((id:string)=>!p.currentCards.includes(id)&&!existingOnly.has(id)))];
+
+  const phase1=await runShardPhase(p,"counterfactual",{cardIds:ids});
+  const classifications:any[]=[];
+  for(const id of ids){
+    let withBest:any=null,withoutBest:any=null;
+    for(const shard of phase1){
+      withBest=betterSummary(withBest,shard?.bestWith?.[id]||null);
+      withoutBest=betterSummary(withoutBest,shard?.bestWithout?.[id]||null);
+    }
+    const represented=!!withBest&&(withBest.portfolio||[]).includes(id),
+          bestWith=summaryRecord(withBest,current),
+          bestWithout=summaryRecord(withoutBest,current),
+          hurdle=represented?E.newCardHurdleDelta(p,bestWith,bestWithout):{delta:0,rawDelta:0,excludedCurrentCardFeeSavings:0},
+          delta=Number(hurdle.delta)||0;
+    classifications.push({cardId:id,classification:E.classifyNewCardValue(delta),incrementalRecurringValue:delta,bestWithId:represented?(withBest?.id||""):"",bestWithoutId:withoutBest?.id||current.id});
+  }
+
+  const phase2=await runShardPhase(p,"gated",{classifications});
+  const localBest=phase2.map(x=>x?.best).filter(Boolean);
+  current.incrementalCardGate={pass:true,thresholds:{recommended:E.MODEL.newCardRecommendedMin,consider:E.MODEL.newCardConsiderMin},cards:[]};
+  const prepared=E.prepareViable(p,localBest,current),
+        recommended=current.quality?.precisionSuppressed?current:E.choosePrepared(prepared,current),
+        selectedRewards=recommended?.strategy?.rewardsStrategy||rewards,
+        b={current,recommended,travelStrategy:travel,rewardsStrategy:selectedRewards,newCardClassifications:classifications,considerCards:classifications.filter((x:any)=>x.classification==="consider"),records:localBest,pareto:[]},
+        candidateCount=phase1.reduce((n,x)=>n+(Number(x?.candidateCount)||0),0),
+        result=E.analysisResultFromSelection(p,b,[],candidateCardIds,candidateCount);
+  result.integrity={...(result.integrity||{}),distributedExactPortfolioSearch:true,distributedPortfolioShards:OPTIMIZER_SHARDS};
+  return result;
 }
 function approvedValuationSnapshot(){return E.CURRENT_QP_VALUATION_SNAPSHOT}
 function attach(profile:any,snapshot:any){return{...(profile||{}),verifiedFacts:snapshot,valuationSnapshot:approvedValuationSnapshot()}}
@@ -127,7 +198,7 @@ Deno.serve(async(req:Request)=>{
       verification:{request:target,snapshot:finalSnapshot}
     },409,origin);
 
-    const result=E.analyze(working);
+    const result=await distributedAnalyze(working,target.cards||[]);
     const audit=auditPlan(result,E);
     if(!audit.pass)return json({status:"not_ready",reason:"pre_output_audit_failed",audit,factQuality:result?.factQuality||null,factsSnapshot:result?.factsSnapshot||null,valuationSnapshot:result?.valuationSnapshot||null},409,origin);
     if(!result?.factQuality?.productionReady)return json({
