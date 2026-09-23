@@ -1,7 +1,7 @@
 <!DOCTYPE html>
-<!-- Quiet Premium · diagnostic.html · Phase 11 QA & Launch Hardening · build v2.5.0 · 2026-09-03
+<!-- Quiet Premium · diagnostic.html · Phase 4C V5 Intake Cutover · build v2.6.0 · 2026-09-23
      Customer-facing assessment rebuilt around the validated QP engine input contract.
-     Requires qp_sim.js engine v4.1+ in the same GitHub directory. -->
+     V5 submission is handled by assets/diagnostic-v5.js and qp-build-plan; the legacy V4 renderer remains in-file but is no longer reachable from form submission. -->
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
@@ -337,6 +337,33 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
           <input class="control" id="primary_airline_status" name="primary_airline_status" placeholder="e.g. Gold Medallion, Premier Silver"/>
         </div>
 
+        <div class="airline-dependent" data-v5-air="delta">
+          <div class="field">
+            <label for="delta_mqd_ytd">Current-year Delta MQDs</label>
+            <div class="hint">Use your actual current Medallion Qualification Dollars if known.</div>
+            <input class="control" type="number" min="0" step="1" id="delta_mqd_ytd" name="delta_mqd_ytd" inputmode="numeric" placeholder="e.g. 8600"/>
+          </div>
+        </div>
+
+        <div class="airline-dependent" data-v5-air="united">
+          <div class="row">
+            <div class="field"><label for="united_pqp_ytd">Current-year United PQPs</label><input class="control" type="number" min="0" step="1" id="united_pqp_ytd" name="united_pqp_ytd" inputmode="numeric"/></div>
+            <div class="field"><label for="united_pqf_ytd">Current-year United PQFs</label><input class="control" type="number" min="0" step="1" id="united_pqf_ytd" name="united_pqf_ytd" inputmode="numeric"/></div>
+          </div>
+          <div class="field"><label for="united_segments_ytd">United-operated segments this qualification year</label><input class="control" type="number" min="0" step="1" id="united_segments_ytd" name="united_segments_ytd" inputmode="numeric"/></div>
+        </div>
+
+        <div class="airline-dependent" data-v5-air="american">
+          <div class="field"><label for="american_loyalty_points_ytd">Current AAdvantage Loyalty Points</label><input class="control" type="number" min="0" step="1" id="american_loyalty_points_ytd" name="american_loyalty_points_ytd" inputmode="numeric"/></div>
+        </div>
+
+        <div class="airline-dependent" data-v5-air="southwest">
+          <div class="row">
+            <div class="field"><label for="southwest_tqp_ytd">Current Southwest tier-qualifying points</label><input class="control" type="number" min="0" step="1" id="southwest_tqp_ytd" name="southwest_tqp_ytd" inputmode="numeric"/></div>
+            <div class="field"><label for="southwest_qualifying_flights_ytd">Current Southwest qualifying flights</label><input class="control" type="number" min="0" step="1" id="southwest_qualifying_flights_ytd" name="southwest_qualifying_flights_ytd" inputmode="numeric"/></div>
+          </div>
+        </div>
+
         <div class="row">
           <div class="field" data-required>
             <label for="flights_taken">Personal one-way flights — last 12 months <span class="req">*</span></label>
@@ -372,6 +399,18 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
               <option value="Usual control">I usually control them</option>
               <option value="Limited control">I have limited control</option>
               <option value="Employer controls flights">Employer / another party controls them</option>
+            </select>
+            <div class="validation">Choose the closest fit.</div>
+          </div>
+          <div class="field" data-required>
+            <label for="airfare_booking_method">Where do you usually book airfare? <span class="req">*</span></label>
+            <select class="control" id="airfare_booking_method" name="airfare_booking_method">
+              <option value="">Choose one</option>
+              <option value="Direct airline">Direct with the airline</option>
+              <option value="Amex Travel">Amex Travel</option>
+              <option value="Chase Travel">Chase Travel</option>
+              <option value="Capital One Travel">Capital One Travel</option>
+              <option value="Other portal">Other portal / agency</option>
             </select>
             <div class="validation">Choose the closest fit.</div>
           </div>
@@ -415,6 +454,17 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
           <input class="control" id="primary_hotel_status" name="primary_hotel_status" placeholder="e.g. Globalist, Platinum Elite, Diamond"/>
         </div>
 
+        <div class="hotel-dependent">
+          <div class="row">
+            <div class="field"><label for="hotel_qualifying_nights_ytd">Current-year qualifying hotel nights</label><input class="control" type="number" min="0" step="1" id="hotel_qualifying_nights_ytd" name="hotel_qualifying_nights_ytd" inputmode="numeric"/></div>
+            <div class="field"><label for="hotel_qualifying_stays_ytd">Current-year qualifying stays</label><input class="control" type="number" min="0" step="1" id="hotel_qualifying_stays_ytd" name="hotel_qualifying_stays_ytd" inputmode="numeric"/></div>
+          </div>
+          <div class="row">
+            <div class="field"><label for="hotel_qualifying_spend_ytd">Current-year qualifying hotel spend</label><input class="control money" id="hotel_qualifying_spend_ytd" name="hotel_qualifying_spend_ytd" inputmode="decimal"/></div>
+            <div class="field"><label for="hotel_base_points_ytd">Current-year qualifying base points</label><input class="control" type="number" min="0" step="1" id="hotel_base_points_ytd" name="hotel_base_points_ytd" inputmode="numeric"/></div>
+          </div>
+        </div>
+
         <div class="row">
           <div class="field" data-required>
             <label for="hotel_nights">Paid hotel nights — last 12 months <span class="req">*</span></label>
@@ -444,8 +494,8 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
             <label for="hotel_booking_method">How do you usually book hotels?</label>
             <select class="control" id="hotel_booking_method" name="hotel_booking_method">
               <option value="">Choose one</option><option value="Direct">Direct with hotel</option>
-              <option value="Amex Travel">Amex Travel</option><option value="Chase Travel">Chase Travel</option>
-              <option value="Mixed">Mixed</option><option value="Other portal">Other portal / agency</option>
+              <option value="Amex Prepaid">Amex Travel prepaid hotel</option><option value="Chase Travel">Chase Travel</option>
+              <option value="Capital One Travel">Capital One Travel</option><option value="Other portal">Other portal / agency</option>
             </select>
           </div>
         </div>
@@ -500,14 +550,16 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
         </div>
 
         <datalist id="card-products">
-          <option value="American Express Gold"><option value="American Express Platinum">
-          <option value="Chase Sapphire Preferred"><option value="Chase Sapphire Reserve">
-          <option value="Delta SkyMiles Platinum"><option value="Delta SkyMiles Reserve">
-          <option value="United Explorer"><option value="United Quest"><option value="United Club Infinite">
-          <option value="Citi AAdvantage Executive"><option value="Southwest Rapid Rewards Priority">
-          <option value="World of Hyatt Credit Card"><option value="Marriott Bonvoy Boundless">
-          <option value="Marriott Bonvoy Brilliant"><option value="Hilton Honors American Express">
-          <option value="Hilton Honors Surpass"><option value="Hilton Honors Aspire">
+          <option value="American Express Green Card"><option value="American Express Gold Card"><option value="The Platinum Card from American Express">
+          <option value="Chase Sapphire Preferred"><option value="Chase Freedom Unlimited"><option value="Chase Freedom Flex"><option value="Chase Freedom Rise"><option value="Chase Sapphire Reserve">
+          <option value="Capital One VentureOne Rewards"><option value="Capital One Venture Rewards"><option value="Capital One Venture X Rewards">
+          <option value="Delta SkyMiles Blue American Express Card"><option value="Delta SkyMiles Gold American Express Card"><option value="Delta SkyMiles Platinum American Express Card"><option value="Delta SkyMiles Reserve American Express Card">
+          <option value="United Gateway Card"><option value="United Explorer Card"><option value="United Quest Card"><option value="United Club Card">
+          <option value="American Airlines AAdvantage MileUp Card"><option value="Citi / AAdvantage Platinum Select World Elite Mastercard"><option value="Citi / AAdvantage Globe Mastercard"><option value="Citi / AAdvantage Executive World Legend Mastercard">
+          <option value="Southwest Rapid Rewards Plus Credit Card"><option value="Southwest Rapid Rewards Premier Credit Card"><option value="Southwest Rapid Rewards Priority Credit Card">
+          <option value="World of Hyatt Credit Card">
+          <option value="Marriott Bonvoy Bold Credit Card"><option value="Marriott Bonvoy Boundless Credit Card"><option value="Marriott Bonvoy Bountiful Credit Card"><option value="Marriott Bonvoy Bevy American Express Card"><option value="Marriott Bonvoy Brilliant American Express Card">
+          <option value="Hilton Honors American Express Card"><option value="Hilton Honors American Express Surpass Card"><option value="Hilton Honors American Express Aspire Card">
         </datalist>
 
         <div class="card-helper">If a current card is outside QP's supported V1 universe, keep its exact name. QP will mark the result as partial rather than pretending it knows that card's economics.</div>
@@ -533,41 +585,71 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
         </div>
       </section>
 
-      <!-- 4. WHAT YOU ALREADY GET -->
+      <!-- 4. CURRENT-YEAR PROGRESS -->
       <section class="step" data-step="4">
-        <p class="section-note">Benefits count only when they replace something you would otherwise pay for or use naturally. QP does not add issuer headline values simply because a card advertises them.</p>
+        <p class="section-note">Current-year progress matters when a status tier or annual card threshold could change the answer. Enter what you actually know; leave unknown items blank rather than estimating from past behavior.</p>
 
-        <div class="row">
-          <div class="field">
-            <label for="clear_annual_spend">CLEAR cost you would otherwise pay each year</label>
-            <div class="hint">Enter 0 if you would not buy CLEAR without a card credit.</div>
-            <input class="control money" id="clear_annual_spend" name="clear_annual_spend" inputmode="decimal" placeholder="e.g. 219"/>
-          </div>
-          <div class="field">
-            <label for="lounge_annual_value">Lounge access you would otherwise buy</label>
-            <div class="hint">Your realistic annual avoided cost, not a retail membership headline.</div>
-            <input class="control money" id="lounge_annual_value" name="lounge_annual_value" inputmode="decimal" placeholder="e.g. 400"/>
+        <div class="points-box">
+          <h3>Remaining personal-card spend this year</h3>
+          <p>Optional. Enter only spend you realistically expect to put on personal cards before year-end. These amounts are used for current-year qualification feasibility, not as a prediction of future years.</p>
+          <div class="points-grid">
+            <div class="field"><label for="remaining_dining_spend">Dining</label><input class="control money" id="remaining_dining_spend" name="remaining_dining_spend" inputmode="decimal"/></div>
+            <div class="field"><label for="remaining_grocery_spend">Groceries</label><input class="control money" id="remaining_grocery_spend" name="remaining_grocery_spend" inputmode="decimal"/></div>
+            <div class="field"><label for="remaining_airfare_spend">Airfare</label><input class="control money" id="remaining_airfare_spend" name="remaining_airfare_spend" inputmode="decimal"/></div>
+            <div class="field"><label for="remaining_hotel_spend">Hotels</label><input class="control money" id="remaining_hotel_spend" name="remaining_hotel_spend" inputmode="decimal"/></div>
+            <div class="field"><label for="remaining_general_spend">Other / general</label><input class="control money" id="remaining_general_spend" name="remaining_general_spend" inputmode="decimal"/></div>
           </div>
         </div>
 
-        <div class="field">
-          <label for="checked_bag_roundtrips">Round trips where you normally check a bag</label>
-          <input class="control" type="number" min="0" step="1" id="checked_bag_roundtrips" name="checked_bag_roundtrips" inputmode="numeric" placeholder="e.g. 6"/>
+        <div class="airline-dependent" data-v5-air="delta">
+          <div class="field"><label for="delta_remaining_mqd">Expected additional Delta MQDs from travel already planned this year</label><input class="control" type="number" min="0" step="1" id="delta_remaining_mqd" name="delta_remaining_mqd" inputmode="numeric"/></div>
+        </div>
+        <div class="airline-dependent" data-v5-air="united">
+          <div class="row"><div class="field"><label for="united_remaining_pqp">Expected additional United PQPs from travel already planned</label><input class="control" type="number" min="0" step="1" id="united_remaining_pqp" name="united_remaining_pqp" inputmode="numeric"/></div><div class="field"><label for="united_remaining_pqf">Expected additional United PQFs</label><input class="control" type="number" min="0" step="1" id="united_remaining_pqf" name="united_remaining_pqf" inputmode="numeric"/></div></div>
+          <div class="field"><label for="united_remaining_segments">Expected additional United-operated segments</label><input class="control" type="number" min="0" step="1" id="united_remaining_segments" name="united_remaining_segments" inputmode="numeric"/></div>
+        </div>
+        <div class="airline-dependent" data-v5-air="american">
+          <div class="row"><div class="field"><label for="american_remaining_loyalty_points">Expected additional AAdvantage Loyalty Points from already-planned non-card activity</label><input class="control" type="number" min="0" step="1" id="american_remaining_loyalty_points" name="american_remaining_loyalty_points" inputmode="numeric"/></div><div class="field"><label for="american_remaining_qualifying_segments">Expected additional qualifying segments</label><input class="control" type="number" min="0" step="1" id="american_remaining_qualifying_segments" name="american_remaining_qualifying_segments" inputmode="numeric"/></div></div>
+        </div>
+        <div class="airline-dependent" data-v5-air="southwest">
+          <div class="row"><div class="field"><label for="southwest_remaining_tqp">Expected additional Southwest tier-qualifying points</label><input class="control" type="number" min="0" step="1" id="southwest_remaining_tqp" name="southwest_remaining_tqp" inputmode="numeric"/></div><div class="field"><label for="southwest_remaining_qualifying_flights">Expected additional qualifying flights</label><input class="control" type="number" min="0" step="1" id="southwest_remaining_qualifying_flights" name="southwest_remaining_qualifying_flights" inputmode="numeric"/></div></div>
+          <div class="points-box">
+            <h3>Southwest Companion Pass progress</h3>
+            <p>Optional. Use actual progress if Companion Pass could matter to you.</p>
+            <div class="points-grid">
+              <div class="field"><label for="southwest_companion_points_ytd">Current Companion Pass qualifying points</label><input class="control" type="number" min="0" step="1" id="southwest_companion_points_ytd" name="southwest_companion_points_ytd" inputmode="numeric"/></div>
+              <div class="field"><label for="southwest_companion_flights_ytd">Current qualifying one-way flights</label><input class="control" type="number" min="0" step="1" id="southwest_companion_flights_ytd" name="southwest_companion_flights_ytd" inputmode="numeric"/></div>
+              <div class="field"><label for="southwest_companion_remaining_noncard_points">Expected additional non-card qualifying points</label><input class="control" type="number" min="0" step="1" id="southwest_companion_remaining_noncard_points" name="southwest_companion_remaining_noncard_points" inputmode="numeric"/></div>
+              <div class="field"><label for="southwest_companion_remaining_flights">Expected additional qualifying flights</label><input class="control" type="number" min="0" step="1" id="southwest_companion_remaining_flights" name="southwest_companion_remaining_flights" inputmode="numeric"/></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="hotel-dependent">
+          <div class="row"><div class="field"><label for="hotel_remaining_nights">Expected additional qualifying hotel nights this year</label><input class="control" type="number" min="0" step="1" id="hotel_remaining_nights" name="hotel_remaining_nights" inputmode="numeric"/></div><div class="field"><label for="hotel_remaining_stays">Expected additional qualifying stays</label><input class="control" type="number" min="0" step="1" id="hotel_remaining_stays" name="hotel_remaining_stays" inputmode="numeric"/></div></div>
+          <div class="row"><div class="field"><label for="hotel_remaining_spend">Expected additional qualifying hotel spend</label><input class="control money" id="hotel_remaining_spend" name="hotel_remaining_spend" inputmode="decimal"/></div><div class="field"><label for="hotel_remaining_base_points">Expected additional qualifying base points</label><input class="control" type="number" min="0" step="1" id="hotel_remaining_base_points" name="hotel_remaining_base_points" inputmode="numeric"/></div></div>
+        </div>
+
+        <div class="points-box">
+          <h3>Card-specific current-year progress</h3>
+          <p>Optional. If a card has an annual spend or status mechanism that may matter, enter one card per line as <strong>Card name: amount</strong>. Do not estimate.</p>
+          <div class="field"><label for="card_spend_ytd_lines">Spend already placed on current cards this year</label><textarea class="control" id="card_spend_ytd_lines" name="card_spend_ytd_lines" placeholder="Delta SkyMiles Reserve: 42000&#10;World of Hyatt Credit Card: 12000"></textarea></div>
+          <div class="field airline-dependent" data-v5-air="united"><label for="united_card_pqp_ytd_lines">United card PQPs already earned this year</label><textarea class="control" id="united_card_pqp_ytd_lines" name="united_card_pqp_ytd_lines" placeholder="United Quest Card: 2500"></textarea></div>
         </div>
 
         <div class="points-box">
           <h3>Existing point balances</h3>
-          <p>Optional. These are shown separately as stored redemption value. They are not counted as new annual production.</p>
+          <p>Optional. Stored balances remain separate from new annual production.</p>
           <div class="points-grid">
-            <div class="field"><label for="points_amex_mr">Amex Membership Rewards</label><input class="control" id="points_amex_mr" inputmode="numeric" placeholder="e.g. 150000"/></div>
-            <div class="field"><label for="points_chase_ur">Chase Ultimate Rewards</label><input class="control" id="points_chase_ur" inputmode="numeric" placeholder="e.g. 100000"/></div>
-            <div class="field"><label for="points_skymiles">Delta SkyMiles</label><input class="control" id="points_skymiles" inputmode="numeric"/></div>
-            <div class="field"><label for="points_united_miles">United MileagePlus</label><input class="control" id="points_united_miles" inputmode="numeric"/></div>
-            <div class="field"><label for="points_aadvantage">AAdvantage miles</label><input class="control" id="points_aadvantage" inputmode="numeric"/></div>
-            <div class="field"><label for="points_southwest_points">Southwest points</label><input class="control" id="points_southwest_points" inputmode="numeric"/></div>
-            <div class="field"><label for="points_hyatt_points">World of Hyatt</label><input class="control" id="points_hyatt_points" inputmode="numeric"/></div>
-            <div class="field"><label for="points_marriott_points">Marriott Bonvoy</label><input class="control" id="points_marriott_points" inputmode="numeric"/></div>
-            <div class="field"><label for="points_hilton_points">Hilton Honors</label><input class="control" id="points_hilton_points" inputmode="numeric"/></div>
+            <div class="field"><label for="points_amex_mr">Amex Membership Rewards</label><input class="control" id="points_amex_mr" name="points_amex_mr" inputmode="numeric"/></div>
+            <div class="field"><label for="points_chase_ur">Chase Ultimate Rewards</label><input class="control" id="points_chase_ur" name="points_chase_ur" inputmode="numeric"/></div>
+            <div class="field"><label for="points_skymiles">Delta SkyMiles</label><input class="control" id="points_skymiles" name="points_skymiles" inputmode="numeric"/></div>
+            <div class="field"><label for="points_united_miles">United MileagePlus</label><input class="control" id="points_united_miles" name="points_united_miles" inputmode="numeric"/></div>
+            <div class="field"><label for="points_aadvantage">AAdvantage miles</label><input class="control" id="points_aadvantage" name="points_aadvantage" inputmode="numeric"/></div>
+            <div class="field"><label for="points_southwest_points">Southwest points</label><input class="control" id="points_southwest_points" name="points_southwest_points" inputmode="numeric"/></div>
+            <div class="field"><label for="points_hyatt_points">World of Hyatt</label><input class="control" id="points_hyatt_points" name="points_hyatt_points" inputmode="numeric"/></div>
+            <div class="field"><label for="points_marriott_points">Marriott Bonvoy</label><input class="control" id="points_marriott_points" name="points_marriott_points" inputmode="numeric"/></div>
+            <div class="field"><label for="points_hilton_points">Hilton Honors</label><input class="control" id="points_hilton_points" name="points_hilton_points" inputmode="numeric"/></div>
           </div>
         </div>
 
@@ -579,7 +661,7 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
 
       <!-- 5. WHAT YOU WANT -->
       <section class="step" data-step="5">
-        <p class="section-note">Maximum is the mathematical ceiling. Recommended is QP's choice after value, travel reality, experience, feasibility and simplicity are considered together.</p>
+        <p class="section-note">Your priorities can break close calls, but they do not override travel reality, verified economics or the status stopping point.</p>
 
         <div class="field" data-required>
           <div class="label">What would you most like your current spending to improve? <span class="req">*</span></div>
@@ -594,6 +676,20 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
           </div>
           <input type="hidden" id="desired_outcomes" name="desired_outcomes"/>
           <div class="validation">Choose at least one priority.</div>
+        </div>
+
+        <div class="field" data-required>
+          <label for="companion_travel_intent">Some travel cards let another person travel with you for little or no additional airfare when you buy your own ticket. Would you realistically use that kind of benefit in the future? <span class="req">*</span></label>
+          <select class="control" id="companion_travel_intent" name="companion_travel_intent">
+            <option value="">Choose one</option><option value="yes">Yes</option><option value="no">No</option><option value="not_sure">Not sure</option>
+          </select>
+          <div class="validation">Choose Yes, No, or Not sure.</div>
+        </div>
+        <div class="field hidden" id="companion-frequency-wrap">
+          <label for="companion_travel_frequency">How often would you realistically expect to use companion travel?</label>
+          <select class="control" id="companion_travel_frequency" name="companion_travel_frequency">
+            <option value="">Choose one</option><option value="1">1 round trip / year</option><option value="2_3">2–3 round trips / year</option><option value="4_6">4–6 round trips / year</option><option value="7_plus">7+ round trips / year</option>
+          </select>
         </div>
 
         <div class="field" data-required>
@@ -613,11 +709,11 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
 
         <div class="nav-actions">
           <button type="button" class="btn btn-secondary" data-back>Back</button>
-          <button type="submit" class="btn btn-primary">Build My Architecture</button>
+          <button type="submit" class="btn btn-primary">Build My Travel Plan</button>
         </div>
 
         <div class="privacy">
-          Your unfinished answers are saved locally in this browser so you can move between steps. Quiet Premium does not send spend, card, airline, hotel, point-balance or email answers to Google Analytics. A completed Architecture is centrally saved only after the calculation finishes; email remains optional and appears only after the result.
+          Your unfinished answers are saved locally in this browser so you can move between steps. Quiet Premium does not send spend, card, airline, hotel, point-balance or email answers to Google Analytics. A completed travel plan is centrally saved only after the verified server analysis finishes.
         </div>
       </section>
     </form>
@@ -627,8 +723,8 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
 <section class="loading" id="loading" role="status" aria-live="polite" aria-busy="true">
   <div class="loading-inner">
     <div class="loading-ring"></div>
-    <h2>Building your Architecture.</h2>
-    <p>Comparing your current setup with the best attainable use of the same spending.</p>
+    <h2>Building your travel plan.</h2>
+    <p>Verifying current program facts, comparing complete alternatives and building your 90-day implementation plan.</p>
   </div>
 </section>
 
@@ -757,6 +853,7 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="qp_sim.js"></script>
+<script src="assets/diagnostic-v5.js?v=260"></script>
 <script>
 (function(){
   'use strict';
@@ -764,7 +861,7 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
   const REQUIRED_ENGINE_MAJOR=4;
   const DRAFT_KEY='qp_architecture_phase5_draft';
   const steps=[...document.querySelectorAll('.step')];
-  const titles=['How You Travel','Where You Stay','Your Spend & Cards','What You Already Get','What You Want'];
+  const titles=['How You Travel','Where You Stay','Your Spend & Cards','Current-Year Progress','What You Want'];
   let currentStep=0;
   const FUNNEL_SESSION_KEY='qp_funnel_session_v1';
 
@@ -884,7 +981,7 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
   function updateConditionals(){
     const air=$('primary_airline_eco').value;
     const mixed=air==='Mixed'||air==='';
-    document.querySelectorAll('.airline-dependent').forEach(el=>el.classList.toggle('hidden',mixed));
+    document.querySelectorAll('.airline-dependent:not([data-v5-air])').forEach(el=>el.classList.toggle('hidden',mixed));
 
     const hotel=$('primary_hotel_program').value;
     const noHotel=!hotel||hotel==='Mixed'||hotel==='None';

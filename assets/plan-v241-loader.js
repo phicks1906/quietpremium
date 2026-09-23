@@ -1,6 +1,33 @@
 (()=>{
 "use strict";
 const SCHEMA="qp-results-v1",KEY="qp-results-v1";
+const QP_SUPABASE_URL="https://jdtbyudbwmwldrkjaznk.supabase.co";
+const QP_SUPABASE_KEY="sb_publishable_BETG0zmWAEmPByBsKyEUzA_yPCOkh5F";
+async function rpc(name,payload){
+  const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),12000);
+  try{
+    const res=await fetch(QP_SUPABASE_URL+"/rest/v1/rpc/"+name,{
+      method:"POST",
+      headers:{"Content-Type":"application/json","apikey":QP_SUPABASE_KEY},
+      body:JSON.stringify(payload||{}),
+      signal:controller.signal
+    });
+    let body=null;try{body=await res.json()}catch{}
+    if(!res.ok)throw new Error(body?.message||body?.error||("Request failed ("+res.status+")"));
+    return body;
+  }finally{clearTimeout(timer)}
+}
+function retrievalCredentials(){
+  const p=new URLSearchParams(location.hash.replace(/^#/,""));
+  const id=p.get("a")||"",token=p.get("t")||"";
+  return id&&token?{id,token}:null;
+}
+async function retrievePrivatePlan(){
+  const c=retrievalCredentials();if(!c)return null;
+  const row=await rpc("qp_get_plan_v1",{p_architecture_id:c.id,p_token:c.token});
+  if(!row||row.schema!=="qp-plan-server-v1"||!row.result)throw new Error("Private plan link is invalid or no longer available.");
+  return row.result;
+}
 function parseEmbedded(){
   const el=document.getElementById("qp-plan-data");if(!el)return null;
   try{return JSON.parse(el.textContent||"null")}catch{return null}
@@ -30,18 +57,30 @@ function demo(){
     quality:{ready:true,assumptions:[],unresolvedFacts:[],engineIssues:[],manualReviewItems:[],audit:{pass:true,errors:[],warnings:[]}}
   };
 }
-function resolve(){
-  let raw=window.QP_PLAN_RESULT||parseEmbedded();
+async function resolve(){
+  let raw=null,isDemo=false;
+  const credentials=retrievalCredentials();
+  if(credentials){
+    try{
+      raw=await retrievePrivatePlan();
+      const normalized=normalize(raw);
+      if(normalized?.meta?.schema!==SCHEMA)throw new Error("This saved result uses an unsupported report schema.");
+      if(normalized?.quality?.ready!==true)throw new Error("This saved analysis is not production-ready.");
+      try{sessionStorage.setItem(KEY,JSON.stringify(normalized))}catch{}
+    }catch(err){
+      return window.QPPlanRenderer?.renderError(err?.message||"The private plan could not be retrieved.");
+    }
+  }
+  if(!raw)raw=window.QP_PLAN_RESULT||parseEmbedded();
   if(!raw){try{raw=JSON.parse(sessionStorage.getItem(KEY)||"null")}catch{}}
-  let isDemo=false;
   if(!raw&&new URLSearchParams(location.search).get("demo")==="1"){raw=demo();isDemo=true}
   const data=normalize(raw);
-  if(!data)return window.QPPlanRenderer?.renderError("No results contract was supplied. Phase 4C will connect the live intake and server handoff.");
+  if(!data)return window.QPPlanRenderer?.renderError("No results contract was supplied.");
   if(data?.meta?.schema!==SCHEMA)return window.QPPlanRenderer?.renderError("This result uses an unsupported report schema.");
   if(data?.quality?.ready!==true)return window.QPPlanRenderer?.renderError("The analysis is not production-ready, so Quiet Premium is withholding the recommendation.");
   window.QP_PLAN_ACTIVE_RESULT=data;
   window.QP_PLAN_PREVIEW=isDemo;
   window.QPPlanRenderer?.render(data,{demo:isDemo});
 }
-if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",resolve);else resolve();
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",()=>{resolve()});else resolve();
 })();
