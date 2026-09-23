@@ -42,13 +42,19 @@ Deno.serve(async(req:Request)=>{
           travel=E.travelStrategy(p),
           rewards=E.rewardsStrategy(p,travel),
           current=E.currentRecord(p,"base",travel,rewards),
-          sets=E.candidatePortfoliosShard(p,rewards,shardIndex,shardCount),
+          allSets=E.candidatePortfoliosShard(p,rewards,shardIndex,shardCount),
+          phase=String(body.phase||"counterfactual"),
+          classifications=Array.isArray(body.classifications)?body.classifications:[],
+          classBy=new Map(classifications.map((x:any)=>[x.cardId,x.classification])),
+          required=new Set(p.constraints?.requiredCards||[]),
+          sets=phase==="gated"
+            ?allSets.filter((set:any[])=>set.filter(id=>!p.currentCards.includes(id)).every(id=>required.has(id)||classBy.get(id)==="recommended"))
+            :allSets,
           records=sets.map((set:any[])=>{
             const rr=E.rewardsStrategyForPortfolio(p,set,travel,rewards);
             return E.strategyRecord(p,set,"base",travel,rr);
           }),
-          prepared=E.prepareViable(p,records,current),
-          phase=String(body.phase||"counterfactual");
+          prepared=E.prepareViable(p,records,current);
     if(phase==="counterfactual"){
       const ids=Array.isArray(body.cardIds)?body.cardIds:[];
       const bestWith:any={},bestWithout:any={};
@@ -61,12 +67,11 @@ Deno.serve(async(req:Request)=>{
       return json({status:"ok",phase,engineVersion:E.ENGINE_VERSION,shardIndex,shardCount,candidateCount:records.length,bestWith,bestWithout});
     }
     if(phase==="gated"){
-      const classifications=Array.isArray(body.classifications)?body.classifications:[];
       current.incrementalCardGate={pass:true,thresholds:{recommended:E.MODEL.newCardRecommendedMin,consider:E.MODEL.newCardConsiderMin},cards:[]};
       for(const r of records)r.incrementalCardGate=E.recordAcquisitionGate(p,r,classifications);
       const chosen=E.choosePrepared(prepared.filter((x:any)=>x.c&&x.r.incrementalCardGate?.pass!==false),current);
       const entry=chosenEntry(prepared,chosen,current);
-      return json({status:"ok",phase,engineVersion:E.ENGINE_VERSION,shardIndex,shardCount,candidateCount:records.length,best:entry?.r||null});
+      return json({status:"ok",phase,engineVersion:E.ENGINE_VERSION,shardIndex,shardCount,candidateCount:records.length,totalShardCandidates:allSets.length,best:entry?.r||null});
     }
     return json({error:"invalid_phase"},400);
   }catch(e){
