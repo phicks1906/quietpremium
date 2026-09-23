@@ -68,7 +68,7 @@ function mergeShardChildren(a:any,b:any,payload:any){
   const fromA=chosenSummary===a?.bestSummary;
   return{...base,best:fromA?a?.best||null:b?.best||null,bestSummary:chosenSummary};
 }
-async function optimizerRequest(payload:any){
+async function optimizerRequest(payload:any,attempt=0){
   const base=Deno.env.get("SUPABASE_URL"),service=Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
   if(!base||!service)throw new Error("optimizer_backend_not_configured");
   const res=await fetch(base+"/functions/v1/"+OPTIMIZER,{
@@ -78,10 +78,15 @@ async function optimizerRequest(payload:any){
   });
   let body:any=null;try{body=await res.json()}catch{}
   if(res.ok&&body?.status==="ok")return body;
-  if(res.status===546&&Number(payload?.shardCount||0)<OPTIMIZER_MAX_SHARDS){
+  const transient=[429,502,503,504].includes(res.status);
+  if(transient&&attempt<2){
+    await new Promise(r=>setTimeout(r,350*(attempt+1)));
+    return optimizerRequest(payload,attempt+1);
+  }
+  if((res.status===546||transient)&&Number(payload?.shardCount||0)<OPTIMIZER_MAX_SHARDS){
     const oldCount=Number(payload.shardCount)||OPTIMIZER_SHARDS,nextCount=oldCount*2,idx=Number(payload.shardIndex)||0;
     const left={...payload,shardIndex:idx,shardCount:nextCount},right={...payload,shardIndex:idx+oldCount,shardCount:nextCount};
-    const [a,b]=await Promise.all([optimizerRequest(left),optimizerRequest(right)]);
+    const [a,b]=await Promise.all([optimizerRequest(left,0),optimizerRequest(right,0)]);
     return mergeShardChildren(a,b,payload);
   }
   throw new Error("optimizer_http_"+res.status+":"+String(payload?.phase||"")+"_"+String(payload?.shardIndex??"")+"_"+String(payload?.shardCount??"")+":"+(body?.error||body?.detail||"unknown"));
