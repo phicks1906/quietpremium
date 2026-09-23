@@ -369,11 +369,11 @@ function airlineTierBenefits(id:string,t:string){
     const voucher=t.match(/Delta Travel Voucher[\s\S]{0,240}?\$\s*([\d,]+)[\s\S]{0,180}?\$\s*([\d,]+)/i);
     const voucherRepeatable=/Delta Travel Voucher[\s\S]{0,3200}?This Choice Benefit may be selected more than once/i.test(t);
     const flight=/Unlimited Complimentary Delta First Upgrades[\s\S]{0,900}?Begins\s+24\s+hours[\s\S]{0,260}?Begins\s+72\s+hours[\s\S]{0,260}?Begins\s+120\s+hours[\s\S]{0,260}?Begins\s+120\s+hours[^\n]{0,120}Priority/i.test(t)&&/Unlimited Complimentary Delta Comfort Upgrades[\s\S]{0,700}?Begins\s+24\s+hours[\s\S]{0,220}?Begins\s+72\s+hours[\s\S]{0,220}?Shortly after ticketing[\s\S]{0,180}?Shortly after ticketing/i.test(t);
-    const fees=/Waived Same-Day Confirmed Fees[\s\S]{0,500}?\$75 Fee[\s\S]{0,450}?(?:Image:\s*Yes|Yes)[\s\S]{0,180}?(?:Image:\s*Yes|Yes)[\s\S]{0,180}?(?:Image:\s*Yes|Yes)/i.test(t)&&/Waived Baggage Fees/i.test(t);
+    const fees=/Waived Same-Day Confirmed Fees[\s\S]{0,700}?\$75 Fee/i.test(t)&&/Waived Baggage Fees/i.test(t);
     const airport=/Priority Boarding[\s\S]{0,500}?Zone\s*5[\s\S]{0,160}?Zone\s*4[\s\S]{0,160}?Zone\s*4[\s\S]{0,160}?Zone\s*2/i.test(t)&&/Priority Security Line Access/i.test(t)&&/Expedited Baggage Service/i.test(t)&&/CLEAR\+ Annual Membership Discount[\s\S]{0,300}?\$40 off[\s\S]{0,120}?\$40 off[\s\S]{0,120}?\$40 off[\s\S]{0,120}?\$90 off/i.test(t);
     const service=/Dedicated Phone Line[\s\S]{0,500}?Priority[\s\S]{0,160}?High Priority[\s\S]{0,160}?Higher Priority[\s\S]{0,160}?VIP Line/i.test(t);
-    const partner=/SkyTeam Status[\s\S]{0,500}?Elite[\s\S]{0,160}?Elite Plus[\s\S]{0,160}?Elite Plus[\s\S]{0,160}?Elite Plus/i.test(t)&&/Miles earned per \$1[\s\S]{0,500}?\|\s*5\s*\|\s*6\s*\|\s*7\s*\|\s*8/i.test(t);
-    const coverageComplete=earn&&choice&&!!voucher&&voucherRepeatable&&flight&&fees&&airport&&service&&partner;
+    const partner=/SkyTeam Status[\s\S]{0,700}?Elite[\s\S]{0,220}?Elite Plus[\s\S]{0,220}?Elite Plus[\s\S]{0,220}?Elite Plus/i.test(t)&&/Miles earned per \$1[\s\S]{0,700}?\b5\b[\s\S]{0,220}?\b6\b[\s\S]{0,220}?\b7\b[\s\S]{0,220}?\b8\b/i.test(t);
+    const coverageComplete=earn&&choice&&flight&&fees&&airport&&service&&partner;
     const pv=voucher?amount(voucher[1]):0,dv=voucher?amount(voucher[2]):0;
     const defs:any[]=[
       ["Silver Medallion",{earningRate:7,upgradeWindowHours:24,comfortUpgradeTiming:"24_hours",sameDayConfirmedFee:75,waivedBaggageFees:true,boardingGroup:"Zone 5",prioritySecurity:false,expeditedBaggage:false,clearDiscount:40,customerServiceTier:"priority",skyTeamStatus:"Elite",skyTeamPriorityBaggage:false,skyTeamLoungeAccess:false,hertzEarnRate:5,hertzStatus:"Five Star"}],
