@@ -65,7 +65,7 @@ async function optimizerRequest(payload:any){
     body:JSON.stringify(payload)
   });
   let body:any=null;try{body=await res.json()}catch{}
-  if(!res.ok||body?.status!=="ok")throw new Error("optimizer_http_"+res.status+":"+(body?.error||body?.detail||"unknown"));
+  if(!res.ok||body?.status!=="ok")throw new Error("optimizer_http_"+res.status+":"+String(payload?.phase||"")+"_"+String(payload?.shardIndex??"")+":"+(body?.error||body?.detail||"unknown"));
   return body;
 }
 async function runShardPhase(profile:any,phase:string,extra:any={}){
