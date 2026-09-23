@@ -1,0 +1,24 @@
+const fs=require("fs");
+const src=fs.readFileSync("supabase/functions/qp-verify-facts/scope.ts","utf8").replace(/export function /g,"function ");
+const S=(new Function(src+"\nreturn {scopeSourceHtml,sourceReadLimit};"))();
+let pass=0,fail=0;const failures=[];
+function ok(name,cond,detail=""){if(cond)pass++;else{fail++;failures.push({name,detail})}}
+const amex='<html><body><div>Other Card $999 9X lounge</div><main><h1>Gold</h1><p>Annual Fee $325</p><p>4X at restaurants</p></main><footer>Platinum lounge $895</footer></body></html>';
+const a=S.scopeSourceHtml(amex,"https://www.americanexpress.com/us/credit-cards/card/gold-card/","cards","amex_gold");
+ok("Amex product scope keeps main",a.includes("Annual Fee $325")&&a.includes("4X at restaurants"),a);
+ok("Amex product scope removes outside cross-sell",!a.includes("Other Card")&&!a.includes("Platinum lounge"),a);
+const chase='<header>Sapphire Reserve lounge</header><main><h1>Preferred</h1><p>$95 annual fee</p><p>3x dining and 1X all other purchases</p></main><footer>Reserve $795</footer>';
+const c=S.scopeSourceHtml(chase,"https://creditcards.chase.com/rewards-credit-cards/sapphire/preferred","cards","chase_preferred");
+ok("Chase product scope keeps main",c.includes("$95 annual fee")&&c.includes("3x dining"),c);
+ok("Chase product scope removes header/footer",!c.includes("Reserve"),c);
+const co='<nav>Venture X $395</nav><div>noise</div><section><h1>Venture Rewards from Capital One</h1><p>Unlimited 2X miles on every purchase</p><p>Annual Fee $95</p><p>5X hotels through Capital One Travel</p></section><h2>Not the right card for you?</h2><div>Venture X lounge</div>';
+const v=S.scopeSourceHtml(co,"https://www.capitalone.com/credit-cards/venture/","cards","venture");
+ok("Capital One product scope keeps product facts",v.includes("Unlimited 2X")&&v.includes("Annual Fee $95"),v);
+ok("Capital One product scope removes cross-sell",!v.includes("Not the right card")&&!v.includes("Venture X lounge"),v);
+const green='prefix F2A link noise F2A [[id fee text Annual Fee value $150],[id 3xOnTravel text 3X on Travel],[id 3xOnTransit text 3X on Transit],[id 3XAtRestaurants text 3X at Restaurants],[id clearpluscredit text CLEAR Plus Credit]] goldPlatinum cross-sell';
+const g=S.scopeSourceHtml(green,"https://www.americanexpress.com/us/credit-cards/card/green/","cards","amex_green");
+ok("Green listing isolates F2A comparison facts",g.includes("Annual Fee")&&g.includes("3X on Travel")&&g.includes("3X on Transit"),g);
+ok("Green listing excludes earlier listing noise",!g.includes("prefix"),g);
+ok("Green listing raises read limit",S.sourceReadLimit("https://www.americanexpress.com/us/credit-cards/card/green/","cards","amex_green",2000000)===3500000);
+console.log(JSON.stringify({pass,fail,failures},null,2));
+if(fail)process.exitCode=1;
