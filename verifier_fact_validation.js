@@ -1,6 +1,6 @@
 const fs=require("fs");
 const src=fs.readFileSync("supabase/functions/qp-verify-facts/critical-parsers.ts","utf8").replace(/export function /g,"function ");
-const P=(new Function(src+"\nreturn {parseDeltaCardStatus,parseDeltaThresholds,parseChaseReserveRewards,parseMarriottThresholds,criticalStructureIssues};"))();
+const P=(new Function(src+"\nreturn {parseDeltaCardStatus,parseDeltaThresholds,parseChaseReserveRewards,parseMarriottThresholds,parseMarriottCardCriticalFacts,criticalStructureIssues};"))();
 let pass=0,fail=0;const failures=[];function ok(name,cond,detail=""){if(cond)pass++;else{fail++;failures.push({name,detail})}}
 const ds="MQD Thresholds for Status SILVER GOLD PLATINUM DIAMOND $5,000 MQDs $10,000 MQDs $15,000 MQDs $28,000 MQDs Earn Medallion Qualification Dollars";
 const dt=P.parseDeltaThresholds(ds);
@@ -20,4 +20,17 @@ ok("Marriott Ambassador spend survives",mp[4]?.spend===23000,JSON.stringify(mp))
 ok("Delta duplicate thresholds fail structure",P.criticalStructureIssues("airlines","delta",{thresholds:[{tier:"Silver Medallion",amount:5000},{tier:"Gold Medallion",amount:5000},{tier:"Platinum Medallion",amount:5000},{tier:"Diamond Medallion",amount:5000}]}).includes("thresholds.strictlyIncreasing"));
 ok("Marriott partial ladder fails structure",P.criticalStructureIssues("hotels","marriott",{thresholds:[{tier:"Ambassador Elite",nights:100,spend:23000}]}).includes("thresholds.completeLadder"));
 ok("Reserve broad 4x false parse fails structure",P.criticalStructureIssues("cards","chase_reserve",{earn:{general:4,dining:3,airfare:8,hotel:8},bookingEarn:{airfare:{chase_travel:8},hotel:{chase_travel:8}}}).includes("earn.reserveCurrentStructure"));
+
+const boundless="Free Night Award Enjoy a Free Night Award every year after your account anniversary, valid for a one-night stay with a redemption level up to 35,000 points.";
+const bf=P.parseMarriottCardCriticalFacts(boundless,"marriott_boundless");
+ok("Boundless 35K renewal award survives wording order",bf.annualPointCertificate?.capPoints===35000,JSON.stringify(bf));
+const bountiful="Automatic Gold Elite Status Enjoy automatic Marriott Bonvoy Gold Elite status each calendar year.";
+const bof=P.parseMarriottCardCriticalFacts(bountiful,"marriott_bountiful");
+ok("Bountiful automatic Gold Elite parses",bof.automaticTier==="Gold Elite",JSON.stringify(bof));
+const brilliant="Marriott Bonvoy Brilliant Free Night Award Receive 1 Free Night Award every year after your Card renewal month. Award can be used for one night redemption level at or under 85,000 Marriott Bonvoy points. Brilliant Earned Choice Award Each calendar year after spending $60,000 on eligible purchases on your Marriott Bonvoy Brilliant Card, you will be eligible to select a Brilliant Earned Choice Award benefit. Free Night Award has a redemption value of up to 85K points. Fee Credit for Global Entry or TSA PreCheck Receive either a $120 statement credit for Global Entry or up to $85 for TSA PreCheck. Only one credit will be given in a 4 year period.";
+const br=P.parseMarriottCardCriticalFacts(brilliant,"marriott_brilliant");
+ok("Brilliant 85K renewal award parses",br.annualPointCertificate?.capPoints===85000,JSON.stringify(br));
+ok("Brilliant trusted-traveler 120 every four years parses",br.trustedTraveler?.amount===120&&br.trustedTraveler?.years===4,JSON.stringify(br));
+ok("Brilliant 60K choice threshold parses",br.spendReward?.amount===60000&&br.spendReward?.valuePoints===85000,JSON.stringify(br));
+
 console.log(JSON.stringify({pass,fail,failures},null,2));if(fail)process.exitCode=1;
