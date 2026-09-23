@@ -1,5 +1,5 @@
 /**
- * Quiet Premium V5 isolated travel-strategy engine — 5.0-alpha.36 (2026-09-23)
+ * Quiet Premium V5 isolated travel-strategy engine — 5.0-alpha.37 (2026-09-23)
  * NOT wired to diagnostic.html or any customer-facing page.
  *
  * LOCKED
@@ -16,7 +16,7 @@
 })(typeof globalThis!=="undefined"?globalThis:this,function(){
 "use strict";
 
-const ENGINE_VERSION="5.0-alpha.36";
+const ENGINE_VERSION="5.0-alpha.37";
 const RULES_AS_OF="2026-09-23";
 const CATS=["dining","grocery","online_grocery","drugstore","gas_ev","transit","online_retail","vacation_home","airfare","hotel","general"];
 const AIRLINES=["delta","united","american","southwest"];
@@ -770,8 +770,8 @@ function tierBenefitRecordReadyV23(a,x){
 }
 function tierBenefitsCompleteV23(a){const rows=RULES.airlines[a]?.thresholds||[];return rows.length>0&&rows.every(t=>tierBenefitRecordReadyV23(a,tierBenefitRecordV18(a,t.tier)));}
 function tierFixedValueV20(a,tier){const x=tierBenefitRecordV18(a,tier);return x?.fixedAnnualValueVerified===true?n(x.fixedAnnualValue):0;}
-function airTargetPlanV18(p,a,portfolio,baseRouting,target,scenario){
-  const base=airProjection(p,a,baseRouting,portfolio),idx=tierIndex(a,target.tier),baseIdx=tierIndex(a,base.tier);
+function airTargetPlanV18(p,a,portfolio,baseRouting,target,scenario,baseProjection=null){
+  const base=baseProjection||airProjection(p,a,baseRouting,portfolio),idx=tierIndex(a,target.tier),baseIdx=tierIndex(a,base.tier);
   if(baseIdx>=idx)return{tier:target.tier,reachable:true,spendRequired:0,opportunityCost:0,cardId:"",routing:clone(baseRouting),moves:[],projectedTier:base.tier,benefits:tierBenefitRecordV18(a,target.tier),reason:"already_reached"};
   let best=null;
   for(const id of portfolio.filter(id=>RULES.cards[id]?.airline===a&&RULES.cards[id]?.status)){
@@ -787,7 +787,7 @@ function airTargetPlanV18(p,a,portfolio,baseRouting,target,scenario){
 function airlineStatusLadderV18(p,portfolio,annual,scenario){
   const a=p.airline.primary,budget=a?airlineBudget(p,a):{known:false,cardSpend:normalizeSpendShape({})};
   if(!a||!budget.known||!airlineQualificationDataReady(p,a,portfolio))return{airline:a||"",rows:[],selected:null,currentProjected:"",benefitFactsComplete:false,decisionSensitiveBenefitFactsMissing:false};
-  const baseRouting=routingForBudget(p,annual,budget),currentProjected=projectedCurrentStatusBaseline(p).airline.effectiveStatus||"",rows=(RULES.airlines[a]?.thresholds||[]).map(t=>airTargetPlanV18(p,a,portfolio,baseRouting,t,scenario));
+  const baseRouting=routingForBudget(p,annual,budget),baseProjection=airProjection(p,a,baseRouting,portfolio),currentProjected=projectedCurrentStatusBaseline(p).airline.effectiveStatus||"",rows=(RULES.airlines[a]?.thresholds||[]).map(t=>airTargetPlanV18(p,a,portfolio,baseRouting,t,scenario,baseProjection));
   const floorIdx=tierIndex(a,currentProjected);let selected=floorIdx>=0?rows.find(x=>tierIndex(a,x.tier)===floorIdx&&x.reachable)||null:null;
   if(!selected){for(const row of rows)if(row.reachable&&row.opportunityCost===0)selected=row;}
   let selectedIdx=selected?tierIndex(a,selected.tier):-1,selectedFixed=selected?tierFixedValueV20(a,selected.tier):0;
@@ -894,7 +894,15 @@ function actionsV13(p,portfolio,roles){
   for(const id of portfolio)if(!p.currentCards.includes(id))out.push({cardId:id,action:"add",role:by[id]||""});return out;
 }
 function feeSummaryV13(p,portfolio){const current=sum(p.currentCards.map(id=>RULES.cards[id]?.annualFee||0)),recommended=sum(portfolio.map(id=>RULES.cards[id]?.annualFee||0));return{currentAnnualFees:round(current),recommendedAnnualFees:round(recommended),annualSavings:round(Math.max(0,current-recommended)),annualIncrease:round(Math.max(0,recommended-current))};}
-function naturalHotelGapV14(p){const pr=p.hotel.primary;if(!pr||!p.remainingYear.known)return null;const route=routingForBudget(p,p.currentRouting,p.remainingYear),proj=hotelProjection(p,p.currentCards,route),base=RULES.hotels[pr]?.thresholds||[],rules=pr==="hilton"&&RULES.hotels.hilton?.diamondReserve?[...base,RULES.hotels.hilton.diamondReserve]:base,idx=tierIndex(pr,proj.effectiveTier),next=rules.find(x=>tierIndex(pr,x.tier)>idx);if(!next)return null;return{tier:next.tier,nights:next.nights==null?null:Math.max(0,next.nights-proj.qualifyingNights),stays:next.stays==null?null:Math.max(0,next.stays-proj.qualifyingStays),spend:next.spend==null?null:Math.max(0,next.spend-proj.qualifyingSpend),basePoints:next.basePoints==null?null:Math.max(0,next.basePoints-proj.basePoints),qualification:pr==="hilton"&&next.tier==="Diamond Reserve"?"(nights_or_stays)_and_spend":""};}
+const naturalHotelGapCacheV37=new WeakMap();
+function naturalHotelGapV14(p){
+  if(p&&typeof p==="object"&&naturalHotelGapCacheV37.has(p))return naturalHotelGapCacheV37.get(p);
+  const pr=p.hotel.primary;if(!pr||!p.remainingYear.known){if(p&&typeof p==="object")naturalHotelGapCacheV37.set(p,null);return null;}
+  const route=routingForBudget(p,p.currentRouting,p.remainingYear),proj=hotelProjection(p,p.currentCards,route),base=RULES.hotels[pr]?.thresholds||[],rules=pr==="hilton"&&RULES.hotels.hilton?.diamondReserve?[...base,RULES.hotels.hilton.diamondReserve]:base,idx=tierIndex(pr,proj.effectiveTier),next=rules.find(x=>tierIndex(pr,x.tier)>idx);
+  if(!next){naturalHotelGapCacheV37.set(p,null);return null;}
+  const out={tier:next.tier,nights:next.nights==null?null:Math.max(0,next.nights-proj.qualifyingNights),stays:next.stays==null?null:Math.max(0,next.stays-proj.qualifyingStays),spend:next.spend==null?null:Math.max(0,next.spend-proj.qualifyingSpend),basePoints:next.basePoints==null?null:Math.max(0,next.basePoints-proj.basePoints),qualification:pr==="hilton"&&next.tier==="Diamond Reserve"?"(nights_or_stays)_and_spend":""};
+  naturalHotelGapCacheV37.set(p,out);return out;
+}
 function travelActionStateV14(p,travel,plan){const baseline=projectedCurrentStatusBaseline(p);return{airline:{primary:travel.airline.primary,relationshipMode:travel.airline.mode,relationshipEstablished:travel.airline.relationshipEstablished,statusUseful:travel.airline.statusUseful,futureTravelKnown:travel.airline.primary==="american"?p.americanQualification.known:p.remainingYear.known,projectedNaturalStatus:baseline.airline.projectedStatus||"",effectiveNaturalStatus:baseline.airline.effectiveStatus||"",interventionNeeded:!!plan?.airlineTarget},hotel:{primary:travel.hotel.primary,relationshipMode:travel.hotel.mode,relationshipEstablished:travel.hotel.relationshipEstablished,statusUseful:travel.hotel.statusUseful,futureTravelKnown:p.remainingYear.known,projectedNaturalStatus:baseline.hotel.projectedStatus||"",effectiveNaturalStatus:baseline.hotel.effectiveStatus||"",remainingGap:naturalHotelGapV14(p),interventionNeeded:!!plan?.hotelTarget}};}
 function compatAirStrategyV13(travel){return{type:travel.airline.mode,airline:travel.airline.primary,statusUseful:travel.airline.statusUseful,routeFitEstablished:travel.airline.routeFitEstablished};}
 function compatHotelStrategyV13(travel){return{type:travel.hotel.mode,program:travel.hotel.primary};}
