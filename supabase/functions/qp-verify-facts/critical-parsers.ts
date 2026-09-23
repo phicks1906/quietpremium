@@ -97,3 +97,30 @@ export function criticalStructureIssues(kind,id,facts){
   }
   return issues;
 }
+
+
+export function parseMarriottCardCriticalFacts(text,id){
+  const t=String(text||""),out={};
+  if(id==="marriott_boundless"){
+    if(/Free Night Award[\s\S]{0,260}every year[\s\S]{0,420}(?:35,?000|35K)\s+points?/i.test(t)
+      ||/(?:35,?000|35K)\s+points?[\s\S]{0,420}Free Night Award[\s\S]{0,260}(?:every year|account anniversary)/i.test(t)){
+      out.annualPointCertificate={benefit:"free_night_award_35k",capPoints:35000,currency:"marriott_points",renewalRequired:true};
+    }
+  }
+  if(id==="marriott_bountiful"){
+    if(/Automatic Gold Elite Status[\s\S]{0,180}(?:automatic )?Marriott Bonvoy Gold Elite status/i.test(t))out.automaticTier="Gold Elite";
+  }
+  if(id==="marriott_brilliant"){
+    if(/Free Night Award[\s\S]{0,320}every year after your Card renewal month[\s\S]{0,420}(?:85,?000|85K)\s+(?:Marriott Bonvoy )?points?/i.test(t)
+      ||/(?:85,?000|85K)\s+(?:Marriott Bonvoy )?points?[\s\S]{0,420}Free Night Award[\s\S]{0,260}(?:every year|renewal)/i.test(t)){
+      out.annualPointCertificate={benefit:"free_night_award_85k",capPoints:85000,currency:"marriott_points",renewalRequired:true};
+    }
+    if(/(?:\$\s*120)[\s\S]{0,520}(?:Global Entry|TSA PreCheck)[\s\S]{0,620}(?:4\s*year period|every\s+4\s+years)|(?:Global Entry|TSA PreCheck)[\s\S]{0,620}\$\s*120[\s\S]{0,620}(?:4\s*year period|every\s+4\s+years)/i.test(t)){
+      out.trustedTraveler={amount:120,years:4};
+    }
+    const choice=/Brilliant Earned Choice Award[\s\S]{0,800}\$\s*60,?000|\$\s*60,?000[\s\S]{0,800}Brilliant Earned Choice Award/i.test(t);
+    const choice85=/Brilliant Earned Choice Award[\s\S]{0,5000}(?:85K|85,?000)[\s\S]{0,260}Free Night Award|Free Night Award[\s\S]{0,260}(?:85K|85,?000)[\s\S]{0,5000}Brilliant Earned Choice Award/i.test(t);
+    if(choice&&choice85)out.spendReward={amount:60000,benefit:"brilliant_choice_free_night_award_85k",valuePoints:85000,currency:"marriott_points"};
+  }
+  return out;
+}
