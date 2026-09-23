@@ -766,7 +766,7 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
       </div>
 
       <div class="section-block" data-result-section="travel_path">
-        <div class="section-heading"><h2>Your travel path.</h2><p>Status appears only when the recommended architecture actually supports a useful path.</p></div>
+        <div class="section-heading"><h2>Your travel path.</h2><p>Status appears only when the recommended plan actually supports a useful path.</p></div>
         <div class="path-grid">
           <div class="path-card"><div class="eyebrow">Airline</div><div class="path-name" id="airline-path-name">—</div><div class="path-status" id="airline-path-status">—</div><div class="path-copy" id="airline-path-copy"></div><div class="path-bar"><div class="path-fill" id="airline-path-fill"></div></div><div class="path-foot"><span id="airline-path-left"></span><span id="airline-path-right"></span></div></div>
           <div class="path-card"><div class="eyebrow">Hotel</div><div class="path-name" id="hotel-path-name">—</div><div class="path-status" id="hotel-path-status">—</div><div class="path-copy" id="hotel-path-copy"></div><div class="path-bar"><div class="path-fill" id="hotel-path-fill"></div></div><div class="path-foot"><span id="hotel-path-left"></span><span id="hotel-path-right"></span></div></div>
@@ -776,7 +776,7 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
       <div class="section-block" data-result-section="routing"><div class="section-heading"><h2>How to route the spend.</h2><p>Threshold spend stops at the useful breakpoint. The next dollar is re-evaluated.</p></div><div class="routing-map" id="routing-map"></div></div>
       <div class="section-block" data-result-section="corrections"><div class="section-heading"><h2>What changes first.</h2><p>Only differences between Current and Recommended become corrections.</p></div><div class="corrections" id="correction-list"></div></div>
 
-      <div class="section-block" data-result-section="first_year"><div class="section-heading"><h2>First 12 months.</h2><p>Welcome offers can change acquisition sequence without changing the mature architecture.</p></div><div class="result-card"><div class="eyebrow">First-year maximum</div><h3 id="year1-title">—</h3><p id="year1-copy"></p></div></div>
+      <div class="section-block" data-result-section="first_year"><div class="section-heading"><h2>First 12 months.</h2><p>Welcome offers can change acquisition sequence without changing the mature plan.</p></div><div class="result-card"><div class="eyebrow">First-year maximum</div><h3 id="year1-title">—</h3><p id="year1-copy"></p></div></div>
 
       <div class="section-block" data-result-section="maximum_calculation"><div class="section-heading"><h2>How Maximum is calculated.</h2><p>Annual cost is subtracted symmetrically. Existing point balances remain separate.</p></div><div class="value-table" id="value-table"></div></div>
 
@@ -788,7 +788,7 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
       <div class="infrastructure" data-result-section="save_share_feedback">
         <div class="section-heading">
           <h2>Keep this analysis.</h2>
-          <p>Your completed Architecture is securely stored by Quiet Premium, can be retrieved with a private link, saved on this device, shared, or exported as a PDF.</p>
+          <p>Your completed analysis is securely stored by Quiet Premium, can be retrieved with a private link, saved on this device, shared, or exported as a PDF.</p>
         </div>
 
         <div class="arch-id">
@@ -816,14 +816,14 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
 
           <div class="delivery-card">
             <h3>Save on this device</h3>
-            <p>Stores the completed Architecture in this browser's IndexedDB. It is separate from the anonymous unfinished-draft storage.</p>
+            <p>Stores the completed analysis in this browser's IndexedDB. It is separate from the anonymous unfinished-draft storage.</p>
             <button type="button" class="btn btn-secondary" id="save-local-result">Save Private Copy</button>
             <div class="saved-state" id="save-state" aria-live="polite">Not saved.</div>
           </div>
 
           <div class="delivery-card">
             <h3>PDF report</h3>
-            <p>Creates a compact report containing your conclusion, metrics, recommended architecture, routing and corrections.</p>
+            <p>Creates a compact report containing your conclusion, metrics, recommended plan, routing and corrections.</p>
             <button type="button" class="btn btn-secondary" id="download-pdf">Download PDF</button>
             <div class="saved-state" id="pdf-state" aria-live="polite">Ready.</div>
           </div>
@@ -832,7 +832,7 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
         <div class="feedback-panel">
           <div class="eyebrow">Founding feedback</div>
           <h3>Did this feel useful?</h3>
-          <p>Your Analysis ID is attached to the feedback so the comment can be understood in context. Feedback is stored directly with the Architecture; no email app is required.</p>
+          <p>Your Analysis ID is attached to the feedback so the comment can be understood in context. Feedback is stored directly with your analysis; no email app is required.</p>
           <div class="feedback-reactions" id="feedback-reactions">
             <button type="button" data-reaction="Very useful">Very useful</button>
             <button type="button" data-reaction="Somewhat useful">Somewhat useful</button>
@@ -1399,7 +1399,7 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
   }
 
   async function saveActiveResult(){
-    if(!activeArchitecture?.result)throw new Error('No active Architecture');
+    if(!activeArchitecture?.result)throw new Error('No active analysis');
     const snapshot=resultSnapshot(activeArchitecture.result);
     await dbPut(QP_ARCH_STORE,{id:snapshot.id,createdAt:snapshot.createdAt,snapshot});
     return snapshot.id;
@@ -1452,7 +1452,7 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
       addPageIfNeeded(parts.length*(size+4));
       pdf.text(parts,margin,y);y+=parts.length*(size+4)+(text===''?3:5);
     }
-    pdf.save(`${activeArchitecture.id}-Quiet-Premium-Architecture.pdf`);
+    pdf.save(`${activeArchitecture.id}-Quiet-Premium-Travel-Strategy.pdf`);
   }
 
   async function shareResult(){
@@ -1467,7 +1467,7 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
       }
     }
 
-    const subject=`Quiet Premium Architecture ${activeArchitecture.id}`;
+    const subject=`Quiet Premium Travel Strategy ${activeArchitecture.id}`;
     const text=`My Quiet Premium Analysis\n\n${link}\n\nThis private link opens only this analysis. Anyone with the full link can read it.`;
     if(navigator.share){
       try{await navigator.share({title:subject,text,url:link});return;}catch(err){if(err?.name==='AbortError')return;}
@@ -1632,7 +1632,7 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
     const rows=[
       ['Annual redemption / points production',max?.rewards?.value||0],
       ['Modeled usable card benefits',max?.benefits?.value||0],
-      ['Annual architecture cost',-(max?.economics?.annualCost||0)]
+      ['Annual plan cost',-(max?.economics?.annualCost||0)]
     ];
     rows.forEach(([name,value])=>{
       const div=document.createElement('div');div.className='value-row';
@@ -1667,7 +1667,7 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
     const items=[
       ['What Maximum means','Maximum is the highest modeled ongoing net value among the feasible architectures QP tested. It does not assume additional baseline spending.'],
       ['What Recommended means',trade?.sameArchitecture
-        ?'Recommended and Maximum are the same architecture for this profile.'
+        ?'Recommended and Maximum are the same plan for this profile.'
         :`QP intentionally gives up ${fmtMoney(trade?.annualValueTradeoff||0)} of modeled annual value (${trade?.percentOfMaximumGivenUp||0}% of Maximum) to better fit the travel priorities and constraints you entered.`],
       ['Valuation method','Point values use the engine’s maximum-realistic fallback unless a user-specific value is available. Card benefits count only when supported by entered behavior or a confirmed routing condition.'],
       ['Status treatment','Status itself is not assigned a fake dollar value. QP monetizes supported economic components and keeps treatment, upgrades and recognition in the experience layer.'],
@@ -1699,7 +1699,7 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
       $('airline-path-copy').textContent=spend>0
         ?`${fmtMoney(spend)} of general spend is assigned to the airline rail only until the selected status breakpoint is reached.`
         :air?.tier
-          ?'The recommended architecture does not require additional general spend to establish the modeled airline position.'
+          ?'The recommended plan does not require additional general spend to establish the modeled airline position.'
           :'QP does not see a useful airline-status spend path from the inputs provided.';
       const next=air?.nextTier;
       const denom=next?.threshold||Math.max(air.metric||0,1);
@@ -1781,7 +1781,7 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
       :'Same valuation engine as Maximum.';
 
     const cs=r.recommendations?.corrections||[];
-    $('first-move').textContent=cs.length?cs[0].change:(already?'Keep the architecture.':'No forced move.');
+    $('first-move').textContent=cs.length?cs[0].change:(already?'Keep the plan.':'No forced move.');
     $('first-move-note').textContent=cs.length
       ?'This is the first difference QP identified between Current and Recommended.'
       :'QP does not see a high-confidence correction worth forcing.';
@@ -1802,8 +1802,8 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
 
     $('year1-title').textContent=fmtMoney(r.firstYear.maximumPotentialValue);
     $('year1-copy').textContent=r.firstYear.differsFromOngoingMaximum
-      ?`The strongest first-year path differs from the mature Architecture because a confirmed or conditional welcome offer changes the acquisition sequence. The mature Maximum remains ${architectureLabel(r.maximum)}.`
-      :'The first-year path does not materially change the mature Architecture with the offer information available to QP.';
+      ?`The strongest first-year path differs from the mature plan because a confirmed or conditional welcome offer changes the acquisition sequence. The mature Maximum remains ${architectureLabel(r.maximum)}.`
+      :'The first-year path does not materially change the mature plan with the offer information available to QP.';
 
     renderRoutingMap(r);
     renderCorrections(r);
