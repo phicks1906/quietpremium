@@ -16,7 +16,7 @@
 })(typeof globalThis!=="undefined"?globalThis:this,function(){
 "use strict";
 
-const ENGINE_VERSION="5.0-alpha.34";
+const ENGINE_VERSION="5.0-alpha.35";
 const RULES_AS_OF="2026-09-23";
 const CATS=["dining","grocery","online_grocery","drugstore","gas_ev","transit","online_retail","vacation_home","airfare","hotel","general"];
 const AIRLINES=["delta","united","american","southwest"];
@@ -624,6 +624,7 @@ function candidatePortfoliosV13(p,rewards=rewardsStrategyV13(p),shardIndex=0,sha
     function emit(){
       if(!selected.length&&p.totalSpend)return;
       if(needsFlexibleSupport&&!selected.some(id=>flexCurrencyV13(id)===currency))return;
+      if(badHotelStack(p,selected)||!brilliantAllowed(p,selected))return;
       const key=selected.slice().sort().join("|");
       if(!seen.has(key)){seen.add(key);out.push(selected.slice());}
     }
@@ -642,12 +643,13 @@ function candidatePortfoliosV13(p,rewards=rewardsStrategyV13(p),shardIndex=0,sha
         selected.push(id);go(i+1,newCount+(isNew?1:0),hasTargetFlex||fc===currency);selected.pop();return;
       }
       if(forcedBit===0){go(i+1,newCount,hasTargetFlex);return;}
+      const duplicateHotel=!p.hotelCardStackingAllowed&&!!RULES.cards[id]?.hotel&&selected.some(x=>RULES.cards[x]?.hotel===RULES.cards[id]?.hotel);
       if(forcedBit===1){
-        if(incompatibleNewFlex||forbiddenNew||noConcreteJob)return;
+        if(incompatibleNewFlex||forbiddenNew||noConcreteJob||duplicateHotel)return;
         selected.push(id);go(i+1,newCount+(isNew?1:0),hasTargetFlex||fc===currency);selected.pop();return;
       }
       go(i+1,newCount,hasTargetFlex);
-      if(incompatibleNewFlex||forbiddenNew||noConcreteJob)return;
+      if(incompatibleNewFlex||forbiddenNew||noConcreteJob||duplicateHotel)return;
       selected.push(id);go(i+1,newCount+(isNew?1:0),hasTargetFlex||fc===currency);selected.pop();
     }
     go(0,0,false);
