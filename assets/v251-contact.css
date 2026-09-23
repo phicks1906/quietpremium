@@ -1,0 +1,21 @@
+/* Quiet Premium Phase 5B contact unification */
+:root{--qp-navy:#0b1b2d;--qp-navy2:#10263d;--qp-paper:#f6f2e9;--qp-ivory:#fffdf8;--qp-gold:#b58a49;--qp-gold2:#d0ae72;--qp-ink:#122033;--qp-muted:#657080;--qp-line:#ddd4c8}
+html,body{background:var(--qp-paper)!important;color:var(--qp-ink)!important}
+nav{background:rgba(8,24,39,.98)!important;border-bottom:1px solid rgba(208,174,114,.22)!important}
+.nb{border-color:var(--qp-gold2)!important}.nb span{color:var(--qp-gold2)!important}.nb .nbr{background:#9b7845!important}
+.nav-wm{font-family:'Cormorant Garamond',Georgia,serif!important;font-size:18px!important;letter-spacing:.13em!important;text-transform:uppercase!important;color:#f8f4ed!important;margin-left:0!important;line-height:1!important}
+.nav-wm::after{content:'Personal Travel Strategy';display:block;margin-top:5px;font:500 5.5px/1 'Inter',Arial,sans-serif;letter-spacing:.16em;color:#cdb88e}
+.nav-r{color:#d5dde4!important}
+.page{background:var(--qp-paper)!important}
+.eyebrow{color:#906b37!important}.headline{color:var(--qp-ink)!important;font-weight:400!important}.headline em{color:#8e6b3a!important}
+.subtext{color:var(--qp-muted)!important}
+.form-row label{color:#2a3441!important;font-weight:500!important}
+.form-row input,.form-row textarea,.form-row select{background:#fff!important;border:1px solid #d7ccbc!important;color:#172338!important;border-radius:8px!important}
+.form-row input:focus,.form-row textarea:focus,.form-row select:focus{border-color:#aa8144!important;box-shadow:0 0 0 2px rgba(170,129,68,.08)!important}
+.form-row input::placeholder,.form-row textarea::placeholder{color:#aaa197!important}
+.form-row select option{background:#fff!important;color:#172338!important}
+.divider{background:#ddd4c8!important}.submit-note{color:#766f67!important}
+.btn-submit{background:linear-gradient(135deg,#9f753a,#c99b58)!important;color:#fff!important;border-radius:999px!important;font-family:'Inter',Arial,sans-serif!important;letter-spacing:0!important;text-transform:none!important;font-size:11px!important;font-weight:600!important;padding:14px 28px!important}
+.success{border:1px solid #d8c8ad!important;background:#fff9ef!important;border-radius:10px!important}.success-ey{color:#8f6a39!important}.success-hl{color:var(--qp-ink)!important}.success-body{color:#657080!important}
+.field-error{color:#a84b42!important}
+@media(max-width:680px){nav{padding:14px 18px!important}.nav-wm{font-size:15px!important}.wrap{padding:48px 20px 60px!important}}
