@@ -388,7 +388,8 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
         <div class="row">
           <div class="field" data-required>
             <label for="home_airport">Home airport <span class="req">*</span></label>
-            <input class="control" id="home_airport" name="home_airport" placeholder="e.g. SDF"/>
+            <input class="control" id="home_airport" name="home_airport" placeholder="Airport code, name, or city — e.g. SDF"/>
+            <div class="hint">Start typing a code, airport name, or city, then choose the specific airport.</div>
             <div class="validation">Enter your primary departure airport.</div>
           </div>
           <div class="field" data-required>
@@ -418,17 +419,8 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
 
         <div class="field">
           <label for="frequent_destinations">Frequent destinations</label>
-          <div class="hint">Up to five cities or airports. This helps QP test whether your primary airline is practical for the routes you actually fly.</div>
+          <div class="hint">Up to five specific airports. You can enter airport codes or unambiguous airport/city names; Quiet Premium will not guess between multiple airports in the same city.</div>
           <textarea class="control" id="frequent_destinations" name="frequent_destinations" placeholder="e.g. JFK, LAX, MIA, ORD"></textarea>
-        </div>
-
-        <div class="field">
-          <label for="cabin_booked">Cabin you usually buy</label>
-          <select class="control" id="cabin_booked" name="cabin_booked">
-            <option value="">Choose one</option>
-            <option>Main cabin / economy</option><option>Extra-legroom economy</option>
-            <option>Premium economy</option><option>Domestic first</option><option>Business / first</option><option>Mixed</option>
-          </select>
         </div>
 
         <div class="nav-actions"><button type="button" class="btn btn-primary" data-next>Continue</button></div>
@@ -853,7 +845,8 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="qp_sim.js"></script>
-<script src="assets/diagnostic-v5.js?v=260"></script>
+<script src="assets/airports-v1.js?v=1"></script>
+<script src="assets/diagnostic-v5.js?v=270"></script>
 <script>
 (function(){
   'use strict';
