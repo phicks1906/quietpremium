@@ -154,8 +154,8 @@ export function parseMarriottCardCriticalFacts(text,id){
     if(/Automatic Gold Elite Status/i.test(t)||/automatically (?:receive|enjoy) (?:Marriott Bonvoy )?Gold Elite Status/i.test(t))out.automaticTier="Gold Elite";
   }
   if(id==="marriott_brilliant"){
-    if(/Free Night Award[\s\S]{0,520}(?:every year after your Card renewal month|Card renewal month)[\s\S]{0,520}(?:85,?000|85K)\s+(?:Marriott Bonvoy )?points?/i.test(t)
-      ||/(?:85,?000|85K)\s+(?:Marriott Bonvoy )?points?[\s\S]{0,520}Free Night Award[\s\S]{0,320}(?:every year|renewal)/i.test(t)){
+    if(/Free Night Award[\s\S]{0,520}(?:every year after your Card renewal month|Card renewal month)[\s\S]{0,520}(?:85,?000|85K)[\s\S]{0,80}?points?/i.test(t)
+      ||/(?:85,?000|85K)[\s\S]{0,80}?points?[\s\S]{0,520}Free Night Award[\s\S]{0,320}(?:every year|renewal)/i.test(t)){
       out.annualPointCertificate={benefit:"free_night_award_85k",capPoints:85000,currency:"marriott_points",renewalRequired:true};
     }
     if(/(?:\$\s*120)[\s\S]{0,700}(?:Global Entry|TSA PreCheck)[\s\S]{0,800}(?:every\s+4\s+years|every four years|4\s*year period)/i.test(t)
