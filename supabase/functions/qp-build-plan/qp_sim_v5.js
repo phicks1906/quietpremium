@@ -596,15 +596,28 @@ function candidatePortfoliosV13(p,rewards=rewardsStrategyV13(p),shardIndex=0,sha
   const protectedIds=new Set(protectedCurrentIdsV13(p)),requiredIds=new Set(p.constraints.requiredCards||[]),
         air=AIRLINE_CARDS_V17[p.airline.primary]||[],hotel=HOTEL_CARDS_V17[p.hotel.primary]||[],
         needsFlexibleSupport=sum(["dining","grocery","online_grocery","drugstore","gas_ev","transit","online_retail","vacation_home","general"].map(c=>p.spend[c]||0))>0,
-        out=[],seen=new Set(),currentSet=new Set(p.currentCards||[]),coBrandJob=new Map(),shard=Math.max(0,Math.trunc(n(shardIndex))),shards=Math.max(1,Math.trunc(n(shardCount)||1));
-  let ordinal=0;
+        out=[],seen=new Set(),currentSet=new Set(p.currentCards||[]),coBrandJob=new Map(),
+        shard=Math.max(0,Math.trunc(n(shardIndex))),shards=Math.max(1,Math.trunc(n(shardCount)||1)),
+        shardBits=Math.max(0,Math.floor(Math.log2(shards))),
+        effectiveShards=2**shardBits;
   const canAddCoBrand=(id)=>{
     if(currentSet.has(id)||requiredIds.has(id)||RULES.cards[id]?.kind==="flex")return true;
     if(!coBrandJob.has(id))coBrandJob.set(id,coBrandHasJobV13(p,id));
     return coBrandJob.get(id)===true;
   };
+  if(shard>=effectiveShards)return out;
   for(const currency of FLEX_CURRENCIES_V13){
     const relevant=uniq([...p.currentCards,...p.constraints.requiredCards,...flexCardsForCurrencyV13(currency),...air,...hotel]).filter(id=>!p.constraints.prohibitedCards.includes(id));
+    const optionals=[];
+    for(const id of relevant){
+      const isNew=!currentSet.has(id),fc=flexCurrencyV13(id),must=requiredIds.has(id)||protectedIds.has(id),
+            incompatibleNewFlex=isNew&&fc&&fc!==currency,forbiddenNew=isNew&&p.constraints.noNewCards,noConcreteJob=isNew&&!canAddCoBrand(id);
+      if(!must&&!incompatibleNewFlex&&!forbiddenNew&&!noConcreteJob)optionals.push(id);
+    }
+    const partitionIds=optionals.slice(0,Math.min(shardBits,optionals.length)),
+          partitionBit=new Map(partitionIds.map((id,i)=>[id,(shard>>i)&1])),
+          maxActive=2**partitionIds.length;
+    if(shard>=maxActive)continue;
     const remainingTargetFlex=new Array(relevant.length+1).fill(0);
     for(let i=relevant.length-1;i>=0;i--)remainingTargetFlex[i]=remainingTargetFlex[i+1]+(flexCurrencyV13(relevant[i])===currency?1:0);
     const selected=[];
@@ -612,7 +625,7 @@ function candidatePortfoliosV13(p,rewards=rewardsStrategyV13(p),shardIndex=0,sha
       if(!selected.length&&p.totalSpend)return;
       if(needsFlexibleSupport&&!selected.some(id=>flexCurrencyV13(id)===currency))return;
       const key=selected.slice().sort().join("|");
-      if(!seen.has(key)){seen.add(key);const slot=ordinal++%shards;if(slot===shard)out.push(selected.slice());}
+      if(!seen.has(key)){seen.add(key);out.push(selected.slice());}
     }
     function go(i,newCount,hasTargetFlex){
       if(p.constraints.maxNewCards!=null&&newCount>p.constraints.maxNewCards)return;
@@ -622,8 +635,14 @@ function candidatePortfoliosV13(p,rewards=rewardsStrategyV13(p),shardIndex=0,sha
             must=requiredIds.has(id)||protectedIds.has(id),
             incompatibleNewFlex=isNew&&fc&&fc!==currency,
             forbiddenNew=isNew&&p.constraints.noNewCards,
-            noConcreteJob=isNew&&!canAddCoBrand(id);
+            noConcreteJob=isNew&&!canAddCoBrand(id),
+            forcedBit=partitionBit.has(id)?partitionBit.get(id):null;
       if(must){
+        if(incompatibleNewFlex||forbiddenNew||noConcreteJob)return;
+        selected.push(id);go(i+1,newCount+(isNew?1:0),hasTargetFlex||fc===currency);selected.pop();return;
+      }
+      if(forcedBit===0){go(i+1,newCount,hasTargetFlex);return;}
+      if(forcedBit===1){
         if(incompatibleNewFlex||forbiddenNew||noConcreteJob)return;
         selected.push(id);go(i+1,newCount+(isNew?1:0),hasTargetFlex||fc===currency);selected.pop();return;
       }
@@ -634,7 +653,7 @@ function candidatePortfoliosV13(p,rewards=rewardsStrategyV13(p),shardIndex=0,sha
     go(0,0,false);
   }
   const cur=p.currentCards.slice(),curKey=cur.slice().sort().join("|");
-  if(!seen.has(curKey)){seen.add(curKey);const slot=ordinal++%shards;if(slot===shard)out.push(cur);}
+  if(shard===0&&!seen.has(curKey))out.push(cur);
   return out;
 }
 function rewardsStrategyForPortfolioV31(p,portfolio,travel,baseRewards){
