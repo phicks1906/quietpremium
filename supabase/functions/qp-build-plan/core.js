@@ -16,8 +16,10 @@ export const HOTEL_CARDS=Object.freeze({
 });
 export const STRATEGY_REPRESENTATIVES=Object.freeze(["amex_gold","chase_preferred","venture"]);
 export const EXISTING_ONLY_CARDS=Object.freeze(["chase_freedom_rise"]);
+export const ALL_ACQUISITION_FLEX_CARDS=Object.freeze([...new Set(Object.values(FLEX_CARDS).flat())]);
 
 const uniq=a=>[...new Set((a||[]).filter(Boolean))].sort();
+const normalizedProfile=(profile,E)=>profile?.__normalizedV5===true?profile:E.normalizeProfile(profile||{});
 
 export function normalizeEntityRequest(x){
   return {
@@ -30,7 +32,7 @@ export function sameEntityRequest(a,b){
   return JSON.stringify(normalizeEntityRequest(a))===JSON.stringify(normalizeEntityRequest(b));
 }
 export function stageOneEntities(profile,E){
-  const p=E.normalizeProfile(profile||{});
+  const p=normalizedProfile(profile,E);
   return normalizeEntityRequest({
     cards:[...(p.currentCards||[]),...(p.constraints?.requiredCards||[]),...STRATEGY_REPRESENTATIVES],
     airlines:p.airline?.primary?[p.airline.primary]:[],
@@ -38,10 +40,10 @@ export function stageOneEntities(profile,E){
   });
 }
 export function finalEntities(profile,E){
-  const p=E.normalizeProfile(profile||{}),travel=E.travelStrategy(p),rewards=E.rewardsStrategy(p,travel);
+  const p=normalizedProfile(profile,E),travel=E.travelStrategy(p),rewards=E.rewardsStrategy(p,travel);
   const prohibited=new Set(p.constraints?.prohibitedCards||[]),current=new Set(p.currentCards||[]),required=new Set(p.constraints?.requiredCards||[]);
   const candidates=[
-    ...((FLEX_CARDS[rewards.primaryCurrency])||[]),
+    ...ALL_ACQUISITION_FLEX_CARDS,
     ...((AIRLINE_CARDS[p.airline?.primary])||[]),
     ...((HOTEL_CARDS[p.hotel?.primary])||[])
   ].filter(id=>!prohibited.has(id)||current.has(id)||required.has(id));
