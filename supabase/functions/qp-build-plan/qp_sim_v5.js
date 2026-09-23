@@ -605,6 +605,8 @@ function candidatePortfoliosV13(p,rewards=rewardsStrategyV13(p)){
     function emit(){
       if(!selected.length&&p.totalSpend)return;
       if(needsFlexibleSupport&&!selected.some(id=>flexCurrencyV13(id)===currency))return;
+      const adds=selected.filter(id=>!currentSet.has(id));
+      if(adds.some(id=>RULES.cards[id]?.kind!=="flex"&&!coBrandHasJobV13(p,id)))return;
       const key=selected.slice().sort().join("|");
       if(!seen.has(key)){seen.add(key);out.push(selected.slice());}
     }
