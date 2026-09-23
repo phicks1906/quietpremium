@@ -49,6 +49,128 @@ function actionCard(action,result,E){
   return{...cardFactsView(E,profile,action.cardId),action:action.action||"",role:action.role||"",routineAnnualSpend:routedAmount(result?.recommended?.ongoingRouting,action.cardId),classification:c?.classification||"",incrementalRecurringValue:c?.incrementalRecurringValue??null,requiredByConstraint:list(profile?.constraints?.requiredCards).includes(action.cardId)};
 }
 
+
+function titleCase(value){
+  return String(value||"").replace(/[_-]+/g," ").replace(/\b\w/g,m=>m.toUpperCase()).trim();
+}
+function routeActionRows(rec,E,profile){
+  const out=[];
+  for(const [category,rows] of Object.entries(rec?.ongoingRouting||{})){
+    list(rows).forEach((row,index)=>{
+      if(!row?.card||num(row?.amount)<=0)return;
+      const card=cardFactsView(E,profile,row.card);
+      out.push({
+        id:"route:"+category+":"+row.card+":"+index,
+        type:"routing",
+        title:"Route "+titleCase(category)+" to "+card.label,
+        cardId:row.card,
+        category,
+        annualAmount:num(row.amount),
+        purpose:row?.purpose||"",
+        source:"recommended.ongoingRouting"
+      });
+    });
+  }
+  return out;
+}
+function thresholdAction(job,E,profile){
+  const card=cardFactsView(E,profile,job?.cardId||"");
+  const remaining=job?.spendRequired==null?null:num(job.spendRequired);
+  return{
+    id:job?.id||("annual_threshold:"+job?.cardId),
+    type:"recurring_threshold",
+    title:"Fund the annual "+titleCase(job?.purpose||"threshold")+" on "+card.label,
+    cardId:job?.cardId||"",
+    purpose:job?.purpose||"",
+    annualSpendRequired:num(job?.annualSpendRequired),
+    currentYearSpendRemaining:remaining,
+    modeledValue:num(job?.modeledValue),
+    routingOpportunityCost:num(job?.routingOpportunityCost),
+    stopCondition:clone(job?.stopCondition||null),
+    nextStep:clone(job?.nextStep||job?.postThresholdRouting||[]),
+    source:"recommended.recurringJobs"
+  };
+}
+function interventionAction(job,E,profile){
+  const card=cardFactsView(E,profile,job?.cardId||"");
+  const target=job?.purpose||job?.stopCondition?.tier||"target";
+  return{
+    id:job?.id||("finite_intervention:"+job?.cardId),
+    type:"finite_intervention",
+    title:"Use "+card.label+" only until "+titleCase(target)+" is secured",
+    cardId:job?.cardId||"",
+    purpose:target,
+    spendRequired:num(job?.spendRequired),
+    opportunityCost:num(job?.opportunityCost),
+    stopCondition:clone(job?.stopCondition||null),
+    nextStep:clone(job?.nextStep||job?.postThresholdRouting||[]),
+    source:"recommended.temporaryJobs"
+  };
+}
+function buildImplementationPlan(result,E,parts){
+  const rec=result?.recommended||{},profile=result?.profile||{},phase1=[],phase2=[],phase3=[];
+  for(const x of parts.recommendedNew||[])phase1.push({id:"add:"+x.cardId,type:"card_add",title:"Add "+x.label,cardId:x.cardId,classification:"recommended",source:"recommended.actions"});
+  for(const x of parts.requiredByConstraint||[])phase1.push({id:"required:"+x.cardId,type:"required_card",title:"Set up "+x.label+" because it is an explicit constraint",cardId:x.cardId,source:"profile.constraints.requiredCards"});
+  for(const x of parts.keepButStopRoutineSpend||[])phase1.push({id:"stop_spend:"+x.cardId,type:"stop_routine_spend",title:"Keep "+x.label+", but stop routine spend",cardId:x.cardId,source:"recommended.actions"});
+  for(const x of parts.removeOrDowngrade||[])phase1.push({id:"review_remove:"+x.cardId,type:"remove_or_downgrade",title:"Review "+x.label+" for downgrade or removal",cardId:x.cardId,source:"recommended.actions"});
+  for(const x of parts.manualReviewBeforeRemoval||[])phase1.push({id:"manual_review:"+x.cardId,type:"manual_review",title:"Resolve the open facts on "+x.label+" before any removal",cardId:x.cardId,source:"recommended.actions"});
+  phase1.push(...routeActionRows(rec,E,profile));
+
+  const recurring=list(rec?.recurringJobs).map(j=>thresholdAction(j,E,profile));
+  const finite=list(rec?.temporaryJobs).map(j=>interventionAction(j,E,profile));
+  phase2.push(...finite,...recurring);
+  if(!phase2.length)phase2.push({
+    id:"no_threshold_chase",
+    type:"no_change",
+    title:"No status or spend threshold intervention is required",
+    source:"recommended.recurringJobs+recommended.temporaryJobs"
+  });
+
+  for(const job of [...finite,...recurring]){
+    if(list(job.nextStep).length)phase3.push({
+      id:"handoff:"+job.id,
+      type:"post_threshold",
+      title:"After "+titleCase(job.purpose)+" is complete, follow the steady-state routing",
+      jobId:job.id,
+      nextStep:clone(job.nextStep),
+      source:job.source
+    });
+  }
+  for(const stop of parts?.status?.airline?.whyNotHigher||[]){
+    if(!stop?.stopReason)continue;
+    phase3.push({
+      id:"status_stop:"+String(stop.tier||"").toLowerCase().replace(/\s+/g,"_"),
+      type:"status_stop",
+      title:"Do not chase "+(stop.tier||"the next airline tier"),
+      tier:stop.tier||"",
+      reason:stop.stopReason,
+      opportunityCost:stop.opportunityCost??null,
+      source:"recommended.strategy.airlineStatusLadder"
+    });
+  }
+  if(!phase3.length&&Object.values(rec?.ongoingRouting||{}).some(rows=>list(rows).some(r=>num(r?.amount)>0)))phase3.push({
+    id:"steady_state",
+    type:"steady_state",
+    title:"Continue the steady-state routing shown in this plan",
+    source:"recommended.ongoingRouting"
+  });
+
+  return{
+    schema:"qp-implementation-plan-v1",
+    principle:"Set it up once. Then let it run.",
+    phases:[
+      {id:"days_1_30",days:"Days 1–30",title:"Make the structural changes",objective:"Put the recommended card structure and routine routing in place.",actions:phase1,successState:phase1.length?"The recommended structure and routine routing are in place.":"No structural change is required."},
+      {id:"days_31_60",days:"Days 31–60",title:"Hit only the worthwhile targets",objective:"Execute only the recurring thresholds or finite interventions the engine justified.",actions:phase2,successState:(finite.length||recurring.length)?"The worthwhile targets are being tracked against their exact stop conditions.":"No unnecessary threshold chase has been introduced."},
+      {id:"days_61_90",days:"Days 61–90",title:"Move into steady state",objective:"End finite interventions at their stopping points and let the ongoing strategy run.",actions:phase3,successState:"Temporary interventions end when their stop conditions are met, and the ongoing routing remains in force."}
+    ],
+    day90:{
+      title:"Your system is running.",
+      summary:"The recommended structure is in place, worthwhile thresholds have explicit stop conditions, and routine spend follows the ongoing strategy."
+    },
+    excludesConsiderCards:true
+  };
+}
+
 export function buildResultContract(result,E,audit={pass:false,errors:[],warnings:[]}){
   const rec=result?.recommended||{},cur=result?.current||{},profile=result?.profile||{},actions=list(rec.actions),visible=list(rec.visibleBenefits);
   const actionViews=actions.map(a=>actionCard(a,result,E));
@@ -126,6 +248,7 @@ export function buildResultContract(result,E,audit={pass:false,errors:[],warning
       southwestCompanionPass:clone(swCompanion),
       quantitativeState:(profile?.companionTravel?.intent==="yes")?"quantified_when_supported":(profile?.companionTravel?.intent==="no")?"zero_by_future_intent":"qualitative_unresolved"
     },
+    implementationPlan:buildImplementationPlan(result,E,{recommendedNew,requiredByConstraint,keepButStopRoutineSpend,removeOrDowngrade,manualReviewBeforeRemoval,status}),
     quality:{
       ready:audit?.pass===true&&result?.factQuality?.productionReady===true,
       assumptions:clone(rec?.quality?.assumptions||[]),

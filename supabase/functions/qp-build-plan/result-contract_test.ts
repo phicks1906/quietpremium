@@ -138,3 +138,62 @@ Deno.test("pre-output audit fails closed on a non-approved valuation snapshot",(
   assert(audit.pass===false,"tampered valuation snapshot passed audit");
   assert(audit.errors.some(x=>x.code==="valuation_snapshot_not_current_approved"),"valuation snapshot failure not identified");
 });
+
+
+Deno.test("implementation plan uses engine actions and never promotes Consider cards",()=>{
+  const result={
+    engineVersion:"5.0-alpha.31",rulesAsOf:"2026-09-22",
+    factsSnapshot:{snapshotId:"f"},valuationSnapshot:{snapshotId:"v"},factQuality:{productionReady:true,missingCriticalFacts:[]},
+    profile:{constraints:{requiredCards:[]},companionTravel:{intent:"no",frequency:"",minimumExpectedRoundTrips:0}},
+    travelStrategy:{airline:{primary:"delta",mode:"primary_with_exceptions"},hotel:{primary:"",mode:"flexible"}},
+    rewardsStrategy:{primaryCurrency:"amex_mr",reason:""},
+    newCardClassifications:[
+      {cardId:"new_card",classification:"recommended",incrementalRecurringValue:400},
+      {cardId:"consider_card",classification:"consider",incrementalRecurringValue:250}
+    ],
+    considerCards:[{cardId:"consider_card",classification:"consider",incrementalRecurringValue:250}],
+    current:{economics:{netEconomicValue:0}},integrity:{protectedMultiplierSpend:true},
+    recommended:{
+      portfolio:["new_card"],ongoingRouting:{dining:[{card:"new_card",amount:12000}]},
+      recurringJobs:[{id:"annual_threshold:new_card:cert",type:"annual_threshold",recurring:true,cardId:"new_card",purpose:"cert",annualSpendRequired:15000,spendRequired:7000,modeledValue:300,routingOpportunityCost:50,stopCondition:{type:"annual_card_spend",amount:15000,benefit:"cert",resetsAnnually:true},nextStep:[{category:"general",card:"new_card"}]}],
+      temporaryJobs:[{id:"airline_status:delta:platinum",type:"airline_status",cardId:"new_card",purpose:"platinum",spendRequired:5000,opportunityCost:75,stopCondition:{type:"airline_status",program:"delta",tier:"platinum"},nextStep:[{category:"general",card:"new_card"}]}],
+      actions:[{cardId:"new_card",action:"add",role:"ongoing_rewards"}],
+      strategy:{airlineStatusLadder:{airline:"delta",rows:[{tier:"platinum",selected:true,stopReason:"selected"},{tier:"diamond",selected:false,stopReason:"protected_spend_required"}],selected:{tier:"platinum"},benefitFactsComplete:true},airlineStatusTarget:{tier:"platinum"},hotelStatusTarget:null,southwestCompanionPass:null},
+      travelActions:{airline:{primary:"delta",effectiveNaturalStatus:"gold"},hotel:{}},
+      outcomes:{travelCapacity:{},hotelExperience:{}},recommendationCredit:{},visibleBenefits:[],
+      feeSummary:{currentAnnualFees:0,recommendedAnnualFees:95,annualSavings:0,annualIncrease:95},
+      economics:{netEconomicValue:400,portfolioRecurringBenefits:{companion:{totalValue:0,intent:"no"}}},quality:{issues:[]}
+    }
+  };
+  const E={cardFacts:(_p,id)=>({label:id==="new_card"?"Recommended Card":"Consider Card",kind:"flex",annualFee:95})};
+  const c=buildResultContract(result,E,{pass:true,errors:[],warnings:[]});
+  const actions=c.implementationPlan.phases.flatMap(p=>p.actions);
+  assert(actions.some(x=>x.type==="card_add"&&x.cardId==="new_card"),"recommended add missing from implementation plan");
+  assert(actions.some(x=>x.type==="recurring_threshold"&&x.annualSpendRequired===15000),"recurring threshold missing");
+  assert(actions.some(x=>x.type==="finite_intervention"&&x.spendRequired===5000),"finite intervention missing");
+  assert(actions.some(x=>x.type==="status_stop"&&x.tier==="diamond"),"status stop missing");
+  assert(!actions.some(x=>x.cardId==="consider_card"),"Consider card leaked into implementation plan");
+  assert(c.implementationPlan.excludesConsiderCards===true,"Consider exclusion not explicit");
+});
+
+Deno.test("implementation plan does not invent a threshold when the engine has none",()=>{
+  const result={
+    engineVersion:"5.0-alpha.31",rulesAsOf:"2026-09-22",
+    factsSnapshot:{snapshotId:"f"},valuationSnapshot:{snapshotId:"v"},factQuality:{productionReady:true,missingCriticalFacts:[]},
+    profile:{constraints:{requiredCards:[]},companionTravel:{intent:"no",frequency:"",minimumExpectedRoundTrips:0}},
+    travelStrategy:{airline:{primary:"",mode:"flexible"},hotel:{primary:"",mode:"flexible"}},rewardsStrategy:{primaryCurrency:"amex_mr"},
+    newCardClassifications:[],considerCards:[],current:{economics:{netEconomicValue:0}},integrity:{protectedMultiplierSpend:true},
+    recommended:{
+      portfolio:[],ongoingRouting:{},recurringJobs:[],temporaryJobs:[],actions:[],visibleBenefits:[],recommendationCredit:{},
+      feeSummary:{currentAnnualFees:0,recommendedAnnualFees:0,annualSavings:0,annualIncrease:0},
+      economics:{netEconomicValue:0,portfolioRecurringBenefits:{companion:{totalValue:0,intent:"no"}}},
+      travelActions:{airline:{},hotel:{}},outcomes:{travelCapacity:{},hotelExperience:{}},
+      strategy:{airlineStatusTarget:null,hotelStatusTarget:null,southwestCompanionPass:null,airlineStatusLadder:{airline:"",benefitFactsComplete:true,selected:null,rows:[]}},
+      quality:{issues:[]}
+    }
+  };
+  const c=buildResultContract(result,{cardFacts:()=>({})},{pass:true,errors:[],warnings:[]});
+  const middle=c.implementationPlan.phases.find(p=>p.id==="days_31_60");
+  assert(middle.actions.length===1&&middle.actions[0].type==="no_change","empty threshold phase manufactured work");
+  assert(middle.actions[0].title.includes("No status or spend threshold intervention"),"no-change conclusion missing");
+});
