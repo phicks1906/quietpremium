@@ -120,8 +120,9 @@ export function parseMarriottCardRewards(text,id){
   if(id==="marriott_bountiful"||id==="marriott_bevy"){
     const marriott=/Earn\s+6X\s+points[^.]{0,220}(?:hotels participating in Marriott Bonvoy|Marriott)/i.test(t)
       ||/6X\s+points[^.]{0,220}(?:hotels participating in Marriott Bonvoy|Marriott)/i.test(t);
-    const four=/4X\s+points[^.]{0,300}(?:first\s+\$?15,?000|up to\s+\$?15,?000)[^.]{0,300}(?:grocery|supermarkets?)[^.]{0,260}(?:dining|restaurants?)/i.test(t)
-      ||/4X\s+points[^.]{0,260}(?:restaurants?|dining)[^.]{0,180}(?:grocery|supermarkets?)[\s\S]{0,450}\$?15,?000/i.test(t);
+    const fourBlock=t.match(/4X\s+points[\s\S]{0,900}?(?:\$?15,?000|15,?000)[\s\S]{0,300}/i)?.[0]
+      ||t.match(/4X\s+points[\s\S]{0,700}/i)?.[0]||"";
+    const four=/\b4X\b/i.test(fourBlock)&&/(?:restaurants?|dining)/i.test(fourBlock)&&/(?:grocery|supermarkets?)/i.test(fourBlock)&&/15,?000/i.test(fourBlock);
     const other=/2X\s+points[^.]{0,180}all other (?:eligible )?purchases/i.test(t);
     if(!(marriott&&four&&other))return null;
     const e=base(2);e.dining=4;e.grocery=4;e.online_grocery=4;e.hotel=6;return e;
