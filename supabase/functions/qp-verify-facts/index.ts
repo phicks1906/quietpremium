@@ -111,12 +111,8 @@ function cardEarn(t:string,id:string){
     if([g,d,og,ge,tr].some(v=>!(v&&v>0)))return null;
     return{dining:d,grocery:g,online_grocery:og,drugstore:g,gas_ev:ge,transit:tr,online_retail:g,vacation_home:ge,airfare:tr,hotel:tr,general:g};
   }
-  if(id==="marriott_bountiful"||id==="marriott_bevy"){
-    const hotel=/6\s*[xX][^.]{0,220}(?:hotels?|Marriott)|(?:hotels?|Marriott)[^.]{0,220}6\s*[xX]/i.test(t);
-    const four=/4\s*[xX][^.]{0,220}(?:grocery|dining)|(?:grocery|dining)[^.]{0,220}4\s*[xX]/i.test(t);
-    const base=/2\s*[xX][^.]{0,180}(?:all other|other) purchases|(?:all other|other) purchases[^.]{0,180}2\s*[xX]/i.test(t);
-    if(!(hotel&&four&&base))return null;
-    return{dining:4,grocery:4,online_grocery:4,drugstore:2,gas_ev:2,transit:2,online_retail:2,vacation_home:2,airfare:2,hotel:6,general:2};
+  if(["marriott_boundless","marriott_bountiful","marriott_bevy","marriott_brilliant"].includes(id)){
+    return parseMarriottCardRewards(t,id);
   }
   const e=freedomFamilyEarn(t,id);if(!e)return e;
   if(id==="marriott_bold"&&/2X[^.]{0,180}rideshare|rideshare[^.]{0,180}2X/i.test(t))e.transit=2;
