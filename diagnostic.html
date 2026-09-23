@@ -457,19 +457,6 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
           </div>
         </div>
 
-        <div class="row">
-          <div class="field" data-required>
-            <label for="hotel_nights">Paid hotel nights — last 12 months <span class="req">*</span></label>
-            <input class="control" type="number" min="0" step="1" id="hotel_nights" name="hotel_nights" inputmode="numeric" placeholder="e.g. 18"/>
-            <div class="validation">Enter an estimate, including 0.</div>
-          </div>
-          <div class="field">
-            <label for="hotel_stays">Hotel stays — last 12 months</label>
-            <div class="hint">Useful for programs that qualify by stays as well as nights.</div>
-            <input class="control" type="number" min="0" step="1" id="hotel_stays" name="hotel_stays" inputmode="numeric" placeholder="e.g. 10"/>
-          </div>
-        </div>
-
         <div class="field" data-required>
           <label for="hotel_spend">Personal-card hotel spend — last 12 months <span class="req">*</span></label>
           <div class="hint">Room charges and eligible hotel spending paid on personal cards.</div>
@@ -691,12 +678,6 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
             <option value="yes">Yes</option><option value="maybe">Maybe — show me the tradeoff</option><option value="no">No</option>
           </select>
           <div class="validation">Choose the closest fit.</div>
-        </div>
-
-        <div class="field">
-          <label for="first_name">First name <span style="color:var(--muted2);font-weight:300">(optional)</span></label>
-          <div class="hint">Used only to personalize the result on this screen.</div>
-          <input class="control" id="first_name" name="first_name" autocomplete="given-name" placeholder="First name"/>
         </div>
 
         <div class="nav-actions">
