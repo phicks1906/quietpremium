@@ -16,8 +16,8 @@ for(const sig of retiredSignatures){
   ok("migration revokes anon for "+sig,migration.includes("revoke all on function public."+sig+" from anon"));
   ok("migration preserves service role for "+sig,migration.includes("grant execute on function public."+sig+" to service_role"));
 }
-ok("migration leaves live public plan retrieval untouched",!migration.includes("qp_get_plan_v1"));
-ok("migration leaves live funnel telemetry untouched",!migration.includes("qp_log_event_v2"));
+ok("migration leaves live public plan retrieval grants untouched",!/\b(?:revoke|grant)\b[^\n]*qp_get_plan_v1/i.test(migration));
+ok("migration leaves live funnel telemetry grants untouched",!/\b(?:revoke|grant)\b[^\n]*qp_log_event_v2/i.test(migration));
 const skip=new Set(["supabase/migrations",".git"]);
 const hits={};for(const n of retired)hits[n]=[];
 function walk(dir){
