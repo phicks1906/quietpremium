@@ -1,0 +1,45 @@
+name: Phase 7 Production Hardening
+
+on:
+  push:
+    branches:
+      - phase7-production-hardening
+  workflow_dispatch:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Static production hardening
+        run: |
+          set -euo pipefail
+          node phase7_hardening_validation.js
+          node phase6_positioning_validation.js
+          node funnel_validation.js
+          node --check assets/diagnostic-v5.js
+          node --check assets/plan-v270-renderer.js
+      - name: Engine regressions
+        run: |
+          set -euo pipefail
+          node qp_v5_validation.js
+          node phase4c_validation.js
+          node verifier_fact_validation.js
+          node verifier_parser_validation.js
+          node verifier_scope_validation.js
+          node verifier_incremental_reuse_validation.js
+          node optimizer_counterfactual_validation.js
+          node optimizer_orchestration_validation.js
+          node optimizer_search_record_validation.js
+          node optimizer_context_reuse_validation.js
+          node optimizer_fanout_budget_validation.js
+          node optimizer_status_projection_validation.js
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - name: Result contract and pre-output audit
+        run: deno test --no-check supabase/functions/qp-build-plan/result-contract_test.ts supabase/functions/qp-build-plan/audit_test.ts
