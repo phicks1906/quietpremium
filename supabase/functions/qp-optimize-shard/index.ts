@@ -75,12 +75,20 @@ Deno.serve(async(req:Request)=>{
           required=new Set(p.constraints?.requiredCards||[]),
           sets=phase==="gated"
             ?allSets.filter((set:any[])=>set.filter(id=>!p.currentCards.includes(id)).every(id=>required.has(id)||classBy.get(id)==="recommended"))
-            :allSets,
-          records=sets.map((set:any[])=>{
-            const rr=E.rewardsStrategyForPortfolio(p,set,travel,rewards);
-            return E.strategyRecord(p,set,"base",travel,rr);
-          }),
-          prepared=E.prepareViable(p,records,current);
+            :allSets;
+    let records:any[]=[],prepared:any[]=[];
+    if(phase==="counterfactual"){
+      prepared=sets.map((set:any[])=>{
+        const rr=E.rewardsStrategyForPortfolio(p,set,travel,rewards);
+        return E.preparePortfolioSearch(p,set,current,"base",travel,rr);
+      });
+    }else{
+      records=sets.map((set:any[])=>{
+        const rr=E.rewardsStrategyForPortfolio(p,set,travel,rewards);
+        return E.strategyRecord(p,set,"base",travel,rr);
+      });
+      prepared=E.prepareViable(p,records,current);
+    }
     if(phase==="counterfactual"){
       const ids=Array.isArray(body.cardIds)?body.cardIds:[],
             bestWith:any={},bestWithout:any={},bestByNewSet:any={};
@@ -96,7 +104,7 @@ Deno.serve(async(req:Request)=>{
               key=additions.join("|");
         bestByNewSet[key]=betterSummary(bestByNewSet[key]||null,summary);
       }
-      return json({status:"ok",phase,engineVersion:E.ENGINE_VERSION,shardIndex,shardCount,candidateCount:records.length,bestWith,bestWithout,bestByNewSet});
+      return json({status:"ok",phase,engineVersion:E.ENGINE_VERSION,shardIndex,shardCount,candidateCount:sets.length,bestWith,bestWithout,bestByNewSet});
     }
     if(phase==="gated"){
       current.incrementalCardGate={pass:true,thresholds:{recommended:E.MODEL.newCardRecommendedMin,consider:E.MODEL.newCardConsiderMin},cards:[]};

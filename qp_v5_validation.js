@@ -19,7 +19,38 @@ function base(overrides={}){return{
  currencyUtility:{amex_mr:1,chase_ur:.75,capital_one_miles:.95,hyatt_points:1},legacyNaturalBenefitValue:{amex_platinum:700},
  bookingMethod:{airfare:"direct_airline",hotel:"direct_hotel"},constraints:{maxNewCards:2},aspirations:["travel more"],...overrides};}
 
-assert("engine is alpha.38",E.ENGINE_VERSION==="5.0-alpha.38");
+assert("engine is alpha.39",E.ENGINE_VERSION==="5.0-alpha.39");
+{
+ const p=E.normalizeProfile(base()),travel=E.travelStrategy(p),rewards=E.rewardsStrategy(p,travel),current=E.currentRecord(p,"base",travel,rewards),
+       sets=E.candidatePortfoliosShard(p,rewards,0,32).slice(0,12);
+ const failures=[];
+ for(const set of sets){
+   const rr=E.rewardsStrategyForPortfolio(p,set,travel,rewards),
+         full=E.strategyRecord(p,set,"base",travel,rr),
+         prepared=E.prepareViable(p,[full],current)[0],
+         search=E.preparePortfolioSearch(p,set,current,"base",travel,rr),
+         fullNoJob=(full.cardRoles||[]).filter(x=>full.portfolio.includes(x.cardId)&&x.role==="no_job").length,
+         searchNoJob=(search.r.cardRoles||[]).filter(x=>search.r.portfolio.includes(x.cardId)&&x.role==="no_job").length;
+   const equivalent=same(prepared.c,search.c)
+     && full.id===search.r.id
+     && full.economics.netEconomicValue===search.r.economics.netEconomicValue
+     && same(full.feeSummary,search.r.feeSummary)
+     && full.outcomes.complexity.burden===search.r.outcomes.complexity.burden
+     && full.outcomes.travelCapacity.annualTravelValue===search.r.outcomes.travelCapacity.annualTravelValue
+     && full.outcomes.flightQuality.effectiveStatus===search.r.outcomes.flightQuality.effectiveStatus
+     && full.outcomes.flightQuality.companionPassReached===search.r.outcomes.flightQuality.companionPassReached
+     && full.outcomes.hotelExperience.effectiveStatus===search.r.outcomes.hotelExperience.effectiveStatus
+     && full.outcomes.reliability.preservesCurrentAirlineStatus===search.r.outcomes.reliability.preservesCurrentAirlineStatus
+     && same(full.recommendationCredit,search.r.recommendationCredit)
+     && fullNoJob===searchNoJob
+     && full.recurringJobs.length===search.r.recurringJobs.length
+     && full.temporaryJobs.length===search.r.temporaryJobs.length
+     && same(full.annualRouting,search.r.annualRouting);
+   if(!equivalent)failures.push({set,fullId:full.id,fullC:prepared.c,searchC:search.c,fullNoJob,searchNoJob});
+ }
+ assert("alpha.39 search-only records preserve ranking inputs",failures.length===0,JSON.stringify(failures.slice(0,3)));
+}
+
 
 {
  const a=E.analyze(base({aspirations:["travel more"]}));

@@ -4,6 +4,7 @@ const build=fs.readFileSync("supabase/functions/qp-build-plan/index.ts","utf8");
 let pass=0,fail=0;const failures=[];
 function ok(name,cond){if(cond)pass++;else{fail++;failures.push(name)}}
 ok("counterfactual shards emit best-by-new-card-set summaries",worker.includes("bestByNewSet"));
+ok("counterfactual search uses reduced exact ranking records",worker.includes("E.preparePortfolioSearch(p,set,current"));
 ok("selection phase reconstructs one exact portfolio",worker.includes('phase==="select"')&&worker.includes("selected_portfolio_id_mismatch"));
 ok("build-plan merges best-by-new-card-set on adaptive splits",build.includes("bestByNewSet[key]=betterSummary"));
 ok("build-plan does not run a second gated shard sweep",!build.includes('runShardPhase(p,"gated"'));
