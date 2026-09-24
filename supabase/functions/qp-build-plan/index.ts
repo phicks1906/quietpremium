@@ -6,7 +6,7 @@ import { buildResultContract } from "./result-contract.ts";
 
 const ORIGINS=new Set(["https://quietpremium.com","https://www.quietpremium.com"]);
 const PUBLIC_BROWSER_KEY="sb_publishable_BETG0zmWAEmPByBsKyEUzA_yPCOkh5F";
-const VERIFIER="qp-verify-facts",OPTIMIZER="qp-optimize-shard",OPTIMIZER_SHARDS=16,OPTIMIZER_MAX_SHARDS=256,OPTIMIZER_BATCH=4,MAX_PROFILE_BYTES=250000,MAX_STABILIZATION_PASSES=2;
+const VERIFIER="qp-verify-facts",OPTIMIZER="qp-optimize-shard",OPTIMIZER_SHARDS=64,OPTIMIZER_MAX_SHARDS=256,OPTIMIZER_BATCH=1,OPTIMIZER_PACE_MS=650,MAX_PROFILE_BYTES=250000,MAX_STABILIZATION_PASSES=2;
 const E=(globalThis as any).QuietPremiumEngineV5;
 
 function json(body:any,status=200,origin=""){
@@ -89,7 +89,9 @@ async function optimizerRequest(payload:any,attempt=0){
   if(payload?.phase!=="select"&&(res.status===546||transient)&&Number(payload?.shardCount||0)<OPTIMIZER_MAX_SHARDS){
     const oldCount=Number(payload.shardCount)||OPTIMIZER_SHARDS,nextCount=oldCount*2,idx=Number(payload.shardIndex)||0;
     const left={...payload,shardIndex:idx,shardCount:nextCount},right={...payload,shardIndex:idx+oldCount,shardCount:nextCount};
-    const [a,b]=await Promise.all([optimizerRequest(left,0),optimizerRequest(right,0)]);
+    const a=await optimizerRequest(left,0);
+    await new Promise(r=>setTimeout(r,OPTIMIZER_PACE_MS));
+    const b=await optimizerRequest(right,0);
     return mergeShardChildren(a,b,payload);
   }
   throw new Error("optimizer_http_"+res.status+":"+String(payload?.phase||"")+"_"+String(payload?.shardIndex??"")+"_"+String(payload?.shardCount??"")+":"+(body?.error||body?.detail||"unknown"));
@@ -99,7 +101,7 @@ async function runShardPhase(profile:any,phase:string,extra:any={}){
   for(let start=0;start<OPTIMIZER_SHARDS;start+=OPTIMIZER_BATCH){
     const batch=[];for(let i=start;i<Math.min(start+OPTIMIZER_BATCH,OPTIMIZER_SHARDS);i++)batch.push(optimizerRequest({profile,phase,shardIndex:i,shardCount:OPTIMIZER_SHARDS,...extra}));
     out.push(...await Promise.all(batch));
-    if(start+OPTIMIZER_BATCH<OPTIMIZER_SHARDS)await new Promise(r=>setTimeout(r,250));
+    if(start+OPTIMIZER_BATCH<OPTIMIZER_SHARDS)await new Promise(r=>setTimeout(r,OPTIMIZER_PACE_MS));
   }
   return out;
 }
