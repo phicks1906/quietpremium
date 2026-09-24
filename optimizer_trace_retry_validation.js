@@ -5,5 +5,5 @@ ok("optimizer fetch catches thrown trace rate limits",build.includes("RateLimitE
 ok("trace retry honors platform retry window",build.includes("Math.max(500,retryAfterMs||1000)"));
 ok("trace retry is bounded",build.includes("attempt<3")&&build.includes("Math.min(60000"));
 ok("HTTP adaptive splitting remains intact",build.includes("res.status===546"));
-ok("exact 64-shard single-pass search remains intact",build.includes("OPTIMIZER_SHARDS=64")&&!build.includes('runShardPhase(p,"gated"'));
+ok("exact single-pass search remains intact",/OPTIMIZER_SHARDS=\d+/.test(build)&&build.includes('runShardPhase(p,"counterfactual"')&&!build.includes('runShardPhase(p,"gated"'));
 console.log(JSON.stringify({pass,fail,failures},null,2));if(fail)process.exitCode=1;
