@@ -26,6 +26,13 @@ ok("four-outcome desktop grid",css.includes("repeat(4,minmax(0,1fr))"));
 ok("results page title aligned",plan.includes("<title>Your New Travel Life — Quiet Premium</title>"));
 ok("homepage journey starts with preview",home.includes("<h2>60-Second Preview</h2>"));
 ok("homepage journey names product outcome",home.includes("<h2>Your New Travel Life</h2>"));
+ok("homepage uses approved four-outcome story",[
+  "Fly considerably better",
+  "Make the airport part of the experience",
+  "Let the same spending pay for more travel",
+  "Stay considerably better"
+].every(x=>home.includes(x)));
+ok("homepage removes older five-outcome story",!home.includes("Be looked after better")&&!home.includes("Make the journey easier"));
 ok("preview proof names new travel life",preview.includes("<b>New Travel Life</b>"));
 ok("preview proof shows four travel outcomes",["Better flights","Better airport days","More travel","Better stays"].every(x=>preview.includes('<div class="mini-row">'+x+"</div>")));
 ok("contact avoids purchase-style commitment language",!contact.includes("before committing")&&!contact.includes("Quiet Premium Full Analysis is right"));
