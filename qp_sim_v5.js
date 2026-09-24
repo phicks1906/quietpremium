@@ -1,5 +1,5 @@
 /**
- * Quiet Premium V5 isolated travel-strategy engine — 5.0-alpha.44 (2026-09-24)
+ * Quiet Premium V5 isolated travel-strategy engine — 5.0-alpha.45 (2026-09-24)
  * NOT wired to diagnostic.html or any customer-facing page.
  *
  * LOCKED
@@ -16,7 +16,7 @@
 })(typeof globalThis!=="undefined"?globalThis:this,function(){
 "use strict";
 
-const ENGINE_VERSION="5.0-alpha.44";
+const ENGINE_VERSION="5.0-alpha.45";
 const RULES_AS_OF="2026-09-23";
 const CATS=["dining","grocery","online_grocery","drugstore","gas_ev","transit","online_retail","vacation_home","airfare","hotel","general"];
 const AIRLINES=["delta","united","american","southwest"];
@@ -124,14 +124,20 @@ function mergeVerifiedRecordV14(base,record,kind){
   }
   return deepMergeFactsV14(base,payload);
 }
+const mergedCardFactsCacheV45=new WeakMap(),mergedProgramFactsCacheV45=new WeakMap();
 function mergedCardFactsV14(id,record){
   const base=BASE_RULES.cards[id];if(!base)return null;
+  if(!isPlainObjectV14(record))return base;
+  if(mergedCardFactsCacheV45.has(record))return mergedCardFactsCacheV45.get(record);
   const out=mergeVerifiedRecordV14(base,record,"cards");
   for(const key of ["label","kind","currency","airline","hotel"]){if(hasOwn(base,key))out[key]=base[key];else delete out[key];}
-  return out;
+  deepFreezeV14(out);mergedCardFactsCacheV45.set(record,out);return out;
 }
 function mergedProgramFactsV14(kind,id,record){
-  const base=BASE_RULES[kind]?.[id];return base?mergeVerifiedRecordV14(base,record,kind):null;
+  const base=BASE_RULES[kind]?.[id];if(!base)return null;
+  if(!isPlainObjectV14(record))return base;
+  if(mergedProgramFactsCacheV45.has(record))return mergedProgramFactsCacheV45.get(record);
+  const out=deepFreezeV14(mergeVerifiedRecordV14(base,record,kind));mergedProgramFactsCacheV45.set(record,out);return out;
 }
 const RULES=Object.freeze({
   meta:BASE_RULES.meta,
