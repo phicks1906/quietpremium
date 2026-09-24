@@ -19,5 +19,8 @@ ok("client sends funnel session alongside profile",client.includes('funnelSessio
 ok("current client explicitly requests server persistence",client.includes('persistPlan:true'));
 ok("service role never appears in client",!client.includes("SUPABASE_SERVICE_ROLE_KEY"));
 ok("diagnostic cachebuster advanced",html.includes('assets/diagnostic-v5.js?v=280'));
+const migration=fs.readFileSync("supabase/migrations/20260924231251_phase7_restrict_plan_save_to_service_role.sql","utf8");
+ok("migration revokes anonymous plan save",migration.includes("from anon"));
+ok("migration preserves service-role plan save",migration.includes("to service_role"));
 console.log(JSON.stringify({pass,fail,failures},null,2));
 if(fail)process.exitCode=1;
