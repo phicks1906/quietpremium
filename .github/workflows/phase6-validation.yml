@@ -1,0 +1,30 @@
+name: Phase 6 Positioning Validation
+
+on:
+  push:
+    branches:
+      - phase6-positioning-alignment
+  workflow_dispatch:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Customer experience and engine regressions
+        run: |
+          set -euo pipefail
+          node --check assets/plan-v270-renderer.js
+          node phase6_positioning_validation.js
+          node funnel_validation.js
+          node qp_v5_validation.js
+          node phase4c_validation.js
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - name: Result contract and pre-output audit
+        run: deno test --no-check supabase/functions/qp-build-plan/result-contract_test.ts supabase/functions/qp-build-plan/audit_test.ts

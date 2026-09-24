@@ -9,12 +9,12 @@
 .hero p{max-width:680px!important;color:#e3e8ec!important;font-size:15px!important;line-height:1.7!important}
 .hero-quote{color:#e1c18b!important}
 .section-head h2,.strategy h2,.impact h2,.timeline-title h2{font-family:var(--serif)!important}
-.life-grid{grid-template-columns:repeat(5,minmax(0,1fr))!important;gap:12px!important}
+.life-grid{grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:12px!important}
 .life-card{background:#fffdf8!important;border-color:#ddd3c6!important}
 .life-card img{height:150px!important}
 .life-card h3{font-family:var(--serif)!important;font-size:24px!important;line-height:1!important}
 .life-card p{font-size:11px!important;line-height:1.55!important}
 .panel,.strategy-card,.count-card{border-color:#ddd3c6!important}.timeline-wrap{background:#fffdf8!important}
-@media(max-width:1180px){.life-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important}}
+@media(max-width:1180px){.life-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
 @media(max-width:760px){.life-grid{grid-template-columns:1fr 1fr!important}.hero h1{font-size:50px!important}}
 @media(max-width:470px){.life-grid{grid-template-columns:1fr!important}.life-card img{height:190px!important}}
