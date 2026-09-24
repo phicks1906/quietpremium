@@ -26,6 +26,7 @@ async function retrievePrivatePlan(){
   const c=retrievalCredentials();if(!c)return null;
   const row=await rpc("qp_get_plan_v1",{p_architecture_id:c.id,p_token:c.token});
   if(!row||row.schema!=="qp-plan-server-v1"||!row.result)throw new Error("Private plan link is invalid or no longer available.");
+  window.QP_PLAN_ANALYSIS_ID=String(row.id||c.id||"");
   return row.result;
 }
 function parseEmbedded(){
@@ -80,7 +81,8 @@ async function resolve(){
   if(data?.quality?.ready!==true)return window.QPPlanRenderer?.renderError("The analysis is not production-ready, so Quiet Premium is withholding the recommendation.");
   window.QP_PLAN_ACTIVE_RESULT=data;
   window.QP_PLAN_PREVIEW=isDemo;
-  window.QPPlanRenderer?.render(data,{demo:isDemo});
+  const analysisId=isDemo?"":String(window.QP_PLAN_ANALYSIS_ID||"");
+  window.QPPlanRenderer?.render(data,{demo:isDemo,analysisId});
 }
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",()=>{resolve()});else resolve();
 })();
