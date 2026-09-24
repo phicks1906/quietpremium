@@ -24,6 +24,18 @@ function preparedSummary(x:any){
     regressions:x.c.regressions||[]
   };
 }
+const TRAVEL_IMPROVEMENTS=new Set(["flightQuality","hotelExperience","airportExperience","reliability","benefitContinuity"]);
+function betterSummary(a:any,b:any){
+  if(!a)return b;if(!b)return a;
+  if(Number(a.noJobCount)!==Number(b.noJobCount))return Number(a.noJobCount)<Number(b.noJobCount)?a:b;
+  const at=(a.improvements||[]).filter((x:string)=>TRAVEL_IMPROVEMENTS.has(x)).length,
+        bt=(b.improvements||[]).filter((x:string)=>TRAVEL_IMPROVEMENTS.has(x)).length;
+  if(at!==bt)return at>bt?a:b;
+  if(Number(a.netEconomicValue)!==Number(b.netEconomicValue))return Number(a.netEconomicValue)>Number(b.netEconomicValue)?a:b;
+  if(Number(a.recommendedAnnualFees)!==Number(b.recommendedAnnualFees))return Number(a.recommendedAnnualFees)<Number(b.recommendedAnnualFees)?a:b;
+  if(Number(a.complexityBurden)!==Number(b.complexityBurden))return Number(a.complexityBurden)<Number(b.complexityBurden)?a:b;
+  return String(a.id||"").localeCompare(String(b.id||""))<=0?a:b;
+}
 function chosenEntry(prepared:any[],chosen:any,current:any){
   if(!chosen||chosen===current||chosen?.id===current?.id)return null;
   return prepared.find(x=>x.r===chosen)||prepared.find(x=>x.r?.id===chosen?.id)||null;
@@ -37,14 +49,28 @@ Deno.serve(async(req:Request)=>{
   if(!E||typeof E.candidatePortfoliosShard!=="function")return json({error:"engine_unavailable"},500);
   try{
     const p=E.normalizeProfile(body.profile||{}),
-          shardIndex=Math.max(0,Math.trunc(num(body.shardIndex))),
-          shardCount=Math.max(1,Math.trunc(num(body.shardCount)||1)),
           travel=E.travelStrategy(p),
           rewards=E.rewardsStrategy(p,travel),
           current=E.currentRecord(p,"base",travel,rewards),
-          allSets=E.candidatePortfoliosShard(p,rewards,shardIndex,shardCount),
           phase=String(body.phase||"counterfactual"),
-          classifications=Array.isArray(body.classifications)?body.classifications:[],
+          classifications=Array.isArray(body.classifications)?body.classifications:[];
+
+    if(phase==="select"){
+      const portfolio=Array.isArray(body.portfolio)?body.portfolio.map((x:any)=>String(x||"")).filter(Boolean):[];
+      if(!portfolio.length)return json({error:"portfolio_required"},400);
+      const rr=E.rewardsStrategyForPortfolio(p,portfolio,travel,rewards),
+            record=E.strategyRecord(p,portfolio,"base",travel,rr);
+      if(body.expectedId&&String(body.expectedId)!==String(record.id))return json({error:"selected_portfolio_id_mismatch"},409);
+      record.incrementalCardGate=E.recordAcquisitionGate(p,record,classifications);
+      if(record.incrementalCardGate?.pass===false)return json({error:"selected_portfolio_failed_gate"},409);
+      const prepared=E.prepareViable(p,[record],current),entry=prepared[0];
+      if(!entry?.c)return json({error:"selected_portfolio_not_viable"},409);
+      return json({status:"ok",phase,engineVersion:E.ENGINE_VERSION,best:record,bestSummary:preparedSummary(entry)});
+    }
+
+    const shardIndex=Math.max(0,Math.trunc(num(body.shardIndex))),
+          shardCount=Math.max(1,Math.trunc(num(body.shardCount)||1)),
+          allSets=E.candidatePortfoliosShard(p,rewards,shardIndex,shardCount),
           classBy=new Map(classifications.map((x:any)=>[x.cardId,x.classification])),
           required=new Set(p.constraints?.requiredCards||[]),
           sets=phase==="gated"
@@ -56,15 +82,22 @@ Deno.serve(async(req:Request)=>{
           }),
           prepared=E.prepareViable(p,records,current);
     if(phase==="counterfactual"){
-      const ids=Array.isArray(body.cardIds)?body.cardIds:[];
-      const bestWith:any={},bestWithout:any={};
+      const ids=Array.isArray(body.cardIds)?body.cardIds:[],
+            bestWith:any={},bestWithout:any={},bestByNewSet:any={};
       for(const id of ids){
         const withChosen=E.choosePrepared(prepared.filter((x:any)=>x.c&&(x.r.portfolio||[]).includes(id)),current),
               withoutChosen=E.choosePrepared(prepared.filter((x:any)=>x.c&&!(x.r.portfolio||[]).includes(id)),current);
         bestWith[id]=preparedSummary(chosenEntry(prepared,withChosen,current));
         bestWithout[id]=preparedSummary(chosenEntry(prepared,withoutChosen,current));
       }
-      return json({status:"ok",phase,engineVersion:E.ENGINE_VERSION,shardIndex,shardCount,candidateCount:records.length,bestWith,bestWithout});
+      for(const entry of prepared){
+        if(!entry?.c)continue;
+        const additions=(entry.r.portfolio||[]).filter((id:string)=>!p.currentCards.includes(id)).slice().sort(),
+              key=additions.join("|"),
+              summary=preparedSummary(entry);
+        bestByNewSet[key]=betterSummary(bestByNewSet[key]||null,summary);
+      }
+      return json({status:"ok",phase,engineVersion:E.ENGINE_VERSION,shardIndex,shardCount,candidateCount:records.length,bestWith,bestWithout,bestByNewSet});
     }
     if(phase==="gated"){
       current.incrementalCardGate={pass:true,thresholds:{recommended:E.MODEL.newCardRecommendedMin,consider:E.MODEL.newCardConsiderMin},cards:[]};

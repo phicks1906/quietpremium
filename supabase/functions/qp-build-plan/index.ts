@@ -59,9 +59,12 @@ async function verifyRequest(request:any,stage:string){
 function mergeShardChildren(a:any,b:any,payload:any){
   const base={status:"ok",phase:payload.phase,engineVersion:a?.engineVersion||b?.engineVersion||E.ENGINE_VERSION,shardIndex:payload.shardIndex,shardCount:payload.shardCount,candidateCount:(Number(a?.candidateCount)||0)+(Number(b?.candidateCount)||0),totalShardCandidates:(Number(a?.totalShardCandidates)||0)+(Number(b?.totalShardCandidates)||0),adaptiveSplit:true};
   if(payload.phase==="counterfactual"){
-    const keys=new Set([...Object.keys(a?.bestWith||{}),...Object.keys(b?.bestWith||{}),...Object.keys(a?.bestWithout||{}),...Object.keys(b?.bestWithout||{})]),bestWith:any={},bestWithout:any={};
+    const keys=new Set([...Object.keys(a?.bestWith||{}),...Object.keys(b?.bestWith||{}),...Object.keys(a?.bestWithout||{}),...Object.keys(b?.bestWithout||{})]),
+          setKeys=new Set([...Object.keys(a?.bestByNewSet||{}),...Object.keys(b?.bestByNewSet||{})]),
+          bestWith:any={},bestWithout:any={},bestByNewSet:any={};
     for(const id of keys){bestWith[id]=betterSummary(a?.bestWith?.[id]||null,b?.bestWith?.[id]||null);bestWithout[id]=betterSummary(a?.bestWithout?.[id]||null,b?.bestWithout?.[id]||null);}
-    return{...base,bestWith,bestWithout};
+    for(const key of setKeys)bestByNewSet[key]=betterSummary(a?.bestByNewSet?.[key]||null,b?.bestByNewSet?.[key]||null);
+    return{...base,bestWith,bestWithout,bestByNewSet};
   }
   const chosenSummary=betterSummary(a?.bestSummary||null,b?.bestSummary||null);
   if(!chosenSummary)return{...base,best:null,bestSummary:null};
@@ -83,7 +86,7 @@ async function optimizerRequest(payload:any,attempt=0){
     await new Promise(r=>setTimeout(r,350*(attempt+1)));
     return optimizerRequest(payload,attempt+1);
   }
-  if((res.status===546||transient)&&Number(payload?.shardCount||0)<OPTIMIZER_MAX_SHARDS){
+  if(payload?.phase!=="select"&&(res.status===546||transient)&&Number(payload?.shardCount||0)<OPTIMIZER_MAX_SHARDS){
     const oldCount=Number(payload.shardCount)||OPTIMIZER_SHARDS,nextCount=oldCount*2,idx=Number(payload.shardIndex)||0;
     const left={...payload,shardIndex:idx,shardCount:nextCount},right={...payload,shardIndex:idx+oldCount,shardCount:nextCount};
     const [a,b]=await Promise.all([optimizerRequest(left,0),optimizerRequest(right,0)]);
@@ -138,8 +141,24 @@ async function distributedAnalyze(profile:any,candidateCardIds:any[]){
     classifications.push({cardId:id,classification:E.classifyNewCardValue(delta),incrementalRecurringValue:delta,bestWithId:represented?(withBest?.id||""):"",bestWithoutId:withoutBest?.id||current.id});
   }
 
-  const phase2=await runShardPhase(p,"gated",{classifications});
-  const localBest=phase2.map(x=>x?.best).filter(Boolean);
+  const classBy=new Map(classifications.map((x:any)=>[x.cardId,x.classification])),
+        required=new Set(p.constraints?.requiredCards||[]);
+  let winningSummary:any=null;
+  if(!current.quality?.precisionSuppressed){
+    for(const shard of phase1){
+      for(const summary of Object.values(shard?.bestByNewSet||{}) as any[]){
+        if(!summary)continue;
+        const additions=(summary.portfolio||[]).filter((id:string)=>!p.currentCards.includes(id));
+        if(additions.every((id:string)=>required.has(id)||classBy.get(id)==="recommended"))winningSummary=betterSummary(winningSummary,summary);
+      }
+    }
+  }
+
+  let localBest:any[]=[];
+  if(winningSummary){
+    const selected=await optimizerRequest({profile:p,phase:"select",portfolio:winningSummary.portfolio,expectedId:winningSummary.id,classifications});
+    if(selected?.best)localBest=[selected.best];
+  }
   current.incrementalCardGate={pass:true,thresholds:{recommended:E.MODEL.newCardRecommendedMin,consider:E.MODEL.newCardConsiderMin},cards:[]};
   const prepared=E.prepareViable(p,localBest,current),
         recommended=current.quality?.precisionSuppressed?current:E.choosePrepared(prepared,current),
@@ -147,7 +166,7 @@ async function distributedAnalyze(profile:any,candidateCardIds:any[]){
         b={current,recommended,travelStrategy:travel,rewardsStrategy:selectedRewards,newCardClassifications:classifications,considerCards:classifications.filter((x:any)=>x.classification==="consider"),records:localBest,pareto:[]},
         candidateCount=phase1.reduce((n,x)=>n+(Number(x?.candidateCount)||0),0),
         result=E.analysisResultFromSelection(p,b,[],candidateCardIds,candidateCount);
-  result.integrity={...(result.integrity||{}),distributedExactPortfolioSearch:true,distributedPortfolioShards:OPTIMIZER_SHARDS};
+  result.integrity={...(result.integrity||{}),distributedExactPortfolioSearch:true,distributedPortfolioShards:OPTIMIZER_SHARDS,distributedSinglePassClassification:true,distributedSelectionReconstruction:true};
   return result;
 }
 function approvedValuationSnapshot(){return E.CURRENT_QP_VALUATION_SNAPSHOT}
