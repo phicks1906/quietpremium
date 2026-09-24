@@ -1,5 +1,5 @@
 /**
- * Quiet Premium V5 isolated travel-strategy engine — 5.0-alpha.37 (2026-09-23)
+ * Quiet Premium V5 isolated travel-strategy engine — 5.0-alpha.38 (2026-09-24)
  * NOT wired to diagnostic.html or any customer-facing page.
  *
  * LOCKED
@@ -16,7 +16,7 @@
 })(typeof globalThis!=="undefined"?globalThis:this,function(){
 "use strict";
 
-const ENGINE_VERSION="5.0-alpha.37";
+const ENGINE_VERSION="5.0-alpha.38";
 const RULES_AS_OF="2026-09-23";
 const CATS=["dining","grocery","online_grocery","drugstore","gas_ev","transit","online_retail","vacation_home","airfare","hotel","general"];
 const AIRLINES=["delta","united","american","southwest"];
@@ -339,22 +339,31 @@ function southwestCompanionPassProjectionV27(p,portfolio,sourceRouting,scenario=
   const reached=qualifyingPoints>=n(rules.qualifyingPoints)||qualifyingFlights>=n(rules.qualifyingFlights),benefit=southwestCompanionPassUseValueV27(p,reached);
   return{known:true,reached,qualifyingPoints,qualifyingFlights,cardQualifyingPoints:round(cardQualifyingPoints),cardBoost:round(cardBoost),thresholds:{qualifyingPoints:n(rules.qualifyingPoints),qualifyingFlights:n(rules.qualifyingFlights)},benefit,qualificationRouting:routing};
 }
+const portfolioValueCacheV38=new WeakMap();
+function portfolioCacheMapV38(p){let m=portfolioValueCacheV38.get(p);if(!m){m=new Map();portfolioValueCacheV38.set(p,m);}return m;}
+function portfolioCacheKeyV38(kind,portfolio,scenario=""){return kind+"|"+scenario+"|"+(portfolio||[]).slice().sort().join("|");}
+function cachedPortfolioValueV38(p,kind,portfolio,scenario,compute){if(!p||typeof p!=="object")return compute();const m=portfolioCacheMapV38(p),key=portfolioCacheKeyV38(kind,portfolio,scenario);if(m.has(key))return m.get(key);const value=compute();m.set(key,value);return value;}
+
 function portfolioRecurringBenefitValueV14(p,portfolio){
-  const rule=ruleBenefitStateV14(portfolio),typed=canonicalTypedBenefitValues(p),knownByType={...rule.byType},present=canonicalVisibleSet(portfolio),companionKey=canonicalBenefit("companion_certificate_renewal"),companion=companionCertificatePortfolioValueV19(p,portfolio),companionRelevant=(portfolio||[]).some(cardHasCompanionCertificateV21),companionIntakeKnown=companionRelevant;
-  for(const[key,val]of Object.entries(typed)){if(val<=0||!present.has(key)||(companionIntakeKnown&&key===companionKey))continue;knownByType[key]=Math.max(n(knownByType[key]),val);}
-  if(companionIntakeKnown){delete knownByType[companionKey];if(companion.totalValue>0)knownByType[companionKey]=companion.totalValue;}
-  const knownValue=sum(Object.values(knownByType)),residualById={};
-  for(const id of portfolio){const aggregate=cardAggregateBenefitValue(p,id);if(aggregate<=0)continue;const known=cardKnownBenefitValueV14(p,id,rule,typed),residual=Math.max(0,aggregate-known);if(residual>0)residualById[id]=round(residual);}
-  const components=residualComponentsV14(Object.keys(residualById),residualById),unresolvedResidualValue=sum(components.map(x=>x.contribution));
-  return{totalValue:round(knownValue),knownValue:round(knownValue),residualValue:0,unresolvedResidualValue:round(unresolvedResidualValue),byType:knownByType,residualByCard:residualById,excludedByScope:rule.excludedByScope||[],companion};
+  return cachedPortfolioValueV38(p,"recurring",portfolio,"",()=>{
+    const rule=ruleBenefitStateV14(portfolio),typed=canonicalTypedBenefitValues(p),knownByType={...rule.byType},present=canonicalVisibleSet(portfolio),companionKey=canonicalBenefit("companion_certificate_renewal"),companion=companionCertificatePortfolioValueV19(p,portfolio),companionRelevant=(portfolio||[]).some(cardHasCompanionCertificateV21),companionIntakeKnown=companionRelevant;
+    for(const[key,val]of Object.entries(typed)){if(val<=0||!present.has(key)||(companionIntakeKnown&&key===companionKey))continue;knownByType[key]=Math.max(n(knownByType[key]),val);}
+    if(companionIntakeKnown){delete knownByType[companionKey];if(companion.totalValue>0)knownByType[companionKey]=companion.totalValue;}
+    const knownValue=sum(Object.values(knownByType)),residualById={};
+    for(const id of portfolio){const aggregate=cardAggregateBenefitValue(p,id);if(aggregate<=0)continue;const known=cardKnownBenefitValueV14(p,id,rule,typed),residual=Math.max(0,aggregate-known);if(residual>0)residualById[id]=round(residual);}
+    const components=residualComponentsV14(Object.keys(residualById),residualById),unresolvedResidualValue=sum(components.map(x=>x.contribution));
+    return{totalValue:round(knownValue),knownValue:round(knownValue),residualValue:0,unresolvedResidualValue:round(unresolvedResidualValue),byType:knownByType,residualByCard:residualById,excludedByScope:rule.excludedByScope||[],companion};
+  });
 }
 function portfolioAnnualBonusValueV14(p,portfolio,scenario){
-  let value=0;for(const id of portfolio){const c=RULES.cards[id],pts=n(c?.annualBonusPoints);if(pts>0)value+=pts*currencyPointValue(p,c.currency,scenario,portfolio);}return round(value);
+  return cachedPortfolioValueV38(p,"annual_bonus",portfolio,scenario,()=>{let value=0;for(const id of portfolio){const c=RULES.cards[id],pts=n(c?.annualBonusPoints);if(pts>0)value+=pts*currencyPointValue(p,c.currency,scenario,portfolio);}return round(value);});
 }
 function portfolioAnnualPointCertificateValueV24(p,portfolio,scenario){
-  let totalValue=0;const byCard={},certificates=[];
-  for(const id of portfolio){const c=RULES.cards[id];if(!c)continue;for(const cert of c.annualPointCertificates||[]){const cap=n(cert?.capPoints),currency=s(cert?.currency||c.currency),benefit=s(cert?.benefit||"annual_point_certificate");if(cap<=0||!currency||!benefitInEconomicScopeV21(benefit))continue;const value=round(cap*currencyPointValue(p,currency,scenario,portfolio));if(value<=0)continue;totalValue+=value;byCard[id]=round((byCard[id]||0)+value);certificates.push({cardId:id,benefit,capPoints:cap,currency,value,renewalRequired:cert?.renewalRequired===true});}}
-  return{totalValue:round(totalValue),byCard,certificates};
+  return cachedPortfolioValueV38(p,"annual_point_certificate",portfolio,scenario,()=>{
+    let totalValue=0;const byCard={},certificates=[];
+    for(const id of portfolio){const c=RULES.cards[id];if(!c)continue;for(const cert of c.annualPointCertificates||[]){const cap=n(cert?.capPoints),currency=s(cert?.currency||c.currency),benefit=s(cert?.benefit||"annual_point_certificate");if(cap<=0||!currency||!benefitInEconomicScopeV21(benefit))continue;const value=round(cap*currencyPointValue(p,currency,scenario,portfolio));if(value<=0)continue;totalValue+=value;byCard[id]=round((byCard[id]||0)+value);certificates.push({cardId:id,benefit,capPoints:cap,currency,value,renewalRequired:cert?.renewalRequired===true});}}
+    return{totalValue:round(totalValue),byCard,certificates};
+  });
 }
 function portfolioAnnualSpendRewardValueV24(p,portfolio,routing,scenario){
   const totals=cardTotals(routing),byCard={},rewards=[];let totalValue=0;
@@ -363,7 +372,7 @@ function portfolioAnnualSpendRewardValueV24(p,portfolio,routing,scenario){
 }
 function economics(p,routing,portfolio,scenario){const q=pointsFromRouting(p,routing,portfolio,scenario),fees=sum(portfolio.map(id=>RULES.cards[id]?.annualFee||0)),benefits=benefitLedger(p,portfolio),portfolioBenefits=portfolioRecurringBenefitValueV14(p,portfolio),annualBonusTravelValue=portfolioAnnualBonusValueV14(p,portfolio,scenario),annualPointCertificateState=portfolioAnnualPointCertificateValueV24(p,portfolio,scenario),annualSpendRewardState=portfolioAnnualSpendRewardValueV24(p,portfolio,routing,scenario),annualPointCertificateValue=annualPointCertificateState.totalValue,annualSpendRewardValue=annualSpendRewardState.totalValue,grossTravelValue=round(q.grossTravelValue+annualBonusTravelValue+annualPointCertificateValue+annualSpendRewardValue),recurringBenefitValue=portfolioBenefits.totalValue;return{...q,grossTravelValue,annualBonusTravelValue,annualPointCertificateValue,annualPointCertificates:annualPointCertificateState,annualSpendRewardValue,annualSpendRewards:annualSpendRewardState,annualFees:fees,benefitLedger:benefits,naturalBenefitValue:benefits.totalValue,portfolioRecurringBenefits:portfolioBenefits,recurringBenefitValue,netEconomicValue:round(grossTravelValue+recurringBenefitValue-fees),unverifiedCards:portfolio.filter(id=>RULES.cards[id]&&!RULES.cards[id].verified)};}
 function hasBenefitEvidence(p,id,benefit){const key=canonicalBenefit(benefit);if(cardSpecificBenefitEvidence(p,id,key))return true;return canonicalTrue(p.explicitBenefitUse,key)||canonicalTrue(p.benefitEvidence,key);}
-function recommendationCredit(p,portfolio){const credit={lounge:0,premiumHotel:0,priorityAirport:0,upgradePriority:0};for(const id of portfolio){const tags=RULES.cards[id]?.benefitTags||[];if(tags.some(x=>canonicalBenefit(x)==="lounge_access"))credit.lounge=1;if(tags.some(x=>canonicalBenefit(x)==="premium_hotel"))credit.premiumHotel=1;if(tags.includes("priority_airport"))credit.priorityAirport=1;if(tags.includes("upgrade_priority"))credit.upgradePriority=1;}return credit;}
+function recommendationCredit(p,portfolio){return cachedPortfolioValueV38(p,"recommendation_credit",portfolio,"",()=>{const credit={lounge:0,premiumHotel:0,priorityAirport:0,upgradePriority:0};for(const id of portfolio){const tags=RULES.cards[id]?.benefitTags||[];if(tags.some(x=>canonicalBenefit(x)==="lounge_access"))credit.lounge=1;if(tags.some(x=>canonicalBenefit(x)==="premium_hotel"))credit.premiumHotel=1;if(tags.includes("priority_airport"))credit.priorityAirport=1;if(tags.includes("upgrade_priority"))credit.upgradePriority=1;}return credit;});}
 const legacyBenefitProtectionCacheV36=new WeakMap();
 function legacyBenefitProtectionIds(p){
   if(p&&typeof p==="object"&&legacyBenefitProtectionCacheV36.has(p))return legacyBenefitProtectionCacheV36.get(p);
@@ -865,7 +874,7 @@ function temporaryJobsV13(p,portfolio,annual,plan,scenario){
 }
 
 function cardUniqueCapabilityV14(p,portfolio,id){const without=portfolio.filter(x=>x!==id),a=recommendationCredit(p,portfolio),b=recommendationCredit(p,without);return a.lounge>b.lounge||a.premiumHotel>b.premiumHotel||a.priorityAirport>b.priorityAirport||a.upgradePriority>b.upgradePriority;}
-function cardRetentionValueV14(p,portfolio,id,scenario="conservative"){const without=portfolio.filter(x=>x!==id),a=portfolioRecurringBenefitValueV14(p,portfolio),b=portfolioRecurringBenefitValueV14(p,without),aa=portfolioAnnualBonusValueV14(p,portfolio,scenario),bb=portfolioAnnualBonusValueV14(p,without,scenario),ac=portfolioAnnualPointCertificateValueV24(p,portfolio,scenario).totalValue,bc=portfolioAnnualPointCertificateValueV24(p,without,scenario).totalValue,fee=n(RULES.cards[id]?.annualFee);return{benefitValue:round(a.totalValue-b.totalValue),annualBonusValue:round(aa-bb),annualPointCertificateValue:round(ac-bc),annualFee:fee,netValue:round((a.totalValue-b.totalValue)+(aa-bb)+(ac-bc)-fee)};}
+function cardRetentionValueV14(p,portfolio,id,scenario="conservative"){return cachedPortfolioValueV38(p,"retention:"+id,portfolio,scenario,()=>{const without=portfolio.filter(x=>x!==id),a=portfolioRecurringBenefitValueV14(p,portfolio),b=portfolioRecurringBenefitValueV14(p,without),aa=portfolioAnnualBonusValueV14(p,portfolio,scenario),bb=portfolioAnnualBonusValueV14(p,without,scenario),ac=portfolioAnnualPointCertificateValueV24(p,portfolio,scenario).totalValue,bc=portfolioAnnualPointCertificateValueV24(p,without,scenario).totalValue,fee=n(RULES.cards[id]?.annualFee);return{benefitValue:round(a.totalValue-b.totalValue),annualBonusValue:round(aa-bb),annualPointCertificateValue:round(ac-bc),annualFee:fee,netValue:round((a.totalValue-b.totalValue)+(aa-bb)+(ac-bc)-fee)};});}
 function cardRolesV13(p,portfolio,rewards,jobs,routing={},scenario="conservative"){
   const inPlan=new Set(portfolio),jobCards=new Set((jobs||[]).map(j=>j.cardId)),recurringJobCards=new Set((jobs||[]).filter(j=>j.recurring===true).map(j=>j.cardId)),temporaryJobCards=new Set((jobs||[]).filter(j=>j.recurring!==true).map(j=>j.cardId)),routed=cardTotals(routing||{}),out=[];
   for(const id of uniq([...p.currentCards,...portfolio])){const c=RULES.cards[id];

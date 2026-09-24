@@ -19,7 +19,7 @@ function base(overrides={}){return{
  currencyUtility:{amex_mr:1,chase_ur:.75,capital_one_miles:.95,hyatt_points:1},legacyNaturalBenefitValue:{amex_platinum:700},
  bookingMethod:{airfare:"direct_airline",hotel:"direct_hotel"},constraints:{maxNewCards:2},aspirations:["travel more"],...overrides};}
 
-assert("engine is alpha.37",E.ENGINE_VERSION==="5.0-alpha.37");
+assert("engine is alpha.38",E.ENGINE_VERSION==="5.0-alpha.38");
 
 {
  const a=E.analyze(base({aspirations:["travel more"]}));
