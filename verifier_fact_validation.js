@@ -41,4 +41,8 @@ ok("Amex Gold verifier uses stable first-party fee evidence",sourceDefs.includes
 ok("Amex Gold verifier uses stable first-party earn evidence",sourceDefs.includes("/gold/earn-rewards"));
 ok("Amex Gold verifier uses stable first-party benefit evidence",sourceDefs.includes("/gold/explore-benefits"));
 
+const verifierSources=fs.readFileSync("supabase/functions/qp-verify-facts/sources.ts","utf8");
+ok("Venture uses compact first-party trusted-traveler terms source",verifierSources.includes("venture: { urls: ['https://www.capitalone.com/credit-cards/venture/','https://www.capitalone.com/help-center/credit-cards/tsa-precheck-global-entry-benefits/'"));
+ok("Venture X shares first-party trusted-traveler terms source",verifierSources.includes("venture_x: { urls: ['https://www.capitalone.com/credit-cards/venture-x/','https://www.capitalone.com/help-center/credit-cards/tsa-precheck-global-entry-benefits/'"));
+
 console.log(JSON.stringify({pass,fail,failures},null,2));if(fail)process.exitCode=1;
