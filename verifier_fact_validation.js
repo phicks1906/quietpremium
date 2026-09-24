@@ -61,6 +61,8 @@ ok("United parser accepts minimum four flights wording",verifierSrc.includes('mi
 ok("United Explorer parser recognizes two Club passes",verifierSrc.includes('id==="united_explorer"')&&verifierSrc.includes('one-time passes'));
 ok("United Silver coverage accepts current tier-summary wording",verifierSrc.includes("silverSummary=")&&verifierSrc.includes("Economy Plus at check-in"));
 ok("United Platinum coverage accepts current tier-summary wording",verifierSrc.includes("platinumSummary=")&&verifierSrc.includes("40 PlusPoints"));
+ok("cross-sell lounge-pass text cannot make United Club incomplete",verifierSrc.includes('!["united_explorer","aa_globe"].includes(id)||(f.benefitTags||[]).includes("lounge_passes")'));
+
 
 
 console.log(JSON.stringify({pass,fail,failures},null,2));if(fail)process.exitCode=1;
