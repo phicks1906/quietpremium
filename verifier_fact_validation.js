@@ -59,5 +59,8 @@ ok("Hyatt card parser recognizes current Bonus Points wording",verifierSrc.inclu
 ok("United parser uses exact current How-to-earn qualification wording",src.includes('How to earn:?\\\\s*([\\\\d,]+)\\\\s+PQF'));
 ok("United parser accepts minimum four flights wording",verifierSrc.includes('minimum of\\s+four'));
 ok("United Explorer parser recognizes two Club passes",verifierSrc.includes('id==="united_explorer"')&&verifierSrc.includes('one-time passes'));
+ok("United Silver coverage accepts current tier-summary wording",verifierSrc.includes("silverSummary=")&&verifierSrc.includes("Economy Plus at check-in"));
+ok("United Platinum coverage accepts current tier-summary wording",verifierSrc.includes("platinumSummary=")&&verifierSrc.includes("40 PlusPoints"));
+
 
 console.log(JSON.stringify({pass,fail,failures},null,2));if(fail)process.exitCode=1;

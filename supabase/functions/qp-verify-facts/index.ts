@@ -477,9 +477,10 @@ function airlineTierBenefits(id:string,t:string){
   }else if(id==="united"){
     // April 2026 changed Premier flight-mile earning. Do not use the retired
     // 7x/8x/9x/11x table as a status-value input.
-    const silverSeating=/Premier Silver Members[\s\S]{0,1400}?Economy Plus[^.]{0,140}check-in/i.test(t)||/Economy Plus[^.]{0,160}check-in[^.]{0,220}(?:Premier Silver|Silver)/i.test(t);
-    const silverUpgrade=/Premier Silver Members[\s\S]{0,1400}?(?:day of departure|24 hours before departure)/i.test(t)||/(?:Premier Silver|Silver elites?)[\s\S]{0,1800}?(?:complimentary Premier upgrades?)[^.]{0,220}(?:day of departure|24 hours before departure)/i.test(t)||/(?:Premier Silver|Silver)[^\n]{0,500}(?:day of departure|24 hours before departure)/i.test(t);
-    const silverBag=/(?:Premier Silver|Silver)[\s\S]{0,900}(?:one|1) (?:complimentary|free) (?:70-pound )?checked bag|(?:one|1) (?:complimentary|free) (?:70-pound )?checked bag[\s\S]{0,500}(?:Premier Silver|Silver)/i.test(t);
+    const silverSummary=/United Premier Silver[\s\S]{0,1800}?Complimentary bags:\s*(?:One|1) complimentary checked bag[\s\S]{0,1800}?Upgrade eligibility:[\s\S]{0,420}?complimentary Premier upgrades?[\s\S]{0,420}?Economy Plus at check-in/i.test(t);
+    const silverSeating=silverSummary||/Premier Silver Members[\s\S]{0,1400}?Economy Plus[^.]{0,140}check-in/i.test(t)||/(?:Premier Silver|Silver elites?)[\s\S]{0,1800}?Economy Plus[^.]{0,180}check-in/i.test(t)||/Economy Plus[^.]{0,160}check-in[^.]{0,220}(?:Premier Silver|Silver)/i.test(t);
+    const silverUpgrade=silverSummary||/Premier Silver Members[\s\S]{0,1400}?(?:day of departure|24 hours before departure)/i.test(t)||/(?:Premier Silver|Silver elites?)[\s\S]{0,6000}?(?:complimentary Premier upgrades?)[^.]{0,300}(?:day of departure|24 hours before departure)/i.test(t)||/(?:Premier Silver|Silver)[^\n]{0,700}(?:day of departure|24 hours before departure)/i.test(t);
+    const silverBag=silverSummary||/(?:Premier Silver|Silver)[\s\S]{0,1200}(?:one|1) (?:complimentary|free) (?:70-pound )?checked bag|(?:one|1) (?:complimentary|free) (?:70-pound )?checked bag[\s\S]{0,700}(?:Premier Silver|Silver)/i.test(t);
     put("Premier Silver",{upgradeWindowHours:/24 hours before departure/i.test(t)?24:0,seating:"economy_plus_at_checkin",checkedBags:1,coverageComplete:silverSeating&&silverUpgrade&&silverBag});
 
     const goldSeating=/Premier Gold Members[\s\S]{0,1400}?Economy Plus[^.]{0,140}booking/i.test(t)||/(?:Premier Gold|Gold elites?)[\s\S]{0,700}?Economy Plus[^.]{0,180}booking/i.test(t)||/Economy Plus[^.]{0,160}booking[^.]{0,220}(?:Premier Gold|Gold)/i.test(t);
@@ -487,12 +488,13 @@ function airlineTierBenefits(id:string,t:string){
     const goldBags=/Premier Gold Members[\s\S]{0,1400}?Two complimentary checked bags/i.test(t)||/(?:Premier Gold|Gold)[^\n]{0,300}(?:two|2) (?:complimentary|free) checked bags/i.test(t);
     put("Premier Gold",{upgradeWindowHours:48,seating:"economy_plus_at_booking_one_companion",checkedBags:2,boardingGroup:"group_1",starAllianceStatus:"gold",coverageComplete:goldSeating&&goldUpgrade&&goldBags});
 
-    const platinum=/Premier Platinum/i.test(t);
-    const platinumUpgrade=platinum&&/72 hours before departure/i.test(t);
-    const platinumSeating=platinum&&/Economy Plus[\s\S]{0,260}(?:up to )?8 companions|(?:up to )?8 companions[\s\S]{0,260}Economy Plus/i.test(t);
-    const platinumBags=platinum&&/(?:three|3)\s+(?:complimentary|free)(?:\s+\d+-pound)?\s+checked bags/i.test(t);
+    const platinum=/Premier Platinum/i.test(t),
+          platinumSummary=/United Premier Platinum[\s\S]{0,1800}?Complimentary bags:\s*(?:Three|3) complimentary checked bags[\s\S]{0,1800}?Upgrade eligibility:[\s\S]{0,500}?complimentary Premier upgrades?[\s\S]{0,500}?Economy Plus[^.]{0,240}(?:up to )?(?:eight|8) companions[\s\S]{0,900}?40 PlusPoints/i.test(t);
+    const platinumUpgrade=platinum&&(platinumSummary||/Premier Platinum[\s\S]{0,6500}?complimentary Premier upgrades?[^.]{0,360}72 hours (?:before|prior to) (?:the )?(?:flight|departure)/i.test(t)||/72 hours (?:before|prior to) (?:the )?(?:flight|departure)/i.test(t));
+    const platinumSeating=platinum&&(platinumSummary||/Economy Plus[\s\S]{0,360}(?:up to )?(?:eight|8) companions|(?:up to )?(?:eight|8) companions[\s\S]{0,360}Economy Plus/i.test(t));
+    const platinumBags=platinum&&(platinumSummary||/(?:three|3)\s+(?:complimentary|free)(?:\s+\d+-pound)?\s+checked bags/i.test(t));
     const platinumPlus=platinum&&/40 PlusPoints/i.test(t);
-    put("Premier Platinum",{upgradeWindowHours:72,seating:"economy_plus_at_booking_up_to_8_companions",checkedBags:3,boardingGroup:"group_1",plusPoints:40,coverageComplete:platinumUpgrade&&platinumSeating&&platinumBags&&platinumPlus});
+    put("Premier Platinum",{upgradeWindowHours:/72 hours (?:before|prior to)/i.test(t)?72:0,seating:"economy_plus_at_booking_up_to_8_companions",checkedBags:3,boardingGroup:"group_1",plusPoints:40,coverageComplete:platinumUpgrade&&platinumSeating&&platinumBags&&platinumPlus});
 
     const oneK=/Premier 1K|Premier 1K®/i.test(t);
     const oneKUpgrade=oneK&&/96 hours before departure/i.test(t);
