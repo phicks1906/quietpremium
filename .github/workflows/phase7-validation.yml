@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - phase7-production-hardening
+      - phase7-plan-persistence-hardening
   workflow_dispatch:
 
 jobs:
@@ -19,6 +20,7 @@ jobs:
         run: |
           set -euo pipefail
           node phase7_hardening_validation.js
+          node phase7_plan_persistence_validation.js
           node phase6_positioning_validation.js
           node funnel_validation.js
           node --check assets/diagnostic-v5.js

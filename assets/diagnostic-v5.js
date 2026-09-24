@@ -318,10 +318,11 @@ async function postJson(url,payload){
     return body;
   }finally{clearTimeout(timer)}
 }
-async function buildPlan(profile){return postJson(QP_SUPABASE_URL+"/functions/v1/"+PLAN_FUNCTION,{profile})}
-async function savePlan(profile,result){
-  return postJson(QP_SUPABASE_URL+"/rest/v1/rpc/qp_save_plan_v1",{
-    p_input:profile,p_result:result,p_source:{channel:"web",diagnostic_build:BUILD,funnel_session:sessionStorage.getItem("qp_funnel_session_v1")||""}
+async function buildPlan(profile){
+  return postJson(QP_SUPABASE_URL+"/functions/v1/"+PLAN_FUNCTION,{
+    profile,
+    funnelSession:sessionStorage.getItem("qp_funnel_session_v1")||"",
+    persistPlan:true
   });
 }
 function showError(message){
@@ -362,7 +363,7 @@ async function submitV5(e){
     const profile=buildProfileFromValues(values);
     const result=await buildPlan(profile);
     if(result?.status!=="ready"||result?.resultExperience?.meta?.schema!=="qp-results-v1"||result?.resultExperience?.quality?.ready!==true)throw new Error("Quiet Premium could not produce a production-ready plan from these answers.");
-    const saved=await savePlan(profile,result);
+    const saved=result?.savedPlan;
     if(!saved?.architecture_id||!saved?.retrieval_token)throw new Error("Quiet Premium created the plan but could not save a private retrieval link.");
     try{sessionStorage.setItem(PLAN_STORAGE_KEY,JSON.stringify(result.resultExperience))}catch{}
     try{localStorage.removeItem("qp_architecture_phase5_draft")}catch{}
