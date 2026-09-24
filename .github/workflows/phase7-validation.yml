@@ -5,6 +5,7 @@ on:
     branches:
       - phase7-production-hardening
       - phase7-plan-persistence-hardening
+      - phase7-plan-save-privilege
   workflow_dispatch:
 
 jobs:
