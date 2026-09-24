@@ -1094,70 +1094,14 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
     }finally{clearTimeout(timeout);}
   }
 
-  function backendInputSnapshot(result){
-    const p=result?.profile||{};
-    return {
-      spend:p.spend||{},
-      travel:p.travel||{},
-      hotel:p.hotel||{},
-      preferences:p.preferences||{},
-      benefits:p.benefits||{},
-      cards:(p.cards||[]).map(c=>({id:c.id,label:c.label,supported:c.supported!==false})),
-      usage:{
-        dining:p.usage?.dining?.id||null,
-        grocery:p.usage?.grocery?.id||null,
-        airfare:p.usage?.airfare?.id||null,
-        hotel:p.usage?.hotel?.id||null
-      },
-      generalAllocations:p.generalAllocations||[],
-      pointBalances:p.pointBalances||{}
-    };
-  }
-
-  async function backendSaveArchitecture(result){
-    const saved=await qpRpc('qp_save_architecture',{
-      p_input:backendInputSnapshot(result),
-      p_result:result,
-      p_source:{channel:'web',diagnostic_build:'2.5.0',backend_build:QP_BACKEND_BUILD,funnel_session:funnelSession}
-    });
-    if(!saved?.architecture_id||!saved?.retrieval_token)throw new Error('Backend did not return retrieval credentials');
-    activeArchitecture={
-      id:saved.architecture_id,
-      token:saved.retrieval_token,
-      createdAt:saved.created_at||new Date().toISOString(),
-      result,
-      portable:false,
-      serverStored:true
-    };
-    $('architecture-id').textContent=activeArchitecture.id;
-    $('backend-state').textContent='Securely saved to Quiet Premium.';
-    activePrivateLink=null;
-    return activeArchitecture;
-  }
-
-  async function backendGetArchitecture(id,token){
-    return await qpRpc('qp_get_architecture',{p_architecture_id:id,p_token:token});
-  }
-
-  async function backendSaveContact(email){
-    if(!activeArchitecture?.serverStored||!activeArchitecture?.token||!email)return false;
-    return await qpRpc('qp_save_contact',{
-      p_architecture_id:activeArchitecture.id,
-      p_token:activeArchitecture.token,
-      p_email:email,
-      p_consent_context:'result_email_share'
-    });
-  }
-
-  async function backendSubmitFeedback(reaction,comment){
-    if(!activeArchitecture?.serverStored||!activeArchitecture?.token)return false;
-    return await qpRpc('qp_submit_feedback',{
-      p_architecture_id:activeArchitecture.id,
-      p_token:activeArchitecture.token,
-      p_reaction:reaction||null,
-      p_comment:comment||null
-    });
-  }
+  // Phase 7: the current V5 flow builds and stores plans through qp-build-plan.
+  // Keep these V4 hooks fail-closed so stale diagnostic result links/actions
+  // cannot reopen retired anonymous storage/contact/feedback RPC surfaces.
+  function legacyResultFlowDisabled(){throw new Error('legacy_result_flow_disabled');}
+  async function backendSaveArchitecture(){return legacyResultFlowDisabled();}
+  async function backendGetArchitecture(){return legacyResultFlowDisabled();}
+  async function backendSaveContact(){return legacyResultFlowDisabled();}
+  async function backendSubmitFeedback(){return legacyResultFlowDisabled();}
 
   async function backendLogEvent(name,metadata={}){
     try{
