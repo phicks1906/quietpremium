@@ -6,7 +6,7 @@ import { buildResultContract } from "./result-contract.ts";
 
 const ORIGINS=new Set(["https://quietpremium.com","https://www.quietpremium.com"]);
 const PUBLIC_BROWSER_KEY="sb_publishable_BETG0zmWAEmPByBsKyEUzA_yPCOkh5F";
-const VERIFIER="qp-verify-facts",MAX_PROFILE_BYTES=250000,MAX_STABILIZATION_PASSES=2;
+const VERIFIER="qp-verify-facts",OPTIMIZER="qp-optimize-shard",OPTIMIZER_SHARDS=32,OPTIMIZER_MAX_SHARDS=256,OPTIMIZER_SHARDS_PER_REQUEST=2,OPTIMIZER_BATCH=2,OPTIMIZER_PACE_MS=750,MAX_PROFILE_BYTES=250000,MAX_STABILIZATION_PASSES=2;
 const E=(globalThis as any).QuietPremiumEngineV5;
 
 function json(body:any,status=200,origin=""){
@@ -47,13 +47,198 @@ async function verifierRequest(request:any){
   if(!res.ok)throw new Error("verifier_http_"+res.status+":"+(body?.error||"unknown"));
   return body;
 }
-async function verifyRequest(request:any,stage:string){
-  const chunks=chunkEntityRequest(request,12),parts:any[]=[];
+function missingVerifiedEntities(request:any,snapshot:any){
+  const out:any={cards:[],airlines:[],hotels:[]};
+  for(const kind of ["cards","airlines","hotels"])for(const id of request?.[kind]||[]){
+    const rec=snapshot?.[kind]?.[id];
+    if(!(rec?.verificationStatus==="verified"&&rec?.complete===true))out[kind].push(id);
+  }
+  return out;
+}
+function entityRequestEmpty(request:any){return !(request?.cards?.length||request?.airlines?.length||request?.hotels?.length)}
+async function verifyRequest(request:any,stage:string,baseSnapshot:any=null){
+  const missing=baseSnapshot?missingVerifiedEntities(request,baseSnapshot):request,
+        chunks=entityRequestEmpty(missing)?[]:chunkEntityRequest(missing,12),
+        parts:any[]=[];
+  if(baseSnapshot)parts.push(baseSnapshot);
   for(const chunk of chunks)parts.push(await verifierRequest(chunk));
   const verifiedAt=new Date().toISOString();
   const sig=parts.map(p=>p.snapshotId||"").sort().join("|")+"|"+stage+"|"+verifiedAt;
   const snapshotId="qpp_"+verifiedAt.replace(/\D/g,"").slice(0,14)+"_"+(await hash(sig)).slice(0,12);
   return mergeSnapshotParts(parts,snapshotId,verifiedAt);
+}
+
+function mergeShardChildren(a:any,b:any,payload:any){
+  const base={status:"ok",phase:payload.phase,engineVersion:a?.engineVersion||b?.engineVersion||E.ENGINE_VERSION,shardIndex:payload.shardIndex,shardCount:payload.shardCount,candidateCount:(Number(a?.candidateCount)||0)+(Number(b?.candidateCount)||0),totalShardCandidates:(Number(a?.totalShardCandidates)||0)+(Number(b?.totalShardCandidates)||0),adaptiveSplit:true};
+  if(payload.phase==="counterfactual"){
+    const keys=new Set([...Object.keys(a?.bestWith||{}),...Object.keys(b?.bestWith||{}),...Object.keys(a?.bestWithout||{}),...Object.keys(b?.bestWithout||{})]),
+          setKeys=new Set([...Object.keys(a?.bestByNewSet||{}),...Object.keys(b?.bestByNewSet||{})]),
+          bestWith:any={},bestWithout:any={},bestByNewSet:any={};
+    for(const id of keys){bestWith[id]=betterSummary(a?.bestWith?.[id]||null,b?.bestWith?.[id]||null);bestWithout[id]=betterSummary(a?.bestWithout?.[id]||null,b?.bestWithout?.[id]||null);}
+    for(const key of setKeys)bestByNewSet[key]=betterSummary(a?.bestByNewSet?.[key]||null,b?.bestByNewSet?.[key]||null);
+    return{...base,bestWith,bestWithout,bestByNewSet};
+  }
+  const chosenSummary=betterSummary(a?.bestSummary||null,b?.bestSummary||null);
+  if(!chosenSummary)return{...base,best:null,bestSummary:null};
+  const fromA=chosenSummary===a?.bestSummary;
+  return{...base,best:fromA?a?.best||null:b?.best||null,bestSummary:chosenSummary};
+}
+async function optimizerRequest(payload:any,attempt=0){
+  const base=Deno.env.get("SUPABASE_URL"),service=Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+  if(!base||!service)throw new Error("optimizer_backend_not_configured");
+  let res:Response;
+  try{
+    res=await fetch(base+"/functions/v1/"+OPTIMIZER,{
+      method:"POST",
+      headers:{"Content-Type":"application/json","apikey":service},
+      body:JSON.stringify(payload)
+    });
+  }catch(e){
+    const retryAfterMs=Number((e as any)?.retryAfterMs)||0,
+          isRateLimit=(typeof Deno!=="undefined"&&(Deno as any)?.errors?.RateLimitError&&e instanceof (Deno as any).errors.RateLimitError)||/Rate limit exceeded for trace/i.test(String((e as Error)?.message||e));
+    if(isRateLimit&&attempt<3){
+      await new Promise(r=>setTimeout(r,Math.min(60000,Math.max(500,retryAfterMs||1000))));
+      return optimizerRequest(payload,attempt+1);
+    }
+    throw e;
+  }
+  let body:any=null;try{body=await res.json()}catch{}
+  if(res.ok&&body?.status==="ok")return body;
+  const transient=[429,502,503,504].includes(res.status);
+  if(transient&&attempt<2){
+    await new Promise(r=>setTimeout(r,350*(attempt+1)));
+    return optimizerRequest(payload,attempt+1);
+  }
+  if((payload?.phase==="counterfactual"||payload?.phase==="gated")&&(res.status===546||transient)){
+    const indices=Array.isArray(payload?.shardIndices)?payload.shardIndices.map((x:any)=>Number(x)).filter((x:number)=>Number.isFinite(x)):[];
+    if(indices.length>1){
+      const mid=Math.ceil(indices.length/2),
+            left={...payload,shardIndices:indices.slice(0,mid)},
+            right={...payload,shardIndices:indices.slice(mid)};
+      const a=await optimizerRequest(left,0);
+      await new Promise(r=>setTimeout(r,OPTIMIZER_PACE_MS));
+      const b=await optimizerRequest(right,0);
+      return mergeShardChildren(a,b,payload);
+    }
+    if(Number(payload?.shardCount||0)<OPTIMIZER_MAX_SHARDS){
+      const oldCount=Number(payload.shardCount)||OPTIMIZER_SHARDS,nextCount=oldCount*2,
+            idx=indices.length?indices[0]:Number(payload.shardIndex)||0,
+            left={...payload,shardIndex:idx,shardIndices:[idx],shardCount:nextCount},
+            right={...payload,shardIndex:idx+oldCount,shardIndices:[idx+oldCount],shardCount:nextCount};
+      const a=await optimizerRequest(left,0);
+      await new Promise(r=>setTimeout(r,OPTIMIZER_PACE_MS));
+      const b=await optimizerRequest(right,0);
+      return mergeShardChildren(a,b,payload);
+    }
+  }
+  throw new Error("optimizer_http_"+res.status+":"+String(payload?.phase||"")+"_"+String(payload?.shardIndex??"")+"_"+String(payload?.shardCount??"")+":"+(body?.error||body?.detail||"unknown"));
+}
+async function runShardPhase(profile:any,phase:string,extra:any={}){
+  const groups:any[]=[];
+  for(let i=0;i<OPTIMIZER_SHARDS;i+=OPTIMIZER_SHARDS_PER_REQUEST){
+    const shardIndices=[];for(let j=i;j<Math.min(i+OPTIMIZER_SHARDS_PER_REQUEST,OPTIMIZER_SHARDS);j++)shardIndices.push(j);
+    groups.push(shardIndices);
+  }
+  const out:any[]=[];
+  for(let start=0;start<groups.length;start+=OPTIMIZER_BATCH){
+    const batch=groups.slice(start,start+OPTIMIZER_BATCH).map(shardIndices=>optimizerRequest({profile,phase,shardIndex:shardIndices[0],shardIndices,shardCount:OPTIMIZER_SHARDS,...extra}));
+    out.push(...await Promise.all(batch));
+    if(start+OPTIMIZER_BATCH<groups.length)await new Promise(r=>setTimeout(r,OPTIMIZER_PACE_MS));
+  }
+  return out;
+}
+const TRAVEL_IMPROVEMENTS=new Set(["flightQuality","hotelExperience","airportExperience","reliability","benefitContinuity"]);
+function betterSummary(a:any,b:any){
+  if(!a)return b;if(!b)return a;
+  if(Number(a.noJobCount)!==Number(b.noJobCount))return Number(a.noJobCount)<Number(b.noJobCount)?a:b;
+  const at=(a.improvements||[]).filter((x:string)=>TRAVEL_IMPROVEMENTS.has(x)).length,
+        bt=(b.improvements||[]).filter((x:string)=>TRAVEL_IMPROVEMENTS.has(x)).length;
+  if(at!==bt)return at>bt?a:b;
+  if(Number(a.netEconomicValue)!==Number(b.netEconomicValue))return Number(a.netEconomicValue)>Number(b.netEconomicValue)?a:b;
+  if(Number(a.recommendedAnnualFees)!==Number(b.recommendedAnnualFees))return Number(a.recommendedAnnualFees)<Number(b.recommendedAnnualFees)?a:b;
+  if(Number(a.complexityBurden)!==Number(b.complexityBurden))return Number(a.complexityBurden)<Number(b.complexityBurden)?a:b;
+  return String(a.id||"").localeCompare(String(b.id||""))<=0?a:b;
+}
+function summaryRecord(x:any,current:any){
+  if(!x)return current;
+  return{portfolio:x.portfolio||[],economics:{netEconomicValue:Number(x.netEconomicValue)||0},id:x.id||""};
+}
+function currentSearchSummary(current:any){
+  return{
+    id:current?.id||"current",
+    portfolio:current?.portfolio||[],
+    annualRouting:current?.annualRouting||{},
+    ongoingRouting:current?.ongoingRouting||current?.annualRouting||{},
+    recurringJobs:current?.recurringJobs||[],
+    temporaryJobs:current?.temporaryJobs||[],
+    feeSummary:current?.feeSummary||{},
+    economics:{netEconomicValue:Number(current?.economics?.netEconomicValue)||0},
+    strategy:{airlineStrategy:current?.strategy?.airlineStrategy||{},hotelStrategy:current?.strategy?.hotelStrategy||{}},
+    outcomes:{
+      travelCapacity:{annualTravelValue:Number(current?.outcomes?.travelCapacity?.annualTravelValue)||0},
+      flightQuality:{effectiveStatus:current?.outcomes?.flightQuality?.effectiveStatus||"",companionPassReached:current?.outcomes?.flightQuality?.companionPassReached===true},
+      hotelExperience:{effectiveStatus:current?.outcomes?.hotelExperience?.effectiveStatus||""},
+      reliability:{preservesCurrentAirlineStatus:current?.outcomes?.reliability?.preservesCurrentAirlineStatus===true},
+      complexity:{burden:Number(current?.outcomes?.complexity?.burden)||0}
+    },
+    recommendationCredit:current?.recommendationCredit||{lounge:0,premiumHotel:0,priorityAirport:0,upgradePriority:0},
+    quality:{precisionSuppressed:current?.quality?.precisionSuppressed===true}
+  };
+}
+async function distributedAnalyze(profile:any,candidateCardIds:any[]){
+  const p=E.normalizeProfile(profile),travel=E.travelStrategy(p),rewards=E.rewardsStrategy(p,travel),
+        current=E.currentRecord(p,"base",travel,rewards),
+        existingOnly=new Set(E.EXISTING_ONLY_CARDS_V17||[]),
+        ids=[...new Set((candidateCardIds||[]).filter((id:string)=>!p.currentCards.includes(id)&&!existingOnly.has(id)))];
+
+  const eligibilityIds=E.candidateEligibilityIds(p,rewards),
+        eligibilityChunks=[eligibilityIds.filter((_:any,i:number)=>i%2===0),eligibilityIds.filter((_:any,i:number)=>i%2===1)].filter((x:any[])=>x.length),
+        eligibilityParts=await Promise.all(eligibilityChunks.map((cardIds:any[])=>optimizerRequest({profile:p,phase:"eligibility",travel,rewards,cardIds}))),
+        coBrandEligibility=Object.assign({},...eligibilityParts.map((x:any)=>x?.coBrandEligibility||{})),
+        currentSearch=currentSearchSummary(current),
+        phase1=await runShardPhase(p,"counterfactual",{cardIds:ids,travel,rewards,currentSearch,coBrandEligibility});
+  const classifications:any[]=[];
+  for(const id of ids){
+    let withBest:any=null,withoutBest:any=null;
+    for(const shard of phase1){
+      withBest=betterSummary(withBest,shard?.bestWith?.[id]||null);
+      withoutBest=betterSummary(withoutBest,shard?.bestWithout?.[id]||null);
+    }
+    const represented=!!withBest&&(withBest.portfolio||[]).includes(id),
+          bestWith=summaryRecord(withBest,current),
+          bestWithout=summaryRecord(withoutBest,current),
+          hurdle=represented?E.newCardHurdleDelta(p,bestWith,bestWithout):{delta:0,rawDelta:0,excludedCurrentCardFeeSavings:0},
+          delta=Number(hurdle.delta)||0;
+    classifications.push({cardId:id,classification:E.classifyNewCardValue(delta),incrementalRecurringValue:delta,bestWithId:represented?(withBest?.id||""):"",bestWithoutId:withoutBest?.id||current.id});
+  }
+
+  const classBy=new Map(classifications.map((x:any)=>[x.cardId,x.classification])),
+        required=new Set(p.constraints?.requiredCards||[]);
+  let winningSummary:any=null;
+  if(!current.quality?.precisionSuppressed){
+    for(const shard of phase1){
+      for(const summary of Object.values(shard?.bestByNewSet||{}) as any[]){
+        if(!summary)continue;
+        const additions=(summary.portfolio||[]).filter((id:string)=>!p.currentCards.includes(id));
+        if(additions.every((id:string)=>required.has(id)||classBy.get(id)==="recommended"))winningSummary=betterSummary(winningSummary,summary);
+      }
+    }
+  }
+
+  let localBest:any[]=[];
+  if(winningSummary){
+    const selected=await optimizerRequest({profile:p,phase:"select",portfolio:winningSummary.portfolio,expectedId:winningSummary.id,classifications});
+    if(selected?.best)localBest=[selected.best];
+  }
+  current.incrementalCardGate={pass:true,thresholds:{recommended:E.MODEL.newCardRecommendedMin,consider:E.MODEL.newCardConsiderMin},cards:[]};
+  const prepared=E.prepareViable(p,localBest,current),
+        recommended=current.quality?.precisionSuppressed?current:E.choosePrepared(prepared,current),
+        selectedRewards=recommended?.strategy?.rewardsStrategy||rewards,
+        b={current,recommended,travelStrategy:travel,rewardsStrategy:selectedRewards,newCardClassifications:classifications,considerCards:classifications.filter((x:any)=>x.classification==="consider"),records:localBest,pareto:[]},
+        candidateCount=phase1.reduce((n,x)=>n+(Number(x?.candidateCount)||0),0),
+        result=E.analysisResultFromSelection(p,b,[],candidateCardIds,candidateCount);
+  result.integrity={...(result.integrity||{}),distributedExactPortfolioSearch:true,distributedPortfolioShards:OPTIMIZER_SHARDS,distributedLogicalShardsPerRequest:OPTIMIZER_SHARDS_PER_REQUEST,distributedSinglePassClassification:true,distributedSelectionReconstruction:true};
+  return result;
 }
 function approvedValuationSnapshot(){return E.CURRENT_QP_VALUATION_SNAPSHOT}
 function attach(profile:any,snapshot:any){return{...(profile||{}),verifiedFacts:snapshot,valuationSnapshot:approvedValuationSnapshot()}}
@@ -109,7 +294,7 @@ Deno.serve(async(req:Request)=>{
     let stabilized=false;
 
     for(let pass=1;pass<=MAX_STABILIZATION_PASSES;pass++){
-      finalSnapshot=await verifyRequest(target,"final_"+pass);
+      finalSnapshot=await verifyRequest(target,"final_"+pass,finalSnapshot||stage1Snapshot);
       const gaps=verificationGaps(finalSnapshot,target);
       if(gaps.length)return json({
         status:"not_ready",reason:"final_verification_incomplete",
@@ -127,7 +312,7 @@ Deno.serve(async(req:Request)=>{
       verification:{request:target,snapshot:finalSnapshot}
     },409,origin);
 
-    const result=E.analyze(working);
+    const result=await distributedAnalyze(working,target.cards||[]);
     const audit=auditPlan(result,E);
     if(!audit.pass)return json({status:"not_ready",reason:"pre_output_audit_failed",audit,factQuality:result?.factQuality||null,factsSnapshot:result?.factsSnapshot||null,valuationSnapshot:result?.valuationSnapshot||null},409,origin);
     if(!result?.factQuality?.productionReady)return json({

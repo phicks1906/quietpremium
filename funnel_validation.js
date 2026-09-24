@@ -8,6 +8,8 @@ ok("mobile nav enters 60-second preview",/<a class="mobile-cta" href="analysis\.
 ok("hero primary enters preview",/<a class="btn primary" href="analysis\.html"[^>]*>See My 60-Second Preview<\/a>/.test(home));
 ok("closing primary enters preview",/<section class="closing"[\s\S]*?<a class="btn primary" href="analysis\.html"[^>]*>See My 60-Second Preview<\/a>/.test(home));
 ok("hero makes 60-second commitment explicit",home.includes("5 quick questions · About 60 seconds · No card numbers"));
-ok("homepage primary funnel does not bypass preview",!/<a[^>]+class="(?:navcta|mobile-cta|btn primary)"[^>]+href="refine\.html"/.test(home));
+ok("homepage primary funnel does not bypass preview",!/<(?:a)[^>]+(?:class="(?:navcta|mobile-cta|btn primary)"|class="btn primary")[^>]+href="refine\.html"/.test(home),home.match(/<a[^>]+href="refine\.html"[^>]*>/g)?.join("\n")||"");
 ok("preview still hands off to full analysis",/id="fullAnalysis" href="refine\.html\?from=quick"/.test(preview));
-console.log(JSON.stringify({pass,fail,failures},null,2));if(fail)process.exitCode=1;
+ok("preview still identifies itself as about 60 seconds",preview.includes("About 60 seconds"));
+console.log(JSON.stringify({pass,fail,failures},null,2));
+if(fail)process.exitCode=1;

@@ -388,7 +388,8 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
         <div class="row">
           <div class="field" data-required>
             <label for="home_airport">Home airport <span class="req">*</span></label>
-            <input class="control" id="home_airport" name="home_airport" placeholder="e.g. SDF"/>
+            <input class="control" id="home_airport" name="home_airport" placeholder="Airport code, name, or city — e.g. SDF"/>
+            <div class="hint">Start typing a code, airport name, or city, then choose the specific airport.</div>
             <div class="validation">Enter your primary departure airport.</div>
           </div>
           <div class="field" data-required>
@@ -418,17 +419,8 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
 
         <div class="field">
           <label for="frequent_destinations">Frequent destinations</label>
-          <div class="hint">Up to five cities or airports. This helps QP test whether your primary airline is practical for the routes you actually fly.</div>
+          <div class="hint">Up to five specific airports. You can enter airport codes or unambiguous airport/city names; Quiet Premium will not guess between multiple airports in the same city.</div>
           <textarea class="control" id="frequent_destinations" name="frequent_destinations" placeholder="e.g. JFK, LAX, MIA, ORD"></textarea>
-        </div>
-
-        <div class="field">
-          <label for="cabin_booked">Cabin you usually buy</label>
-          <select class="control" id="cabin_booked" name="cabin_booked">
-            <option value="">Choose one</option>
-            <option>Main cabin / economy</option><option>Extra-legroom economy</option>
-            <option>Premium economy</option><option>Domestic first</option><option>Business / first</option><option>Mixed</option>
-          </select>
         </div>
 
         <div class="nav-actions"><button type="button" class="btn btn-primary" data-next>Continue</button></div>
@@ -462,19 +454,6 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
           <div class="row">
             <div class="field"><label for="hotel_qualifying_spend_ytd">Current-year qualifying hotel spend</label><input class="control money" id="hotel_qualifying_spend_ytd" name="hotel_qualifying_spend_ytd" inputmode="decimal"/></div>
             <div class="field"><label for="hotel_base_points_ytd">Current-year qualifying base points</label><input class="control" type="number" min="0" step="1" id="hotel_base_points_ytd" name="hotel_base_points_ytd" inputmode="numeric"/></div>
-          </div>
-        </div>
-
-        <div class="row">
-          <div class="field" data-required>
-            <label for="hotel_nights">Paid hotel nights — last 12 months <span class="req">*</span></label>
-            <input class="control" type="number" min="0" step="1" id="hotel_nights" name="hotel_nights" inputmode="numeric" placeholder="e.g. 18"/>
-            <div class="validation">Enter an estimate, including 0.</div>
-          </div>
-          <div class="field">
-            <label for="hotel_stays">Hotel stays — last 12 months</label>
-            <div class="hint">Useful for programs that qualify by stays as well as nights.</div>
-            <input class="control" type="number" min="0" step="1" id="hotel_stays" name="hotel_stays" inputmode="numeric" placeholder="e.g. 10"/>
           </div>
         </div>
 
@@ -701,12 +680,6 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
           <div class="validation">Choose the closest fit.</div>
         </div>
 
-        <div class="field">
-          <label for="first_name">First name <span style="color:var(--muted2);font-weight:300">(optional)</span></label>
-          <div class="hint">Used only to personalize the result on this screen.</div>
-          <input class="control" id="first_name" name="first_name" autocomplete="given-name" placeholder="First name"/>
-        </div>
-
         <div class="nav-actions">
           <button type="button" class="btn btn-secondary" data-back>Back</button>
           <button type="submit" class="btn btn-primary">Build My Travel Plan</button>
@@ -853,7 +826,8 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="qp_sim.js"></script>
-<script src="assets/diagnostic-v5.js?v=260"></script>
+<script src="assets/qp-airports-v1.js?v=1"></script>
+<script src="assets/diagnostic-v5.js?v=270"></script>
 <script>
 (function(){
   'use strict';

@@ -19,7 +19,50 @@ function base(overrides={}){return{
  currencyUtility:{amex_mr:1,chase_ur:.75,capital_one_miles:.95,hyatt_points:1},legacyNaturalBenefitValue:{amex_platinum:700},
  bookingMethod:{airfare:"direct_airline",hotel:"direct_hotel"},constraints:{maxNewCards:2},aspirations:["travel more"],...overrides};}
 
-assert("engine is alpha.31",E.ENGINE_VERSION==="5.0-alpha.31");
+assert("engine is alpha.46",E.ENGINE_VERSION==="5.0-alpha.46");
+
+{
+ const p=E.normalizeProfile(base()),travel=E.travelStrategy(p),rewards=E.rewardsStrategy(p,travel),eligIds=E.candidateEligibilityIds(p,rewards),elig=E.candidateEligibility(p,rewards,eligIds);
+ let sameSets=true;
+ for(let shard=0;shard<8;shard++){
+   const a=E.candidatePortfoliosShard(p,rewards,shard,8).map(x=>x.slice().sort().join("|")).sort(),
+         b=E.candidatePortfoliosShard(p,rewards,shard,8,elig).map(x=>x.slice().sort().join("|")).sort();
+   if(!same(a,b)){sameSets=false;break;}
+ }
+ assert("alpha.40 precomputed co-brand eligibility preserves exact candidate shards",sameSets,JSON.stringify(elig));
+}
+
+{
+ const p=E.normalizeProfile(base()),travel=E.travelStrategy(p),rewards=E.rewardsStrategy(p,travel),current=E.currentRecord(p,"base",travel,rewards),
+       sets=E.candidatePortfoliosShard(p,rewards,0,32).slice(0,12);
+ const failures=[];
+ for(const set of sets){
+   const rr=E.rewardsStrategyForPortfolio(p,set,travel,rewards),
+         full=E.strategyRecord(p,set,"base",travel,rr),
+         prepared=E.prepareViable(p,[full],current)[0],
+         search=E.preparePortfolioSearch(p,set,current,"base",travel,rr),
+         fullNoJob=(full.cardRoles||[]).filter(x=>full.portfolio.includes(x.cardId)&&x.role==="no_job").length,
+         searchNoJob=(search.r.cardRoles||[]).filter(x=>search.r.portfolio.includes(x.cardId)&&x.role==="no_job").length;
+   const equivalent=same(prepared.c,search.c)
+     && full.id===search.r.id
+     && full.economics.netEconomicValue===search.r.economics.netEconomicValue
+     && same(full.feeSummary,search.r.feeSummary)
+     && full.outcomes.complexity.burden===search.r.outcomes.complexity.burden
+     && full.outcomes.travelCapacity.annualTravelValue===search.r.outcomes.travelCapacity.annualTravelValue
+     && full.outcomes.flightQuality.effectiveStatus===search.r.outcomes.flightQuality.effectiveStatus
+     && full.outcomes.flightQuality.companionPassReached===search.r.outcomes.flightQuality.companionPassReached
+     && full.outcomes.hotelExperience.effectiveStatus===search.r.outcomes.hotelExperience.effectiveStatus
+     && full.outcomes.reliability.preservesCurrentAirlineStatus===search.r.outcomes.reliability.preservesCurrentAirlineStatus
+     && same(full.recommendationCredit,search.r.recommendationCredit)
+     && fullNoJob===searchNoJob
+     && full.recurringJobs.length===search.r.recurringJobs.length
+     && full.temporaryJobs.length===search.r.temporaryJobs.length
+     && same(full.annualRouting,search.r.annualRouting);
+   if(!equivalent)failures.push({set,fullId:full.id,fullC:prepared.c,searchC:search.c,fullNoJob,searchNoJob});
+ }
+ assert("alpha.39 search-only records preserve ranking inputs",failures.length===0,JSON.stringify(failures.slice(0,3)));
+}
+
 
 {
  const a=E.analyze(base({aspirations:["travel more"]}));
@@ -365,6 +408,13 @@ assert("Southwest Priority remains 2500 TQP per $5000",E.RULES.cards.southwest_p
  assert("Delta 45 percent four flights does not become concentration strategy",low.travelStrategy.airline.mode==="preferred_without_concentration"&&!low.travelStrategy.airline.relationshipEstablished,JSON.stringify(low.travelStrategy.airline));
  const high=E.analyze(base({primaryAirline:"delta",primaryAirlineShare:.80,annualOneWayFlights:4,currentAirlineStatus:"",statusProgress:{delta:{mqd:0},hotel:{qualifyingNights:0}},primaryHotel:"",primaryHotelShare:0,remainingYear:{cardSpend:{}},constraints:{maxNewCards:0}}));
  assert("Delta 80 percent four flights can support spend-driven status",high.travelStrategy.airline.relationshipEstablished===true&&high.travelStrategy.airline.statusUseful===true,JSON.stringify(high.travelStrategy.airline));
+ const unverified=E.analyze(base({primaryAirline:"delta",primaryAirlineShare:.80,routeFit:{},annualOneWayFlights:4,currentAirlineStatus:"Gold Medallion",statusProgress:{delta:{mqd:0},hotel:{qualifyingNights:0}},primaryHotel:"",primaryHotelShare:0,remainingYear:{cardSpend:{general:100000},delta:{mqd:0}},constraints:{maxNewCards:0}}));
+ assert("existing airline relationship survives missing route evidence",unverified.travelStrategy.airline.relationshipEstablished===true,JSON.stringify(unverified.travelStrategy.airline));
+ assert("missing route evidence does not endorse concentration",unverified.travelStrategy.airline.concentrationSupported===false&&unverified.travelStrategy.airline.mode==="existing_relationship_route_unverified"&&unverified.travelStrategy.airline.rule==="choose_best_itinerary",JSON.stringify(unverified.travelStrategy.airline));
+ assert("missing route evidence blocks spend-driven airline status intervention",!unverified.recommended.strategy.airlineStatusTarget,JSON.stringify(unverified.recommended.strategy.airlineStatusTarget));
+ const unverifiedProfile=E.normalizeProfile(base({primaryAirline:"delta",primaryAirlineShare:.80,routeFit:{},annualOneWayFlights:4,currentAirlineStatus:"Gold Medallion",statusProgress:{delta:{mqd:0},hotel:{qualifyingNights:0}},primaryHotel:"",primaryHotelShare:0,remainingYear:{cardSpend:{general:100000},delta:{mqd:0}},constraints:{maxNewCards:0}})),unverifiedTravel=E.travelStrategy(unverifiedProfile),unverifiedRewards=E.rewardsStrategy(unverifiedProfile,unverifiedTravel),unverifiedRecord=E.strategyRecord(unverifiedProfile,unverifiedProfile.currentCards,"base",unverifiedTravel,unverifiedRewards),higherUnverified=unverifiedRecord.strategy.airlineStatusLadder.rows.filter(x=>["Platinum Medallion","Diamond Medallion"].includes(x.tier));
+ assert("missing route evidence takes precedence in higher-tier stop reasons",higherUnverified.length===2&&higherUnverified.every(x=>x.stopReason==="route_fit_unverified"),JSON.stringify(higherUnverified));
+ assert("route-fit guardrail is explicit in engine integrity",unverified.integrity.airlineConcentrationRequiresRouteFit===true,JSON.stringify(unverified.integrity));
 }
 {
  const p=base({spend:{dining:10000,grocery:8000,online_grocery:0,gas_ev:2000,online_retail:2000,vacation_home:0,airfare:6000,hotel:12000,general:30000},currentCards:["hyatt_consumer"],currentRouting:{...emptyRouting(),dining:[{card:"hyatt_consumer",amount:10000}],grocery:[{card:"hyatt_consumer",amount:8000}],gas_ev:[{card:"hyatt_consumer",amount:2000}],online_retail:[{card:"hyatt_consumer",amount:2000}],airfare:[{card:"hyatt_consumer",amount:6000}],hotel:[{card:"hyatt_consumer",amount:12000}],general:[{card:"hyatt_consumer",amount:30000}]},primaryAirline:"",primaryAirlineShare:0,annualOneWayFlights:4,primaryHotel:"hyatt",primaryHotelShare:.80,currentHotelStatus:"Explorist",statusProgress:{hotel:{qualifyingNights:54,qualifyingStays:20,qualifyingSpend:9000}},remainingYear:{cardSpend:{hotel:6000},hotel:{qualifyingNights:6,qualifyingStays:3,qualifyingSpend:2500}},legacyNaturalBenefitValue:{},cardUniqueBenefitValue:{hyatt_consumer:250},constraints:{maxNewCards:1}});

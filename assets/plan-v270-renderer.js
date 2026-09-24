@@ -7,10 +7,17 @@ const money=v=>new Intl.NumberFormat("en-US",{style:"currency",currency:"USD",ma
 const title=v=>String(v||"").replace(/[_-]+/g," ").replace(/\b\w/g,m=>m.toUpperCase()).trim()||"—";
 const labelMap={amex_mr:"American Express Membership Rewards",chase_ur:"Chase Ultimate Rewards",capital_one_miles:"Capital One Miles",delta:"Delta Air Lines",united:"United Airlines",american:"American Airlines",southwest:"Southwest Airlines",marriott:"Marriott Bonvoy",hyatt:"World of Hyatt",hilton:"Hilton Honors"};
 const label=v=>labelMap[v]||title(v);
-const categoryLabels={dining:"Dining",grocery:"Groceries",online_grocery:"Online groceries",drugstore:"Drugstores",gas_ev:"Gas & EV charging",transit:"Transit",online_retail:"Online retail",vacation_home:"Vacation rentals",airfare:"Airfare",hotel:"Hotels",general:"Everything else"};
-const benefitLabels={southwest_chase_travel_credit_500:"$500 Southwest Chase Travel credit",hyatt_explorist_status_threshold:"World of Hyatt Explorist status",ihg_diamond_status_threshold:"IHG One Rewards Diamond Elite status",southwest_alist_status_threshold:"Southwest Rapid Rewards A-List status",shops_at_chase_credit_250:"$250 Shops at Chase credit",free_night_reward_15k:"Annual free-night reward",free_night_award_35k:"35,000-point free-night award",free_night_award_85k:"85,000-point free-night award",companion_certificate_renewal:"Annual companion certificate",companion_pass_boost:"Companion Pass qualifying-points boost"};
-const categoryLabel=v=>categoryLabels[v]||title(v);
-const benefitLabel=x=>benefitLabels[x?.benefit||x?.type||x?.purpose]||title(x?.benefit||x?.type||x?.purpose||"Travel benefit");
+const benefitNames={
+  lounge:"Lounge access",global_entry_tsa:"Global Entry / TSA PreCheck",clear:"CLEAR",
+  premium_hotel_booking:"Premium hotel booking benefits",hotel_status:"Hotel status",
+  travel_protections:"Travel protections",travel_credit:"Travel credit",
+  southwest_chase_travel_credit_500:"$500 Southwest Airlines Chase Travel credit",
+  hyatt_explorist_status_threshold:"World of Hyatt Explorist status",
+  ihg_diamond_status_threshold:"IHG One Rewards Diamond Elite status",
+  southwest_alist_status_threshold:"Southwest Rapid Rewards A-List status",
+  shops_at_chase_credit_250:"$250 Shops at Chase credit"
+};
+const benefitLabel=x=>benefitNames[x?.benefit||x?.purpose]||title(x?.benefit||x?.type||x?.purpose||"Travel benefit");
 
 function cardDescriptor(x){
   const bits=[];
@@ -27,42 +34,44 @@ function cardLine(x){
 function empty(text){return '<div class="empty">'+esc(text)+'</div>'}
 function outcomeCopy(kind,d){
   if(kind==="fly"){
-    if(!d?.primaryAirline)return "Stay itinerary-first rather than forcing loyalty where it does not improve the trip.";
+    if(!d?.primaryAirline)return "Stay itinerary-first and choose the best practical flight for each trip instead of forcing loyalty.";
     const airline=label(d.primaryAirline),mode=d?.relationshipMode||"";
-    if(mode==="primary_with_exceptions")return airline+" is strong enough to anchor the relationship; use another airline only when the itinerary is clearly better.";
-    if(mode==="existing_relationship_route_unverified")return airline+" remains your current relationship, but Quiet Premium is not asking you to concentrate further until route fit is verified.";
-    if(mode==="existing_relationship_route_weak")return airline+" remains part of your current travel pattern, but your route fit does not support deeper concentration.";
-    return "Keep "+airline+" as a preference, while choosing the best practical itinerary trip by trip.";
+    if(mode==="primary_with_exceptions")return "Use "+airline+" as your default when the itinerary is reasonably competitive"+(d?.status?.stoppingPoint?", with "+d.status.stoppingPoint+" as the justified status stopping point.":".");
+    if(mode==="existing_relationship_route_unverified")return "Keep "+airline+" as your existing relationship, but stay itinerary-first until route fit is verified.";
+    if(mode==="existing_relationship_route_weak")return "Keep "+airline+" where it works, but do not concentrate more travel there when the routes do not support it.";
+    return "Keep "+airline+" available without forcing more concentration than your travel supports.";
   }
   if(kind==="airport"){
-    const c=d?.capabilities||{},n=Object.values(c).filter(v=>Number(v)>0).length;
-    return n?("Your recommended setup preserves "+n+" airport benefit "+(n===1?"that makes the journey easier.":"that make the journey easier.")):"No additional airport benefit is being added just for the sake of complexity.";
+    const items=list(d?.benefits).map(benefitLabel),unique=[...new Set(items)];
+    return unique.length?("Keep the airport advantages already supported by your plan: "+unique.slice(0,3).join(", ")+(unique.length>3?", and more.":"."))
+      :"Your plan does not add an airport benefit that is not independently supported.";
   }
   if(kind==="travel"){
     const v=Number(d?.annualTravelValue||d?.value||0);
-    return v>0?("The same spending produces about "+money(v)+" of modeled annual travel capacity before any first-year offer."):"Your selected rewards ecosystem keeps routine spending working toward more usable travel.";
+    return v>0?("The same spending creates about "+money(v)+" of modeled annual travel capacity to put toward more or better trips."):"Keep rewards focused on travel you can actually use.";
   }
   if(kind==="hotel"){
-    if(!d?.primaryHotel)return "Stay flexible by trip and use premium-booking benefits only when they improve the property experience.";
-    return label(d.primaryHotel)+(d?.status?.selectedTarget?(" can support "+d.status.selectedTarget+" without making status the goal."):" is the best-fit hotel relationship without forcing a status chase.");
+    if(d?.primaryHotel)return "Build stays around "+label(d.primaryHotel)+" when it improves the stay"+(d?.status?.selectedTarget?", with "+d.status.selectedTarget+" as the selected status outcome.":".");
+    if(d?.relationshipMode==="premium_booking")return "Choose the best property for each trip and use premium booking benefits when they materially improve the stay.";
+    return "Choose the best property for each trip instead of chasing hotel status without a supporting stay pattern.";
   }
   return "";
 }
 function conciergeCopy(items){
-  const hit=list(items).some(x=>/concierge|service assistance|premium service|travel assistance/i.test(JSON.stringify(x||{})));
+  const hit=list(items).some(x=>/concierge|service assistance|premium service|travel assistance|ambassador_service|my_hyatt_concierge/i.test(JSON.stringify(x||{})));
   return hit
-    ?"Your verified plan includes a concierge or service capability you can call on when something needs handling."
-    :"No new concierge or service-assistance capability is being added to this recommendation.";
+    ?"Your verified plan includes a concierge or service relationship you can call on when something needs handling."
+    :"No incremental concierge capability is included unless your verified cards, hotel status, or programs actually provide one.";
 }
 function actionDetail(a){
   const bits=[];
-  if(a.annualAmount)bits.push(money(a.annualAmount)+" routed annually");
   if(a.explanation)bits.push(a.explanation);
-  else if(a.annualSpendRequired)bits.push(money(a.annualSpendRequired)+" annual threshold");
-  if(a.currentYearSpendRemaining!=null&&a.type==="recurring_threshold")bits.push(money(a.currentYearSpendRemaining)+" remaining this year");
+  if(a.type==="routing"&&list(a.categories).length)bits.push(a.categories.map(x=>x.label+" "+money(x.annualAmount)).join(" · "));
+  else if(a.annualAmount)bits.push(money(a.annualAmount)+" annually");
+  if(a.type==="recurring_threshold"&&!a.naturalThroughOngoingRouting&&a.annualSpendRequired)bits.push(money(a.annualSpendRequired)+" annual threshold");
+  if(a.currentYearSpendRemaining!=null&&a.type==="recurring_threshold"&&!a.naturalThroughOngoingRouting)bits.push(money(a.currentYearSpendRemaining)+" remaining this year");
   if(a.spendRequired)bits.push(money(a.spendRequired)+" required");
   if(a.stopCondition?.tier)bits.push("stop at "+title(a.stopCondition.tier));
-  if(a.stopCondition?.amount)bits.push("stop at "+money(a.stopCondition.amount));
   if(a.reason)bits.push(title(a.reason));
   return bits.join(" · ");
 }
@@ -148,7 +157,7 @@ function render(data,{demo=false}={}){
   '</div></section>'+
   '<section class="section" id="spend" data-section="spend"><div class="section-head"><div><h2>Your Spending Plan</h2><p>Exact ongoing routing after strategy, status and card roles are settled.</p></div></div><div class="panel spend-table">'+
   '<div class="sp-row head"><span>Category</span><span>Destination</span><b>Annual amount</b></div>'+
-  (spend.length?spend.map(r=>'<div class="sp-row"><span>'+esc(categoryLabel(r.category))+(r.purpose?' · '+esc(benefitLabels[r.purpose]||title(r.purpose)):'')+'</span><span>'+esc(label(r.card))+'</span><b>'+money(r.amount)+'</b></div>').join(""):empty("No ongoing routing change is required."))+
+  (spend.length?spend.map(r=>'<div class="sp-row"><span>'+esc(title(r.category))+(r.purpose?' · '+esc(title(r.purpose)):'')+'</span><span>'+esc(title(r.card))+'</span><b>'+money(r.amount)+'</b></div>').join(""):empty("No ongoing routing change is required."))+
   '</div></section>'+
   '<section class="section" id="benefits" data-section="benefits"><div class="section-head"><div><h2>Travel Benefits</h2><p>Useful in-scope benefits that support the travel life; qualitative benefits stay qualitative when no defensible dollar method exists.</p></div></div><div class="benefit-grid">'+benefitCards(benefits)+'</div></section>'+
   '<section class="section" id="consider" data-section="consider"><div class="section-head"><div><h2>Cards to Consider</h2><p>Economically meaningful close calls. Your prescribed strategy does not depend on accepting any of them.</p></div></div><div class="panel list-card">'+(list(cards.consider).length?list(cards.consider).map(cardLine).join(""):empty("No card falls into the Consider range for this plan."))+'</div></section>'+
