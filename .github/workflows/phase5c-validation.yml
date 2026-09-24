@@ -1,0 +1,44 @@
+name: Phase 5C Validation
+
+on:
+  push:
+    branches:
+      - phase5c-validation-repair
+  workflow_dispatch:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Engine and optimizer regressions
+        run: |
+          set -euo pipefail
+          node qp_v5_validation.js
+          node phase4c_validation.js
+          node verifier_fact_validation.js
+          node verifier_parser_validation.js
+          node verifier_scope_validation.js
+          node verifier_incremental_reuse_validation.js
+          node optimizer_counterfactual_validation.js
+          node optimizer_orchestration_validation.js
+          node optimizer_pacing_validation.js
+          node optimizer_trace_retry_validation.js
+          node optimizer_search_record_validation.js
+          node optimizer_context_reuse_validation.js
+          node optimizer_shard_batch_validation.js
+          node optimizer_status_projection_validation.js
+          node optimizer_balanced_shard_validation.js
+          node optimizer_memoization_validation.js
+          node funnel_validation.js
+      - name: Cold-shard optimizer benchmark
+        run: node optimizer_local_benchmark.js
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - name: Result contract
+        run: deno test --no-check supabase/functions/qp-build-plan/result-contract_test.ts
