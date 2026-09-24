@@ -42,5 +42,5 @@ jobs:
       - uses: denoland/setup-deno@v2
         with:
           deno-version: v2.x
-      - name: Result contract
-        run: deno test --no-check supabase/functions/qp-build-plan/result-contract_test.ts
+      - name: Result contract and pre-output audit
+        run: deno test --no-check supabase/functions/qp-build-plan/result-contract_test.ts supabase/functions/qp-build-plan/audit_test.ts

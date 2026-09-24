@@ -1,6 +1,25 @@
 const num=x=>Number.isFinite(Number(x))?Number(x):0;
 const list=x=>Array.isArray(x)?x:[];
 
+export function recurringThresholdMoveAllowance(rec){
+  const allowed={},seen=new Set();
+  for(const job of list(rec?.recurringJobs)){
+    if(job?.type!=="annual_threshold"||job?.recurring!==true||!job?.cardId)continue;
+    for(const move of list(job?.moves)){
+      const category=String(move?.category||""),toCard=String(move?.toCard||"");
+      const amount=num(move?.amount);
+      if(!category||toCard!==String(job.cardId)||amount<=0)continue;
+      const from=list(move?.from).map(x=>({card:String(x?.card||""),amount:num(x?.amount)})).filter(x=>x.card&&x.amount>0).sort((a,b)=>a.card.localeCompare(b.card)||a.amount-b.amount);
+      const sig=JSON.stringify({cardId:String(job.cardId),category,toCard,amount,from});
+      if(seen.has(sig))continue;
+      seen.add(sig);
+      const key=toCard+"|"+category;
+      allowed[key]=num(allowed[key])+amount;
+    }
+  }
+  return allowed;
+}
+
 export function auditPlan(result,E){
   const errors=[],warnings=[];
   if(!result?.factQuality?.productionReady)errors.push({code:"facts_not_production_ready"});
@@ -23,7 +42,12 @@ export function auditPlan(result,E){
   const rec=result?.recommended||{},profile=result?.profile||{},primary=result?.rewardsStrategy?.primaryCurrency||"";
   const portfolio=new Set(rec.portfolio||[]),required=new Set(profile?.constraints?.requiredCards||[]);
   const roles=new Map((rec.cardRoles||[]).map(r=>[r.cardId,r.role]));
-  const routed={};
+  const routed={},thresholdAllowance=recurringThresholdMoveAllowance(rec),thresholdUsed={};
+  const thresholdMoveAllowed=(cardId,category,amount)=>{
+    const key=String(cardId)+"|"+String(category),used=num(thresholdUsed[key]),allowed=num(thresholdAllowance[key]);
+    if(used+amount>allowed+1e-6)return false;
+    thresholdUsed[key]=used+amount;return true;
+  };
 
   for(const [category,rows] of Object.entries(rec.ongoingRouting||{})){
     for(const row of list(rows)){
@@ -33,8 +57,8 @@ export function auditPlan(result,E){
       const facts=E.cardFacts(profile,id);
       if(!facts){errors.push({code:"routing_unknown_card",cardId:id,category});continue}
       if(facts.kind==="flex"&&primary&&facts.currency!==primary)errors.push({code:"secondary_flexible_ecosystem_routine_spend",cardId:id,category,currency:facts.currency,primaryCurrency:primary,amount:amt});
-      if(facts.kind==="airline"&&category!=="airfare")errors.push({code:"airline_cobrand_wrong_routine_category",cardId:id,category,amount:amt});
-      if(facts.kind==="hotel"&&category!=="hotel")errors.push({code:"hotel_cobrand_wrong_routine_category",cardId:id,category,amount:amt});
+      if(facts.kind==="airline"&&category!=="airfare"&&!thresholdMoveAllowed(id,category,amt))errors.push({code:"airline_cobrand_wrong_routine_category",cardId:id,category,amount:amt});
+      if(facts.kind==="hotel"&&category!=="hotel"&&!thresholdMoveAllowed(id,category,amt))errors.push({code:"hotel_cobrand_wrong_routine_category",cardId:id,category,amount:amt});
     }
   }
 
