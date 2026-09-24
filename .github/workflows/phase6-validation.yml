@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - phase6-positioning-alignment
+      - phase6-positioning-final
   workflow_dispatch:
 
 jobs:
