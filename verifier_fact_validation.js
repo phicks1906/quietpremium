@@ -45,4 +45,13 @@ const verifierSources=fs.readFileSync("supabase/functions/qp-verify-facts/source
 ok("Venture uses compact first-party trusted-traveler terms source",verifierSources.includes("venture: { urls: ['https://www.capitalone.com/credit-cards/venture/','https://www.capitalone.com/help-center/credit-cards/tsa-precheck-global-entry-benefits/'"));
 ok("Venture X shares first-party trusted-traveler terms source",verifierSources.includes("venture_x: { urls: ['https://www.capitalone.com/credit-cards/venture-x/','https://www.capitalone.com/help-center/credit-cards/tsa-precheck-global-entry-benefits/'"));
 
+
+ok("Hyatt card source uses current Chase product URL",verifierSources.includes("world-of-hyatt-credit-card"));
+ok("United verifier retains official sources and adds current secondary fallback",verifierSources.includes("unitedperksplus.united.com/chart.aspx")&&verifierSources.includes("nerdwallet.com/travel/learn/guide-to-united-airlines-premier-elite-status"));
+ok("Hyatt verifier retains official sources and adds current fallback coverage",verifierSources.includes("world.hyatt.com/content/gp/en/tiers-and-benefits.html")&&verifierSources.includes("nerdwallet.com/travel/learn/complete-guide-to-hyatt-elite-status")&&verifierSources.includes("thepointsguy.com/loyalty-programs/hyatt-milestone-reward"));
+ok("Hyatt card parser recognizes current Bonus Points wording",verifierSrc.includes('if(id==="hyatt_consumer")')&&verifierSrc.includes('(?:Bonus\\s+)?Points?'));
+ok("United parser accepts current PQF-first qualification wording",verifierSrc.includes('PQF\\s+(?:and|\\+)\\s+([\\d,]+)\\s+PQP'));
+ok("United parser accepts minimum four flights wording",verifierSrc.includes('minimum of\\s+four'));
+ok("United Explorer parser recognizes two Club passes",verifierSrc.includes('id==="united_explorer"')&&verifierSrc.includes('one-time passes'));
+
 console.log(JSON.stringify({pass,fail,failures},null,2));if(fail)process.exitCode=1;
