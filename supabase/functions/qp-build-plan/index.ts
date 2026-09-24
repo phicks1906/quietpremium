@@ -74,11 +74,22 @@ function mergeShardChildren(a:any,b:any,payload:any){
 async function optimizerRequest(payload:any,attempt=0){
   const base=Deno.env.get("SUPABASE_URL"),service=Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
   if(!base||!service)throw new Error("optimizer_backend_not_configured");
-  const res=await fetch(base+"/functions/v1/"+OPTIMIZER,{
-    method:"POST",
-    headers:{"Content-Type":"application/json","apikey":service},
-    body:JSON.stringify(payload)
-  });
+  let res:Response;
+  try{
+    res=await fetch(base+"/functions/v1/"+OPTIMIZER,{
+      method:"POST",
+      headers:{"Content-Type":"application/json","apikey":service},
+      body:JSON.stringify(payload)
+    });
+  }catch(e){
+    const retryAfterMs=Number((e as any)?.retryAfterMs)||0,
+          isRateLimit=(typeof Deno!=="undefined"&&(Deno as any)?.errors?.RateLimitError&&e instanceof (Deno as any).errors.RateLimitError)||/Rate limit exceeded for trace/i.test(String((e as Error)?.message||e));
+    if(isRateLimit&&attempt<3){
+      await new Promise(r=>setTimeout(r,Math.min(60000,Math.max(500,retryAfterMs||1000))));
+      return optimizerRequest(payload,attempt+1);
+    }
+    throw e;
+  }
   let body:any=null;try{body=await res.json()}catch{}
   if(res.ok&&body?.status==="ok")return body;
   const transient=[429,502,503,504].includes(res.status);
