@@ -1,6 +1,6 @@
 const fs=require("fs");
 const src=fs.readFileSync("supabase/functions/qp-verify-facts/critical-parsers.ts","utf8").replace(/export function /g,"function ");
-const P=(new Function(src+"\nreturn {parseDeltaCardStatus,parseDeltaThresholds,parseUnitedThresholds,parseChaseReserveRewards,parseCapitalOneCardRewards,parseUnitedCardRewards,parseMarriottThresholds,parseMarriottCardCriticalFacts,criticalStructureIssues};"))();
+const P=(new Function(src+"\nreturn {parseDeltaCardStatus,parseDeltaThresholds,parseUnitedThresholds,parseChaseReserveRewards,parseAmexGoldRewards,parseCapitalOneCardRewards,parseUnitedCardRewards,parseMarriottThresholds,parseMarriottCardCriticalFacts,criticalStructureIssues};"))();
 let pass=0,fail=0;const failures=[];function ok(name,cond,detail=""){if(cond)pass++;else{fail++;failures.push({name,detail})}}
 const ds="MQD Thresholds for Status SILVER GOLD PLATINUM DIAMOND $5,000 MQDs $10,000 MQDs $15,000 MQDs $28,000 MQDs Earn Medallion Qualification Dollars";
 const dt=P.parseDeltaThresholds(ds);
@@ -8,6 +8,9 @@ ok("Delta four-tier ordered thresholds",JSON.stringify(dt.map(x=>x.amount))==="[
 const dr="MQD Headstart With MQD Headstart, you can receive $2,500 Medallion Qualification Dollars each Medallion Qualification Year. MQD Boost Get $1 Medallion Qualification Dollar for each $10 in purchases on your Delta SkyMiles Reserve American Express Card";
 ok("Delta Reserve Headstart parses 2500",P.parseDeltaCardStatus(dr,"delta_reserve").headstart===2500,JSON.stringify(P.parseDeltaCardStatus(dr,"delta_reserve")));
 ok("Delta Reserve MQD Boost divisor parses 10",P.parseDeltaCardStatus(dr,"delta_reserve").spendDivisor===10,JSON.stringify(P.parseDeltaCardStatus(dr,"delta_reserve")));
+const ag=P.parseAmexGoldRewards("4X Membership Rewards points at restaurants worldwide on up to $50,000 in purchases. 4X points at U.S. supermarkets on up to $25,000. 5X points on prepaid hotels booked through AmexTravel.com. 3X points on flights booked through AmexTravel.com or directly with airlines. 1X points on all other eligible purchases.");
+ok("Amex Gold parser keeps ordinary hotel spend at 1x",ag?.hotel===1&&ag?.general===1&&ag?.dining===4&&ag?.grocery===4&&ag?.airfare===3,JSON.stringify(ag));
+ok("Amex Gold portal hotel contamination fails structure",P.criticalStructureIssues("cards","amex_gold",{earn:{dining:4,grocery:4,online_grocery:4,airfare:3,hotel:5,general:1,gas_ev:1,transit:1},bookingEarn:{airfare:{direct_airline:3,amex_travel:3},hotel:{amex_prepaid:5}}}).includes("earn.amexGoldCurrentStructure"));
 const vx=P.parseCapitalOneCardRewards("Venture X Rewards 10X miles on hotels & rental cars booked through Capital One Travel. 5X miles on flights and vacation rentals booked through Capital One Travel. 2X miles on all other purchases, every day.","venture_x");
 ok("Venture X parser separates 2x ordinary spend from portal totals",vx?.general===2&&vx?.hotel===2&&vx?.airfare===2,JSON.stringify(vx));
 const v=P.parseCapitalOneCardRewards("Venture Rewards Get unlimited 2X miles per dollar on every purchase, every day. Earn 5X miles on hotels, vacation rentals, and rental cars booked through Capital One Travel.","venture");

@@ -1,6 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { ENTITY_SOURCES, ALLOWED_CARD_IDS, ALLOWED_AIRLINE_IDS, ALLOWED_HOTEL_IDS } from "./sources.ts";
-import { parseDeltaCardStatus, parseDeltaThresholds, parseUnitedThresholds, parseChaseReserveRewards, parseCapitalOneCardRewards, parseUnitedCardRewards, parseMarriottThresholds, parseMarriottCardRewards, parseMarriottCardCriticalFacts, criticalStructureIssues } from "./critical-parsers.ts";
+import { parseDeltaCardStatus, parseDeltaThresholds, parseUnitedThresholds, parseChaseReserveRewards, parseAmexGoldRewards, parseCapitalOneCardRewards, parseUnitedCardRewards, parseMarriottThresholds, parseMarriottCardRewards, parseMarriottCardCriticalFacts, criticalStructureIssues } from "./critical-parsers.ts";
 
 const ORIGINS=new Set(["https://quietpremium.com","https://www.quietpremium.com"]);
 const PUBLIC_BROWSER_KEY="sb_publishable_BETG0zmWAEmPByBsKyEUzA_yPCOkh5F";
@@ -94,6 +94,7 @@ function cardEarn(t:string,id:string){
     const parsed=parseChaseReserveRewards(t);
     return parsed?.earn||null;
   }
+  if(id==="amex_gold")return parseAmexGoldRewards(t);
   if(id==="amex_platinum"){
     const five=/5\s*[xX][^.]{0,220}flights|flights[^.]{0,220}5\s*[xX]/i.test(t),
           hotels=/5\s*[xX][^.]{0,220}prepaid hotels|prepaid hotels[^.]{0,220}5\s*[xX]/i.test(t),

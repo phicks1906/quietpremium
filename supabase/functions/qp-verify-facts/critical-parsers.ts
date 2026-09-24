@@ -51,6 +51,17 @@ export function parseChaseReserveRewards(text){
   };
 }
 
+export function parseAmexGoldRewards(text){
+  const t=String(text||""),base={dining:1,grocery:1,online_grocery:1,drugstore:1,gas_ev:1,transit:1,online_retail:1,vacation_home:1,airfare:1,hotel:1,general:1};
+  const dining=/4\s*[xX]\s*(?:Membership Rewards(?:®)?\s*)?points?[^.]{0,220}(?:restaurants?|dining)|(?:restaurants?|dining)[^.]{0,220}4\s*[xX]/i.test(t),
+        grocery=/4\s*[xX]\s*(?:Membership Rewards(?:®)?\s*)?points?[^.]{0,220}(?:U\.?S\.? supermarkets?|groceries)|(?:U\.?S\.? supermarkets?|groceries)[^.]{0,220}4\s*[xX]/i.test(t),
+        airfare=/3\s*[xX]\s*(?:Membership Rewards(?:®)?\s*)?points?[^.]{0,260}flights|flights[^.]{0,260}3\s*[xX]/i.test(t),
+        hotel=/5\s*[xX]\s*(?:Membership Rewards(?:®)?\s*)?points?[^.]{0,260}prepaid hotels?[^.]{0,220}(?:AmexTravel|Amex Travel)|prepaid hotels?[^.]{0,260}(?:AmexTravel|Amex Travel)[^.]{0,260}5\s*[xX]/i.test(t),
+        other=/1\s*[xX]\s*(?:Membership Rewards(?:®)?\s*)?points?[^.]{0,220}(?:all )?other eligible purchases|(?:all )?other eligible purchases[^.]{0,220}1\s*[xX]/i.test(t);
+  if(!(dining&&grocery&&airfare&&hotel&&other))return null;
+  const e={...base};e.dining=4;e.grocery=4;e.online_grocery=4;e.airfare=3;return e;
+}
+
 export function parseCapitalOneCardRewards(text,id){
   const t=String(text||""),base=(n)=>({dining:n,grocery:n,online_grocery:n,drugstore:n,gas_ev:n,transit:n,online_retail:n,vacation_home:n,airfare:n,hotel:n,general:n});
   if(id==="venture_one"){
@@ -145,6 +156,11 @@ export function criticalStructureIssues(kind,id,facts){
     const e=f.earn||{},b=f.bookingEarn||{};
     if(!(Number(e.general)===1&&Number(e.dining)===3&&Number(e.airfare)===4&&Number(e.hotel)===4))issues.push("earn.reserveCurrentStructure");
     if(!(Number(b.airfare?.chase_travel)===8&&Number(b.hotel?.chase_travel)===8))issues.push("bookingEarn.reserveCurrentStructure");
+  }
+  if(kind==="cards"&&id==="amex_gold"){
+    const e=f.earn||{},b=f.bookingEarn||{};
+    if(!(Number(e.dining)===4&&Number(e.grocery)===4&&Number(e.online_grocery)===4&&Number(e.airfare)===3&&Number(e.hotel)===1&&Number(e.general)===1&&Number(e.gas_ev)===1&&Number(e.transit)===1))issues.push("earn.amexGoldCurrentStructure");
+    if(!(Number(b.airfare?.direct_airline)===3&&Number(b.airfare?.amex_travel)===3&&Number(b.hotel?.amex_prepaid)===5))issues.push("bookingEarn.amexGoldCurrentStructure");
   }
   if(kind==="cards"&&["venture_one","venture","venture_x"].includes(id)){
     const e=f.earn||{},b=f.bookingEarn||{},expected=id==="venture_one"?1.25:2;
