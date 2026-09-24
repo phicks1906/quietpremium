@@ -7,6 +7,7 @@ on:
       - phase7-plan-persistence-hardening
       - phase7-plan-save-privilege
       - phase7-retire-legacy-rpcs
+      - phase7-retire-legacy-rpc-grants
   workflow_dispatch:
 
 jobs:
