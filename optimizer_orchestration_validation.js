@@ -8,6 +8,9 @@ ok("counterfactual search uses reduced exact ranking records",worker.includes("E
 ok("co-brand eligibility is computed once before shard fanout",build.includes('phase:"eligibility"')&&build.includes("coBrandEligibility:eligibility?.coBrandEligibility"));
 ok("shards reuse parent travel rewards and current baseline",build.includes("travel,rewards,currentSearch")&&worker.includes("body.currentSearch"));
 ok("candidate shards consume precomputed co-brand eligibility",worker.includes("body.coBrandEligibility||null"));
+ok("logical shards can be grouped into fewer worker requests",build.includes("OPTIMIZER_SHARDS_PER_REQUEST")&&build.includes("shardIndices"));
+ok("worker evaluates grouped logical shard indices",worker.includes("shardIndices.flatMap"));
+ok("resource-bound shard groups split before logical shard depth increases",build.includes("if(indices.length>1)")&&build.includes("indices.slice(0,mid)"));
 ok("selection phase reconstructs one exact portfolio",worker.includes('phase==="select"')&&worker.includes("selected_portfolio_id_mismatch"));
 ok("build-plan merges best-by-new-card-set on adaptive splits",build.includes("bestByNewSet[key]=betterSummary"));
 ok("build-plan does not run a second gated shard sweep",!build.includes('runShardPhase(p,"gated"'));

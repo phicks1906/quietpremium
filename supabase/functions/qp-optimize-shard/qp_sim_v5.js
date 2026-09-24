@@ -1,5 +1,5 @@
 /**
- * Quiet Premium V5 isolated travel-strategy engine — 5.0-alpha.41 (2026-09-24)
+ * Quiet Premium V5 isolated travel-strategy engine — 5.0-alpha.42 (2026-09-24)
  * NOT wired to diagnostic.html or any customer-facing page.
  *
  * LOCKED
@@ -16,7 +16,7 @@
 })(typeof globalThis!=="undefined"?globalThis:this,function(){
 "use strict";
 
-const ENGINE_VERSION="5.0-alpha.41";
+const ENGINE_VERSION="5.0-alpha.42";
 const RULES_AS_OF="2026-09-23";
 const CATS=["dining","grocery","online_grocery","drugstore","gas_ev","transit","online_retail","vacation_home","airfare","hotel","general"];
 const AIRLINES=["delta","united","american","southwest"];

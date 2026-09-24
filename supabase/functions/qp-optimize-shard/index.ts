@@ -79,7 +79,8 @@ Deno.serve(async(req:Request)=>{
 
     const shardIndex=Math.max(0,Math.trunc(num(body.shardIndex))),
           shardCount=Math.max(1,Math.trunc(num(body.shardCount)||1)),
-          allSets=E.candidatePortfoliosShard(p,rewards,shardIndex,shardCount,body.coBrandEligibility||null),
+          shardIndices=(Array.isArray(body.shardIndices)&&body.shardIndices.length?body.shardIndices:[shardIndex]).map((x:any)=>Math.max(0,Math.trunc(num(x)))),
+          allSets=shardIndices.flatMap((idx:number)=>E.candidatePortfoliosShard(p,rewards,idx,shardCount,body.coBrandEligibility||null)),
           classBy=new Map(classifications.map((x:any)=>[x.cardId,x.classification])),
           required=new Set(p.constraints?.requiredCards||[]),
           sets=phase==="gated"
@@ -113,14 +114,14 @@ Deno.serve(async(req:Request)=>{
               key=additions.join("|");
         bestByNewSet[key]=betterSummary(bestByNewSet[key]||null,summary);
       }
-      return json({status:"ok",phase,engineVersion:E.ENGINE_VERSION,shardIndex,shardCount,candidateCount:sets.length,bestWith,bestWithout,bestByNewSet});
+      return json({status:"ok",phase,engineVersion:E.ENGINE_VERSION,shardIndex,shardIndices,shardCount,candidateCount:sets.length,bestWith,bestWithout,bestByNewSet});
     }
     if(phase==="gated"){
       current.incrementalCardGate={pass:true,thresholds:{recommended:E.MODEL.newCardRecommendedMin,consider:E.MODEL.newCardConsiderMin},cards:[]};
       for(const r of records)r.incrementalCardGate=E.recordAcquisitionGate(p,r,classifications);
       const chosen=E.choosePrepared(prepared.filter((x:any)=>x.c&&x.r.incrementalCardGate?.pass!==false),current);
       const entry=chosenEntry(prepared,chosen,current);
-      return json({status:"ok",phase,engineVersion:E.ENGINE_VERSION,shardIndex,shardCount,candidateCount:records.length,totalShardCandidates:allSets.length,best:entry?.r||null,bestSummary:preparedSummary(entry)});
+      return json({status:"ok",phase,engineVersion:E.ENGINE_VERSION,shardIndex,shardIndices,shardCount,candidateCount:records.length,totalShardCandidates:allSets.length,best:entry?.r||null,bestSummary:preparedSummary(entry)});
     }
     return json({error:"invalid_phase"},400);
   }catch(e){

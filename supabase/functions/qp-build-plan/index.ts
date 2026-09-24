@@ -6,7 +6,7 @@ import { buildResultContract } from "./result-contract.ts";
 
 const ORIGINS=new Set(["https://quietpremium.com","https://www.quietpremium.com"]);
 const PUBLIC_BROWSER_KEY="sb_publishable_BETG0zmWAEmPByBsKyEUzA_yPCOkh5F";
-const VERIFIER="qp-verify-facts",OPTIMIZER="qp-optimize-shard",OPTIMIZER_SHARDS=32,OPTIMIZER_MAX_SHARDS=256,OPTIMIZER_BATCH=2,OPTIMIZER_PACE_MS=750,MAX_PROFILE_BYTES=250000,MAX_STABILIZATION_PASSES=2;
+const VERIFIER="qp-verify-facts",OPTIMIZER="qp-optimize-shard",OPTIMIZER_SHARDS=32,OPTIMIZER_MAX_SHARDS=256,OPTIMIZER_SHARDS_PER_REQUEST=1,OPTIMIZER_BATCH=2,OPTIMIZER_PACE_MS=750,MAX_PROFILE_BYTES=250000,MAX_STABILIZATION_PASSES=2;
 const E=(globalThis as any).QuietPremiumEngineV5;
 
 function json(body:any,status=200,origin=""){
@@ -97,22 +97,41 @@ async function optimizerRequest(payload:any,attempt=0){
     await new Promise(r=>setTimeout(r,350*(attempt+1)));
     return optimizerRequest(payload,attempt+1);
   }
-  if((payload?.phase==="counterfactual"||payload?.phase==="gated")&&(res.status===546||transient)&&Number(payload?.shardCount||0)<OPTIMIZER_MAX_SHARDS){
-    const oldCount=Number(payload.shardCount)||OPTIMIZER_SHARDS,nextCount=oldCount*2,idx=Number(payload.shardIndex)||0;
-    const left={...payload,shardIndex:idx,shardCount:nextCount},right={...payload,shardIndex:idx+oldCount,shardCount:nextCount};
-    const a=await optimizerRequest(left,0);
-    await new Promise(r=>setTimeout(r,OPTIMIZER_PACE_MS));
-    const b=await optimizerRequest(right,0);
-    return mergeShardChildren(a,b,payload);
+  if((payload?.phase==="counterfactual"||payload?.phase==="gated")&&(res.status===546||transient)){
+    const indices=Array.isArray(payload?.shardIndices)?payload.shardIndices.map((x:any)=>Number(x)).filter((x:number)=>Number.isFinite(x)):[];
+    if(indices.length>1){
+      const mid=Math.ceil(indices.length/2),
+            left={...payload,shardIndices:indices.slice(0,mid)},
+            right={...payload,shardIndices:indices.slice(mid)};
+      const a=await optimizerRequest(left,0);
+      await new Promise(r=>setTimeout(r,OPTIMIZER_PACE_MS));
+      const b=await optimizerRequest(right,0);
+      return mergeShardChildren(a,b,payload);
+    }
+    if(Number(payload?.shardCount||0)<OPTIMIZER_MAX_SHARDS){
+      const oldCount=Number(payload.shardCount)||OPTIMIZER_SHARDS,nextCount=oldCount*2,
+            idx=indices.length?indices[0]:Number(payload.shardIndex)||0,
+            left={...payload,shardIndex:idx,shardIndices:[idx],shardCount:nextCount},
+            right={...payload,shardIndex:idx+oldCount,shardIndices:[idx+oldCount],shardCount:nextCount};
+      const a=await optimizerRequest(left,0);
+      await new Promise(r=>setTimeout(r,OPTIMIZER_PACE_MS));
+      const b=await optimizerRequest(right,0);
+      return mergeShardChildren(a,b,payload);
+    }
   }
   throw new Error("optimizer_http_"+res.status+":"+String(payload?.phase||"")+"_"+String(payload?.shardIndex??"")+"_"+String(payload?.shardCount??"")+":"+(body?.error||body?.detail||"unknown"));
 }
 async function runShardPhase(profile:any,phase:string,extra:any={}){
+  const groups:any[]=[];
+  for(let i=0;i<OPTIMIZER_SHARDS;i+=OPTIMIZER_SHARDS_PER_REQUEST){
+    const shardIndices=[];for(let j=i;j<Math.min(i+OPTIMIZER_SHARDS_PER_REQUEST,OPTIMIZER_SHARDS);j++)shardIndices.push(j);
+    groups.push(shardIndices);
+  }
   const out:any[]=[];
-  for(let start=0;start<OPTIMIZER_SHARDS;start+=OPTIMIZER_BATCH){
-    const batch=[];for(let i=start;i<Math.min(start+OPTIMIZER_BATCH,OPTIMIZER_SHARDS);i++)batch.push(optimizerRequest({profile,phase,shardIndex:i,shardCount:OPTIMIZER_SHARDS,...extra}));
+  for(let start=0;start<groups.length;start+=OPTIMIZER_BATCH){
+    const batch=groups.slice(start,start+OPTIMIZER_BATCH).map(shardIndices=>optimizerRequest({profile,phase,shardIndex:shardIndices[0],shardIndices,shardCount:OPTIMIZER_SHARDS,...extra}));
     out.push(...await Promise.all(batch));
-    if(start+OPTIMIZER_BATCH<OPTIMIZER_SHARDS)await new Promise(r=>setTimeout(r,OPTIMIZER_PACE_MS));
+    if(start+OPTIMIZER_BATCH<groups.length)await new Promise(r=>setTimeout(r,OPTIMIZER_PACE_MS));
   }
   return out;
 }
@@ -206,7 +225,7 @@ async function distributedAnalyze(profile:any,candidateCardIds:any[]){
         b={current,recommended,travelStrategy:travel,rewardsStrategy:selectedRewards,newCardClassifications:classifications,considerCards:classifications.filter((x:any)=>x.classification==="consider"),records:localBest,pareto:[]},
         candidateCount=phase1.reduce((n,x)=>n+(Number(x?.candidateCount)||0),0),
         result=E.analysisResultFromSelection(p,b,[],candidateCardIds,candidateCount);
-  result.integrity={...(result.integrity||{}),distributedExactPortfolioSearch:true,distributedPortfolioShards:OPTIMIZER_SHARDS,distributedSinglePassClassification:true,distributedSelectionReconstruction:true};
+  result.integrity={...(result.integrity||{}),distributedExactPortfolioSearch:true,distributedPortfolioShards:OPTIMIZER_SHARDS,distributedLogicalShardsPerRequest:OPTIMIZER_SHARDS_PER_REQUEST,distributedSinglePassClassification:true,distributedSelectionReconstruction:true};
   return result;
 }
 function approvedValuationSnapshot(){return E.CURRENT_QP_VALUATION_SNAPSHOT}
