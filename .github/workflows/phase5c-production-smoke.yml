@@ -1,0 +1,28 @@
+name: Phase 5C Production Smoke
+
+on:
+  push:
+    branches:
+      - phase5c-production-smoke
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run production golden profile
+        shell: bash
+        run: |
+          set -euo pipefail
+          KEY="$(sed -n 's/^const PUBLIC_BROWSER_KEY="\([^"]*\)".*/\1/p' supabase/functions/qp-build-plan/index.ts)"
+          test -n "$KEY"
+          cat > /tmp/golden.json <<'JSON'
+          {"profile":{"asOfDate":"2026-09-24","spend":{"dining":20000,"grocery":15000,"online_grocery":0,"drugstore":0,"gas_ev":5000,"transit":0,"online_retail":5000,"vacation_home":0,"airfare":12000,"hotel":10000,"general":83000},"currentCards":["amex_platinum","amex_gold","delta_reserve"],"currentRouting":{"dining":[{"card":"amex_gold","amount":20000}],"grocery":[{"card":"amex_gold","amount":15000}],"online_grocery":[],"drugstore":[],"gas_ev":[{"card":"delta_reserve","amount":5000}],"transit":[],"online_retail":[{"card":"amex_platinum","amount":5000}],"vacation_home":[],"airfare":[{"card":"delta_reserve","amount":12000}],"hotel":[{"card":"amex_platinum","amount":10000}],"general":[{"card":"delta_reserve","amount":83000}]},"remainingYear":{"cardSpend":{"dining":8000,"grocery":6000,"gas_ev":2000,"online_retail":2000,"airfare":5000,"hotel":4000,"general":36000},"delta":{"mqd":1500},"hotel":{"qualifyingNights":3}},"home_airport":"SDF","frequent_destinations":["ATL","JFK","LAS"],"primaryAirline":"delta","primaryAirlineShare":0.75,"annualOneWayFlights":16,"currentAirlineStatus":"Gold Medallion","statusProgress":{"delta":{"mqd":5500},"hotel":{"qualifyingNights":8}},"primaryHotel":"marriott","primaryHotelShare":0.35,"currentHotelStatus":"Gold Elite","premiumStayShare":0.5,"currencyUtility":{"amex_mr":1,"chase_ur":0.75,"capital_one_miles":0.95,"hyatt_points":1},"cardUniqueBenefitValue":{"amex_platinum":700,"amex_gold":250,"delta_reserve":550},"legacyNaturalBenefitValue":{},"bookingMethod":{"airfare":"direct_airline","hotel":"direct_hotel"},"aspirations":["travel more","better flights","better hotels"]}}
+          JSON
+          URL="https://jdtbyudbwmwldrkjaznk.supabase.co/functions/v1/qp-build-plan"
+          code="$(curl -sS --max-time 40 -o /tmp/response.json -w '%{http_code}' -H 'Content-Type: application/json' -H "apikey: $KEY" --data-binary @/tmp/golden.json "$URL")"
+          echo "HTTP $code"
+          jq '{status,engineVersion,factReady:.factQuality.productionReady,auditPass:.audit.pass,recommendedId:.recommended.id,integrity:{exact:.integrity.distributedExactPortfolioSearch,shards:.integrity.distributedPortfolioShards,reconstruction:.integrity.distributedSelectionReconstruction},resultReady:.resultExperience.quality.ready,unresolved:.factQuality.missingCriticalFacts}' /tmp/response.json
+          test "$code" = "200"
+          jq -e '.status=="ready" and .engineVersion=="5.0-alpha.46" and .factQuality.productionReady==true and .audit.pass==true and .integrity.distributedExactPortfolioSearch==true and .integrity.distributedSelectionReconstruction==true and .resultExperience.quality.ready==true and (((.factQuality.missingCriticalFacts // [])|length)==0)' /tmp/response.json >/dev/null
