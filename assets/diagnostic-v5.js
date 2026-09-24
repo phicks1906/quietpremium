@@ -321,7 +321,8 @@ async function postJson(url,payload){
 async function buildPlan(profile){
   return postJson(QP_SUPABASE_URL+"/functions/v1/"+PLAN_FUNCTION,{
     profile,
-    funnelSession:sessionStorage.getItem("qp_funnel_session_v1")||""
+    funnelSession:sessionStorage.getItem("qp_funnel_session_v1")||"",
+    persistPlan:true
   });
 }
 function showError(message){
