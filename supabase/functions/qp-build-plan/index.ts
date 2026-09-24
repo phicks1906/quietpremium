@@ -304,6 +304,7 @@ Deno.serve(async(req:Request)=>{
   const rawProfile=body?.profile??body;
   if(!rawProfile||typeof rawProfile!=="object"||Array.isArray(rawProfile))return json({error:"profile_required"},400,origin);
   const funnelSession=cleanFunnelSession(body?.funnelSession);
+  const persistRequested=body?.persistPlan===true;
 
   try{
     const normalized=E.normalizeProfile({...rawProfile,valuationSnapshot:approvedValuationSnapshot()});
@@ -357,6 +358,7 @@ Deno.serve(async(req:Request)=>{
     const resultExperience=buildResultContract(result,E,audit);
     if(resultExperience?.quality?.ready!==true)return json({status:"not_ready",reason:"results_contract_not_ready",audit,resultExperience},409,origin);
     const output={...safePlanResult(result,resultExperience),audit};
+    if(!persistRequested)return json(output,200,origin);
     const savedPlan=await persistPlan(rawProfile,output,funnelSession);
     return json({...output,savedPlan},200,origin);
   }catch(e){
