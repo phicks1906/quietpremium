@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0a0a0a">
+<meta name="description" content="Quiet Premium privacy notice for the travel preview, full analysis, saved plans, analytics, contact and feedback.">
+<link rel="canonical" href="https://quietpremium.com/privacy.html">
+<title>Privacy — Quiet Premium</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500&family=DM+Mono:wght@400;500&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/v280-legal.css?v=280">
+</head>
+<body>
+<header class="top"><a class="brand" href="index.html">QUIET PREMIUM<small>Personal Travel Strategy</small></a></header>
+<main class="wrap">
+<div class="eyebrow">Privacy</div>
+<h1>Your travel details should stay private.</h1>
+<p class="lead">This notice explains what Quiet Premium collects, where information is stored, which service providers are involved, and the choices available to you when you use quietpremium.com.</p>
+<div class="updated">Last updated September 24, 2026</div>
+<div class="content">
+<h2>Information you choose to provide</h2>
+<p>The 60-second preview and Full Analysis may ask for information such as approximate card spend, cards you use, home airport and destinations, airline and hotel relationships, current status and qualification progress, booking behavior, travel goals, and optional rewards balances. Quiet Premium does not ask for credit-card numbers, bank-login credentials, Social Security numbers, or account passwords.</p>
+
+<h2>Unfinished analysis answers</h2>
+<p>The Full Analysis saves an unfinished draft locally in your browser so you can move between steps or resume on the same device. Those draft answers are not centrally stored until a verified analysis successfully completes. Completing or restarting the analysis removes the saved draft where the product supports that action. You can also clear your browser storage.</p>
+
+<h2>Completed travel plans</h2>
+<p>When the verified server analysis finishes successfully, Quiet Premium stores the completed plan and the analysis inputs needed to support that plan in a private Supabase database. Before storage, the plan-save process defensively strips common identity fields such as name, email, phone number, and address from the analysis input. The stored record may still contain the travel, spend, card, status, and rewards information you supplied because those details are needed to reproduce and understand the recommendation.</p>
+<p>Each saved plan receives a private retrieval identifier and a randomly generated secret token. Quiet Premium stores a cryptographic hash of that token rather than the token itself. Anyone who has the complete private link may be able to retrieve the plan, so treat that link as confidential.</p>
+<div class="note"><p>Quiet Premium does not currently promise automatic deletion of completed plans after a fixed number of days. Records may be retained as reasonably necessary to provide plan retrieval, maintain product quality and security, investigate failures, and meet operational or legal needs.</p></div>
+
+<h2>Analytics and product telemetry</h2>
+<p>Quiet Premium uses Google Analytics for site and funnel measurement. Detailed Full Analysis answers—such as spend amounts, card selections, airline or hotel details, rewards balances, and email addresses—are not sent to Google Analytics as event parameters. Quiet Premium also records a limited internal funnel event stream using an allowlisted set of event names and coarse metadata so we can understand completion, errors, and product performance.</p>
+
+<h2>Contact and founding feedback</h2>
+<p>If you use the Contact page or Founding Client Feedback form, the name, email address, message, and feedback you submit are sent to Formspree for delivery to Quiet Premium. If a feedback form offers a separate permission to quote or reference your outcome, that permission applies only as described by the form.</p>
+
+<h2>Service providers</h2>
+<p>Quiet Premium currently relies on service providers that include GitHub Pages for website hosting, Supabase for server functions and private plan storage, Google Analytics for website analytics, and Formspree for contact and feedback delivery. Those providers process information under their own terms and privacy practices.</p>
+
+<h2>Security</h2>
+<p>Quiet Premium uses access controls, private database schemas, rate limits, server-owned plan creation, and secret-token plan retrieval to reduce unauthorized access. No internet service can guarantee absolute security, and a private plan link should not be forwarded to people you do not want to access the plan.</p>
+
+<h2>Your choices and requests</h2>
+<ul>
+<li>You can skip optional analysis fields when the product marks them optional.</li>
+<li>You can clear locally saved draft information from your browser.</li>
+<li>You can choose not to submit the Full Analysis, contact form, or feedback form.</li>
+<li>You may contact Quiet Premium to request access, correction, or deletion of information we can reasonably identify. Including your Analysis ID or the email address you used in a contact/feedback form can help locate the relevant record.</li>
+</ul>
+
+<h2>Children</h2>
+<p>Quiet Premium is designed for adults making personal travel and credit-card decisions and is not intended for children under 18.</p>
+
+<h2>Changes to this notice</h2>
+<p>This notice may be updated as the product, service providers, or data practices change. The date above identifies the current version.</p>
+
+<p class="contact">Privacy questions or requests: <a href="mailto:editor@quietpremium.com">editor@quietpremium.com</a></p>
+<div class="links"><a href="index.html">Home</a><a href="terms.html">Terms</a><a href="contact.html">Contact</a></div>
+</div>
+</main>
+</body>
+</html>
