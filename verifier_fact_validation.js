@@ -56,7 +56,7 @@ ok("Hyatt card source uses current Chase product URL",verifierSources.includes("
 ok("United verifier retains official sources and adds current secondary fallback",verifierSources.includes("unitedperksplus.united.com/chart.aspx")&&verifierSources.includes("nerdwallet.com/travel/learn/guide-to-united-airlines-premier-elite-status"));
 ok("Hyatt verifier retains official sources and adds current fallback coverage",verifierSources.includes("world.hyatt.com/content/gp/en/tiers-and-benefits.html")&&verifierSources.includes("nerdwallet.com/travel/learn/complete-guide-to-hyatt-elite-status")&&verifierSources.includes("thepointsguy.com/loyalty-programs/hyatt-milestone-reward"));
 ok("Hyatt card parser recognizes current Bonus Points wording",verifierSrc.includes('if(id==="hyatt_consumer")')&&verifierSrc.includes('(?:Bonus\\s+)?Points?'));
-ok("United parser accepts current PQF-first qualification wording",verifierSrc.includes('PQF\\s+(?:and|\\+)\\s+([\\d,]+)\\s+PQP'));
+ok("United parser uses exact current How-to-earn qualification wording",src.includes('How to earn:?\\\\s*([\\\\d,]+)\\\\s+PQF'));
 ok("United parser accepts minimum four flights wording",verifierSrc.includes('minimum of\\s+four'));
 ok("United Explorer parser recognizes two Club passes",verifierSrc.includes('id==="united_explorer"')&&verifierSrc.includes('one-time passes'));
 
