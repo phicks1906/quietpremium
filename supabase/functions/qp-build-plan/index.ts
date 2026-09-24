@@ -47,8 +47,20 @@ async function verifierRequest(request:any){
   if(!res.ok)throw new Error("verifier_http_"+res.status+":"+(body?.error||"unknown"));
   return body;
 }
-async function verifyRequest(request:any,stage:string){
-  const chunks=chunkEntityRequest(request,12),parts:any[]=[];
+function missingVerifiedEntities(request:any,snapshot:any){
+  const out:any={cards:[],airlines:[],hotels:[]};
+  for(const kind of ["cards","airlines","hotels"])for(const id of request?.[kind]||[]){
+    const rec=snapshot?.[kind]?.[id];
+    if(!(rec?.verificationStatus==="verified"&&rec?.complete===true))out[kind].push(id);
+  }
+  return out;
+}
+function entityRequestEmpty(request:any){return !(request?.cards?.length||request?.airlines?.length||request?.hotels?.length)}
+async function verifyRequest(request:any,stage:string,baseSnapshot:any=null){
+  const missing=baseSnapshot?missingVerifiedEntities(request,baseSnapshot):request,
+        chunks=entityRequestEmpty(missing)?[]:chunkEntityRequest(missing,12),
+        parts:any[]=[];
+  if(baseSnapshot)parts.push(baseSnapshot);
   for(const chunk of chunks)parts.push(await verifierRequest(chunk));
   const verifiedAt=new Date().toISOString();
   const sig=parts.map(p=>p.snapshotId||"").sort().join("|")+"|"+stage+"|"+verifiedAt;
@@ -282,7 +294,7 @@ Deno.serve(async(req:Request)=>{
     let stabilized=false;
 
     for(let pass=1;pass<=MAX_STABILIZATION_PASSES;pass++){
-      finalSnapshot=await verifyRequest(target,"final_"+pass);
+      finalSnapshot=await verifyRequest(target,"final_"+pass,finalSnapshot||stage1Snapshot);
       const gaps=verificationGaps(finalSnapshot,target);
       if(gaps.length)return json({
         status:"not_ready",reason:"final_verification_incomplete",

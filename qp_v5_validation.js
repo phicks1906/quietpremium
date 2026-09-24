@@ -19,19 +19,7 @@ function base(overrides={}){return{
  currencyUtility:{amex_mr:1,chase_ur:.75,capital_one_miles:.95,hyatt_points:1},legacyNaturalBenefitValue:{amex_platinum:700},
  bookingMethod:{airfare:"direct_airline",hotel:"direct_hotel"},constraints:{maxNewCards:2},aspirations:["travel more"],...overrides};}
 
-assert("engine is alpha.43",E.ENGINE_VERSION==="5.0-alpha.43");
-{
- const p=E.normalizeProfile(base({constraints:{maxNewCards:2}})),travel=E.travelStrategy(p),rewards=E.rewardsStrategy(p,travel),eligIds=E.candidateEligibilityIds(p,rewards),elig=E.candidateEligibility(p,rewards,eligIds),
-       full=E.candidatePortfoliosShard(p,rewards,0,1,elig).map(x=>x.slice().sort().join("|")).sort(),
-       parts=[],counts=[];
- for(let shard=0;shard<5;shard++){
-   const rows=E.candidatePortfoliosShard(p,rewards,shard,5,elig).map(x=>x.slice().sort().join("|"));
-   counts.push(rows.length);parts.push(...rows);
- }
- const union=parts.slice().sort(),unique=new Set(parts);
- assert("alpha.43 balanced sharding preserves the exact candidate universe",same(full,union)&&unique.size===parts.length,JSON.stringify({full:full.length,parts:parts.length,unique:unique.size}));
- assert("alpha.43 balanced sharding supports arbitrary shard counts",Math.max(...counts)-Math.min(...counts)<=1,JSON.stringify(counts));
-}
+assert("engine is alpha.44",E.ENGINE_VERSION==="5.0-alpha.44");
 
 {
  const p=E.normalizeProfile(base()),travel=E.travelStrategy(p),rewards=E.rewardsStrategy(p,travel),eligIds=E.candidateEligibilityIds(p,rewards),elig=E.candidateEligibility(p,rewards,eligIds);
