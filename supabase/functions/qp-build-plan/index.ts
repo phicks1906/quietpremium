@@ -6,7 +6,7 @@ import { buildResultContract } from "./result-contract.ts";
 
 const ORIGINS=new Set(["https://quietpremium.com","https://www.quietpremium.com"]);
 const PUBLIC_BROWSER_KEY="sb_publishable_BETG0zmWAEmPByBsKyEUzA_yPCOkh5F";
-const VERIFIER="qp-verify-facts",OPTIMIZER="qp-optimize-shard",OPTIMIZER_SHARDS=32,OPTIMIZER_MAX_SHARDS=256,OPTIMIZER_SHARDS_PER_REQUEST=1,OPTIMIZER_BATCH=2,OPTIMIZER_PACE_MS=750,MAX_PROFILE_BYTES=250000,MAX_STABILIZATION_PASSES=2;
+const VERIFIER="qp-verify-facts",OPTIMIZER="qp-optimize-shard",OPTIMIZER_SHARDS=32,OPTIMIZER_MAX_SHARDS=256,OPTIMIZER_SHARDS_PER_REQUEST=2,OPTIMIZER_BATCH=2,OPTIMIZER_PACE_MS=750,MAX_PROFILE_BYTES=250000,MAX_STABILIZATION_PASSES=2;
 const E=(globalThis as any).QuietPremiumEngineV5;
 
 function json(body:any,status=200,origin=""){

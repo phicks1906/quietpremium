@@ -31,6 +31,7 @@ jobs:
           node optimizer_search_record_validation.js
           node optimizer_context_reuse_validation.js
           node optimizer_shard_batch_validation.js
+          node optimizer_fanout_budget_validation.js
           node optimizer_status_projection_validation.js
           node optimizer_balanced_shard_validation.js
           node optimizer_memoization_validation.js
