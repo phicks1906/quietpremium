@@ -67,6 +67,23 @@ export function parseMarriottThresholds(text){
   return out;
 }
 
+export function parseUnitedThresholds(text){
+  const t=String(text||""),defs=[
+    ["Premier Silver","(?:United\\s+)?Premier\\s+Silver",15,5000,6000],
+    ["Premier Gold","(?:United\\s+)?Premier\\s+Gold",30,10000,12000],
+    ["Premier Platinum","(?:United\\s+)?Premier\\s+Platinum",45,15000,18000],
+    ["Premier 1K","(?:United\\s+)?Premier\\s+1K(?:®)?",60,22000,28000]
+  ],rows=[];
+  for(const [tier,label,expectedPqf,expectedWith,expectedOnly] of defs){
+    const re=new RegExp(label+"[\\s\\S]{0,700}?How to earn:?\\s*([\\d,]+)\\s+PQF\\s+(?:and|\\+)\\s+([\\d,]+)\\s+PQP\\s*,?\\s*or\\s+([\\d,]+)\\s+PQP","i"),
+          m=t.match(re);
+    if(!m)continue;
+    const pqf=Number(String(m[1]).replace(/,/g,"")),pqpWithPQF=Number(String(m[2]).replace(/,/g,"")),pqpOnly=Number(String(m[3]).replace(/,/g,""));
+    if(pqf===expectedPqf&&pqpWithPQF===expectedWith&&pqpOnly===expectedOnly)rows.push({tier,pqf,pqpWithPQF,pqpOnly,amount:pqpOnly});
+  }
+  return rows;
+}
+
 export function criticalStructureIssues(kind,id,facts){
   const f=facts||{},issues=[];
   if(kind==="cards"&&(id==="delta_platinum"||id==="delta_reserve")){
@@ -92,6 +109,21 @@ export function criticalStructureIssues(kind,id,facts){
     if(!expected.every((x,i)=>names[i]===x))issues.push("thresholds.tierOrder");
     const vals=rows.map(x=>Number(x?.amount));
     if(vals.length!==4||!vals.every((v,i)=>v>0&&(i===0||v>vals[i-1])))issues.push("thresholds.strictlyIncreasing");
+  }
+  if(kind==="airlines"&&id==="united"){
+    const expected=[
+      {tier:"premier silver",pqf:15,pqpWithPQF:5000,pqpOnly:6000},
+      {tier:"premier gold",pqf:30,pqpWithPQF:10000,pqpOnly:12000},
+      {tier:"premier platinum",pqf:45,pqpWithPQF:15000,pqpOnly:18000},
+      {tier:"premier 1k",pqf:60,pqpWithPQF:22000,pqpOnly:28000}
+    ],rows=Array.isArray(f.thresholds)?f.thresholds:[];
+    if(rows.length!==4)issues.push("thresholds.completeLadder");
+    const valid=expected.every((x,i)=>{
+      const r=rows[i]||{};
+      return String(r.tier||"").toLowerCase()===x.tier&&Number(r.pqf)===x.pqf&&Number(r.pqpWithPQF)===x.pqpWithPQF&&Number(r.pqpOnly)===x.pqpOnly&&Number(r.amount)===x.pqpOnly;
+    });
+    if(!valid)issues.push("thresholds.current2026Structure");
+    if(Number(f.minimumUnitedSegments)!==4)issues.push("minimumUnitedSegments.currentRequirement");
   }
   if(kind==="hotels"&&id==="marriott"){
     const expected=["silver elite","gold elite","platinum elite","titanium elite","ambassador elite"],rows=Array.isArray(f.thresholds)?f.thresholds:[];

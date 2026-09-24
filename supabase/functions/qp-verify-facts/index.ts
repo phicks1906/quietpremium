@@ -1,6 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { ENTITY_SOURCES, ALLOWED_CARD_IDS, ALLOWED_AIRLINE_IDS, ALLOWED_HOTEL_IDS } from "./sources.ts";
-import { parseDeltaCardStatus, parseDeltaThresholds, parseChaseReserveRewards, parseMarriottThresholds, parseMarriottCardRewards, parseMarriottCardCriticalFacts, criticalStructureIssues } from "./critical-parsers.ts";
+import { parseDeltaCardStatus, parseDeltaThresholds, parseUnitedThresholds, parseChaseReserveRewards, parseMarriottThresholds, parseMarriottCardRewards, parseMarriottCardCriticalFacts, criticalStructureIssues } from "./critical-parsers.ts";
 
 const ORIGINS=new Set(["https://quietpremium.com","https://www.quietpremium.com"]);
 const PUBLIC_BROWSER_KEY="sb_publishable_BETG0zmWAEmPByBsKyEUzA_yPCOkh5F";
@@ -478,7 +478,7 @@ function airlineTierBenefits(id:string,t:string){
     // April 2026 changed Premier flight-mile earning. Do not use the retired
     // 7x/8x/9x/11x table as a status-value input.
     const silverSeating=/Premier Silver Members[\s\S]{0,1400}?Economy Plus[^.]{0,140}check-in/i.test(t)||/Economy Plus[^.]{0,160}check-in[^.]{0,220}(?:Premier Silver|Silver)/i.test(t);
-    const silverUpgrade=/Premier Silver Members[\s\S]{0,1400}?(?:day of departure|24 hours before departure)/i.test(t)||/(?:Premier Silver|Silver)[^\n]{0,240}(?:day of departure|24 hours before departure)/i.test(t);
+    const silverUpgrade=/Premier Silver Members[\s\S]{0,1400}?(?:day of departure|24 hours before departure)/i.test(t)||/(?:Premier Silver|Silver elites?)[\s\S]{0,1800}?(?:complimentary Premier upgrades?)[^.]{0,220}(?:day of departure|24 hours before departure)/i.test(t)||/(?:Premier Silver|Silver)[^\n]{0,500}(?:day of departure|24 hours before departure)/i.test(t);
     const silverBag=/(?:Premier Silver|Silver)[\s\S]{0,900}(?:one|1) (?:complimentary|free) (?:70-pound )?checked bag|(?:one|1) (?:complimentary|free) (?:70-pound )?checked bag[\s\S]{0,500}(?:Premier Silver|Silver)/i.test(t);
     put("Premier Silver",{upgradeWindowHours:/24 hours before departure/i.test(t)?24:0,seating:"economy_plus_at_checkin",checkedBags:1,coverageComplete:silverSeating&&silverUpgrade&&silverBag});
 
@@ -490,7 +490,7 @@ function airlineTierBenefits(id:string,t:string){
     const platinum=/Premier Platinum/i.test(t);
     const platinumUpgrade=platinum&&/72 hours before departure/i.test(t);
     const platinumSeating=platinum&&/Economy Plus[\s\S]{0,260}(?:up to )?8 companions|(?:up to )?8 companions[\s\S]{0,260}Economy Plus/i.test(t);
-    const platinumBags=platinum&&/(?:three|3) (?:complimentary|free) checked bags/i.test(t);
+    const platinumBags=platinum&&/(?:three|3)\s+(?:complimentary|free)(?:\s+\d+-pound)?\s+checked bags/i.test(t);
     const platinumPlus=platinum&&/40 PlusPoints/i.test(t);
     put("Premier Platinum",{upgradeWindowHours:72,seating:"economy_plus_at_booking_up_to_8_companions",checkedBags:3,boardingGroup:"group_1",plusPoints:40,coverageComplete:platinumUpgrade&&platinumSeating&&platinumBags&&platinumPlus});
 
@@ -552,14 +552,7 @@ if(kind==="airlines"&&id==="delta"){
   const minFee=first(t,[/taxes and fees from\s+\$\s*([\d.]+)\s+one-way/i]);
   if(cp)f.companionPass={qualifyingFlights:amount(cp[1]),qualifyingPoints:amount(cp[2]),cardBoost:boost?amount(boost[1]):null,unlimited:/unlimited times/i.test(t),taxesFeesMinOneWay:minFee?Number(minFee[1]):null};
 }else if(kind==="airlines"&&id==="united"){
-  f.thresholds=[];
-  const defs:[string,RegExp[]][]=[
-    ["Premier Silver",[/Silver[^.]{0,240}([\d,]+)\s+PQP\s*\+\s*([\d,]+)\s+PQF[^.]{0,180}or[^.]{0,100}([\d,]+)\s+PQP/i,/Silver[^.]{0,260}([\d,]+)\s+PQF\s+(?:and|\+)\s+([\d,]+)\s+PQP[^.]{0,180}or[^.]{0,100}([\d,]+)\s+PQP/i]],
-    ["Premier Gold",[/Gold[^.]{0,240}([\d,]+)\s+PQP\s*\+\s*([\d,]+)\s+PQF[^.]{0,180}or[^.]{0,100}([\d,]+)\s+PQP/i,/Gold[^.]{0,260}([\d,]+)\s+PQF\s+(?:and|\+)\s+([\d,]+)\s+PQP[^.]{0,180}or[^.]{0,100}([\d,]+)\s+PQP/i]],
-    ["Premier Platinum",[/Platinum[^.]{0,240}([\d,]+)\s+PQP\s*\+\s*([\d,]+)\s+PQF[^.]{0,180}or[^.]{0,100}([\d,]+)\s+PQP/i,/Platinum[^.]{0,260}([\d,]+)\s+PQF\s+(?:and|\+)\s+([\d,]+)\s+PQP[^.]{0,180}or[^.]{0,100}([\d,]+)\s+PQP/i]],
-    ["Premier 1K",[/1K[^.]{0,240}([\d,]+)\s+PQP\s*\+\s*([\d,]+)\s+PQF[^.]{0,180}or[^.]{0,100}([\d,]+)\s+PQP/i,/1K[^.]{0,260}([\d,]+)\s+PQF\s+(?:and|\+)\s+([\d,]+)\s+PQP[^.]{0,180}or[^.]{0,100}([\d,]+)\s+PQP/i]]
-  ];
-  for(const[tier,res]of defs){const m=first(t,res);if(!m)continue;const pqfFirst=/PQF\s+(?:and|\+)/i.test(m[0]);const pqpWith=amount(m[pqfFirst?2:1]),pqf=amount(m[pqfFirst?1:2]),pqpOnly=amount(m[3]);f.thresholds.push({tier,pqpWithPQF:pqpWith,pqf,pqpOnly,amount:pqpOnly})}
+  f.thresholds=parseUnitedThresholds(t);
   const seg=first(t,[/minimum of\s+(\d+)\s+(?:paid )?(?:flight )?(?:segments?|flights?)/i,/at least\s+(\d+)\s+(?:paid )?(?:flight )?(?:segments?|flights?)/i,/minimum of\s+four\s+(?:paid )?(?:flight )?(?:segments?|flights?)/i,/at least\s+four\s+(?:paid )?(?:flight )?(?:segments?|flights?)/i,/(\d+)\s+(?:paid )?(?:flight )?segments?[^.]{0,100}(?:United|United Express)/i]);if(seg)f.minimumUnitedSegments=seg[1]?amount(seg[1]):4;
 }else if(kind==="hotels"){
   f.thresholds=[];

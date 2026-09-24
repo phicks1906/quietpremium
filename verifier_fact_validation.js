@@ -1,6 +1,6 @@
 const fs=require("fs");
 const src=fs.readFileSync("supabase/functions/qp-verify-facts/critical-parsers.ts","utf8").replace(/export function /g,"function ");
-const P=(new Function(src+"\nreturn {parseDeltaCardStatus,parseDeltaThresholds,parseChaseReserveRewards,parseMarriottThresholds,parseMarriottCardCriticalFacts,criticalStructureIssues};"))();
+const P=(new Function(src+"\nreturn {parseDeltaCardStatus,parseDeltaThresholds,parseUnitedThresholds,parseChaseReserveRewards,parseMarriottThresholds,parseMarriottCardCriticalFacts,criticalStructureIssues};"))();
 let pass=0,fail=0;const failures=[];function ok(name,cond,detail=""){if(cond)pass++;else{fail++;failures.push({name,detail})}}
 const ds="MQD Thresholds for Status SILVER GOLD PLATINUM DIAMOND $5,000 MQDs $10,000 MQDs $15,000 MQDs $28,000 MQDs Earn Medallion Qualification Dollars";
 const dt=P.parseDeltaThresholds(ds);
@@ -18,6 +18,12 @@ const mp=P.parseMarriottThresholds(mr);
 ok("Marriott full five-tier ladder",JSON.stringify(mp.map(x=>x.nights))==="[10,25,50,75,100]",JSON.stringify(mp));
 ok("Marriott Ambassador spend survives",mp[4]?.spend===23000,JSON.stringify(mp));
 ok("Delta duplicate thresholds fail structure",P.criticalStructureIssues("airlines","delta",{thresholds:[{tier:"Silver Medallion",amount:5000},{tier:"Gold Medallion",amount:5000},{tier:"Platinum Medallion",amount:5000},{tier:"Diamond Medallion",amount:5000}]}).includes("thresholds.strictlyIncreasing"));
+const united2026="United Premier Silver How to earn: 15 PQF and 5,000 PQP, or 6,000 PQP. United Premier Gold How to earn: 30 PQF and 10,000 PQP, or 12,000 PQP. United Premier Platinum How to earn: 45 PQF and 15,000 PQP, or 18,000 PQP. United Premier 1K How to earn: 60 PQF and 22,000 PQP, or 28,000 PQP.";
+const ut=P.parseUnitedThresholds(united2026);
+ok("United 2026 four-tier PQF/PQP ladder parses exactly",JSON.stringify(ut.map(x=>[x.pqf,x.pqpWithPQF,x.pqpOnly]))==="[[15,5000,6000],[30,10000,12000],[45,15000,18000],[60,22000,28000]]",JSON.stringify(ut));
+ok("United zero/misaligned thresholds fail current-structure guard",P.criticalStructureIssues("airlines","united",{thresholds:[{tier:"Premier Silver",pqf:5,pqpWithPQF:5000,pqpOnly:0,amount:0},{tier:"Premier Gold",pqf:0,pqpWithPQF:10000,pqpOnly:0,amount:0},{tier:"Premier Platinum",pqf:5,pqpWithPQF:15000,pqpOnly:0,amount:0},{tier:"Premier 1K",pqf:0,pqpWithPQF:22000,pqpOnly:0,amount:0}],minimumUnitedSegments:4}).includes("thresholds.current2026Structure"));
+ok("United current verifier requires four United-operated flights",P.criticalStructureIssues("airlines","united",{thresholds:ut,minimumUnitedSegments:3}).includes("minimumUnitedSegments.currentRequirement"));
+
 ok("Marriott partial ladder fails structure",P.criticalStructureIssues("hotels","marriott",{thresholds:[{tier:"Ambassador Elite",nights:100,spend:23000}]}).includes("thresholds.completeLadder"));
 ok("Reserve broad 4x false parse fails structure",P.criticalStructureIssues("cards","chase_reserve",{earn:{general:4,dining:3,airfare:8,hotel:8},bookingEarn:{airfare:{chase_travel:8},hotel:{chase_travel:8}}}).includes("earn.reserveCurrentStructure"));
 
