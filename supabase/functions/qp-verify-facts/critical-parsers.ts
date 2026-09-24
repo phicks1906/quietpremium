@@ -51,6 +51,57 @@ export function parseChaseReserveRewards(text){
   };
 }
 
+export function parseCapitalOneCardRewards(text,id){
+  const t=String(text||""),base=(n)=>({dining:n,grocery:n,online_grocery:n,drugstore:n,gas_ev:n,transit:n,online_retail:n,vacation_home:n,airfare:n,hotel:n,general:n});
+  if(id==="venture_one"){
+    const ok=/(?:1\.25\s*[xX]\s*miles|1\.25\s+miles per dollar)[\s\S]{0,160}(?:every purchase|all other purchases)/i.test(t);
+    return ok?base(1.25):null;
+  }
+  if(id==="venture"){
+    const ok=/(?:2\s*[xX]\s*miles|2\s+miles per dollar)[\s\S]{0,160}(?:every purchase|all purchases|all other purchases)/i.test(t);
+    return ok?base(2):null;
+  }
+  if(id==="venture_x"){
+    const ok=/(?:2\s*[xX]\s*miles|2\s+miles per dollar)[\s\S]{0,180}(?:all other purchases|every purchase)|(?:all other purchases|every purchase)[\s\S]{0,180}2\s*[xX]/i.test(t);
+    return ok?base(2):null;
+  }
+  return null;
+}
+
+export function parseUnitedCardRewards(text,id){
+  const t=String(text||""),base=(n)=>({dining:n,grocery:n,online_grocery:n,drugstore:n,gas_ev:n,transit:n,online_retail:n,vacation_home:n,airfare:n,hotel:n,general:n});
+  const allOther=/1\s*(?:[xX]\s*)?mile(?:s)?(?:\s+per\s+\$?1\s+spent)?[^.]{0,160}all other purchases|all other purchases[^.]{0,160}1\s*(?:[xX]\s*)?mile/i.test(t);
+  if(id==="united_gateway"){
+    const united=/2\s*[xX]\s*miles[^.]{0,180}all other eligible United purchases|2\s+miles per \$1 spent[^.]{0,180}(?:airline tickets purchased from United|all other eligible United purchases)/i.test(t),
+          gas=/2\s*[xX]\s*miles[^.]{0,120}gas stations|2\s+miles per \$1 spent[^.]{0,160}gas stations/i.test(t),
+          transit=/2\s*[xX]\s*miles[^.]{0,180}(?:local transit|commuting)|2\s+miles per \$1 spent[^.]{0,200}(?:local transit|commuting)/i.test(t);
+    if(!(united&&gas&&transit&&allOther))return null;
+    const e=base(1);e.airfare=2;e.gas_ev=2;e.transit=2;return e;
+  }
+  if(id==="united_explorer"){
+    const united=/3\s*[xX]\s*miles[^.]{0,180}all other eligible United purchases|3\s+miles per \$1 spent[^.]{0,180}(?:airline tickets purchased from United|all other eligible United purchases)/i.test(t),
+          hotel=/2\s*[xX]\s*miles[^.]{0,180}hotel stays?[^.]{0,120}(?:booked with|purchased directly with) the hotel|2\s+miles per \$1 spent[^.]{0,240}hotel accommodations/i.test(t),
+          dining=/2\s*[xX]\s*miles[^.]{0,160}dining|2\s+miles per \$1 spent[^.]{0,180}dining/i.test(t);
+    if(!(united&&hotel&&dining&&allOther))return null;
+    const e=base(1);e.airfare=3;e.hotel=2;e.dining=2;return e;
+  }
+  if(id==="united_quest"){
+    const united=/4\s*[xX]\s*miles[^.]{0,180}all other eligible United purchases|4\s+miles per \$1 spent[^.]{0,180}(?:entire United purchase|all other eligible United purchases)/i.test(t),
+          dining=/2\s*(?:[xX]\s*)?miles?(?:\s+per\s+\$1\s+spent)?[^.]{0,160}dining/i.test(t),
+          travel=/2\s*(?:[xX]\s*)?miles?(?:\s+per\s+\$1\s+spent)?[^.]{0,160}all other travel/i.test(t);
+    if(!(united&&dining&&travel&&allOther))return null;
+    const e=base(1);e.airfare=4;e.hotel=2;e.dining=2;e.transit=2;return e;
+  }
+  if(id==="united_club"){
+    const united=/5\s*[xX]\s*miles[^.]{0,180}all other eligible United purchases|5\s+miles per \$1 spent[^.]{0,180}(?:entire United purchase|all other eligible United purchases)/i.test(t),
+          dining=/2\s*(?:[xX]\s*)?miles?(?:\s+per\s+\$1\s+spent)?[^.]{0,160}dining/i.test(t),
+          travel=/2\s*(?:[xX]\s*)?miles?(?:\s+per\s+\$1\s+spent)?[^.]{0,160}all other travel/i.test(t);
+    if(!(united&&dining&&travel&&allOther))return null;
+    const e=base(1);e.airfare=5;e.hotel=2;e.dining=2;e.transit=2;return e;
+  }
+  return null;
+}
+
 export function parseMarriottThresholds(text){
   const t=String(text||"");
   const rows=[
@@ -94,6 +145,29 @@ export function criticalStructureIssues(kind,id,facts){
     const e=f.earn||{},b=f.bookingEarn||{};
     if(!(Number(e.general)===1&&Number(e.dining)===3&&Number(e.airfare)===4&&Number(e.hotel)===4))issues.push("earn.reserveCurrentStructure");
     if(!(Number(b.airfare?.chase_travel)===8&&Number(b.hotel?.chase_travel)===8))issues.push("bookingEarn.reserveCurrentStructure");
+  }
+  if(kind==="cards"&&["venture_one","venture","venture_x"].includes(id)){
+    const e=f.earn||{},b=f.bookingEarn||{},expected=id==="venture_one"?1.25:2;
+    const ordinary=["dining","grocery","online_grocery","drugstore","gas_ev","transit","online_retail","vacation_home","airfare","hotel","general"];
+    if(!ordinary.every(k=>Number(e[k])===expected))issues.push("earn.capitalOneBaseCurrentStructure");
+    if(id==="venture_x"){
+      if(!(Number(b.hotel?.capital_one_travel)===10&&Number(b.airfare?.capital_one_travel)===5&&Number(b.vacation_home?.capital_one_travel)===5))issues.push("bookingEarn.ventureXCurrentStructure");
+    }else if(!(Number(b.hotel?.capital_one_travel)===5&&Number(b.vacation_home?.capital_one_travel)===5))issues.push("bookingEarn.ventureCurrentStructure");
+  }
+  if(kind==="cards"&&["united_gateway","united_explorer","united_quest","united_club"].includes(id)){
+    const e=f.earn||{},b=f.bookingEarn||{};
+    const expected={
+      united_gateway:{airfare:2,dining:1,hotel:1,gas_ev:2,transit:2,general:1},
+      united_explorer:{airfare:3,dining:2,hotel:2,gas_ev:1,transit:1,general:1},
+      united_quest:{airfare:4,dining:2,hotel:2,gas_ev:1,transit:2,general:1},
+      united_club:{airfare:5,dining:2,hotel:2,gas_ev:1,transit:2,general:1}
+    }[id];
+    if(!expected||Object.entries(expected).some(([k,v])=>Number(e[k])!==Number(v)))issues.push("earn.unitedCardOnlyCurrentStructure");
+    if((id==="united_quest"||id==="united_club")&&Number(b.hotel?.renowned_prepaid)!==5)issues.push("bookingEarn.renownedCurrentStructure");
+  }
+  if(kind==="cards"&&id==="hyatt_consumer"){
+    if(Object.prototype.hasOwnProperty.call(f.recurringCredits||{},"travel_credit"))issues.push("recurringCredits.hyattTravelCreditNotAllowed");
+    if((f.benefitTags||[]).includes("travel_credit"))issues.push("benefitTags.hyattTravelCreditNotAllowed");
   }
   if(kind==="cards"&&["marriott_boundless","marriott_bountiful","marriott_bevy","marriott_brilliant"].includes(id)){
     const e=f.earn||{};

@@ -1,6 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { ENTITY_SOURCES, ALLOWED_CARD_IDS, ALLOWED_AIRLINE_IDS, ALLOWED_HOTEL_IDS } from "./sources.ts";
-import { parseDeltaCardStatus, parseDeltaThresholds, parseUnitedThresholds, parseChaseReserveRewards, parseMarriottThresholds, parseMarriottCardRewards, parseMarriottCardCriticalFacts, criticalStructureIssues } from "./critical-parsers.ts";
+import { parseDeltaCardStatus, parseDeltaThresholds, parseUnitedThresholds, parseChaseReserveRewards, parseCapitalOneCardRewards, parseUnitedCardRewards, parseMarriottThresholds, parseMarriottCardRewards, parseMarriottCardCriticalFacts, criticalStructureIssues } from "./critical-parsers.ts";
 
 const ORIGINS=new Set(["https://quietpremium.com","https://www.quietpremium.com"]);
 const PUBLIC_BROWSER_KEY="sb_publishable_BETG0zmWAEmPByBsKyEUzA_yPCOkh5F";
@@ -111,6 +111,8 @@ function cardEarn(t:string,id:string){
     if([g,d,og,ge,tr].some(v=>!(v&&v>0)))return null;
     return{dining:d,grocery:g,online_grocery:og,drugstore:g,gas_ev:ge,transit:tr,online_retail:g,vacation_home:ge,airfare:tr,hotel:tr,general:g};
   }
+  if(["venture_one","venture","venture_x"].includes(id))return parseCapitalOneCardRewards(t,id);
+  if(["united_gateway","united_explorer","united_quest","united_club"].includes(id))return parseUnitedCardRewards(t,id);
   if(id==="hyatt_consumer"){
     const hotel=/4\s+(?:Bonus\s+)?Points?\s+per\s+\$?1[^.]{0,220}(?:Hyatt hotels?|Hyatt resorts?)|4\s*[xX][^.]{0,180}(?:Hyatt hotels?|Hyatt resorts?)/i.test(t);
     const dining=/2\s+(?:Bonus\s+)?Points?\s+per\s+\$?1[^.]{0,220}(?:restaurants?|dining)|2\s*[xX][^.]{0,180}(?:restaurants?|dining)/i.test(t);
@@ -165,7 +167,7 @@ function near(t:string,re:RegExp){const m=re.exec(t);if(!m)return null;const s=t
 function credits(t:string){const o:any={};for(const [k,re]of [["dining_credit",/dining credit/i],["resy_credit",/Resy .*credit/i],["uber_cash",/Uber Cash/i],["rideshare_credit",/rideshare .*credit/i],["hotel_credit",/hotel .*credit/i],["capital_one_travel_credit",/Capital One Travel credit/i],["travel_credit",/travel credit/i],["airline_fee_credit",/airline fee credit/i],["flight_credit",/flight credit/i],["clear",/CLEAR\+? Credit/i],["digital_entertainment_credit",/digital entertainment.*credit/i],["dunkin_credit",/Dunkin[’\']? Credit/i],["resort_credit",/resort credit/i]] as [string,RegExp][]) {const v=near(t,re);if(v&&v<=10000)o[k]=v}return o}
 function namedAnnualCredit(t:string,res:RegExp[]){for(const re of res){const m=t.match(re);if(m){const v=amount(m[1]);if(v!=null&&v>=0&&v<=10000)return v}}return null}
 function cardRecurringCredits(t:string,id:string){
-  const flexSpecific=["amex_green","amex_gold","amex_platinum","chase_preferred","chase_freedom_unlimited","chase_freedom_flex","chase_freedom_rise","chase_reserve","venture_one","venture","venture_x"].includes(id);
+  const flexSpecific=["amex_green","amex_gold","amex_platinum","chase_preferred","chase_freedom_unlimited","chase_freedom_flex","chase_freedom_rise","chase_reserve","venture_one","venture","venture_x","hyatt_consumer"].includes(id);
   const o:any=flexSpecific||id.startsWith("marriott_")||id.startsWith("delta_")?{}:{...credits(t)};
   const put=(k:string,res:RegExp[])=>{const v=namedAnnualCredit(t,res);if(v!=null)o[k]=v};
   if(id==="amex_green"){
@@ -369,6 +371,7 @@ function cardFacts(id:string,t:string){
     ...(/Hertz[^.]{0,120}(?:status upgrade|Gold\+.*upgrade)/i.test(t)?["hertz_status"]:[]),
     ...(/The Edit by Chase Travel/i.test(t)?["premium_hotel_booking"]:[])
   ]);
+  if(id==="hyatt_consumer"){const j=derivedTags.indexOf("travel_credit");if(j>=0)derivedTags.splice(j,1);}
   const cap=flexibleCaps(t,id),rb=rotatingBonus(t,id);
   if(rb.rate&&!derivedTags.includes("rotating_5x_categories"))derivedTags.push("rotating_5x_categories");
   const critical=parseMarriottCardCriticalFacts(t,id);

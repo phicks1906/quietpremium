@@ -1,6 +1,6 @@
 const fs=require("fs");
 const src=fs.readFileSync("supabase/functions/qp-verify-facts/critical-parsers.ts","utf8").replace(/export function /g,"function ");
-const P=(new Function(src+"\nreturn {parseDeltaCardStatus,parseDeltaThresholds,parseUnitedThresholds,parseChaseReserveRewards,parseMarriottThresholds,parseMarriottCardCriticalFacts,criticalStructureIssues};"))();
+const P=(new Function(src+"\nreturn {parseDeltaCardStatus,parseDeltaThresholds,parseUnitedThresholds,parseChaseReserveRewards,parseCapitalOneCardRewards,parseUnitedCardRewards,parseMarriottThresholds,parseMarriottCardCriticalFacts,criticalStructureIssues};"))();
 let pass=0,fail=0;const failures=[];function ok(name,cond,detail=""){if(cond)pass++;else{fail++;failures.push({name,detail})}}
 const ds="MQD Thresholds for Status SILVER GOLD PLATINUM DIAMOND $5,000 MQDs $10,000 MQDs $15,000 MQDs $28,000 MQDs Earn Medallion Qualification Dollars";
 const dt=P.parseDeltaThresholds(ds);
@@ -8,6 +8,24 @@ ok("Delta four-tier ordered thresholds",JSON.stringify(dt.map(x=>x.amount))==="[
 const dr="MQD Headstart With MQD Headstart, you can receive $2,500 Medallion Qualification Dollars each Medallion Qualification Year. MQD Boost Get $1 Medallion Qualification Dollar for each $10 in purchases on your Delta SkyMiles Reserve American Express Card";
 ok("Delta Reserve Headstart parses 2500",P.parseDeltaCardStatus(dr,"delta_reserve").headstart===2500,JSON.stringify(P.parseDeltaCardStatus(dr,"delta_reserve")));
 ok("Delta Reserve MQD Boost divisor parses 10",P.parseDeltaCardStatus(dr,"delta_reserve").spendDivisor===10,JSON.stringify(P.parseDeltaCardStatus(dr,"delta_reserve")));
+const vx=P.parseCapitalOneCardRewards("Venture X Rewards 10X miles on hotels & rental cars booked through Capital One Travel. 5X miles on flights and vacation rentals booked through Capital One Travel. 2X miles on all other purchases, every day.","venture_x");
+ok("Venture X parser separates 2x ordinary spend from portal totals",vx?.general===2&&vx?.hotel===2&&vx?.airfare===2,JSON.stringify(vx));
+const v=P.parseCapitalOneCardRewards("Venture Rewards Get unlimited 2X miles per dollar on every purchase, every day. Earn 5X miles on hotels, vacation rentals, and rental cars booked through Capital One Travel.","venture");
+ok("Venture parser keeps ordinary spend at 2x",v?.dining===2&&v?.general===2,JSON.stringify(v));
+const vo=P.parseCapitalOneCardRewards("VentureOne Earn unlimited 1.25 miles per dollar on every purchase. Earn unlimited 5 miles per dollar on hotels, vacation rentals and rental cars booked through Capital One Travel.","venture_one");
+ok("VentureOne parser keeps ordinary spend at 1.25x",vo?.general===1.25&&vo?.hotel===1.25,JSON.stringify(vo));
+const uq=P.parseUnitedCardRewards("United Quest Card 10 total miles per $1 spent on eligible United flights: 6x miles as a MileagePlus member, plus 4x miles on entire United purchase with the United Quest Card. 4 miles per $1 spent on all other eligible United purchases. 2 miles per $1 spent on dining. 2 miles per $1 spent on all other travel. 1 mile per $1 spent on all other purchases.","united_quest");
+ok("Quest parser excludes MileagePlus member miles from card earn",uq?.airfare===4&&uq?.dining===2&&uq?.hotel===2&&uq?.transit===2&&uq?.general===1,JSON.stringify(uq));
+const uc=P.parseUnitedCardRewards("United Club Card 11 total miles per $1 spent on eligible United flights: 6x miles as a MileagePlus member, plus 5x miles on entire United purchase with the United Club Card. 5 miles per $1 spent on all other eligible United purchases. 2 miles per $1 spent on dining. 2 miles per $1 spent on all other travel. 1 mile per $1 spent on all other purchases.","united_club");
+ok("Club parser excludes MileagePlus member miles from card earn",uc?.airfare===5&&uc?.dining===2&&uc?.hotel===2&&uc?.transit===2&&uc?.general===1,JSON.stringify(uc));
+const ue=P.parseUnitedCardRewards("United Explorer Card 9x total miles on eligible United flights - 6x miles as a MileagePlus member, plus 3x miles on entire United purchase with United Explorer Card. 3x miles on all other eligible United purchases. 2x miles on hotel stays when booked with the hotel. 2x miles on dining including eligible delivery services. 1x mile on all other purchases.","united_explorer");
+ok("Explorer parser excludes MileagePlus member miles from card earn",ue?.airfare===3&&ue?.hotel===2&&ue?.dining===2&&ue?.general===1,JSON.stringify(ue));
+const ug=P.parseUnitedCardRewards("United Gateway Card 5x total miles on eligible United flights - 3x miles as a MileagePlus member, plus 2x miles on entire United purchase with the United Gateway Card. 2x miles on all other eligible United purchases. 2x miles at gas stations. 2x miles on local transit and commuting. 1x mile on all other purchases.","united_gateway");
+ok("Gateway parser excludes MileagePlus member miles from card earn",ug?.airfare===2&&ug?.gas_ev===2&&ug?.transit===2&&ug?.general===1,JSON.stringify(ug));
+ok("United total-mile contamination fails structure",P.criticalStructureIssues("cards","united_quest",{earn:{airfare:10,dining:1,hotel:4,gas_ev:1,transit:4,general:1},bookingEarn:{hotel:{renowned_prepaid:5}}}).includes("earn.unitedCardOnlyCurrentStructure"));
+ok("Capital One portal contamination fails structure",P.criticalStructureIssues("cards","venture_x",{earn:{dining:5,grocery:5,online_grocery:5,drugstore:5,gas_ev:5,transit:5,online_retail:5,vacation_home:5,airfare:5,hotel:5,general:5},bookingEarn:{airfare:{capital_one_travel:5},hotel:{capital_one_travel:10},vacation_home:{capital_one_travel:5}}}).includes("earn.capitalOneBaseCurrentStructure"));
+ok("Hyatt phantom travel credit fails structure",P.criticalStructureIssues("cards","hyatt_consumer",{recurringCredits:{travel_credit:3000},benefitTags:["travel_credit"]}).includes("recurringCredits.hyattTravelCreditNotAllowed"));
+
 const cr="8x points on all purchases through Chase Travel, including The Edit. 4x points on flights booked direct. 4x points on hotels booked direct. 3x points on dining worldwide. 1x points on all other purchases.";
 const cp=P.parseChaseReserveRewards(cr);
 ok("Reserve base spend remains 1x",cp?.earn?.general===1&&cp?.earn?.grocery===1&&cp?.earn?.gas_ev===1,JSON.stringify(cp));
