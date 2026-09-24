@@ -34,6 +34,32 @@ async function hash(s:string){
   const d=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(s));
   return[...new Uint8Array(d)].map(x=>x.toString(16).padStart(2,"0")).join("");
 }
+function cleanFunnelSession(value:any){
+  const s=typeof value==="string"?value:"";
+  return /^[A-Za-z0-9_-]{12,80}$/.test(s)?s:"";
+}
+async function persistPlan(input:any,result:any,funnelSession:string){
+  const base=Deno.env.get("SUPABASE_URL"),service=Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+  if(!base||!service)throw new Error("plan_storage_not_configured");
+  const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),7000);
+  try{
+    const res=await fetch(base+"/rest/v1/rpc/qp_save_plan_v1",{
+      method:"POST",
+      headers:{"Content-Type":"application/json","apikey":service,"Authorization":"Bearer "+service},
+      body:JSON.stringify({
+        p_input:input,
+        p_result:result,
+        p_source:{channel:"web",backend_build:"phase7_server_persistence",funnel_session:funnelSession||""}
+      }),
+      signal:controller.signal
+    });
+    let body:any=null;try{body=await res.json()}catch{}
+    if(!res.ok)throw new Error("plan_storage_http_"+res.status+":"+(body?.message||body?.error||"unknown"));
+    if(!body?.architecture_id||!body?.retrieval_token)throw new Error("plan_storage_invalid_response");
+    return body;
+  }finally{clearTimeout(timer)}
+}
+
 async function verifierRequest(request:any){
   const base=Deno.env.get("SUPABASE_URL");
   const key=Deno.env.get("SUPABASE_ANON_KEY");
@@ -277,6 +303,7 @@ Deno.serve(async(req:Request)=>{
   let body:any;try{body=JSON.parse(rawText)}catch{return json({error:"invalid_json"},400,origin)}
   const rawProfile=body?.profile??body;
   if(!rawProfile||typeof rawProfile!=="object"||Array.isArray(rawProfile))return json({error:"profile_required"},400,origin);
+  const funnelSession=cleanFunnelSession(body?.funnelSession);
 
   try{
     const normalized=E.normalizeProfile({...rawProfile,valuationSnapshot:approvedValuationSnapshot()});
@@ -329,7 +356,9 @@ Deno.serve(async(req:Request)=>{
 
     const resultExperience=buildResultContract(result,E,audit);
     if(resultExperience?.quality?.ready!==true)return json({status:"not_ready",reason:"results_contract_not_ready",audit,resultExperience},409,origin);
-    return json({...safePlanResult(result,resultExperience),audit},200,origin);
+    const output={...safePlanResult(result,resultExperience),audit};
+    const savedPlan=await persistPlan(rawProfile,output,funnelSession);
+    return json({...output,savedPlan},200,origin);
   }catch(e){
     return json({error:"plan_build_failed",detail:String((e as Error)?.message||e)},502,origin);
   }
