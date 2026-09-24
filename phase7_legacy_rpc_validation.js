@@ -3,6 +3,14 @@ let pass=0,fail=0;const failures=[];
 function ok(name,cond,detail=""){if(cond){pass++;return}fail++;failures.push({name,detail})}
 const retired=["qp_save_architecture","qp_get_architecture","qp_log_event","qp_save_contact","qp_submit_feedback"];
 const livePublic=["qp_get_plan_v1","qp_log_event_v2"];
+const retiredSignatures=[
+  "qp_save_architecture(jsonb,jsonb,jsonb)",
+  "qp_get_architecture(text,text)",
+  "qp_log_event(text,text,text,jsonb)",
+  "qp_save_contact(text,text,text,text)",
+  "qp_submit_feedback(text,text,text,text)"
+];
+ok("legacy grant retirement covers exactly five RPC signatures",retiredSignatures.length===5&&new Set(retiredSignatures).size===5);
 const skip=new Set(["supabase/migrations",".git"]);
 const hits={};for(const n of retired)hits[n]=[];
 function walk(dir){
