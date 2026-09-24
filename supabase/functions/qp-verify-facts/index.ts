@@ -157,7 +157,7 @@ function credits(t:string){const o:any={};for(const [k,re]of [["dining_credit",/
 function namedAnnualCredit(t:string,res:RegExp[]){for(const re of res){const m=t.match(re);if(m){const v=amount(m[1]);if(v!=null&&v>=0&&v<=10000)return v}}return null}
 function cardRecurringCredits(t:string,id:string){
   const flexSpecific=["amex_green","amex_gold","amex_platinum","chase_preferred","chase_freedom_unlimited","chase_freedom_flex","chase_freedom_rise","chase_reserve","venture_one","venture","venture_x"].includes(id);
-  const o:any=flexSpecific||id.startsWith("marriott_")?{}:{...credits(t)};
+  const o:any=flexSpecific||id.startsWith("marriott_")||id.startsWith("delta_")?{}:{...credits(t)};
   const put=(k:string,res:RegExp[])=>{const v=namedAnnualCredit(t,res);if(v!=null)o[k]=v};
   if(id==="amex_green"){
     put("clear",[/\$\s*([\d,]+)\s+CLEAR\+? Credit/i,/CLEAR\+?[^$]{0,140}\$\s*([\d,]+)/i]);

@@ -33,6 +33,9 @@ ok("Brilliant 85K renewal award parses",br.annualPointCertificate?.capPoints===8
 ok("Brilliant trusted-traveler 120 every four years parses",br.trustedTraveler?.amount===120&&br.trustedTraveler?.years===4,JSON.stringify(br));
 ok("Brilliant 60K choice threshold parses",br.spendReward?.amount===60000&&br.spendReward?.valuePoints===85000,JSON.stringify(br));
 
+const verifierSrc=fs.readFileSync("supabase/functions/qp-verify-facts/index.ts","utf8");
+ok("Delta cards bypass generic nearby-dollar credit inference",verifierSrc.includes('id.startsWith("marriott_")||id.startsWith("delta_")?{}:{...credits(t)}'));
+
 const sourceDefs=fs.readFileSync("supabase/functions/qp-verify-facts/sources.ts","utf8");
 ok("Amex Gold verifier uses stable first-party fee evidence",sourceDefs.includes("gold-card-annual-fee/index.shtml"));
 ok("Amex Gold verifier uses stable first-party earn evidence",sourceDefs.includes("/gold/earn-rewards"));
