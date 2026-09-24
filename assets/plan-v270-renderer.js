@@ -118,7 +118,7 @@ function qualityHtml(q,meta){
   '<details><summary>Unresolved facts</summary>'+(u.length?'<ul>'+u.map(x=>'<li>'+esc(typeof x==="string"?x:JSON.stringify(x))+'</li>').join("")+'</ul>':'<p>No unresolved decision-critical fact is being carried into this ready result.</p>')+'</details>'+
   (issues.length?'<details><summary>Engine notes</summary><ul>'+issues.map(x=>'<li>'+esc(typeof x==="string"?x:JSON.stringify(x))+'</li>').join("")+'</ul></details>':'');
 }
-function render(data,{demo=false}={}){
+function render(data,{demo=false,analysisId=""}={}){
   const root=$("#qp-plan-root");if(!root)return;
   const c=data||{},cards=c.cards||{},eco=c.economics||{},tl=c.newTravelLife||{},status=c.status||{},plan=c.implementationPlan||{};
   const counts={keep:list(cards.keep).length+list(cards.keepButStopRoutineSpend).length,add:list(cards.recommendedNew).length,consider:list(cards.consider).length,remove:list(cards.removeOrDowngrade).length+list(cards.manualReviewBeforeRemoval).length};
@@ -163,6 +163,7 @@ function render(data,{demo=false}={}){
   ((list(cards.keep).length||list(cards.keepButStopRoutineSpend).length)?[...list(cards.keep),...list(cards.keepButStopRoutineSpend)].map(cardLine).join(""):empty("No retained-card conclusion is needed."))+
   '</div><div class="panel quality"><h3 style="font:400 20px var(--serif);margin:0 0 8px">Assumptions & limits</h3>'+qualityHtml(c.quality,c.meta)+'</div></div></section>'+
   renderTimeline(phases,plan)+
+  (!demo?'<section class="launch-followup" aria-label="Founding client follow-up"><div><div class="launch-kicker">Founding client feedback</div><h2>Help us make the next analysis better.</h2><p>Tell us what was useful, unclear, missing, or wrong. Your private retrieval token is never included in the feedback link.</p></div><a class="launch-feedback" href="founding-feedback.html'+(analysisId?'?a='+encodeURIComponent(analysisId):'')+'">Share feedback</a><div class="launch-legal"><a href="privacy.html">Privacy</a><a href="terms.html">Terms</a><a href="contact.html">Contact</a></div></section>':'')+
   '</div></main></div>';
   document.dispatchEvent(new CustomEvent("qp-plan-rendered",{detail:{data:c,demo}}));
 }
