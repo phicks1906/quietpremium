@@ -49,11 +49,20 @@ Deno.serve(async(req:Request)=>{
   if(!E||typeof E.candidatePortfoliosShard!=="function")return json({error:"engine_unavailable"},500);
   try{
     const p=E.normalizeProfile(body.profile||{}),
-          travel=E.travelStrategy(p),
-          rewards=E.rewardsStrategy(p,travel),
-          current=E.currentRecord(p,"base",travel,rewards),
           phase=String(body.phase||"counterfactual"),
+          suppliedTravel=body.travel&&typeof body.travel==="object"?body.travel:null,
+          suppliedRewards=body.rewards&&typeof body.rewards==="object"?body.rewards:null,
+          travel=suppliedTravel||E.travelStrategy(p),
+          rewards=suppliedRewards||E.rewardsStrategy(p,travel),
           classifications=Array.isArray(body.classifications)?body.classifications:[];
+
+    if(phase==="eligibility"){
+      return json({status:"ok",phase,engineVersion:E.ENGINE_VERSION,coBrandEligibility:E.candidateEligibility(p,rewards)});
+    }
+
+    const current=body.currentSearch&&typeof body.currentSearch==="object"
+      ?body.currentSearch
+      :E.currentRecord(p,"base",travel,rewards);
 
     if(phase==="select"){
       const portfolio=Array.isArray(body.portfolio)?body.portfolio.map((x:any)=>String(x||"")).filter(Boolean):[];
@@ -70,7 +79,7 @@ Deno.serve(async(req:Request)=>{
 
     const shardIndex=Math.max(0,Math.trunc(num(body.shardIndex))),
           shardCount=Math.max(1,Math.trunc(num(body.shardCount)||1)),
-          allSets=E.candidatePortfoliosShard(p,rewards,shardIndex,shardCount),
+          allSets=E.candidatePortfoliosShard(p,rewards,shardIndex,shardCount,body.coBrandEligibility||null),
           classBy=new Map(classifications.map((x:any)=>[x.cardId,x.classification])),
           required=new Set(p.constraints?.requiredCards||[]),
           sets=phase==="gated"

@@ -132,13 +132,37 @@ function summaryRecord(x:any,current:any){
   if(!x)return current;
   return{portfolio:x.portfolio||[],economics:{netEconomicValue:Number(x.netEconomicValue)||0},id:x.id||""};
 }
+function currentSearchSummary(current:any){
+  return{
+    id:current?.id||"current",
+    portfolio:current?.portfolio||[],
+    annualRouting:current?.annualRouting||{},
+    ongoingRouting:current?.ongoingRouting||current?.annualRouting||{},
+    recurringJobs:current?.recurringJobs||[],
+    temporaryJobs:current?.temporaryJobs||[],
+    feeSummary:current?.feeSummary||{},
+    economics:{netEconomicValue:Number(current?.economics?.netEconomicValue)||0},
+    strategy:{airlineStrategy:current?.strategy?.airlineStrategy||{},hotelStrategy:current?.strategy?.hotelStrategy||{}},
+    outcomes:{
+      travelCapacity:{annualTravelValue:Number(current?.outcomes?.travelCapacity?.annualTravelValue)||0},
+      flightQuality:{effectiveStatus:current?.outcomes?.flightQuality?.effectiveStatus||"",companionPassReached:current?.outcomes?.flightQuality?.companionPassReached===true},
+      hotelExperience:{effectiveStatus:current?.outcomes?.hotelExperience?.effectiveStatus||""},
+      reliability:{preservesCurrentAirlineStatus:current?.outcomes?.reliability?.preservesCurrentAirlineStatus===true},
+      complexity:{burden:Number(current?.outcomes?.complexity?.burden)||0}
+    },
+    recommendationCredit:current?.recommendationCredit||{lounge:0,premiumHotel:0,priorityAirport:0,upgradePriority:0},
+    quality:{precisionSuppressed:current?.quality?.precisionSuppressed===true}
+  };
+}
 async function distributedAnalyze(profile:any,candidateCardIds:any[]){
   const p=E.normalizeProfile(profile),travel=E.travelStrategy(p),rewards=E.rewardsStrategy(p,travel),
         current=E.currentRecord(p,"base",travel,rewards),
         existingOnly=new Set(E.EXISTING_ONLY_CARDS_V17||[]),
         ids=[...new Set((candidateCardIds||[]).filter((id:string)=>!p.currentCards.includes(id)&&!existingOnly.has(id)))];
 
-  const phase1=await runShardPhase(p,"counterfactual",{cardIds:ids});
+  const eligibility=await optimizerRequest({profile:p,phase:"eligibility",travel,rewards}),
+        currentSearch=currentSearchSummary(current),
+        phase1=await runShardPhase(p,"counterfactual",{cardIds:ids,travel,rewards,currentSearch,coBrandEligibility:eligibility?.coBrandEligibility||{}});
   const classifications:any[]=[];
   for(const id of ids){
     let withBest:any=null,withoutBest:any=null;

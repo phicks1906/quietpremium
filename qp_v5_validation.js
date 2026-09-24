@@ -19,7 +19,18 @@ function base(overrides={}){return{
  currencyUtility:{amex_mr:1,chase_ur:.75,capital_one_miles:.95,hyatt_points:1},legacyNaturalBenefitValue:{amex_platinum:700},
  bookingMethod:{airfare:"direct_airline",hotel:"direct_hotel"},constraints:{maxNewCards:2},aspirations:["travel more"],...overrides};}
 
-assert("engine is alpha.39",E.ENGINE_VERSION==="5.0-alpha.39");
+assert("engine is alpha.40",E.ENGINE_VERSION==="5.0-alpha.40");
+{
+ const p=E.normalizeProfile(base()),travel=E.travelStrategy(p),rewards=E.rewardsStrategy(p,travel),elig=E.candidateEligibility(p,rewards);
+ let sameSets=true;
+ for(let shard=0;shard<8;shard++){
+   const a=E.candidatePortfoliosShard(p,rewards,shard,8).map(x=>x.slice().sort().join("|")).sort(),
+         b=E.candidatePortfoliosShard(p,rewards,shard,8,elig).map(x=>x.slice().sort().join("|")).sort();
+   if(!same(a,b)){sameSets=false;break;}
+ }
+ assert("alpha.40 precomputed co-brand eligibility preserves exact candidate shards",sameSets,JSON.stringify(elig));
+}
+
 {
  const p=E.normalizeProfile(base()),travel=E.travelStrategy(p),rewards=E.rewardsStrategy(p,travel),current=E.currentRecord(p,"base",travel,rewards),
        sets=E.candidatePortfoliosShard(p,rewards,0,32).slice(0,12);

@@ -5,6 +5,9 @@ let pass=0,fail=0;const failures=[];
 function ok(name,cond){if(cond)pass++;else{fail++;failures.push(name)}}
 ok("counterfactual shards emit best-by-new-card-set summaries",worker.includes("bestByNewSet"));
 ok("counterfactual search uses reduced exact ranking records",worker.includes("E.preparePortfolioSearch(p,set,current"));
+ok("co-brand eligibility is computed once before shard fanout",build.includes('phase:"eligibility"')&&build.includes("coBrandEligibility:eligibility?.coBrandEligibility"));
+ok("shards reuse parent travel rewards and current baseline",build.includes("travel,rewards,currentSearch")&&worker.includes("body.currentSearch"));
+ok("candidate shards consume precomputed co-brand eligibility",worker.includes("body.coBrandEligibility||null"));
 ok("selection phase reconstructs one exact portfolio",worker.includes('phase==="select"')&&worker.includes("selected_portfolio_id_mismatch"));
 ok("build-plan merges best-by-new-card-set on adaptive splits",build.includes("bestByNewSet[key]=betterSummary"));
 ok("build-plan does not run a second gated shard sweep",!build.includes('runShardPhase(p,"gated"'));
