@@ -1,5 +1,5 @@
 /**
- * Quiet Premium V5 isolated travel-strategy engine — 5.0-alpha.45 (2026-09-24)
+ * Quiet Premium V5 isolated travel-strategy engine — 5.0-alpha.46 (2026-09-24)
  * NOT wired to diagnostic.html or any customer-facing page.
  *
  * LOCKED
@@ -16,7 +16,7 @@
 })(typeof globalThis!=="undefined"?globalThis:this,function(){
 "use strict";
 
-const ENGINE_VERSION="5.0-alpha.45";
+const ENGINE_VERSION="5.0-alpha.46";
 const RULES_AS_OF="2026-09-23";
 const CATS=["dining","grocery","online_grocery","drugstore","gas_ev","transit","online_retail","vacation_home","airfare","hotel","general"];
 const AIRLINES=["delta","united","american","southwest"];
@@ -832,8 +832,8 @@ function airlineStatusLadderV18(p,portfolio,annual,scenario){
   for(const row of rows){
     const idx=tierIndex(a,row.tier);row.selected=!!selected&&lc(row.tier)===lc(selected.tier);
     if(row.selected)row.stopReason=idx===floorIdx?"preserve_currently_achievable_tier":"incremental_value_supports_tier";
+    else if(!routeFit.supported&&idx>Math.max(floorIdx,selectedIdx))row.stopReason=routeFit.established?"route_fit_does_not_support_concentration":"route_fit_unverified";
     else if(!row.reachable)row.stopReason=row.reason;
-    else if(!routeFit.supported&&idx>selectedIdx)row.stopReason=routeFit.established?"route_fit_does_not_support_concentration":"route_fit_unverified";
     else if(idx>selectedIdx&&!tierBenefitRecordReadyV23(a,row.benefits))row.stopReason="tier_benefits_unresolved";
     else if(idx>selectedIdx)row.stopReason="incremental_quantified_value_below_opportunity_cost";
     else row.stopReason="lower_tier";

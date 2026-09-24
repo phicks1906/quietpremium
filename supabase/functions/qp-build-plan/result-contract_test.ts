@@ -229,3 +229,37 @@ Deno.test("natural recurring threshold is disclosed without manufacturing an int
   assert(threshold.title.includes("normal routing naturally clears"),"natural threshold title is not customer-facing");
   assert(threshold.purposeLabel==="$500 Southwest Airlines Chase Travel credit","raw threshold identifier leaked into customer label");
 });
+
+
+Deno.test("unverified route fit produces conditional higher-tier guidance",()=>{
+  const result={
+    engineVersion:"5.0-alpha.46",rulesAsOf:"2026-09-23",
+    factsSnapshot:{snapshotId:"f"},valuationSnapshot:{snapshotId:"v"},
+    factQuality:{productionReady:true,missingCriticalFacts:[]},
+    profile:{constraints:{requiredCards:[]},companionTravel:{intent:"no",frequency:"",minimumExpectedRoundTrips:0}},
+    travelStrategy:{airline:{primary:"delta",mode:"existing_relationship_route_unverified"},hotel:{primary:"",mode:"flexible"}},
+    rewardsStrategy:{primaryCurrency:"amex_mr"},newCardClassifications:[],considerCards:[],
+    current:{economics:{netEconomicValue:0}},integrity:{protectedMultiplierSpend:true},
+    recommended:{
+      portfolio:[],ongoingRouting:{},recurringJobs:[],temporaryJobs:[],actions:[],visibleBenefits:[],recommendationCredit:{},
+      feeSummary:{currentAnnualFees:0,recommendedAnnualFees:0,annualSavings:0,annualIncrease:0},
+      economics:{netEconomicValue:0,portfolioRecurringBenefits:{companion:{totalValue:0,intent:"no"}}},
+      travelActions:{airline:{primary:"delta",effectiveNaturalStatus:"Gold Medallion"},hotel:{}},
+      outcomes:{travelCapacity:{},hotelExperience:{}},quality:{issues:[]},
+      strategy:{airlineStatusTarget:null,hotelStatusTarget:null,southwestCompanionPass:null,airlineStatusLadder:{
+        airline:"delta",benefitFactsComplete:true,
+        selected:{tier:"Gold Medallion"},
+        rows:[
+          {tier:"Gold Medallion",selected:true,reachable:true,stopReason:"preserve_currently_achievable_tier"},
+          {tier:"Platinum Medallion",selected:false,reachable:false,stopReason:"route_fit_unverified"},
+          {tier:"Diamond Medallion",selected:false,reachable:false,stopReason:"route_fit_unverified"}
+        ]
+      }}
+    }
+  };
+  const out=buildResultContract(result,{cardFacts:()=>({})},{pass:true,errors:[],warnings:[]});
+  const stops=out.implementationPlan.phases.flatMap(p=>p.actions).filter(x=>x.type==="status_stop");
+  assert(stops.length===2,"route-fit status stops missing");
+  assert(stops.every(x=>x.title.startsWith("Verify route fit before considering an additional push toward ")),"unverified route fit leaked a do-not-chase directive");
+  assert(!stops.some(x=>x.title.startsWith("Do not chase")),"missing route evidence became a definitive status judgment");
+});

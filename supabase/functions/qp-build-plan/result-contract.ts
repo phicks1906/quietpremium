@@ -67,6 +67,13 @@ const BENEFIT_LABELS=Object.freeze({
 });
 function categoryLabel(value){return CATEGORY_LABELS[value]||titleCase(value)}
 function benefitLabel(value){return BENEFIT_LABELS[value]||titleCase(value)}
+function statusStopTitle(stop){
+  const tier=stop?.tier||"the next airline tier",reason=String(stop?.stopReason||"");
+  if(reason==="route_fit_unverified")return "Verify route fit before considering an additional push toward "+tier;
+  if(reason==="route_fit_does_not_support_concentration")return "Current route fit does not support an additional push toward "+tier;
+  if(reason==="tier_benefits_unresolved")return "Verify "+tier+" benefits before considering an additional push";
+  return "Do not chase "+tier;
+}
 function fmtMoney(value){return "$"+Math.round(num(value)).toLocaleString("en-US")}
 function routeGroups(rec,E,profile){
   const byCard=new Map();
@@ -167,7 +174,7 @@ function buildImplementationPlan(result,E,parts){
     phase3.push({
       id:"status_stop:"+String(stop.tier||"").toLowerCase().replace(/\s+/g,"_"),
       type:"status_stop",
-      title:"Do not chase "+(stop.tier||"the next airline tier"),
+      title:statusStopTitle(stop),
       tier:stop.tier||"",
       reason:stop.stopReason,
       opportunityCost:stop.opportunityCost??null,

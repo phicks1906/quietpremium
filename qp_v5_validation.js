@@ -19,7 +19,7 @@ function base(overrides={}){return{
  currencyUtility:{amex_mr:1,chase_ur:.75,capital_one_miles:.95,hyatt_points:1},legacyNaturalBenefitValue:{amex_platinum:700},
  bookingMethod:{airfare:"direct_airline",hotel:"direct_hotel"},constraints:{maxNewCards:2},aspirations:["travel more"],...overrides};}
 
-assert("engine is alpha.45",E.ENGINE_VERSION==="5.0-alpha.45");
+assert("engine is alpha.46",E.ENGINE_VERSION==="5.0-alpha.46");
 
 {
  const p=E.normalizeProfile(base()),travel=E.travelStrategy(p),rewards=E.rewardsStrategy(p,travel),eligIds=E.candidateEligibilityIds(p,rewards),elig=E.candidateEligibility(p,rewards,eligIds);
@@ -412,6 +412,8 @@ assert("Southwest Priority remains 2500 TQP per $5000",E.RULES.cards.southwest_p
  assert("existing airline relationship survives missing route evidence",unverified.travelStrategy.airline.relationshipEstablished===true,JSON.stringify(unverified.travelStrategy.airline));
  assert("missing route evidence does not endorse concentration",unverified.travelStrategy.airline.concentrationSupported===false&&unverified.travelStrategy.airline.mode==="existing_relationship_route_unverified"&&unverified.travelStrategy.airline.rule==="choose_best_itinerary",JSON.stringify(unverified.travelStrategy.airline));
  assert("missing route evidence blocks spend-driven airline status intervention",!unverified.recommended.strategy.airlineStatusTarget,JSON.stringify(unverified.recommended.strategy.airlineStatusTarget));
+ const higherUnverified=unverified.recommended.strategy.airlineStatusLadder.rows.filter(x=>["Platinum Medallion","Diamond Medallion"].includes(x.tier));
+ assert("missing route evidence takes precedence in higher-tier stop reasons",higherUnverified.length===2&&higherUnverified.every(x=>x.stopReason==="route_fit_unverified"),JSON.stringify(higherUnverified));
  assert("route-fit guardrail is explicit in engine integrity",unverified.integrity.airlineConcentrationRequiresRouteFit===true,JSON.stringify(unverified.integrity));
 }
 {
