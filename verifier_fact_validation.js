@@ -28,7 +28,7 @@ ok("Hyatt phantom travel credit fails structure",P.criticalStructureIssues("card
 ok("United non-Club lounge contamination fails structure",P.criticalStructureIssues("cards","united_quest",{benefitTags:["lounge"]}).includes("benefitTags.fullLoungeNotAllowed"));
 ok("United generic travel-credit tag fails structure",P.criticalStructureIssues("cards","united_gateway",{benefitTags:["travel_credit"]}).includes("benefitTags.genericUnitedTravelCreditNotAllowed"));
 ok("United non-Club hotel-status contamination fails structure",P.criticalStructureIssues("cards","united_explorer",{benefitTags:["hotel_status"]}).includes("benefitTags.unitedHotelStatusNotAllowed"));
-ok("United Club requires full lounge and real hotel status tags",P.criticalStructureIssues("cards","united_club",{benefitTags:["lounge","hotel_status"]}).length===0,JSON.stringify(P.criticalStructureIssues("cards","united_club",{benefitTags:["lounge","hotel_status"]})));
+ok("United Club requires full lounge and real hotel status tags",P.criticalStructureIssues("cards","united_club",{benefitTags:["lounge","hotel_status"],earn:{airfare:5,dining:2,hotel:2,gas_ev:1,transit:2,general:1},bookingEarn:{hotel:{renowned_prepaid:5}}}).length===0,JSON.stringify(P.criticalStructureIssues("cards","united_club",{benefitTags:["lounge","hotel_status"],earn:{airfare:5,dining:2,hotel:2,gas_ev:1,transit:2,general:1},bookingEarn:{hotel:{renowned_prepaid:5}}})));
 
 
 const cr="8x points on all purchases through Chase Travel, including The Edit. 4x points on flights booked direct. 4x points on hotels booked direct. 3x points on dining worldwide. 1x points on all other purchases.";
