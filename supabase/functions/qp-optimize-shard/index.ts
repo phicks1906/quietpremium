@@ -84,17 +84,16 @@ Deno.serve(async(req:Request)=>{
     if(phase==="counterfactual"){
       const ids=Array.isArray(body.cardIds)?body.cardIds:[],
             bestWith:any={},bestWithout:any={},bestByNewSet:any={};
-      for(const id of ids){
-        const withChosen=E.choosePrepared(prepared.filter((x:any)=>x.c&&(x.r.portfolio||[]).includes(id)),current),
-              withoutChosen=E.choosePrepared(prepared.filter((x:any)=>x.c&&!(x.r.portfolio||[]).includes(id)),current);
-        bestWith[id]=preparedSummary(chosenEntry(prepared,withChosen,current));
-        bestWithout[id]=preparedSummary(chosenEntry(prepared,withoutChosen,current));
-      }
+      for(const id of ids){bestWith[id]=null;bestWithout[id]=null;}
       for(const entry of prepared){
         if(!entry?.c)continue;
-        const additions=(entry.r.portfolio||[]).filter((id:string)=>!p.currentCards.includes(id)).slice().sort(),
-              key=additions.join("|"),
-              summary=preparedSummary(entry);
+        const summary=preparedSummary(entry),portfolio=new Set(summary?.portfolio||[]);
+        for(const id of ids){
+          if(portfolio.has(id))bestWith[id]=betterSummary(bestWith[id],summary);
+          else bestWithout[id]=betterSummary(bestWithout[id],summary);
+        }
+        const additions=(summary?.portfolio||[]).filter((id:string)=>!p.currentCards.includes(id)).slice().sort(),
+              key=additions.join("|");
         bestByNewSet[key]=betterSummary(bestByNewSet[key]||null,summary);
       }
       return json({status:"ok",phase,engineVersion:E.ENGINE_VERSION,shardIndex,shardCount,candidateCount:records.length,bestWith,bestWithout,bestByNewSet});
