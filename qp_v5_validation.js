@@ -19,9 +19,9 @@ function base(overrides={}){return{
  currencyUtility:{amex_mr:1,chase_ur:.75,capital_one_miles:.95,hyatt_points:1},legacyNaturalBenefitValue:{amex_platinum:700},
  bookingMethod:{airfare:"direct_airline",hotel:"direct_hotel"},constraints:{maxNewCards:2},aspirations:["travel more"],...overrides};}
 
-assert("engine is alpha.40",E.ENGINE_VERSION==="5.0-alpha.40");
+assert("engine is alpha.41",E.ENGINE_VERSION==="5.0-alpha.41");
 {
- const p=E.normalizeProfile(base()),travel=E.travelStrategy(p),rewards=E.rewardsStrategy(p,travel),elig=E.candidateEligibility(p,rewards);
+ const p=E.normalizeProfile(base()),travel=E.travelStrategy(p),rewards=E.rewardsStrategy(p,travel),eligIds=E.candidateEligibilityIds(p,rewards),elig=E.candidateEligibility(p,rewards,eligIds);
  let sameSets=true;
  for(let shard=0;shard<8;shard++){
    const a=E.candidatePortfoliosShard(p,rewards,shard,8).map(x=>x.slice().sort().join("|")).sort(),

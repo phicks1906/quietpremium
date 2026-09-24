@@ -57,7 +57,7 @@ Deno.serve(async(req:Request)=>{
           classifications=Array.isArray(body.classifications)?body.classifications:[];
 
     if(phase==="eligibility"){
-      return json({status:"ok",phase,engineVersion:E.ENGINE_VERSION,coBrandEligibility:E.candidateEligibility(p,rewards)});
+      return json({status:"ok",phase,engineVersion:E.ENGINE_VERSION,coBrandEligibility:E.candidateEligibility(p,rewards,Array.isArray(body.cardIds)?body.cardIds:null)});
     }
 
     const current=body.currentSearch&&typeof body.currentSearch==="object"

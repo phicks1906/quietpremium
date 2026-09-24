@@ -97,7 +97,7 @@ async function optimizerRequest(payload:any,attempt=0){
     await new Promise(r=>setTimeout(r,350*(attempt+1)));
     return optimizerRequest(payload,attempt+1);
   }
-  if(payload?.phase!=="select"&&(res.status===546||transient)&&Number(payload?.shardCount||0)<OPTIMIZER_MAX_SHARDS){
+  if((payload?.phase==="counterfactual"||payload?.phase==="gated")&&(res.status===546||transient)&&Number(payload?.shardCount||0)<OPTIMIZER_MAX_SHARDS){
     const oldCount=Number(payload.shardCount)||OPTIMIZER_SHARDS,nextCount=oldCount*2,idx=Number(payload.shardIndex)||0;
     const left={...payload,shardIndex:idx,shardCount:nextCount},right={...payload,shardIndex:idx+oldCount,shardCount:nextCount};
     const a=await optimizerRequest(left,0);
@@ -160,9 +160,12 @@ async function distributedAnalyze(profile:any,candidateCardIds:any[]){
         existingOnly=new Set(E.EXISTING_ONLY_CARDS_V17||[]),
         ids=[...new Set((candidateCardIds||[]).filter((id:string)=>!p.currentCards.includes(id)&&!existingOnly.has(id)))];
 
-  const eligibility=await optimizerRequest({profile:p,phase:"eligibility",travel,rewards}),
+  const eligibilityIds=E.candidateEligibilityIds(p,rewards),
+        eligibilityChunks=[eligibilityIds.filter((_:any,i:number)=>i%2===0),eligibilityIds.filter((_:any,i:number)=>i%2===1)].filter((x:any[])=>x.length),
+        eligibilityParts=await Promise.all(eligibilityChunks.map((cardIds:any[])=>optimizerRequest({profile:p,phase:"eligibility",travel,rewards,cardIds}))),
+        coBrandEligibility=Object.assign({},...eligibilityParts.map((x:any)=>x?.coBrandEligibility||{})),
         currentSearch=currentSearchSummary(current),
-        phase1=await runShardPhase(p,"counterfactual",{cardIds:ids,travel,rewards,currentSearch,coBrandEligibility:eligibility?.coBrandEligibility||{}});
+        phase1=await runShardPhase(p,"counterfactual",{cardIds:ids,travel,rewards,currentSearch,coBrandEligibility});
   const classifications:any[]=[];
   for(const id of ids){
     let withBest:any=null,withoutBest:any=null;
