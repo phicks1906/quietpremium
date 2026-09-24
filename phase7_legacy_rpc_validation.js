@@ -11,6 +11,13 @@ const retiredSignatures=[
   "qp_submit_feedback(text,text,text,text)"
 ];
 ok("legacy grant retirement covers exactly five RPC signatures",retiredSignatures.length===5&&new Set(retiredSignatures).size===5);
+const migration=fs.readFileSync("supabase/migrations/20260924232220_phase7_retire_legacy_public_rpc_grants.sql","utf8");
+for(const sig of retiredSignatures){
+  ok("migration revokes anon for "+sig,migration.includes("revoke all on function public."+sig+" from anon"));
+  ok("migration preserves service role for "+sig,migration.includes("grant execute on function public."+sig+" to service_role"));
+}
+ok("migration leaves live public plan retrieval untouched",!migration.includes("qp_get_plan_v1"));
+ok("migration leaves live funnel telemetry untouched",!migration.includes("qp_log_event_v2"));
 const skip=new Set(["supabase/migrations",".git"]);
 const hits={};for(const n of retired)hits[n]=[];
 function walk(dir){
