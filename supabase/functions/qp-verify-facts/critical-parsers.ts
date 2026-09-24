@@ -169,6 +169,14 @@ export function criticalStructureIssues(kind,id,facts){
     if(Object.prototype.hasOwnProperty.call(f.recurringCredits||{},"travel_credit"))issues.push("recurringCredits.hyattTravelCreditNotAllowed");
     if((f.benefitTags||[]).includes("travel_credit"))issues.push("benefitTags.hyattTravelCreditNotAllowed");
   }
+  if(kind==="cards"&&["united_gateway","united_explorer","united_quest","united_club"].includes(id)){
+    const tags=Array.isArray(f.benefitTags)?f.benefitTags:[];
+    if(tags.includes("travel_credit"))issues.push("benefitTags.genericUnitedTravelCreditNotAllowed");
+    if(id!=="united_club"&&tags.includes("lounge"))issues.push("benefitTags.fullLoungeNotAllowed");
+    if(id!=="united_club"&&tags.includes("hotel_status"))issues.push("benefitTags.unitedHotelStatusNotAllowed");
+    if(id==="united_club"&&!tags.includes("lounge"))issues.push("benefitTags.unitedClubLoungeRequired");
+    if(id==="united_club"&&!tags.includes("hotel_status"))issues.push("benefitTags.unitedClubHotelStatusRequired");
+  }
   if(kind==="cards"&&["marriott_boundless","marriott_bountiful","marriott_bevy","marriott_brilliant"].includes(id)){
     const e=f.earn||{};
     if(Number(e.general)>6||Number(e.grocery)>6||Number(e.dining)>6||Number(e.airfare)>6||Number(e.hotel)>6)issues.push("earn.compositeMarriottTotalNotAllowed");

@@ -372,6 +372,11 @@ function cardFacts(id:string,t:string){
     ...(/The Edit by Chase Travel/i.test(t)?["premium_hotel_booking"]:[])
   ]);
   if(id==="hyatt_consumer"){const j=derivedTags.indexOf("travel_credit");if(j>=0)derivedTags.splice(j,1);}
+  if(id.startsWith("united_")){
+    for(const tag of ["travel_credit",...(id==="united_club"?[]:["lounge","hotel_status"])]){
+      let j;while((j=derivedTags.indexOf(tag))>=0)derivedTags.splice(j,1);
+    }
+  }
   const cap=flexibleCaps(t,id),rb=rotatingBonus(t,id);
   if(rb.rate&&!derivedTags.includes("rotating_5x_categories"))derivedTags.push("rotating_5x_categories");
   const critical=parseMarriottCardCriticalFacts(t,id);

@@ -25,6 +25,11 @@ ok("Gateway parser excludes MileagePlus member miles from card earn",ug?.airfare
 ok("United total-mile contamination fails structure",P.criticalStructureIssues("cards","united_quest",{earn:{airfare:10,dining:1,hotel:4,gas_ev:1,transit:4,general:1},bookingEarn:{hotel:{renowned_prepaid:5}}}).includes("earn.unitedCardOnlyCurrentStructure"));
 ok("Capital One portal contamination fails structure",P.criticalStructureIssues("cards","venture_x",{earn:{dining:5,grocery:5,online_grocery:5,drugstore:5,gas_ev:5,transit:5,online_retail:5,vacation_home:5,airfare:5,hotel:5,general:5},bookingEarn:{airfare:{capital_one_travel:5},hotel:{capital_one_travel:10},vacation_home:{capital_one_travel:5}}}).includes("earn.capitalOneBaseCurrentStructure"));
 ok("Hyatt phantom travel credit fails structure",P.criticalStructureIssues("cards","hyatt_consumer",{recurringCredits:{travel_credit:3000},benefitTags:["travel_credit"]}).includes("recurringCredits.hyattTravelCreditNotAllowed"));
+ok("United non-Club lounge contamination fails structure",P.criticalStructureIssues("cards","united_quest",{benefitTags:["lounge"]}).includes("benefitTags.fullLoungeNotAllowed"));
+ok("United generic travel-credit tag fails structure",P.criticalStructureIssues("cards","united_gateway",{benefitTags:["travel_credit"]}).includes("benefitTags.genericUnitedTravelCreditNotAllowed"));
+ok("United non-Club hotel-status contamination fails structure",P.criticalStructureIssues("cards","united_explorer",{benefitTags:["hotel_status"]}).includes("benefitTags.unitedHotelStatusNotAllowed"));
+ok("United Club requires full lounge and real hotel status tags",P.criticalStructureIssues("cards","united_club",{benefitTags:["lounge","hotel_status"]}).length===0,JSON.stringify(P.criticalStructureIssues("cards","united_club",{benefitTags:["lounge","hotel_status"]})));
+
 
 const cr="8x points on all purchases through Chase Travel, including The Edit. 4x points on flights booked direct. 4x points on hotels booked direct. 3x points on dining worldwide. 1x points on all other purchases.";
 const cp=P.parseChaseReserveRewards(cr);
