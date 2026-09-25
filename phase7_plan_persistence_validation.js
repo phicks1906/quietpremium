@@ -15,10 +15,10 @@ ok("build-plan persistence is rollout-gated",build.includes('const persistReques
 ok("client no longer calls save RPC",!client.includes('/rest/v1/rpc/qp_save_plan_v1'));
 ok("client no longer defines savePlan",!client.includes('function savePlan('));
 ok("client consumes server savedPlan",client.includes('const saved=result?.savedPlan'));
-ok("client sends funnel session alongside profile",client.includes('funnelSession:sessionStorage.getItem("qp_funnel_session_v1")'));
+ok("client sends funnel session alongside profile",client.includes('const FUNNEL_SESSION_KEY="qp_funnel_session_v1"')&&client.includes('funnelSession:sessionStorage.getItem(FUNNEL_SESSION_KEY)'));
 ok("current client explicitly requests server persistence",client.includes('persistPlan:true'));
 ok("service role never appears in client",!client.includes("SUPABASE_SERVICE_ROLE_KEY"));
-ok("diagnostic cachebuster advanced",html.includes('assets/diagnostic-v5.js?v=280'));
+ok("diagnostic cachebuster advanced",html.includes('assets/diagnostic-v5.js?v=290'));
 const migration=fs.readFileSync("supabase/migrations/20260924231251_phase7_restrict_plan_save_to_service_role.sql","utf8");
 ok("migration revokes anonymous plan save",migration.includes("from anon"));
 ok("migration preserves service-role plan save",migration.includes("to service_role"));
