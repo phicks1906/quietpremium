@@ -82,6 +82,9 @@ input::placeholder{color:var(--grey-dk)}
 .success-hl{font-family:var(--serif);font-size:22px;font-weight:300;color:var(--white);margin-bottom:8px}
 .success-body{font-size:12px;color:var(--grey);line-height:1.8}
 .field-error{color:#C0392B;font-family:var(--mono);font-size:8px;letter-spacing:.1em;text-transform:uppercase;margin-top:5px}
+.analysis-context{margin:0 0 20px;padding:12px 14px;border:1px solid rgba(176,141,87,.25);background:var(--gold-pale);align-items:center;justify-content:space-between;gap:14px}
+.analysis-context span{font-family:var(--mono);font-size:8px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold)}
+.analysis-context strong{font-family:var(--mono);font-size:9px;font-weight:400;color:var(--white);letter-spacing:.06em}
 @media(max-width:600px){
   nav{padding:16px 20px}
   .wrap{padding:56px 20px 80px}
@@ -105,6 +108,8 @@ input::placeholder{color:var(--grey-dk)}
   <p class="subtext">Your feedback shapes how your Quiet Premium analysis develops. There are no right answers — honest is the only useful kind. Takes about five minutes.</p>
 
   <form id="feedback-form">
+    <input type="hidden" name="analysis_id" id="analysis-id" value=""/>
+    <div class="analysis-context" id="analysis-context" style="display:none"><span>Analysis ID</span><strong id="analysis-id-display"></strong></div>
 
     <div class="q-block">
       <div class="q-num">Your information</div>
@@ -177,7 +182,7 @@ input::placeholder{color:var(--grey-dk)}
       <input type="hidden" name="consent" id="consent-val" value="No"/>
     </div>
 
-    <p class="submit-note">Your responses go directly to the Quiet Premium team. Nothing is shared publicly without your permission.</p>
+    <p class="submit-note">Your responses go directly to the Quiet Premium team. Nothing is shared publicly without your permission. See <a href="privacy.html" style="color:var(--gold);text-decoration:none">Privacy</a> and <a href="terms.html" style="color:var(--gold);text-decoration:none">Terms</a>.</p>
     <button type="submit" class="btn-submit" id="submit-btn">Submit Feedback</button>
 
     <div class="success" id="success-box" style="margin-top:24px">
@@ -192,6 +197,13 @@ input::placeholder{color:var(--grey-dk)}
 </div>
 
 <script>
+const feedbackParams=new URLSearchParams(location.search);
+const feedbackAnalysisId=/^QP-\d{8}-[A-F0-9]{10}$/i.test(feedbackParams.get('a')||'')?(feedbackParams.get('a')||'').toUpperCase():'';
+if(feedbackAnalysisId){
+  document.getElementById('analysis-id').value=feedbackAnalysisId;
+  document.getElementById('analysis-id-display').textContent=feedbackAnalysisId;
+  document.getElementById('analysis-context').style.display='flex';
+}
 let consentGiven = false;
 function toggleConsent(){
   consentGiven = !consentGiven;
@@ -228,6 +240,7 @@ document.getElementById('feedback-form').addEventListener('submit', async functi
   const data = {
     name: form.name.value,
     email: form.email.value,
+    analysis_id: form.analysis_id.value || '(not linked)',
     q1_new_insight: form.q1.value,
     q2_specificity: form.q2.value,
     q3_implementation: form.q3.value,
