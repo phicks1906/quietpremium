@@ -8,6 +8,7 @@ on:
       - phase7-plan-save-privilege
       - phase7-retire-legacy-rpcs
       - phase7-retire-legacy-rpc-grants
+      - soft-launch-readiness
   workflow_dispatch:
 
 jobs:
@@ -25,6 +26,7 @@ jobs:
           node phase7_hardening_validation.js
           node phase7_plan_persistence_validation.js
           node phase7_legacy_rpc_validation.js
+          node soft_launch_validation.js
           node phase6_positioning_validation.js
           node funnel_validation.js
           node --check assets/diagnostic-v5.js
