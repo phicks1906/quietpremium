@@ -46,7 +46,7 @@ ok("feedback page validates Analysis ID format",feedback.includes("/^QP-\\d{8}-[
 ok("feedback payload includes Analysis ID",feedback.includes("analysis_id: form.analysis_id.value || '(not linked)'"));
 ok("feedback page never reads retrieval token",!feedback.includes("get('t')")&&!feedback.includes('get("t")'));
 
-ok("plan refreshes loader cachebuster",plan.includes("assets/plan-v241-loader.js?v=250"));
+ok("plan refreshes loader cachebuster",plan.includes("assets/plan-v241-loader.js?v=260"));
 ok("plan refreshes renderer cachebuster",plan.includes("assets/plan-v270-renderer.js?v=290"));
 ok("plan refreshes result css cachebuster",plan.includes("assets/plan-v250.css?v=270"));
 
