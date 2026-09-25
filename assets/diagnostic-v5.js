@@ -10,6 +10,7 @@ const QP_SUPABASE_URL="https://jdtbyudbwmwldrkjaznk.supabase.co";
 const QP_SUPABASE_KEY="sb_publishable_BETG0zmWAEmPByBsKyEUzA_yPCOkh5F";
 const PLAN_FUNCTION="qp-build-plan";
 const PLAN_STORAGE_KEY="qp-results-v1";
+const FUNNEL_SESSION_KEY="qp_funnel_session_v1";
 const BUILD="phase4c_v1";
 
 const CARD_ALIASES=Object.freeze({
@@ -321,9 +322,25 @@ async function postJson(url,payload){
 async function buildPlan(profile){
   return postJson(QP_SUPABASE_URL+"/functions/v1/"+PLAN_FUNCTION,{
     profile,
-    funnelSession:sessionStorage.getItem("qp_funnel_session_v1")||"",
+    funnelSession:sessionStorage.getItem(FUNNEL_SESSION_KEY)||"",
     persistPlan:true
   });
+}
+function sendCentralEvent(name,architectureId="",token=""){
+  try{
+    fetch(QP_SUPABASE_URL+"/rest/v1/rpc/qp_log_event_v2",{
+      method:"POST",
+      keepalive:true,
+      headers:{"Content-Type":"application/json","apikey":QP_SUPABASE_KEY},
+      body:JSON.stringify({
+        p_event_type:name,
+        p_session_id:sessionStorage.getItem(FUNNEL_SESSION_KEY)||null,
+        p_architecture_id:architectureId||null,
+        p_token:token||null,
+        p_metadata:{page:"diagnostic",build:BUILD}
+      })
+    }).catch(()=>{});
+  }catch{}
 }
 function showError(message){
   const loading=document.getElementById("loading"),main=document.querySelector("main"),old=document.getElementById("qp-v5-error");
@@ -368,6 +385,8 @@ async function submitV5(e){
     try{sessionStorage.setItem(PLAN_STORAGE_KEY,JSON.stringify(result.resultExperience))}catch{}
     try{localStorage.removeItem("qp_architecture_phase5_draft")}catch{}
     try{if(typeof gtag==="function")gtag("event","assessment_complete",{})}catch{}
+    sendCentralEvent("assessment_complete",saved.architecture_id,saved.retrieval_token);
+    sendCentralEvent("result_save",saved.architecture_id,saved.retrieval_token);
     const url=new URL("plan.html",location.href);
     url.hash="a="+encodeURIComponent(saved.architecture_id)+"&t="+encodeURIComponent(saved.retrieval_token);
     location.assign(url.toString());

@@ -9,6 +9,7 @@ on:
       - phase7-retire-legacy-rpcs
       - phase7-retire-legacy-rpc-grants
       - soft-launch-readiness
+      - soft-launch-telemetry
   workflow_dispatch:
 
 jobs:
