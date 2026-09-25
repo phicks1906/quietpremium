@@ -22,11 +22,24 @@ function retrievalCredentials(){
   const id=p.get("a")||"",token=p.get("t")||"";
   return id&&token?{id,token}:null;
 }
+function funnelSession(){try{return sessionStorage.getItem("qp_funnel_session_v1")||null}catch{return null}}
+function logPrivateEvent(name,c){
+  if(!c?.id||!c?.token)return;
+  void rpc("qp_log_event_v2",{
+    p_event_type:name,
+    p_session_id:funnelSession(),
+    p_architecture_id:c.id,
+    p_token:c.token,
+    p_metadata:{page:"plan"}
+  }).catch(()=>{});
+}
 async function retrievePrivatePlan(){
   const c=retrievalCredentials();if(!c)return null;
   const row=await rpc("qp_get_plan_v1",{p_architecture_id:c.id,p_token:c.token});
   if(!row||row.schema!=="qp-plan-server-v1"||!row.result)throw new Error("Private plan link is invalid or no longer available.");
   window.QP_PLAN_ANALYSIS_ID=String(row.id||c.id||"");
+  logPrivateEvent("results_view",c);
+  logPrivateEvent("result_retrieved",c);
   return row.result;
 }
 function parseEmbedded(){
