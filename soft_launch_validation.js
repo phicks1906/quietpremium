@@ -50,5 +50,22 @@ ok("plan refreshes loader cachebuster",plan.includes("assets/plan-v241-loader.js
 ok("plan refreshes renderer cachebuster",plan.includes("assets/plan-v270-renderer.js?v=290"));
 ok("plan refreshes result css cachebuster",plan.includes("assets/plan-v250.css?v=270"));
 
+const diagnosticV5=read("assets/diagnostic-v5.js");
+ok("V5 sends central assessment_complete",diagnosticV5.includes('sendCentralEvent("assessment_complete",saved.architecture_id,saved.retrieval_token)'));
+ok("V5 sends central result_save",diagnosticV5.includes('sendCentralEvent("result_save",saved.architecture_id,saved.retrieval_token)'));
+ok("V5 telemetry uses existing allowlisted RPC",diagnosticV5.includes('/rest/v1/rpc/qp_log_event_v2'));
+ok("V5 telemetry sends no profile or answer payload",!diagnosticV5.includes('p_metadata:{profile')&&!diagnosticV5.includes('p_metadata:{spend')&&!diagnosticV5.includes('p_metadata:{cards'));
+
+ok("result loader logs token-validated results_view",loader.includes('logPrivateEvent("results_view",c)'));
+ok("result loader logs token-validated result_retrieved",loader.includes('logPrivateEvent("result_retrieved",c)'));
+ok("result telemetry passes private credentials only to logger RPC",loader.includes('p_architecture_id:c.id')&&loader.includes('p_token:c.token'));
+
+ok("feedback loads central tracker",feedback.includes('assets/v213-track.js?v=217'));
+ok("feedback logs only after successful submission",feedback.indexOf("track('feedback_submit'")>feedback.indexOf("if(res.ok){"));
+ok("feedback telemetry contains no feedback text or email",!feedback.includes("track('feedback_submit',{email")&&!feedback.includes("track('feedback_submit',{q1"));
+
+ok("diagnostic telemetry cachebuster advanced",diagnostic.includes('assets/diagnostic-v5.js?v=290'));
+ok("result loader telemetry cachebuster advanced",plan.includes('assets/plan-v241-loader.js?v=260'));
+
 console.log(JSON.stringify({pass,fail,failures},null,2));
 if(fail)process.exitCode=1;
