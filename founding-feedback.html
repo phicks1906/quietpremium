@@ -196,6 +196,7 @@ input::placeholder{color:var(--grey-dk)}
 </div>
 </div>
 
+<script src="assets/v213-track.js?v=217"></script>
 <script>
 const feedbackParams=new URLSearchParams(location.search);
 const feedbackAnalysisId=/^QP-\d{8}-[A-F0-9]{10}$/i.test(feedbackParams.get('a')||'')?(feedbackParams.get('a')||'').toUpperCase():'';
@@ -257,6 +258,7 @@ document.getElementById('feedback-form').addEventListener('submit', async functi
       body: JSON.stringify(data)
     });
     if(res.ok){
+      try{track('feedback_submit',{page:'founding_feedback'});}catch(_){}
       form.querySelectorAll('input,textarea,button,.consent-block,.submit-note').forEach(el => el.style.display = 'none');
       document.querySelectorAll('.q-block,.divider').forEach(el => el.style.display = 'none');
       document.getElementById('success-box').style.display = 'block';
